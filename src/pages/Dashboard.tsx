@@ -7,14 +7,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { 
-  Zap, LogOut, TrendingUp, DollarSign, Clock, 
-  CheckCircle, XCircle, Loader2 
+  LogOut, TrendingUp, DollarSign, Clock, 
+  CheckCircle, XCircle, Loader2, Shield
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import teslaLogo from '@/assets/tesla-logo.png';
 
 interface Investment {
   id: string;
   amount: number;
+  profit_amount: number;
   status: string;
   created_at: string;
 }
@@ -32,6 +34,23 @@ const Dashboard = () => {
   const [investAmount, setInvestAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkAdmin();
+    }
+  }, [user]);
+
+  const checkAdmin = async () => {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user!.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -109,6 +128,8 @@ const Dashboard = () => {
     .filter(i => i.status === 'pending')
     .reduce((sum, i) => sum + Number(i.amount), 0);
 
+  const totalProfit = investments.reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active': return <TrendingUp className="w-4 h-4 text-green-500" />;
@@ -134,16 +155,22 @@ const Dashboard = () => {
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-tesla-red" />
+          <div className="flex items-center gap-3">
+            <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
             <span className="text-xl font-bold bg-gradient-to-r from-tesla-red to-electric-blue bg-clip-text text-transparent">
-              Tesla Invest
+              Invest
             </span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-muted-foreground hidden sm:block">
               {profile?.full_name || user?.email}
             </span>
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                <Shield className="w-4 h-4 mr-2" />
+                Admin
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -154,13 +181,21 @@ const Dashboard = () => {
 
       <main className="relative z-10 container mx-auto px-4 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
             <div className="flex items-center gap-3 mb-2">
               <DollarSign className="w-5 h-5 text-tesla-red" />
               <span className="text-muted-foreground">Total Invested</span>
             </div>
             <p className="text-3xl font-bold">${totalInvested.toLocaleString()}</p>
+          </div>
+          
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <TrendingUp className="w-5 h-5 text-green-500" />
+              <span className="text-muted-foreground">Total Profit</span>
+            </div>
+            <p className="text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
           </div>
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
@@ -173,8 +208,8 @@ const Dashboard = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
             <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              <span className="text-muted-foreground">Active Investments</span>
+              <CheckCircle className="w-5 h-5 text-electric-blue" />
+              <span className="text-muted-foreground">Active</span>
             </div>
             <p className="text-3xl font-bold">
               {investments.filter(i => i.status === 'active').length}
@@ -240,6 +275,11 @@ const Dashboard = () => {
                   >
                     <div>
                       <p className="font-semibold">${Number(inv.amount).toLocaleString()}</p>
+                      {inv.profit_amount > 0 && (
+                        <p className="text-sm text-green-500">
+                          +${Number(inv.profit_amount).toLocaleString()} profit
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         {new Date(inv.created_at).toLocaleDateString()}
                       </p>
