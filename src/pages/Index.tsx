@@ -3,6 +3,7 @@ import Metrics from "@/components/Metrics";
 import Vision from "@/components/Vision";
 import Innovations from "@/components/Innovations";
 import Investment from "@/components/Investment";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
       <Vision />
       <Innovations />
       <Investment />
+      <WhatsAppButton />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/tesla-hero.jpg";
 
 const Hero = () => {
@@ -36,13 +37,17 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="hero" size="lg" className="group">
-              Start Investing
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="hero-outline" size="lg">
-              View Performance
-            </Button>
+            <Link to="/auth">
+              <Button variant="hero" size="lg" className="group">
+                Start Investing
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button variant="hero-outline" size="lg">
+                View Portfolio
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
