@@ -222,12 +222,11 @@ const Admin = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Profit:</span>
                       <Input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         value={inv.profit_amount}
                         onChange={(e) => handleProfitChange(inv.id, e.target.value)}
-                        className="w-28 bg-background/50"
-                        min="0"
-                        step="0.01"
+                        className="w-28 bg-background/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                     
