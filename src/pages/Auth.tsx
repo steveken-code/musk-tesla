@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Zap, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LanguageSelector from '@/components/LanguageSelector';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +17,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,12 +68,16 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-gradient-hero opacity-50" />
       
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSelector />
+      </div>
+      
       <Link 
         to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-20"
       >
         <ArrowLeft className="w-5 h-5" />
-        Back to Home
+        {t('learnMore')}
       </Link>
 
       <div className="relative z-10 w-full max-w-md">
@@ -83,16 +90,16 @@ const Auth = () => {
           </div>
 
           <h2 className="text-2xl font-bold text-center mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? t('welcomeBack') : t('createAccount')}
           </h2>
           <p className="text-muted-foreground text-center mb-6">
-            {isLogin ? 'Sign in to access your portfolio' : 'Start your investment journey today'}
+            {isLogin ? t('signIn') : t('signUp')}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t('fullName')}</Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -106,7 +113,7 @@ const Auth = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -119,7 +126,7 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -137,7 +144,7 @@ const Auth = () => {
               className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
               disabled={loading}
             >
-              {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+              {loading ? t('processingText') : isLogin ? t('signIn') : t('createAccount')}
             </Button>
           </form>
 
