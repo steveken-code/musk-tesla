@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, Clock, DollarSign, TrendingUp } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, Clock, DollarSign, TrendingUp, Globe } from 'lucide-react';
+import LanguageSelector from '@/components/LanguageSelector';
 import teslaLogo from '@/assets/tesla-logo.png';
 
 interface Investment {
@@ -23,6 +25,7 @@ interface Investment {
 
 const Admin = () => {
   const { user, signOut, loading: authLoading } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,13 +162,26 @@ const Admin = () => {
             <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
             <span className="text-xl font-bold text-tesla-red">Admin Panel</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Admin Language Control - switches app-wide language */}
+            <div className="flex items-center gap-2 bg-background/50 px-2 py-1 rounded-lg border border-border">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'ru')}
+                className="bg-transparent text-sm border-none focus:outline-none cursor-pointer"
+              >
+                <option value="en">English</option>
+                <option value="ru">Русский</option>
+              </select>
+            </div>
+            <LanguageSelector />
             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
               Dashboard
             </Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              {t('signOut')}
             </Button>
           </div>
         </div>
