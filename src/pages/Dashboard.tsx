@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,10 @@ import {
   CheckCircle, XCircle, Loader2, Shield
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import LanguageSelector from '@/components/LanguageSelector';
+import TeslaChart from '@/components/TeslaChart';
+import InvestmentChart from '@/components/InvestmentChart';
+import PaymentDetails from '@/components/PaymentDetails';
 import teslaLogo from '@/assets/tesla-logo.png';
 
 interface Investment {
@@ -26,8 +31,12 @@ interface Profile {
   email: string | null;
 }
 
+// Exchange rate USD to RUB (approximate)
+const USD_TO_RUB = 96.5;
+
 const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -35,6 +44,10 @@ const Dashboard = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const previousProfitsRef = useRef<Record<string, number>>({});
+
+  // Currency conversion
+  const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
 
   useEffect(() => {
     if (user) {
@@ -61,8 +74,45 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       fetchData();
+      
+      // Subscribe to real-time updates for profit notifications
+      const channel = supabase
+        .channel('investments-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'investments',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const updated = payload.new as Investment;
+            const previousProfit = previousProfitsRef.current[updated.id] || 0;
+            
+            if (updated.profit_amount > previousProfit) {
+              const profitDiff = updated.profit_amount - previousProfit;
+              toast.success(t('profitNotification'), {
+                description: `${t('profitMessage')} +$${profitDiff.toLocaleString()}!`,
+              });
+            }
+            
+            // Update the investments list
+            setInvestments(prev => 
+              prev.map(inv => inv.id === updated.id ? updated : inv)
+            );
+            
+            // Update the previous profits reference
+            previousProfitsRef.current[updated.id] = updated.profit_amount;
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-  }, [user]);
+  }, [user, t]);
 
   const fetchData = async () => {
     try {
@@ -79,7 +129,13 @@ const Dashboard = () => {
           .maybeSingle()
       ]);
 
-      if (investmentsRes.data) setInvestments(investmentsRes.data);
+      if (investmentsRes.data) {
+        setInvestments(investmentsRes.data);
+        // Initialize previous profits reference
+        investmentsRes.data.forEach(inv => {
+          previousProfitsRef.current[inv.id] = inv.profit_amount;
+        });
+      }
       if (profileRes.data) setProfile(profileRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -93,7 +149,7 @@ const Dashboard = () => {
     const amount = parseFloat(investAmount);
     
     if (isNaN(amount) || amount < 100) {
-      toast.error('Minimum investment is $100');
+      toast.error(t('minInvestment'));
       return;
     }
 
@@ -105,7 +161,7 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      toast.success('Investment request submitted! Our team will contact you shortly.');
+      toast.success(t('investmentSubmitted'));
       setInvestAmount('');
       fetchData();
     } catch (error: any) {
@@ -158,22 +214,23 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
             <span className="text-xl font-bold bg-gradient-to-r from-tesla-red to-electric-blue bg-clip-text text-transparent">
-              Invest
+              {t('invest')}
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground hidden sm:block">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="text-muted-foreground hidden sm:block text-sm">
               {profile?.full_name || user?.email}
             </span>
+            <LanguageSelector />
             {isAdmin && (
               <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
                 <Shield className="w-4 h-4 mr-2" />
-                Admin
+                <span className="hidden sm:inline">{t('admin')}</span>
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              <LogOut className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t('signOut')}</span>
             </Button>
           </div>
         </div>
@@ -181,40 +238,46 @@ const Dashboard = () => {
 
       <main className="relative z-10 container mx-auto px-4 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="w-5 h-5 text-tesla-red" />
-              <span className="text-muted-foreground">Total Invested</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
+              <span className="text-muted-foreground text-xs sm:text-sm">{t('totalInvested')}</span>
             </div>
-            <p className="text-3xl font-bold">${totalInvested.toLocaleString()}</p>
+            <p className="text-xl sm:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              <span className="text-muted-foreground">Total Profit</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+              <span className="text-muted-foreground text-xs sm:text-sm">{t('totalProfit')}</span>
             </div>
-            <p className="text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+            <p className="text-xl sm:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-yellow-500" />
-              <span className="text-muted-foreground">Pending</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <span className="text-muted-foreground text-xs sm:text-sm">{t('pending')}</span>
             </div>
-            <p className="text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
+            <p className="text-xl sm:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="w-5 h-5 text-electric-blue" />
-              <span className="text-muted-foreground">Active</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+              <span className="text-muted-foreground text-xs sm:text-sm">{t('active')}</span>
             </div>
-            <p className="text-3xl font-bold">
+            <p className="text-xl sm:text-3xl font-bold">
               {investments.filter(i => i.status === 'active').length}
             </p>
           </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <TeslaChart />
+          <InvestmentChart investments={investments} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -222,49 +285,64 @@ const Dashboard = () => {
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-tesla-red" />
-              Make New Investment
+              {t('makeNewInvestment')}
             </h2>
             <form onSubmit={handleInvest} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Investment Amount (USD)</Label>
+                <Label htmlFor="amount">{t('investmentAmount')}</Label>
                 <Input
                   id="amount"
-                  type="number"
-                  placeholder="Enter amount (min $100)"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder={t('enterAmount')}
                   value={investAmount}
-                  onChange={(e) => setInvestAmount(e.target.value)}
-                  className="bg-background/50 border-border"
-                  min="100"
-                  step="1"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, '');
+                    setInvestAmount(value);
+                  }}
+                  className="bg-background/50 border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   required
                 />
+                {investAmount && parseFloat(investAmount) >= 100 && (
+                  <div className="text-sm text-muted-foreground">
+                    {t('exchangeRate')} {USD_TO_RUB} ₽
+                  </div>
+                )}
               </div>
+              
+              {investAmount && parseFloat(investAmount) >= 100 && (
+                <PaymentDetails 
+                  amount={parseFloat(investAmount)} 
+                  rubAmount={rubAmount} 
+                />
+              )}
+              
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                disabled={submitting}
+                disabled={submitting || !investAmount || parseFloat(investAmount) < 100}
               >
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
+                    {t('processingText')}
                   </>
                 ) : (
-                  'Submit Investment Request'
+                  t('submitInvestment')
                 )}
               </Button>
               <p className="text-sm text-muted-foreground text-center">
-                Our team will contact you via WhatsApp to complete the investment
+                {t('contactViaWhatsapp')}
               </p>
             </form>
           </div>
 
           {/* Investment History */}
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Investment History</h2>
+            <h2 className="text-xl font-bold mb-4">{t('investmentHistory')}</h2>
             {investments.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
-                No investments yet. Start your journey today!
+                {t('noInvestments')}
               </p>
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -277,7 +355,7 @@ const Dashboard = () => {
                       <p className="font-semibold">${Number(inv.amount).toLocaleString()}</p>
                       {inv.profit_amount > 0 && (
                         <p className="text-sm text-green-500">
-                          +${Number(inv.profit_amount).toLocaleString()} profit
+                          +${Number(inv.profit_amount).toLocaleString()} {t('profit')}
                         </p>
                       )}
                       <p className="text-sm text-muted-foreground">
