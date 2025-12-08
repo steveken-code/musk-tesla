@@ -8,13 +8,13 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
+    --background: 220 20% 8%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 10%;
+    --card: 220 20% 12%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 10%;
+    --popover: 220 20% 12%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 72% 51%;
@@ -23,8 +23,8 @@ All colors MUST be HSL.
     --secondary: 210 100% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 65%;
 
     --accent: 210 100% 50%;
     --accent-foreground: 0 0% 100%;
@@ -32,34 +32,41 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
     --ring: 0 72% 51%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
     /* Tesla Investment Theme */
     --electric-blue: 210 100% 50%;
     --tesla-red: 0 72% 51%;
-    --metallic: 0 0% 60%;
-    --deep-black: 0 0% 7%;
-    --chrome: 0 0% 85%;
+    --metallic: 220 10% 60%;
+    --deep-black: 220 20% 8%;
+    --chrome: 220 10% 85%;
+    
+    /* Section backgrounds */
+    --section-dark: 220 20% 6%;
+    --section-light: 220 20% 14%;
+    --section-accent: 220 30% 10%;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 7%) 0%, hsl(0 0% 15%) 50%, hsl(210 100% 10%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 25% 12%) 50%, hsl(210 40% 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 12%) 0%, hsl(220 25% 16%) 100%);
     --gradient-accent: linear-gradient(90deg, hsl(0 72% 51%) 0%, hsl(210 100% 50%) 100%);
+    --gradient-section: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 25% 14%) 50%, hsl(220 20% 8%) 100%);
     
     /* Shadows */
     --glow-red: 0 0 40px hsl(0 72% 51% / 0.3);
     --glow-blue: 0 0 40px hsl(210 100% 50% / 0.3);
+    --glow-combined: 0 0 60px hsl(0 72% 51% / 0.2), 0 0 120px hsl(210 100% 50% / 0.1);
     
     /* Animations */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 0 0% 7%;
+    --background: 220 20% 8%;
     --foreground: 0 0% 98%;
   }
 }
@@ -71,5 +78,100 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Scroll animations */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Hover card effects */
+  .hover-card-glow {
+    transition: all 0.3s ease;
+  }
+  
+  .hover-card-glow:hover {
+    box-shadow: var(--glow-combined);
+    transform: translateY(-4px);
+  }
+  
+  /* Link underline animation */
+  .link-underline {
+    position: relative;
+  }
+  
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, hsl(var(--tesla-red)), hsl(var(--electric-blue)));
+    transition: width 0.3s ease;
+  }
+  
+  .link-underline:hover::after {
+    width: 100%;
+  }
+  
+  /* Glass effect */
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  
+  /* Section styling */
+  .section-gradient {
+    background: var(--gradient-section);
+  }
+  
+  .section-dark {
+    background: hsl(var(--section-dark));
+  }
+  
+  .section-light {
+    background: hsl(var(--section-light));
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-gradient-to-r from-tesla-red to-electric-blue bg-clip-text text-transparent;
+  }
+  
+  /* Glow effects */
+  .glow-red {
+    box-shadow: var(--glow-red);
+  }
+  
+  .glow-blue {
+    box-shadow: var(--glow-blue);
+  }
+  
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 }
