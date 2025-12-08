@@ -6,9 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, Clock, DollarSign, TrendingUp, Globe } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, Eye, EyeOff } from 'lucide-react';
 import LanguageSelector from '@/components/LanguageSelector';
 import teslaLogo from '@/assets/tesla-logo.png';
+
+const ADMIN_PASSCODE = '@Bombing??1';
 
 interface Investment {
   id: string;
@@ -29,47 +31,38 @@ const Admin = () => {
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passcode, setPasscode] = useState('');
+  const [showPasscode, setShowPasscode] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
+    // Check if already authenticated via localStorage
+    const savedAuth = localStorage.getItem('admin-authenticated');
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+      fetchInvestments();
+    } else {
+      setLoading(false);
     }
-  }, [user, authLoading, navigate]);
+  }, []);
 
-  useEffect(() => {
-    if (user) {
-      checkAdminAndFetch();
-    }
-  }, [user]);
-
-  const checkAdminAndFetch = async () => {
-    try {
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user!.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-
-      if (!roleData) {
-        toast.error('Access denied. Admin privileges required.');
-        navigate('/dashboard');
-        return;
-      }
-
-      setIsAdmin(true);
-      await fetchInvestments();
-    } catch (error) {
-      console.error('Error checking admin:', error);
-      navigate('/dashboard');
+  const handlePasscodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passcode === ADMIN_PASSCODE) {
+      setIsAuthenticated(true);
+      localStorage.setItem('admin-authenticated', 'true');
+      toast.success('Access granted!');
+      fetchInvestments();
+    } else {
+      toast.error(t('accessDenied'));
+      setPasscode('');
     }
   };
 
   const fetchInvestments = async () => {
     try {
+      setLoading(true);
       const { data: investmentsData } = await supabase
         .from('investments')
         .select('*')
@@ -126,8 +119,9 @@ const Admin = () => {
     ));
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    localStorage.removeItem('admin-authenticated');
+    setIsAuthenticated(false);
     navigate('/');
   };
 
@@ -141,15 +135,70 @@ const Admin = () => {
     return styles[status] || styles.pending;
   };
 
-  if (authLoading || loading) {
+  // Passcode Entry Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-hero opacity-50" />
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
+        
+        <div className="relative z-10 w-full max-w-md animate-fade-in">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-glow-red hover:shadow-glow-combined transition-shadow duration-500">
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <Lock className="w-10 h-10 text-tesla-red animate-pulse" />
+            </div>
+            
+            <h2 className="text-2xl font-bold text-center mb-2">{t('adminPasscode')}</h2>
+            <p className="text-muted-foreground text-center mb-6">{t('enterPasscode')}</p>
+            
+            <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+              <div className="relative">
+                <Input
+                  type={showPasscode ? 'text' : 'password'}
+                  placeholder="Enter passcode..."
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  className="bg-background/50 border-border pr-10 text-center text-lg tracking-wider"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPasscode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
+              >
+                Access Admin Panel
+              </Button>
+            </form>
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate('/')}
+                className="text-electric-blue hover:underline"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-tesla-red" />
       </div>
     );
   }
-
-  if (!isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -163,7 +212,6 @@ const Admin = () => {
             <span className="text-xl font-bold text-tesla-red">Admin Panel</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Admin Language Control - switches app-wide language */}
             <div className="flex items-center gap-2 bg-background/50 px-2 py-1 rounded-lg border border-border">
               <Globe className="w-4 h-4 text-muted-foreground" />
               <select
@@ -194,15 +242,16 @@ const Admin = () => {
         </h1>
 
         {investments.length === 0 ? (
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-8 text-center">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-8 text-center animate-fade-in">
             <p className="text-muted-foreground">No investments found.</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {investments.map((inv) => (
+            {investments.map((inv, index) => (
               <div
                 key={inv.id}
-                className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6"
+                className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6 hover:border-tesla-red/30 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex-1">

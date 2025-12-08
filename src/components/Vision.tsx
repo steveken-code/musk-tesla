@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Quote } from "lucide-react";
+import elonCeo from "@/assets/elon-ceo.jpeg";
 
 const Vision = () => {
   return (
-    <section className="py-32 relative overflow-hidden">
+    <section id="about" className="py-32 relative overflow-hidden bg-gradient-to-b from-muted/20 via-background to-muted/20">
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background"></div>
       
@@ -18,18 +19,33 @@ const Vision = () => {
             </p>
           </div>
 
-          <Card className="p-8 md:p-12 bg-gradient-card border-border/50 animate-slide-up">
-            <Quote className="w-12 h-12 text-accent mb-6" />
-            <blockquote className="text-2xl md:text-3xl font-light leading-relaxed text-foreground mb-8">
-              "The future we're building is one where sustainable transport isn't just an option—it's 
-              the only way forward. Every Tesla on the road is a step toward energy independence 
-              and a healthier planet."
-            </blockquote>
-            <div className="flex items-center gap-4">
-              <div className="h-1 w-20 bg-gradient-accent"></div>
-              <div>
-                <p className="font-bold text-lg">Elon Musk</p>
-                <p className="text-muted-foreground">CEO, Tesla & SpaceX</p>
+          <Card className="p-8 md:p-12 bg-gradient-card border-border/50 animate-slide-up hover:shadow-glow-combined transition-all duration-500 group">
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="relative flex-shrink-0">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-500">
+                  <img 
+                    src={elonCeo} 
+                    alt="Elon Musk" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-tesla-red rounded-full p-2">
+                  <Quote className="w-5 h-5 text-primary-foreground" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <blockquote className="text-xl md:text-2xl font-light leading-relaxed text-foreground mb-6 italic">
+                  "The future we're building is one where sustainable transport isn't just an option—it's 
+                  the only way forward. Every Tesla on the road is a step toward energy independence 
+                  and a healthier planet."
+                </blockquote>
+                <div className="flex items-center gap-4">
+                  <div className="h-1 w-20 bg-gradient-accent rounded-full"></div>
+                  <div>
+                    <p className="font-bold text-lg">Elon Musk</p>
+                    <p className="text-muted-foreground">CEO, Tesla & SpaceX</p>
+                  </div>
+                </div>
               </div>
             </div>
           </Card>
@@ -42,10 +58,10 @@ const Vision = () => {
             ].map((item, index) => (
               <Card 
                 key={index}
-                className="p-6 bg-card/50 backdrop-blur-sm border-border/30 hover:border-accent/50 transition-all duration-300 animate-slide-up"
+                className="p-6 bg-card/50 backdrop-blur-sm border-border/30 hover:border-accent/50 hover:shadow-glow-blue transition-all duration-300 animate-slide-up group hover:-translate-y-2"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-tesla-red transition-colors">{item.title}</h3>
                 <p className="text-muted-foreground">{item.desc}</p>
               </Card>
             ))}
