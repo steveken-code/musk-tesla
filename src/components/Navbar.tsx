@@ -65,7 +65,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side */}
+          {/* Right Side - NO Admin link visible */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageSelector />
             <Link to="/auth">
@@ -89,7 +89,7 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - NO Admin link visible */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-500 ${
             isMobileMenuOpen ? 'max-h-96 pb-4' : 'max-h-0'

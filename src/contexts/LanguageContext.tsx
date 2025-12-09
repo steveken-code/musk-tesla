@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Language = 'en' | 'ru';
+type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko';
 
 interface LanguageContextType {
   language: Language;
@@ -27,6 +27,10 @@ const translations: Record<Language, Record<string, string>> = {
     'totalProfit': 'Total Profit',
     'pending': 'Pending',
     'active': 'Active',
+    'marketCap': 'Market Cap',
+    'stockPrice': 'Stock Price',
+    'globalDeliveries': 'Global Deliveries',
+    'superchargers': 'Superchargers',
     
     // Investment Form
     'makeNewInvestment': 'Make New Investment',
@@ -37,6 +41,7 @@ const translations: Record<Language, Record<string, string>> = {
     'contactViaWhatsapp': 'Our team will contact you via WhatsApp to complete the investment',
     'minInvestment': 'Minimum investment is $100',
     'investmentSubmitted': 'Investment request submitted! Our team will contact you shortly.',
+    'loadingPayment': 'Loading payment details...',
     
     // Payment Details
     'paymentDetails': 'Payment Details',
@@ -82,14 +87,22 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Hero
     'heroTitle': 'Invest in the Future',
-    'heroSubtitle': 'Join thousands of investors building wealth with Tesla',
+    'heroSubtitle': 'Join thousands of investors building wealth with Tesla. The electric revolution is here.',
     'getStarted': 'Get Started',
     'learnMore': 'Learn More',
     
     // Language
     'language': 'Language',
     'english': 'English',
-    'russian': 'Russian',
+    'russian': 'Русский',
+    'french': 'Français',
+    'german': 'Deutsch',
+    'spanish': 'Español',
+    'chinese': '中文',
+    'arabic': 'العربية',
+    'portuguese': 'Português',
+    'japanese': '日本語',
+    'korean': '한국어',
     
     // Footer
     'footerDescription': 'Tesla Invest is a premier investment platform specializing in electric vehicle and sustainable energy stocks. We provide secure, transparent, and profitable investment opportunities.',
@@ -138,6 +151,30 @@ const translations: Record<Language, Record<string, string>> = {
     'adminPasscode': 'Enter Admin Passcode',
     'accessDenied': 'Access Denied',
     'enterPasscode': 'Enter passcode to access admin panel',
+    'defaultLanguage': 'Default Language',
+    'setDefaultLanguage': 'Set Default Language',
+    
+    // Vision Section
+    'visionTitle': 'The Vision',
+    'visionSubtitle': 'Why Elon Musk is betting everything on sustainable energy',
+    'sustainableEnergy': 'Sustainable Energy',
+    'sustainableEnergyDesc': 'Accelerating the world\'s transition to renewable energy',
+    'autonomousFuture': 'Autonomous Future',
+    'autonomousFutureDesc': 'Full self-driving technology changing transportation',
+    'globalScale': 'Global Scale',
+    'globalScaleDesc': 'Manufacturing excellence with Gigafactories worldwide',
+    
+    // Investment Reasons
+    'whyInvest': 'Why Invest in Tesla?',
+    'sixReasons': 'Six compelling reasons to consider Tesla for your portfolio',
+    'reason1': 'Market leader in EV industry with 20%+ market share',
+    'reason2': 'Vertically integrated manufacturing reducing costs',
+    'reason3': 'Growing energy storage and solar business',
+    'reason4': 'Expanding AI and autonomous driving capabilities',
+    'reason5': 'Strong brand loyalty and customer satisfaction',
+    'reason6': 'Global expansion with new Gigafactories',
+    'getStartedToday': 'Get Started Today',
+    'downloadProspectus': 'Download Prospectus',
   },
   ru: {
     // Navigation
@@ -157,6 +194,10 @@ const translations: Record<Language, Record<string, string>> = {
     'totalProfit': 'Общая прибыль',
     'pending': 'В ожидании',
     'active': 'Активные',
+    'marketCap': 'Капитализация',
+    'stockPrice': 'Цена акций',
+    'globalDeliveries': 'Поставки',
+    'superchargers': 'Суперчарджеры',
     
     // Investment Form
     'makeNewInvestment': 'Новая инвестиция',
@@ -167,6 +208,7 @@ const translations: Record<Language, Record<string, string>> = {
     'contactViaWhatsapp': 'Наша команда свяжется с вами через WhatsApp для завершения инвестиции',
     'minInvestment': 'Минимальная инвестиция $100',
     'investmentSubmitted': 'Заявка на инвестицию отправлена! Наша команда скоро свяжется с вами.',
+    'loadingPayment': 'Загрузка платежных реквизитов...',
     
     // Payment Details
     'paymentDetails': 'Платежные реквизиты',
@@ -212,14 +254,22 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Hero
     'heroTitle': 'Инвестируйте в будущее',
-    'heroSubtitle': 'Присоединяйтесь к тысячам инвесторов, создающих богатство с Tesla',
+    'heroSubtitle': 'Присоединяйтесь к тысячам инвесторов, создающих богатство с Tesla. Электрическая революция уже здесь.',
     'getStarted': 'Начать',
     'learnMore': 'Узнать больше',
     
     // Language
     'language': 'Язык',
-    'english': 'Английский',
+    'english': 'English',
     'russian': 'Русский',
+    'french': 'Français',
+    'german': 'Deutsch',
+    'spanish': 'Español',
+    'chinese': '中文',
+    'arabic': 'العربية',
+    'portuguese': 'Português',
+    'japanese': '日本語',
+    'korean': '한국어',
     
     // Footer
     'footerDescription': 'Tesla Invest — ведущая инвестиционная платформа, специализирующаяся на акциях электромобилей и устойчивой энергетики. Мы обеспечиваем безопасные, прозрачные и прибыльные инвестиционные возможности.',
@@ -268,6 +318,135 @@ const translations: Record<Language, Record<string, string>> = {
     'adminPasscode': 'Введите пароль администратора',
     'accessDenied': 'Доступ запрещен',
     'enterPasscode': 'Введите пароль для доступа к панели администратора',
+    'defaultLanguage': 'Язык по умолчанию',
+    'setDefaultLanguage': 'Установить язык по умолчанию',
+    
+    // Vision Section
+    'visionTitle': 'Видение',
+    'visionSubtitle': 'Почему Илон Маск ставит всё на устойчивую энергетику',
+    'sustainableEnergy': 'Устойчивая энергия',
+    'sustainableEnergyDesc': 'Ускорение перехода мира на возобновляемую энергию',
+    'autonomousFuture': 'Автономное будущее',
+    'autonomousFutureDesc': 'Технология автопилота меняет транспорт',
+    'globalScale': 'Глобальный масштаб',
+    'globalScaleDesc': 'Производственное совершенство с Гигафабриками по всему миру',
+    
+    // Investment Reasons
+    'whyInvest': 'Почему инвестировать в Tesla?',
+    'sixReasons': 'Шесть веских причин рассмотреть Tesla для вашего портфеля',
+    'reason1': 'Лидер рынка EV с долей более 20%',
+    'reason2': 'Вертикально интегрированное производство снижает затраты',
+    'reason3': 'Растущий бизнес хранения энергии и солнечной энергетики',
+    'reason4': 'Расширение возможностей ИИ и автономного вождения',
+    'reason5': 'Сильная лояльность бренда и удовлетворенность клиентов',
+    'reason6': 'Глобальная экспансия с новыми Гигафабриками',
+    'getStartedToday': 'Начать сегодня',
+    'downloadProspectus': 'Скачать проспект',
+  },
+  fr: {
+    'home': 'Accueil', 'about': 'À propos', 'investments': 'Investissements', 'security': 'Sécurité', 'dashboard': 'Tableau de bord',
+    'invest': 'Investir', 'signOut': 'Déconnexion', 'admin': 'Admin', 'totalInvested': 'Total investi', 'totalProfit': 'Profit total',
+    'pending': 'En attente', 'active': 'Actif', 'marketCap': 'Cap. boursière', 'stockPrice': 'Prix action', 'globalDeliveries': 'Livraisons', 'superchargers': 'Superchargeurs',
+    'makeNewInvestment': 'Nouvel investissement', 'investmentAmount': 'Montant (USD)', 'enterAmount': 'Entrez le montant (min 100$)',
+    'submitInvestment': 'Soumettre', 'processingText': 'Traitement...', 'loadingPayment': 'Chargement...',
+    'paymentDetails': 'Détails de paiement', 'bankName': 'Nom de la banque', 'accountHolder': 'Titulaire', 'accountNumber': 'Numéro de compte',
+    'signIn': 'Connexion', 'signUp': 'Inscription', 'email': 'Email', 'password': 'Mot de passe', 'fullName': 'Nom complet',
+    'heroTitle': 'Investissez dans le futur', 'heroSubtitle': 'Rejoignez des milliers d\'investisseurs', 'getStarted': 'Commencer',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': 'Depuis le début', 'welcomeBack': 'Bon retour', 'createAccount': 'Créer un compte',
+    'forgotPassword': 'Mot de passe oublié?', 'backToLogin': 'Retour', 'adminPasscode': 'Code admin', 'accessDenied': 'Accès refusé',
+  },
+  de: {
+    'home': 'Startseite', 'about': 'Über uns', 'investments': 'Investitionen', 'security': 'Sicherheit', 'dashboard': 'Dashboard',
+    'invest': 'Investieren', 'signOut': 'Abmelden', 'admin': 'Admin', 'totalInvested': 'Gesamt investiert', 'totalProfit': 'Gesamtgewinn',
+    'pending': 'Ausstehend', 'active': 'Aktiv', 'marketCap': 'Marktkapital', 'stockPrice': 'Aktienkurs', 'globalDeliveries': 'Lieferungen', 'superchargers': 'Supercharger',
+    'makeNewInvestment': 'Neue Investition', 'investmentAmount': 'Betrag (USD)', 'enterAmount': 'Betrag eingeben (min 100$)',
+    'submitInvestment': 'Einreichen', 'processingText': 'Verarbeitung...', 'loadingPayment': 'Laden...',
+    'signIn': 'Anmelden', 'signUp': 'Registrieren', 'email': 'E-Mail', 'password': 'Passwort', 'fullName': 'Vollständiger Name',
+    'heroTitle': 'In die Zukunft investieren', 'heroSubtitle': 'Schließen Sie sich Tausenden von Investoren an', 'getStarted': 'Starten',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': 'Seit Jahresbeginn', 'welcomeBack': 'Willkommen zurück', 'createAccount': 'Konto erstellen',
+    'forgotPassword': 'Passwort vergessen?', 'backToLogin': 'Zurück', 'adminPasscode': 'Admin-Code', 'accessDenied': 'Zugriff verweigert',
+  },
+  es: {
+    'home': 'Inicio', 'about': 'Acerca de', 'investments': 'Inversiones', 'security': 'Seguridad', 'dashboard': 'Panel',
+    'invest': 'Invertir', 'signOut': 'Cerrar sesión', 'admin': 'Admin', 'totalInvested': 'Total invertido', 'totalProfit': 'Ganancia total',
+    'pending': 'Pendiente', 'active': 'Activo', 'marketCap': 'Cap. mercado', 'stockPrice': 'Precio acción', 'globalDeliveries': 'Entregas', 'superchargers': 'Supercargadores',
+    'makeNewInvestment': 'Nueva inversión', 'investmentAmount': 'Monto (USD)', 'enterAmount': 'Ingrese monto (mín 100$)',
+    'submitInvestment': 'Enviar', 'processingText': 'Procesando...', 'loadingPayment': 'Cargando...',
+    'signIn': 'Iniciar sesión', 'signUp': 'Registrarse', 'email': 'Correo', 'password': 'Contraseña', 'fullName': 'Nombre completo',
+    'heroTitle': 'Invierte en el futuro', 'heroSubtitle': 'Únete a miles de inversores', 'getStarted': 'Comenzar',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': 'Año hasta la fecha', 'welcomeBack': 'Bienvenido de nuevo', 'createAccount': 'Crear cuenta',
+    'forgotPassword': '¿Olvidaste tu contraseña?', 'backToLogin': 'Volver', 'adminPasscode': 'Código admin', 'accessDenied': 'Acceso denegado',
+  },
+  zh: {
+    'home': '首页', 'about': '关于', 'investments': '投资', 'security': '安全', 'dashboard': '仪表板',
+    'invest': '投资', 'signOut': '登出', 'admin': '管理', 'totalInvested': '总投资', 'totalProfit': '总利润',
+    'pending': '待处理', 'active': '活跃', 'marketCap': '市值', 'stockPrice': '股价', 'globalDeliveries': '交付量', 'superchargers': '超级充电站',
+    'makeNewInvestment': '新投资', 'investmentAmount': '金额 (USD)', 'enterAmount': '输入金额 (最低100$)',
+    'submitInvestment': '提交', 'processingText': '处理中...', 'loadingPayment': '加载中...',
+    'signIn': '登录', 'signUp': '注册', 'email': '邮箱', 'password': '密码', 'fullName': '全名',
+    'heroTitle': '投资未来', 'heroSubtitle': '加入成千上万的投资者', 'getStarted': '开始',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': '年初至今', 'welcomeBack': '欢迎回来', 'createAccount': '创建账户',
+    'forgotPassword': '忘记密码?', 'backToLogin': '返回', 'adminPasscode': '管理员密码', 'accessDenied': '访问被拒绝',
+  },
+  ar: {
+    'home': 'الرئيسية', 'about': 'حول', 'investments': 'استثمارات', 'security': 'أمان', 'dashboard': 'لوحة القيادة',
+    'invest': 'استثمار', 'signOut': 'خروج', 'admin': 'إدارة', 'totalInvested': 'إجمالي الاستثمار', 'totalProfit': 'إجمالي الربح',
+    'pending': 'معلق', 'active': 'نشط', 'marketCap': 'القيمة السوقية', 'stockPrice': 'سعر السهم', 'globalDeliveries': 'التسليمات', 'superchargers': 'الشواحن',
+    'makeNewInvestment': 'استثمار جديد', 'investmentAmount': 'المبلغ (USD)', 'enterAmount': 'أدخل المبلغ (حد أدنى 100$)',
+    'submitInvestment': 'إرسال', 'processingText': 'جاري المعالجة...', 'loadingPayment': 'جاري التحميل...',
+    'signIn': 'تسجيل الدخول', 'signUp': 'إنشاء حساب', 'email': 'البريد', 'password': 'كلمة المرور', 'fullName': 'الاسم الكامل',
+    'heroTitle': 'استثمر في المستقبل', 'heroSubtitle': 'انضم لآلاف المستثمرين', 'getStarted': 'ابدأ',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': 'منذ بداية العام', 'welcomeBack': 'مرحباً بعودتك', 'createAccount': 'إنشاء حساب',
+    'forgotPassword': 'نسيت كلمة المرور؟', 'backToLogin': 'رجوع', 'adminPasscode': 'رمز الإدارة', 'accessDenied': 'تم رفض الوصول',
+  },
+  pt: {
+    'home': 'Início', 'about': 'Sobre', 'investments': 'Investimentos', 'security': 'Segurança', 'dashboard': 'Painel',
+    'invest': 'Investir', 'signOut': 'Sair', 'admin': 'Admin', 'totalInvested': 'Total investido', 'totalProfit': 'Lucro total',
+    'pending': 'Pendente', 'active': 'Ativo', 'marketCap': 'Cap. mercado', 'stockPrice': 'Preço ação', 'globalDeliveries': 'Entregas', 'superchargers': 'Supercarregadores',
+    'makeNewInvestment': 'Novo investimento', 'investmentAmount': 'Valor (USD)', 'enterAmount': 'Digite o valor (mín 100$)',
+    'submitInvestment': 'Enviar', 'processingText': 'Processando...', 'loadingPayment': 'Carregando...',
+    'signIn': 'Entrar', 'signUp': 'Cadastrar', 'email': 'Email', 'password': 'Senha', 'fullName': 'Nome completo',
+    'heroTitle': 'Invista no futuro', 'heroSubtitle': 'Junte-se a milhares de investidores', 'getStarted': 'Começar',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': 'No ano', 'welcomeBack': 'Bem-vindo de volta', 'createAccount': 'Criar conta',
+    'forgotPassword': 'Esqueceu a senha?', 'backToLogin': 'Voltar', 'adminPasscode': 'Código admin', 'accessDenied': 'Acesso negado',
+  },
+  ja: {
+    'home': 'ホーム', 'about': '概要', 'investments': '投資', 'security': 'セキュリティ', 'dashboard': 'ダッシュボード',
+    'invest': '投資', 'signOut': 'ログアウト', 'admin': '管理', 'totalInvested': '総投資額', 'totalProfit': '総利益',
+    'pending': '保留中', 'active': 'アクティブ', 'marketCap': '時価総額', 'stockPrice': '株価', 'globalDeliveries': '配送', 'superchargers': 'スーパーチャージャー',
+    'makeNewInvestment': '新規投資', 'investmentAmount': '金額 (USD)', 'enterAmount': '金額を入力 (最低100$)',
+    'submitInvestment': '送信', 'processingText': '処理中...', 'loadingPayment': '読み込み中...',
+    'signIn': 'ログイン', 'signUp': '登録', 'email': 'メール', 'password': 'パスワード', 'fullName': '氏名',
+    'heroTitle': '未来に投資', 'heroSubtitle': '何千人もの投資家に参加', 'getStarted': '開始',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': '年初来', 'welcomeBack': 'おかえりなさい', 'createAccount': 'アカウント作成',
+    'forgotPassword': 'パスワードを忘れた?', 'backToLogin': '戻る', 'adminPasscode': '管理者コード', 'accessDenied': 'アクセス拒否',
+  },
+  ko: {
+    'home': '홈', 'about': '소개', 'investments': '투자', 'security': '보안', 'dashboard': '대시보드',
+    'invest': '투자', 'signOut': '로그아웃', 'admin': '관리', 'totalInvested': '총 투자액', 'totalProfit': '총 수익',
+    'pending': '대기 중', 'active': '활성', 'marketCap': '시가총액', 'stockPrice': '주가', 'globalDeliveries': '배송', 'superchargers': '슈퍼차저',
+    'makeNewInvestment': '새 투자', 'investmentAmount': '금액 (USD)', 'enterAmount': '금액 입력 (최소 100$)',
+    'submitInvestment': '제출', 'processingText': '처리 중...', 'loadingPayment': '로딩 중...',
+    'signIn': '로그인', 'signUp': '가입', 'email': '이메일', 'password': '비밀번호', 'fullName': '이름',
+    'heroTitle': '미래에 투자', 'heroSubtitle': '수천 명의 투자자와 함께', 'getStarted': '시작',
+    'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch', 'spanish': 'Español',
+    'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語', 'korean': '한국어',
+    'yearToDate': '연초 대비', 'welcomeBack': '다시 오신 것을 환영합니다', 'createAccount': '계정 만들기',
+    'forgotPassword': '비밀번호 찾기', 'backToLogin': '돌아가기', 'adminPasscode': '관리자 코드', 'accessDenied': '접근 거부',
   },
 };
 
@@ -276,7 +455,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('app-language');
-    return (saved as Language) || 'en';
+    return (saved as Language) || 'ru'; // Default to Russian
   });
 
   useEffect(() => {
@@ -284,7 +463,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [language]);
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language]?.[key] || translations['en']?.[key] || key;
   };
 
   return (
