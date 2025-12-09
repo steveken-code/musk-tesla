@@ -8,30 +8,42 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
 
+const languages = [
+  { code: 'en', label: '🇺🇸 English', name: 'english' },
+  { code: 'ru', label: '🇷🇺 Русский', name: 'russian' },
+  { code: 'fr', label: '🇫🇷 Français', name: 'french' },
+  { code: 'de', label: '🇩🇪 Deutsch', name: 'german' },
+  { code: 'es', label: '🇪🇸 Español', name: 'spanish' },
+  { code: 'zh', label: '🇨🇳 中文', name: 'chinese' },
+  { code: 'ar', label: '🇸🇦 العربية', name: 'arabic' },
+  { code: 'pt', label: '🇧🇷 Português', name: 'portuguese' },
+  { code: 'ja', label: '🇯🇵 日本語', name: 'japanese' },
+  { code: 'ko', label: '🇰🇷 한국어', name: 'korean' },
+];
+
 const LanguageSelector = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
+  
+  const currentLang = languages.find(l => l.code === language);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2 min-w-[80px]">
           <Globe className="w-4 h-4" />
-          <span className="hidden sm:inline">{language === 'en' ? 'EN' : 'RU'}</span>
+          <span className="hidden sm:inline">{currentLang?.code.toUpperCase() || 'RU'}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-card border-border z-50">
-        <DropdownMenuItem 
-          onClick={() => setLanguage('en')}
-          className={language === 'en' ? 'bg-primary/10' : ''}
-        >
-          🇺🇸 {t('english')}
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => setLanguage('ru')}
-          className={language === 'ru' ? 'bg-primary/10' : ''}
-        >
-          🇷🇺 {t('russian')}
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="bg-card border-border z-50 max-h-80 overflow-y-auto">
+        {languages.map((lang) => (
+          <DropdownMenuItem 
+            key={lang.code}
+            onClick={() => setLanguage(lang.code as any)}
+            className={language === lang.code ? 'bg-primary/10' : ''}
+          >
+            {lang.label}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

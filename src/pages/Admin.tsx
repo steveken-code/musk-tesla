@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, Eye, EyeOff } from 'lucide-react';
-import LanguageSelector from '@/components/LanguageSelector';
 import teslaLogo from '@/assets/tesla-logo.png';
 
 const ADMIN_PASSCODE = '@Bombing??1';
@@ -25,8 +23,20 @@ interface Investment {
   };
 }
 
+const languages = [
+  { code: 'en', label: 'English' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'es', label: 'Español' },
+  { code: 'zh', label: '中文' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'pt', label: 'Português' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
+];
+
 const Admin = () => {
-  const { user, signOut, loading: authLoading } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -37,7 +47,6 @@ const Admin = () => {
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if already authenticated via localStorage
     const savedAuth = localStorage.getItem('admin-authenticated');
     if (savedAuth === 'true') {
       setIsAuthenticated(true);
@@ -125,6 +134,12 @@ const Admin = () => {
     navigate('/');
   };
 
+  const handleSetDefaultLanguage = (langCode: string) => {
+    setLanguage(langCode as any);
+    localStorage.setItem('app-language', langCode);
+    toast.success(`Default language set to ${languages.find(l => l.code === langCode)?.label}`);
+  };
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       active: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -138,19 +153,19 @@ const Admin = () => {
   // Passcode Entry Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 overflow-x-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-50" />
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
         
         <div className="relative z-10 w-full max-w-md animate-fade-in">
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-glow-red hover:shadow-glow-combined transition-shadow duration-500">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6 md:p-8 shadow-glow-red hover:shadow-glow-combined transition-shadow duration-500">
             <div className="flex items-center justify-center gap-2 mb-8">
               <Lock className="w-10 h-10 text-tesla-red animate-pulse" />
             </div>
             
-            <h2 className="text-2xl font-bold text-center mb-2">{t('adminPasscode')}</h2>
-            <p className="text-muted-foreground text-center mb-6">{t('enterPasscode')}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-center mb-2">{t('adminPasscode')}</h2>
+            <p className="text-muted-foreground text-center mb-6 text-sm">{t('enterPasscode')}</p>
             
             <form onSubmit={handlePasscodeSubmit} className="space-y-4">
               <div className="relative">
@@ -181,7 +196,7 @@ const Admin = () => {
             <div className="mt-6 text-center">
               <button
                 onClick={() => navigate('/')}
-                className="text-electric-blue hover:underline"
+                className="text-electric-blue hover:underline text-sm"
               >
                 Back to Home
               </button>
@@ -201,7 +216,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <div className="absolute inset-0 bg-gradient-hero opacity-30" />
       
       {/* Header */}
@@ -209,34 +224,43 @@ const Admin = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
-            <span className="text-xl font-bold text-tesla-red">Admin Panel</span>
+            <span className="text-lg md:text-xl font-bold text-tesla-red">Admin Panel</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 bg-background/50 px-2 py-1 rounded-lg border border-border">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'ru')}
-                className="bg-transparent text-sm border-none focus:outline-none cursor-pointer"
-              >
-                <option value="en">English</option>
-                <option value="ru">Русский</option>
-              </select>
-            </div>
-            <LanguageSelector />
             <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
               Dashboard
             </Button>
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
-              {t('signOut')}
+              <span className="hidden sm:inline">{t('signOut')}</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+      <main className="relative z-10 container mx-auto px-4 py-8 max-w-full">
+        {/* Language Control Section */}
+        <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-electric-blue" />
+            {t('defaultLanguage') || 'Default Language Control'}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            {languages.map((lang) => (
+              <Button
+                key={lang.code}
+                variant={language === lang.code ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSetDefaultLanguage(lang.code)}
+                className={language === lang.code ? 'bg-tesla-red hover:bg-tesla-red/90' : ''}
+              >
+                {lang.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <h1 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-2">
           <DollarSign className="w-6 h-6 text-tesla-red" />
           Investment Management
         </h1>
@@ -250,35 +274,35 @@ const Admin = () => {
             {investments.map((inv, index) => (
               <div
                 key={inv.id}
-                className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6 hover:border-tesla-red/30 transition-all duration-300 animate-fade-in"
+                className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 md:p-6 hover:border-tesla-red/30 transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(inv.status)}`}>
                         {inv.status.toUpperCase()}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {new Date(inv.created_at).toLocaleString()}
                       </span>
                     </div>
-                    <p className="font-medium">
+                    <p className="font-medium truncate">
                       {inv.profiles?.full_name || inv.profiles?.email || 'Unknown User'}
                     </p>
-                    <p className="text-sm text-muted-foreground">{inv.profiles?.email}</p>
-                    <div className="flex items-center gap-4 mt-2">
+                    <p className="text-sm text-muted-foreground truncate">{inv.profiles?.email}</p>
+                    <div className="flex flex-wrap items-center gap-4 mt-2">
                       <div className="flex items-center gap-1">
                         <DollarSign className="w-4 h-4 text-tesla-red" />
                         <span className="font-bold">${Number(inv.amount).toLocaleString()}</span>
-                        <span className="text-sm text-muted-foreground">invested</span>
+                        <span className="text-xs text-muted-foreground">invested</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <TrendingUp className="w-4 h-4 text-green-500" />
                         <span className="font-bold text-green-500">
                           ${Number(inv.profit_amount).toLocaleString()}
                         </span>
-                        <span className="text-sm text-muted-foreground">profit</span>
+                        <span className="text-xs text-muted-foreground">profit</span>
                       </div>
                     </div>
                   </div>
@@ -291,11 +315,11 @@ const Admin = () => {
                         inputMode="decimal"
                         value={inv.profit_amount}
                         onChange={(e) => handleProfitChange(inv.id, e.target.value)}
-                        className="w-28 bg-background/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-24 md:w-28 bg-background/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {inv.status === 'pending' && (
                         <Button
                           size="sm"
@@ -322,7 +346,7 @@ const Admin = () => {
                           {updating === inv.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            'Update Profit'
+                            'Update'
                           )}
                         </Button>
                       )}
