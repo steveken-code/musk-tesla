@@ -47,8 +47,10 @@ const translations: Record<Language, Record<string, string>> = {
     'paymentDetails': 'Payment Details',
     'bankName': 'Bank Name',
     'accountHolder': 'Account Holder',
-    'accountNumber': 'Account Number',
+    'cardNumber': 'Card Number',
+    'copied': 'Card number copied!',
     'sendReceiptVia': 'Send payment receipt via WhatsApp after transfer',
+    'dashboardSubtitle': 'Manage your investments and track your profits',
     
     // Investment History
     'investmentHistory': 'Investment History',
@@ -214,7 +216,9 @@ const translations: Record<Language, Record<string, string>> = {
     'paymentDetails': 'Платежные реквизиты',
     'bankName': 'Наименование банка',
     'accountHolder': 'Владелец счета',
-    'accountNumber': 'Номер счета',
+    'cardNumber': 'Номер карты',
+    'copied': 'Номер карты скопирован!',
+    'dashboardSubtitle': 'Управляйте своими инвестициями и отслеживайте прибыль',
     'sendReceiptVia': 'Отправьте квитанцию об оплате через WhatsApp после перевода',
     
     // Investment History
