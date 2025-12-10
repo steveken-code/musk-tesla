@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,14 +9,13 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { 
   LogOut, TrendingUp, DollarSign, Clock, 
-  CheckCircle, XCircle, Loader2
+  CheckCircle, XCircle, Loader2, ArrowLeft
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import LanguageSelector from '@/components/LanguageSelector';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
-import teslaLogo from '@/assets/tesla-logo.png';
 
 interface Investment {
   id: string;
@@ -200,6 +199,8 @@ const Dashboard = () => {
     );
   }
 
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <div className="absolute inset-0 bg-gradient-hero opacity-30" />
@@ -208,14 +209,17 @@ const Dashboard = () => {
       <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
-            <span className="text-xl font-bold bg-gradient-to-r from-tesla-red to-electric-blue bg-clip-text text-transparent">
-              {t('invest')}
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+            </Link>
+            <span className="text-xl font-bold font-display tracking-tight">
+              <span className="text-tesla-red">Tesla</span>
+              <span className="text-slate-400">Invest</span>
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-muted-foreground hidden sm:block text-sm truncate max-w-[120px]">
-              {profile?.full_name || user?.email}
+              {displayName}
             </span>
             <LanguageSelector />
             <Button variant="outline" size="sm" onClick={handleSignOut}>
@@ -227,9 +231,17 @@ const Dashboard = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
+        {/* Welcome Message */}
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            {t('welcomeBack')}, <span className="text-tesla-red">{displayName}</span>!
+          </h1>
+          <p className="text-muted-foreground mt-1">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-tesla-red/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalInvested')}</span>
@@ -237,7 +249,7 @@ const Dashboard = () => {
             <p className="text-lg sm:text-2xl md:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-green-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalProfit')}</span>
@@ -245,7 +257,7 @@ const Dashboard = () => {
             <p className="text-lg sm:text-2xl md:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-yellow-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('pending')}</span>
@@ -253,7 +265,7 @@ const Dashboard = () => {
             <p className="text-lg sm:text-2xl md:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-electric-blue/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('active')}</span>
@@ -346,7 +358,7 @@ const Dashboard = () => {
                 {investments.map((inv) => (
                   <div
                     key={inv.id}
-                    className="flex items-center justify-between p-3 sm:p-4 bg-background/50 rounded-lg border border-border"
+                    className="flex items-center justify-between p-3 sm:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-sm sm:text-base">${Number(inv.amount).toLocaleString()}</p>
