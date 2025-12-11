@@ -45,17 +45,17 @@ const Hero = () => {
         </div>
       ))}
 
-      {/* Slider Controls - Better positioned for mobile */}
+      {/* Slider Controls - Positioned higher to not cover text */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 sm:left-4 bottom-32 sm:top-1/2 sm:-translate-y-1/2 z-20 p-2 sm:p-3 bg-card/50 backdrop-blur-sm border border-border rounded-full hover:bg-card/80 transition-all hover:scale-110"
+        className="absolute left-2 sm:left-4 top-1/3 -translate-y-1/2 z-20 p-2 sm:p-3 bg-card/50 backdrop-blur-sm border border-border rounded-full hover:bg-card/80 transition-all hover:scale-110"
         aria-label="Previous slide"
       >
         <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-2 sm:right-4 bottom-32 sm:top-1/2 sm:-translate-y-1/2 z-20 p-2 sm:p-3 bg-card/50 backdrop-blur-sm border border-border rounded-full hover:bg-card/80 transition-all hover:scale-110"
+        className="absolute right-2 sm:right-4 top-1/3 -translate-y-1/2 z-20 p-2 sm:p-3 bg-card/50 backdrop-blur-sm border border-border rounded-full hover:bg-card/80 transition-all hover:scale-110"
         aria-label="Next slide"
       >
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />

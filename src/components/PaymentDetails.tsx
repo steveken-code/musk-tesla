@@ -79,9 +79,15 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
         </div>
       </div>
       
-      <p className="text-xs text-muted-foreground text-center pt-2">
-        {t('sendReceiptVia')}
-      </p>
+      {/* Investment Guidelines */}
+      <div className="pt-3 border-t border-border mt-3">
+        <p className="text-sm font-semibold text-foreground mb-2">{t('investmentSteps') || 'Steps to Complete Investment:'}</p>
+        <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+          <li>{t('step1') || 'Make payment to the account details above'}</li>
+          <li>{t('step2') || 'Send payment receipt via WhatsApp'}</li>
+          <li>{t('step3') || 'Click "Submit Investment Request"'}</li>
+        </ol>
+      </div>
     </div>
   );
 };

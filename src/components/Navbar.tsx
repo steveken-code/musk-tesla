@@ -36,14 +36,17 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
+          {/* Logo with Tagline */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 group hover:scale-105 transition-transform duration-300"
+            className="flex items-center gap-3 group hover:scale-105 transition-transform duration-300"
           >
             <span className="text-xl md:text-2xl font-bold font-display tracking-tight">
               <span className="text-tesla-red">Tesla</span>
               <span className="text-slate-400">Invest</span>
+            </span>
+            <span className="hidden lg:block text-xs text-slate-500 border-l border-slate-600 pl-3">
+              Trusted Tesla Stock Gateway
             </span>
           </Link>
 
@@ -130,8 +133,8 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Bottom Border Line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tesla-red/50 to-transparent" />
+      {/* Bottom Border Line - Grey */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-500/50 to-transparent" />
     </nav>
   );
 };

@@ -59,7 +59,7 @@ const Vision = () => {
                 className="p-5 md:p-6 bg-card/90 backdrop-blur-sm border-border/30 hover:border-accent/50 hover:shadow-glow-blue transition-all duration-300 animate-slide-up group hover:-translate-y-2"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <h3 className="text-lg md:text-xl font-bold mb-2 group-hover:text-tesla-red transition-colors text-foreground">{item.title}</h3>
+                <h3 className="text-lg md:text-xl font-bold mb-2 text-tesla-red">{item.title}</h3>
                 <p className="text-muted-foreground text-sm md:text-base">{item.desc}</p>
               </Card>
             ))}
