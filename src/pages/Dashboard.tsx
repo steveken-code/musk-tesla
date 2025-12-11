@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { 
   LogOut, TrendingUp, DollarSign, Clock, 
-  CheckCircle, XCircle, Loader2, ArrowLeft
+  CheckCircle, XCircle, Loader2, ArrowLeft,
+  Wallet, Globe, AlertCircle
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import LanguageSelector from '@/components/LanguageSelector';
@@ -25,6 +26,16 @@ interface Investment {
   created_at: string;
 }
 
+interface Withdrawal {
+  id: string;
+  amount: number;
+  country: string;
+  payment_details: string;
+  status: string;
+  hold_message: string | null;
+  created_at: string;
+}
+
 interface Profile {
   full_name: string | null;
   email: string | null;
@@ -32,11 +43,25 @@ interface Profile {
 
 const USD_TO_RUB = 96.5;
 
+const countries = [
+  { code: 'RU', name: 'Russia', format: 'card', label: 'Card Number' },
+  { code: 'US', name: 'United States', format: 'account', label: 'Account Number' },
+  { code: 'UK', name: 'United Kingdom', format: 'account', label: 'Account Number' },
+  { code: 'DE', name: 'Germany', format: 'iban', label: 'IBAN' },
+  { code: 'FR', name: 'France', format: 'iban', label: 'IBAN' },
+  { code: 'CN', name: 'China', format: 'card', label: 'Card Number' },
+  { code: 'JP', name: 'Japan', format: 'account', label: 'Account Number' },
+  { code: 'KR', name: 'South Korea', format: 'account', label: 'Account Number' },
+  { code: 'BR', name: 'Brazil', format: 'account', label: 'Account Number' },
+  { code: 'AE', name: 'UAE', format: 'iban', label: 'IBAN' },
+];
+
 const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [investAmount, setInvestAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +69,13 @@ const Dashboard = () => {
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
   const previousProfitsRef = useRef<Record<string, number>>({});
+
+  // Withdrawal state
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawCountry, setWithdrawCountry] = useState('');
+  const [withdrawPaymentDetails, setWithdrawPaymentDetails] = useState('');
+  const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
+  const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
 
@@ -85,6 +117,18 @@ const Dashboard = () => {
             previousProfitsRef.current[updated.id] = updated.profit_amount;
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'withdrawals',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            fetchData();
+          }
+        )
         .subscribe();
 
       return () => {
@@ -109,9 +153,18 @@ const Dashboard = () => {
     }
   }, [investAmount]);
 
+  // Show withdrawal form when amount is entered
+  useEffect(() => {
+    if (withdrawAmount && parseFloat(withdrawAmount) > 0) {
+      setShowWithdrawalForm(true);
+    } else {
+      setShowWithdrawalForm(false);
+    }
+  }, [withdrawAmount]);
+
   const fetchData = async () => {
     try {
-      const [investmentsRes, profileRes] = await Promise.all([
+      const [investmentsRes, profileRes, withdrawalsRes] = await Promise.all([
         supabase
           .from('investments')
           .select('*')
@@ -121,7 +174,12 @@ const Dashboard = () => {
           .from('profiles')
           .select('full_name, email')
           .eq('user_id', user!.id)
-          .maybeSingle()
+          .maybeSingle(),
+        supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('user_id', user!.id)
+          .order('created_at', { ascending: false })
       ]);
 
       if (investmentsRes.data) {
@@ -131,6 +189,7 @@ const Dashboard = () => {
         });
       }
       if (profileRes.data) setProfile(profileRes.data);
+      if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data as Withdrawal[]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -166,6 +225,57 @@ const Dashboard = () => {
     }
   };
 
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(withdrawAmount);
+    
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid withdrawal amount');
+      return;
+    }
+
+    if (amount > totalProfit) {
+      toast.error('Withdrawal amount cannot exceed your profit');
+      return;
+    }
+
+    if (!withdrawCountry) {
+      toast.error('Please select your country');
+      return;
+    }
+
+    if (!withdrawPaymentDetails) {
+      toast.error('Please enter your payment details');
+      return;
+    }
+
+    setSubmittingWithdrawal(true);
+    try {
+      const { error } = await supabase
+        .from('withdrawals')
+        .insert({ 
+          user_id: user!.id, 
+          amount, 
+          country: withdrawCountry,
+          payment_details: withdrawPaymentDetails,
+          status: 'pending' 
+        });
+
+      if (error) throw error;
+      
+      toast.success('Withdrawal request submitted!');
+      setWithdrawAmount('');
+      setWithdrawCountry('');
+      setWithdrawPaymentDetails('');
+      setShowWithdrawalForm(false);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to submit withdrawal');
+    } finally {
+      setSubmittingWithdrawal(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -187,9 +297,12 @@ const Dashboard = () => {
       case 'completed': return <CheckCircle className="w-4 h-4 text-electric-blue" />;
       case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'cancelled': return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'on_hold': return <AlertCircle className="w-4 h-4 text-orange-500" />;
       default: return <Clock className="w-4 h-4" />;
     }
   };
+
+  const selectedCountry = countries.find(c => c.code === withdrawCountry);
 
   if (authLoading || loading) {
     return (
@@ -282,7 +395,7 @@ const Dashboard = () => {
           <InvestmentChart investments={investments} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
           {/* New Investment Form */}
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
             <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
@@ -340,46 +453,167 @@ const Dashboard = () => {
                   t('submitInvestment')
                 )}
               </Button>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                {t('contactViaWhatsapp')}
-              </p>
             </form>
           </div>
 
-          {/* Investment History */}
+          {/* Withdrawal Card */}
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold mb-4">{t('investmentHistory')}</h2>
-            {investments.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8 text-sm">
-                {t('noInvestments')}
-              </p>
-            ) : (
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {investments.map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="flex items-center justify-between p-3 sm:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
+            <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-green-500" />
+              Withdraw Funds
+            </h2>
+            
+            {/* Show active withdrawal status if any */}
+            {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && (
+              <div className={`mb-4 p-4 rounded-lg border ${
+                withdrawals[0].status === 'on_hold' 
+                  ? 'bg-orange-500/10 border-orange-500/30' 
+                  : withdrawals[0].status === 'pending'
+                  ? 'bg-yellow-500/10 border-yellow-500/30'
+                  : 'bg-green-500/10 border-green-500/30'
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {getStatusIcon(withdrawals[0].status)}
+                  <span className="font-semibold capitalize">
+                    {withdrawals[0].status === 'on_hold' ? 'Withdrawal On Hold' : 
+                     withdrawals[0].status === 'pending' ? 'Withdrawal Pending' : 
+                     'Withdrawal Processing'}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Amount: ${Number(withdrawals[0].amount).toLocaleString()}
+                </p>
+                {withdrawals[0].hold_message && (
+                  <p className="text-sm mt-2 text-orange-400">{withdrawals[0].hold_message}</p>
+                )}
+                {withdrawals[0].status === 'on_hold' && (
+                  <a 
+                    href="https://wa.me/12186500840" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-3 text-sm text-electric-blue hover:underline"
                   >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm sm:text-base">${Number(inv.amount).toLocaleString()}</p>
-                      {inv.profit_amount > 0 && (
-                        <p className="text-xs sm:text-sm text-green-500">
-                          +${Number(inv.profit_amount).toLocaleString()} {t('profit')}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(inv.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {getStatusIcon(inv.status)}
-                      <span className="capitalize text-xs sm:text-sm">{inv.status}</span>
-                    </div>
-                  </div>
-                ))}
+                    Contact support on WhatsApp
+                  </a>
+                )}
               </div>
             )}
+
+            <form onSubmit={handleWithdraw} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Withdrawal Amount (Max: ${totalProfit.toLocaleString()})</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Enter amount"
+                    value={withdrawAmount}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setWithdrawAmount(value);
+                    }}
+                    className="bg-background/50 border-border"
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setWithdrawAmount(totalProfit.toString())}
+                    className="whitespace-nowrap"
+                  >
+                    Max
+                  </Button>
+                </div>
+              </div>
+
+              {showWithdrawalForm && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      Select Country
+                    </Label>
+                    <select
+                      value={withdrawCountry}
+                      onChange={(e) => setWithdrawCountry(e.target.value)}
+                      className="w-full p-2 bg-background/50 border border-border rounded-md text-foreground"
+                      required
+                    >
+                      <option value="">Select your country</option>
+                      {countries.map(country => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedCountry && (
+                    <div className="space-y-2">
+                      <Label>{selectedCountry.label}</Label>
+                      <Input
+                        type="text"
+                        placeholder={`Enter your ${selectedCountry.label.toLowerCase()}`}
+                        value={withdrawPaymentDetails}
+                        onChange={(e) => setWithdrawPaymentDetails(e.target.value)}
+                        className="bg-background/50 border-border"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
+                    disabled={submittingWithdrawal || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || !withdrawCountry || !withdrawPaymentDetails}
+                  >
+                    {submittingWithdrawal ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Submit Withdrawal'
+                    )}
+                  </Button>
+                </>
+              )}
+            </form>
           </div>
+        </div>
+
+        {/* Investment History */}
+        <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">{t('investmentHistory')}</h2>
+          {investments.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8 text-sm">
+              {t('noInvestments')}
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {investments.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between p-3 sm:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm sm:text-base">${Number(inv.amount).toLocaleString()}</p>
+                    {inv.profit_amount > 0 && (
+                      <p className="text-xs sm:text-sm text-green-500">
+                        +${Number(inv.profit_amount).toLocaleString()} {t('profit')}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(inv.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {getStatusIcon(inv.status)}
+                    <span className="capitalize text-xs sm:text-sm">{inv.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
