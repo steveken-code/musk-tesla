@@ -138,7 +138,7 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonial4': 'Started with a small investment and have grown it significantly. The real-time tracking and profit notifications are fantastic.',
     'testimonial5': 'Best investment decision I have ever made. The team is responsive and the platform delivers on its promises.',
     'testimonial6': 'Tesla Invest makes investing in EV stocks accessible and profitable. My portfolio has never looked better.',
-    'ceoQuote': 'The future is electric. Every day, we are getting closer to a sustainable energy future that will benefit all of humanity.',
+    'ceoQuote': 'Invest in the future where innovation meets sustainable returns. Tesla stock represents the convergence of technology, clean energy, and unprecedented market growth.',
     
     // Stock Growth
     'marketLeader': 'Market Leader',
@@ -156,9 +156,15 @@ const translations: Record<Language, Record<string, string>> = {
     'defaultLanguage': 'Default Language',
     'setDefaultLanguage': 'Set Default Language',
     
+    // Investment Steps
+    'investmentSteps': 'Steps to Complete Investment:',
+    'step1': 'Make payment to the account details above',
+    'step2': 'Send payment receipt via WhatsApp',
+    'step3': 'Click "Submit Investment Request"',
+    
     // Vision Section
-    'visionTitle': 'The Vision',
-    'visionSubtitle': 'Why Elon Musk is betting everything on sustainable energy',
+    'visionTitle': 'The Investment Opportunity',
+    'visionSubtitle': 'Why smart investors are choosing Tesla for exponential portfolio growth',
     'sustainableEnergy': 'Sustainable Energy',
     'sustainableEnergyDesc': 'Accelerating the world\'s transition to renewable energy',
     'autonomousFuture': 'Autonomous Future',
@@ -307,7 +313,7 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonial4': 'Начал с небольшой инвестиции и значительно увеличил её. Отслеживание в реальном времени и уведомления о прибыли — это фантастика.',
     'testimonial5': 'Лучшее инвестиционное решение в моей жизни. Команда отзывчива, а платформа выполняет свои обещания.',
     'testimonial6': 'Tesla Invest делает инвестиции в акции электромобилей доступными и прибыльными. Мой портфель никогда не выглядел лучше.',
-    'ceoQuote': 'Будущее за электричеством. Каждый день мы приближаемся к устойчивому энергетическому будущему, которое принесет пользу всему человечеству.',
+    'ceoQuote': 'Инвестируйте в будущее, где инновации сочетаются с устойчивой доходностью. Акции Tesla — это слияние технологий, чистой энергии и беспрецедентного роста рынка.',
     
     // Stock Growth
     'marketLeader': 'Лидер рынка',
@@ -325,9 +331,15 @@ const translations: Record<Language, Record<string, string>> = {
     'defaultLanguage': 'Язык по умолчанию',
     'setDefaultLanguage': 'Установить язык по умолчанию',
     
+    // Investment Steps
+    'investmentSteps': 'Шаги для завершения инвестиции:',
+    'step1': 'Сделайте платеж по указанным реквизитам',
+    'step2': 'Отправьте квитанцию об оплате через WhatsApp',
+    'step3': 'Нажмите "Отправить заявку на инвестицию"',
+    
     // Vision Section
-    'visionTitle': 'Видение',
-    'visionSubtitle': 'Почему Илон Маск ставит всё на устойчивую энергетику',
+    'visionTitle': 'Инвестиционная возможность',
+    'visionSubtitle': 'Почему умные инвесторы выбирают Tesla для экспоненциального роста портфеля',
     'sustainableEnergy': 'Устойчивая энергия',
     'sustainableEnergyDesc': 'Ускорение перехода мира на возобновляемую энергию',
     'autonomousFuture': 'Автономное будущее',

@@ -57,7 +57,7 @@ const Testimonials = () => {
       role: t('investor'),
       location: 'Toronto, Canada',
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-      rating: 5,
+      rating: 4,
       text: t('testimonial6'),
       growth: '+3,200%',
     },
