@@ -246,13 +246,13 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Google Sign-in Button - Static, no hover effects */}
+          {/* Google Sign-in Button - Subtle hover effect */}
           <Button
             type="button"
             variant="static"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm"
+            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow-md"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
