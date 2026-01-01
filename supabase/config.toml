@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.send-investment-confirmation]
 verify_jwt = false
+
+[functions.send-withdrawal-confirmation]
+verify_jwt = false
