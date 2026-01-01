@@ -1,21 +1,29 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Quote, ChevronLeft, ChevronRight, MapPin, Filter } from 'lucide-react';
 import elonCeo from '@/assets/elon-ceo.jpeg';
 import useEmblaCarousel from 'embla-carousel-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
+
+type FilterType = 'all' | 'location' | 'rating';
+type LocationFilter = 'all' | 'USA' | 'Russia' | 'UK' | 'Singapore' | 'Canada';
+type RatingFilter = 'all' | '5' | '4';
 
 const Testimonials = () => {
   const { t } = useLanguage();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [locationFilter, setLocationFilter] = useState<LocationFilter>('all');
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
 
   const testimonials = [
     {
       name: 'Sarah Johnson',
       role: t('investor'),
       location: 'New York, USA',
+      region: 'USA' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
       rating: 5,
       text: t('testimonial1'),
@@ -25,6 +33,7 @@ const Testimonials = () => {
       name: 'Михаил Петров',
       role: t('investor'),
       location: 'Moscow, Russia',
+      region: 'Russia' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
       rating: 5,
       text: t('testimonial2'),
@@ -34,6 +43,7 @@ const Testimonials = () => {
       name: 'Emma Williams',
       role: t('investor'),
       location: 'London, UK',
+      region: 'UK' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
       rating: 5,
       text: t('testimonial3'),
@@ -43,6 +53,7 @@ const Testimonials = () => {
       name: 'David Chen',
       role: t('investor'),
       location: 'Singapore',
+      region: 'Singapore' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
       rating: 5,
       text: t('testimonial4'),
@@ -52,6 +63,7 @@ const Testimonials = () => {
       name: 'Анна Козлова',
       role: t('investor'),
       location: 'St. Petersburg, Russia',
+      region: 'Russia' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face',
       rating: 5,
       text: t('testimonial5'),
@@ -61,12 +73,25 @@ const Testimonials = () => {
       name: 'James Wilson',
       role: t('investor'),
       location: 'Toronto, Canada',
+      region: 'Canada' as LocationFilter,
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
       rating: 4,
       text: t('testimonial6'),
       growth: '+3,200%',
     },
   ];
+
+  const filteredTestimonials = useMemo(() => {
+    return testimonials.filter((testimonial) => {
+      if (activeFilter === 'location' && locationFilter !== 'all') {
+        return testimonial.region === locationFilter;
+      }
+      if (activeFilter === 'rating' && ratingFilter !== 'all') {
+        return testimonial.rating === parseInt(ratingFilter);
+      }
+      return true;
+    });
+  }, [activeFilter, locationFilter, ratingFilter, testimonials]);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -89,6 +114,12 @@ const Testimonials = () => {
       emblaApi.off('select', onSelect);
     };
   }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.reInit();
+    }
+  }, [filteredTestimonials, emblaApi]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -140,6 +171,9 @@ const Testimonials = () => {
       </p>
     </Card>
   );
+
+  const locations: LocationFilter[] = ['all', 'USA', 'Russia', 'UK', 'Singapore', 'Canada'];
+  const ratings: RatingFilter[] = ['all', '5', '4'];
 
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-slate-100">
@@ -194,7 +228,7 @@ const Testimonials = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-8 md:mb-12"
         >
           <span className="inline-block px-4 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-600 text-sm font-medium mb-4">
             Success Stories
@@ -207,68 +241,207 @@ const Testimonials = () => {
           </p>
         </motion.div>
 
+        {/* Filter Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mb-8 md:mb-12"
+        >
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* Filter Type Buttons */}
+            <div className="flex items-center gap-2 bg-white rounded-full p-1.5 shadow-md border border-slate-200">
+              <button
+                onClick={() => {
+                  setActiveFilter('all');
+                  setLocationFilter('all');
+                  setRatingFilter('all');
+                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeFilter === 'all'
+                    ? 'bg-tesla-red text-white shadow-md'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setActiveFilter('location')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                  activeFilter === 'location'
+                    ? 'bg-tesla-red text-white shadow-md'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <MapPin className="w-4 h-4" />
+                Location
+              </button>
+              <button
+                onClick={() => setActiveFilter('rating')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                  activeFilter === 'rating'
+                    ? 'bg-tesla-red text-white shadow-md'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Star className="w-4 h-4" />
+                Rating
+              </button>
+            </div>
+
+            {/* Location Filter Options */}
+            <AnimatePresence>
+              {activeFilter === 'location' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-wrap items-center gap-2"
+                >
+                  {locations.map((loc) => (
+                    <button
+                      key={loc}
+                      onClick={() => setLocationFilter(loc)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border ${
+                        locationFilter === loc
+                          ? 'bg-electric-blue text-white border-electric-blue shadow-md'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-electric-blue hover:text-electric-blue'
+                      }`}
+                    >
+                      {loc === 'all' ? 'All Locations' : loc}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Rating Filter Options */}
+            <AnimatePresence>
+              {activeFilter === 'rating' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-2"
+                >
+                  {ratings.map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => setRatingFilter(rating)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border flex items-center gap-1 ${
+                        ratingFilter === rating
+                          ? 'bg-yellow-500 text-white border-yellow-500 shadow-md'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-yellow-500 hover:text-yellow-600'
+                      }`}
+                    >
+                      {rating === 'all' ? (
+                        'All Ratings'
+                      ) : (
+                        <>
+                          {rating} <Star className="w-3 h-3 fill-current" />
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Results count */}
+          <p className="text-center text-slate-500 text-sm mt-4">
+            Showing {filteredTestimonials.length} of {testimonials.length} testimonials
+          </p>
+        </motion.div>
+
         {/* Mobile Carousel */}
         <div className="sm:hidden">
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="flex-[0_0_100%] min-w-0 px-2">
-                  <TestimonialCard testimonial={testimonial} />
+          {filteredTestimonials.length > 0 ? (
+            <>
+              <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex">
+                  {filteredTestimonials.map((testimonial, index) => (
+                    <div key={index} className="flex-[0_0_100%] min-w-0 px-2">
+                      <TestimonialCard testimonial={testimonial} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Carousel Controls */}
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <button
-              onClick={scrollPrev}
-              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="w-5 h-5 text-slate-600" />
-            </button>
-            
-            {/* Dots */}
-            <div className="flex gap-2">
-              {testimonials.map((_, index) => (
+              </div>
+              
+              {/* Carousel Controls */}
+              <div className="flex items-center justify-center gap-4 mt-6">
                 <button
-                  key={index}
-                  onClick={() => emblaApi?.scrollTo(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === selectedIndex 
-                      ? 'bg-tesla-red w-6' 
-                      : 'bg-slate-300 hover:bg-slate-400'
-                  }`}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                />
-              ))}
+                  onClick={scrollPrev}
+                  className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                
+                {/* Dots */}
+                <div className="flex gap-2">
+                  {filteredTestimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => emblaApi?.scrollTo(index)}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        index === selectedIndex 
+                          ? 'bg-tesla-red w-6' 
+                          : 'bg-slate-300 hover:bg-slate-400'
+                      }`}
+                      aria-label={`Go to testimonial ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                
+                <button
+                  onClick={scrollNext}
+                  className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRight className="w-5 h-5 text-slate-600" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <Filter className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">No testimonials match your filter.</p>
             </div>
-            
-            <button
-              onClick={scrollNext}
-              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="w-5 h-5 text-slate-600" />
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Desktop Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {testimonials.map((testimonial, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <TestimonialCard testimonial={testimonial} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${activeFilter}-${locationFilter}-${ratingFilter}`}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0 }}
+            className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredTestimonials.length > 0 ? (
+              filteredTestimonials.map((testimonial, index) => (
+                <motion.div key={index} variants={itemVariants}>
+                  <TestimonialCard testimonial={testimonial} />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div 
+                className="col-span-full text-center py-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <Filter className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500">No testimonials match your filter.</p>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );
