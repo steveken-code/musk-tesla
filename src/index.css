@@ -4,66 +4,89 @@
 
 @layer base {
   :root {
-    --background: 220 20% 8%;
-    --foreground: 0 0% 98%;
+    /* Premium Deep Navy Palette */
+    --background: 222 47% 7%;
+    --foreground: 220 20% 98%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 39% 13%;
+    --card-foreground: 220 20% 98%;
 
-    --popover: 220 20% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 39% 13%;
+    --popover-foreground: 220 20% 98%;
 
+    /* Tesla Red - Primary Actions */
     --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
 
+    /* Ocean Blue - Secondary Elements */
     --secondary: 210 100% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 220 10% 65%;
+    /* Muted States */
+    --muted: 222 35% 18%;
+    --muted-foreground: 220 15% 65%;
 
+    /* Accent Colors */
     --accent: 210 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 22%;
-    --input: 220 20% 22%;
+    /* Refined Borders */
+    --border: 222 30% 22%;
+    --input: 222 30% 18%;
     --ring: 0 72% 51%;
 
     --radius: 0.5rem;
 
-    /* Tesla Investment Theme */
+    /* Premium Color Tokens */
+    --navy: 222 47% 7%;
+    --midnight: 222 39% 13%;
+    --dark-steel: 222 35% 16%;
+    --steel: 222 25% 25%;
+    --slate: 220 20% 35%;
+    
+    /* Brand Colors */
     --electric-blue: 210 100% 50%;
+    --ocean-blue: 210 90% 45%;
     --tesla-red: 0 72% 51%;
+    --deep-crimson: 0 80% 40%;
+    
+    /* Neutral Tones */
     --metallic: 220 10% 60%;
-    --deep-black: 220 20% 8%;
+    --silver: 220 15% 75%;
+    --platinum: 220 20% 90%;
     --chrome: 220 10% 85%;
     
     /* Section backgrounds */
-    --section-dark: 220 20% 6%;
+    --section-dark: 222 50% 5%;
+    --section-mid: 222 39% 13%;
     --section-light: 220 20% 96%;
-    --section-accent: 220 30% 10%;
+    --section-accent: 222 40% 10%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 25% 12%) 50%, hsl(210 40% 10%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(220 20% 12%) 0%, hsl(220 25% 16%) 100%);
+    /* Premium Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 7%) 0%, hsl(222 39% 13%) 50%, hsl(210 40% 12%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 39% 13%) 0%, hsl(222 35% 16%) 100%);
     --gradient-accent: linear-gradient(90deg, hsl(0 72% 51%) 0%, hsl(210 100% 50%) 100%);
-    --gradient-section: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 25% 14%) 50%, hsl(220 20% 8%) 100%);
+    --gradient-section: linear-gradient(180deg, hsl(222 47% 7%) 0%, hsl(222 39% 13%) 50%, hsl(222 47% 7%) 100%);
+    --gradient-navy: linear-gradient(180deg, hsl(222 50% 5%) 0%, hsl(222 47% 7%) 100%);
+    --gradient-midnight: linear-gradient(180deg, hsl(222 39% 13%) 0%, hsl(222 35% 16%) 100%);
     
-    /* Shadows */
-    --glow-red: 0 0 40px hsl(0 72% 51% / 0.3);
-    --glow-blue: 0 0 40px hsl(210 100% 50% / 0.3);
-    --glow-combined: 0 0 60px hsl(0 72% 51% / 0.2), 0 0 120px hsl(210 100% 50% / 0.1);
+    /* Premium Shadows */
+    --glow-red: 0 0 40px hsl(0 72% 51% / 0.25);
+    --glow-blue: 0 0 40px hsl(210 100% 50% / 0.25);
+    --glow-combined: 0 0 60px hsl(0 72% 51% / 0.15), 0 0 120px hsl(210 100% 50% / 0.1);
+    --shadow-card: 0 4px 24px hsl(222 47% 4% / 0.5);
+    --shadow-elevated: 0 8px 32px hsl(222 47% 4% / 0.6);
     
     /* Animations */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 0 0% 98%;
+    --background: 222 47% 7%;
+    --foreground: 220 20% 98%;
   }
 }
 
