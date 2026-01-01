@@ -268,7 +268,7 @@ const Auth = () => {
             variant="static"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-lg"
+            className="w-full h-12 mb-6 bg-white text-gray-800 border border-gray-200 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:border-gray-300"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -302,7 +302,7 @@ const Auth = () => {
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
+                    className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     required={!isLogin}
                   />
                 </div>
@@ -321,7 +321,7 @@ const Auth = () => {
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
+                  className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                   required
                 />
               </div>
@@ -339,7 +339,7 @@ const Auth = () => {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
+                  className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                   required
                   minLength={6}
                 />
