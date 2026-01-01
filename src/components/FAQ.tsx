@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import AnimatedSection from '@/components/AnimatedSection';
+import { motion } from 'framer-motion';
 
 const FAQ = () => {
   const faqs = [
@@ -26,10 +26,38 @@ const FAQ = () => {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
   return (
     <section id="faq" className="py-20 md:py-32 bg-gradient-to-b from-background via-slate-900/30 to-background">
       <div className="container mx-auto px-4">
-        <AnimatedSection className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-tesla-red bg-tesla-red/10 rounded-full border border-tesla-red/20">
             Support
           </span>
@@ -39,26 +67,33 @@ const FAQ = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Got questions? We've got answers. Find everything you need to know about investing with us.
           </p>
-        </AnimatedSection>
+        </motion.div>
 
-        <AnimatedSection delay={0.2} className="max-w-3xl mx-auto">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="max-w-3xl mx-auto"
+        >
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="bg-card/80 backdrop-blur-xl border border-border rounded-xl px-6 data-[state=open]:border-tesla-red/50 transition-colors"
-              >
-                <AccordionTrigger className="text-left text-foreground hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
+              <motion.div key={index} variants={itemVariants}>
+                <AccordionItem
+                  value={`item-${index}`}
+                  className="bg-card/80 backdrop-blur-xl border border-border rounded-xl px-6 data-[state=open]:border-tesla-red/50 transition-colors"
+                >
+                  <AccordionTrigger className="text-left text-foreground hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-6 text-base leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
             ))}
           </Accordion>
-        </AnimatedSection>
+        </motion.div>
       </div>
     </section>
   );
