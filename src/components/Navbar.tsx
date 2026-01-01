@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
@@ -9,6 +9,7 @@ import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info } from 'lucide-react
 const Navbar = () => {
   const { t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -21,12 +22,36 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: t('home'), href: '/', icon: Zap },
-    { name: t('about'), href: '/about', icon: Info },
-    { name: 'Features', href: '#features', icon: TrendingUp },
-    { name: 'How It Works', href: '#how-it-works', icon: Shield },
-    { name: 'FAQ', href: '#faq', icon: HelpCircle },
+    { name: t('home'), href: '/', icon: Zap, isAnchor: false },
+    { name: t('about'), href: '/about', icon: Info, isAnchor: false },
+    { name: 'Features', href: '#features', icon: TrendingUp, isAnchor: true },
+    { name: 'How It Works', href: '#how-it-works', icon: Shield, isAnchor: true },
+    { name: 'FAQ', href: '#faq', icon: HelpCircle, isAnchor: true },
   ];
+
+  const handleNavClick = (link: typeof navLinks[0]) => {
+    setIsMobileMenuOpen(false);
+    
+    if (link.isAnchor) {
+      // If we're not on the home page, navigate there first
+      if (location.pathname !== '/') {
+        navigate('/');
+        // Wait for navigation then scroll
+        setTimeout(() => {
+          const element = document.querySelector(link.href);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      } else {
+        // Already on home page, just scroll
+        const element = document.querySelector(link.href);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }
+  };
 
   return (
     <nav 
@@ -38,7 +63,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo - Larger, centered and brighter */}
+          {/* Logo */}
           <Link 
             to="/" 
             className="flex items-center gap-3 group"
@@ -52,17 +77,31 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                className="relative text-slate-400 hover:text-white transition-all duration-300 group py-2"
-              >
-                <span className="flex items-center gap-1">
-                  <link.icon className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-tesla-red" />
-                  {link.name}
-                </span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-tesla-red to-electric-blue group-hover:w-full transition-all duration-300" />
-              </Link>
+              link.isAnchor ? (
+                <button
+                  key={link.name}
+                  onClick={() => handleNavClick(link)}
+                  className="relative text-slate-400 hover:text-white transition-all duration-300 group py-2 cursor-pointer"
+                >
+                  <span className="flex items-center gap-1">
+                    <link.icon className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-tesla-red" />
+                    {link.name}
+                  </span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-tesla-red to-electric-blue group-hover:w-full transition-all duration-300" />
+                </button>
+              ) : (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="relative text-slate-400 hover:text-white transition-all duration-300 group py-2"
+                >
+                  <span className="flex items-center gap-1">
+                    <link.icon className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-tesla-red" />
+                    {link.name}
+                  </span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-tesla-red to-electric-blue group-hover:w-full transition-all duration-300" />
+                </Link>
+              )
             ))}
           </div>
 
@@ -110,16 +149,28 @@ const Navbar = () => {
         >
           <div className="flex flex-col gap-2 py-4 border-t border-slate-700 bg-slate-900/95">
             {navLinks.map((link, index) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <link.icon className="w-5 h-5 text-tesla-red" />
-                {link.name}
-              </Link>
+              link.isAnchor ? (
+                <button
+                  key={link.name}
+                  onClick={() => handleNavClick(link)}
+                  className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in text-left"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <link.icon className="w-5 h-5 text-tesla-red" />
+                  {link.name}
+                </button>
+              ) : (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <link.icon className="w-5 h-5 text-tesla-red" />
+                  {link.name}
+                </Link>
+              )
             ))}
             <div className="flex items-center gap-2 px-4 pt-4 border-t border-slate-700 mt-2">
               <LanguageSelector />
