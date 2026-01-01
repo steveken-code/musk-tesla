@@ -101,8 +101,8 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display leading-[1.1]"
           >
-            <span className="block text-foreground">Invest in the</span>
-            <span className="bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
+            <span className="block text-foreground mb-2">Invest in the</span>
+            <span className="block bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
               Future of Electric Mobility
             </span>
           </motion.h1>
