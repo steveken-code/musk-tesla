@@ -1,5 +1,5 @@
 import { Shield, Zap, Smartphone, TrendingUp, Clock, HeadphonesIcon } from 'lucide-react';
-import AnimatedSection from '@/components/AnimatedSection';
+import { motion } from 'framer-motion';
 
 const Features = () => {
   const features = [
@@ -35,13 +35,43 @@ const Features = () => {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
   return (
     <section id="features" className="py-24 md:py-32 bg-slate-950 relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <AnimatedSection className="text-center mb-16">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
             Why Choose Us
           </p>
@@ -51,25 +81,42 @@ const Features = () => {
           <p className="text-slate-400 max-w-2xl mx-auto text-lg">
             A complete platform designed for both beginners and experienced investors.
           </p>
-        </AnimatedSection>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+        >
           {features.map((feature, index) => (
-            <AnimatedSection key={index} delay={index * 0.1} direction="up">
-              <div className="group glass-card rounded-2xl p-8 h-full">
-                <div className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors">
-                  <feature.icon className="w-7 h-7 text-tesla-red" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-400 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            </AnimatedSection>
+            <motion.div 
+              key={index} 
+              variants={cardVariants}
+              whileHover={{ 
+                y: -8, 
+                scale: 1.02,
+                transition: { duration: 0.3 }
+              }}
+              className="group glass-card rounded-2xl p-8 h-full cursor-pointer"
+            >
+              <motion.div 
+                className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
+              >
+                <feature.icon className="w-7 h-7 text-tesla-red" />
+              </motion.div>
+              <h3 className="text-xl font-semibold text-white mb-3">
+                {feature.title}
+              </h3>
+              <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                {feature.description}
+              </p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
