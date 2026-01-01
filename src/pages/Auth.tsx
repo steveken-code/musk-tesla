@@ -286,7 +286,7 @@ const Auth = () => {
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
+                    className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
                     required={!isLogin}
                   />
                 </div>
@@ -305,7 +305,7 @@ const Auth = () => {
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
+                  className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
                   required
                 />
               </div>
@@ -323,7 +323,7 @@ const Auth = () => {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
+                  className="pl-14 pr-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
                   required
                   minLength={6}
                 />
