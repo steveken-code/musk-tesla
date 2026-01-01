@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+// Use verified domain email or fallback to resend.dev for testing
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "TeslaInvest <onboarding@resend.dev>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "TeslaInvest <onboarding@resend.dev>",
+        from: FROM_EMAIL,
         to: [email],
         subject: "Welcome to TeslaInvest - Your Investment Journey Begins!",
         html: `
