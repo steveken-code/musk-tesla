@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, Play, ChevronLeft, ChevronRight, Sparkles, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, User, ChevronLeft, ChevronRight, Sparkles, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/tesla-hero.jpg";
@@ -148,8 +148,8 @@ const Hero = () => {
             </Link>
             <Link to="/auth">
               <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/50 hover:border-tesla-red/50">
-                <Play className="mr-2 w-5 h-5" />
-                Watch Demo
+                <User className="mr-2 w-5 h-5" />
+                Create Account
               </Button>
             </Link>
           </motion.div>

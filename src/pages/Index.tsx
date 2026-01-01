@@ -13,7 +13,6 @@ import LoadingScreen from "@/components/LoadingScreen";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
-import LiveStockTicker from "@/components/LiveStockTicker";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +24,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navbar />
-      <LiveStockTicker />
       <Hero />
       <Features />
       <Metrics />

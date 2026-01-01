@@ -231,9 +231,9 @@ const Auth = () => {
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
         <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
-          {/* Logo - Larger and brighter */}
-          <div className="flex flex-col items-center justify-center mb-8">
-            <img src={teslaLogo} alt="Tesla" className="h-24 w-auto mb-2 brightness-125" />
+          {/* Logo - Larger, centered, and brighter */}
+          <div className="flex flex-col items-center justify-center mb-10">
+            <img src={teslaLogo} alt="Tesla" className="h-32 w-auto brightness-150 drop-shadow-lg" />
           </div>
 
           {/* Title */}
@@ -246,13 +246,13 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Google Sign-in Button - No hover state change */}
+          {/* Google Sign-in Button - No hover effects */}
           <Button
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm"
+            className="w-full h-12 mb-6 bg-white hover:bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm cursor-pointer"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -279,14 +279,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
                     required={!isLogin}
                   />
                 </div>
@@ -298,14 +298,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
                   required
                 />
               </div>
@@ -316,14 +316,14 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 pr-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-600 focus:ring-0"
                   required
                   minLength={6}
                 />
@@ -332,7 +332,7 @@ const Auth = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
             </div>
