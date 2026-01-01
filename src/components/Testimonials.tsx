@@ -84,11 +84,11 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden bg-slate-950">
+    <section className="py-24 md:py-32 relative overflow-hidden bg-slate-100">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="absolute top-20 left-0 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-0 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="absolute top-20 left-0 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-0 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
         {/* CEO Quote Section */}
@@ -99,7 +99,7 @@ const Testimonials = () => {
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="max-w-4xl mx-auto mb-16 md:mb-20">
-            <Card className="p-6 md:p-8 lg:p-12 glass-card group">
+            <Card className="p-6 md:p-8 lg:p-12 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-lg group">
               <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative flex-shrink-0">
                   <div className="w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-500">
@@ -114,14 +114,14 @@ const Testimonials = () => {
                   </div>
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-white mb-4 italic leading-relaxed">
+                  <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-slate-800 mb-4 italic leading-relaxed">
                     "{t('ceoQuote')}"
                   </blockquote>
                   <div className="flex items-center gap-4 justify-center md:justify-start">
                     <div className="h-1 w-12 md:w-16 bg-gradient-to-r from-tesla-red to-electric-blue rounded-full" />
                     <div>
-                      <p className="font-bold text-lg md:text-xl text-white">Elon Musk</p>
-                      <p className="text-slate-400 text-sm md:text-base">CEO, Tesla & SpaceX</p>
+                      <p className="font-bold text-lg md:text-xl text-slate-900">Elon Musk</p>
+                      <p className="text-slate-500 text-sm md:text-base">CEO, Tesla & SpaceX</p>
                     </div>
                   </div>
                 </div>
@@ -138,13 +138,13 @@ const Testimonials = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-block px-4 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm font-medium mb-4">
+          <span className="inline-block px-4 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-600 text-sm font-medium mb-4">
             Success Stories
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-slate-900">
             {t('testimonialTitle')}
           </h2>
-          <p className="text-lg md:text-xl text-slate-400">
+          <p className="text-lg md:text-xl text-slate-600">
             {t('testimonialSubtitle')}
           </p>
         </motion.div>
@@ -159,10 +159,10 @@ const Testimonials = () => {
         >
           {testimonials.map((testimonial, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full p-6 glass-card group relative overflow-hidden">
+              <Card className="h-full p-6 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden">
                 {/* Growth Badge */}
                 <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
-                  <span className="text-green-400 font-bold text-sm">{testimonial.growth}</span>
+                  <span className="text-green-600 font-bold text-sm">{testimonial.growth}</span>
                 </div>
                 
                 <div className="flex items-start gap-4 mb-4 pr-20">
@@ -170,14 +170,14 @@ const Testimonials = () => {
                     <img 
                       src={testimonial.avatar} 
                       alt={testimonial.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-slate-700 group-hover:border-electric-blue transition-colors duration-300"
+                      className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 group-hover:border-electric-blue transition-colors duration-300"
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-slate-900" />
+                    <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-base text-white">{testimonial.name}</h4>
-                    <p className="text-sm text-slate-400">{testimonial.role}</p>
-                    <p className="text-xs text-slate-500">{testimonial.location}</p>
+                    <h4 className="font-bold text-base text-slate-900">{testimonial.name}</h4>
+                    <p className="text-sm text-slate-500">{testimonial.role}</p>
+                    <p className="text-xs text-slate-400">{testimonial.location}</p>
                   </div>
                 </div>
                 <div className="flex gap-1 mb-4">
@@ -185,7 +185,7 @@ const Testimonials = () => {
                     <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
                   ))}
                 </div>
-                <p className="text-slate-300 group-hover:text-white transition-colors duration-300 text-sm leading-relaxed">
+                <p className="text-slate-600 group-hover:text-slate-800 transition-colors duration-300 text-sm leading-relaxed">
                   "{testimonial.text}"
                 </p>
               </Card>
