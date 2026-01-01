@@ -56,7 +56,7 @@ const Features = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {features.map((feature, index) => (
             <AnimatedSection key={index} delay={index * 0.1} direction="up">
-              <div className="group bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all duration-300 h-full">
+              <div className="group glass-card rounded-2xl p-8 h-full">
                 <div className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors">
                   <feature.icon className="w-7 h-7 text-tesla-red" />
                 </div>
