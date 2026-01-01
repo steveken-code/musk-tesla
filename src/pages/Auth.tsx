@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Zap, ArrowLeft, Mail, Lock, Loader2, User } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LanguageSelector from '@/components/LanguageSelector';
+import teslaLogo from '@/assets/tesla-logo-new.png';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
@@ -25,6 +26,7 @@ const Auth = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,10 +125,10 @@ const Auth = () => {
 
   if (isForgotPassword) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-        <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
+        <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
         
         <div className="absolute top-6 right-6 z-20">
           <LanguageSelector />
@@ -145,13 +147,10 @@ const Auth = () => {
         </button>
 
         <div className="relative z-10 w-full max-w-md animate-fade-in">
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8 shadow-2xl">
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <Lock className="w-8 h-8 text-tesla-red" />
-              <span className="text-2xl font-bold font-display">
-                <span className="text-tesla-red">Reset</span>
-                <span className="text-slate-400">Password</span>
-              </span>
+          <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
+            <div className="flex flex-col items-center justify-center mb-10">
+              <img src={teslaLogo} alt="Tesla" className="h-16 w-auto mb-4" />
+              <h2 className="text-xl font-semibold text-slate-300">Reset Password</h2>
             </div>
 
             {resetEmailSent ? (
@@ -172,39 +171,41 @@ const Auth = () => {
                     setResetEmail('');
                   }}
                   variant="outline"
-                  className="mt-4 border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className="mt-4 border-slate-700 text-slate-300 hover:bg-slate-800"
                 >
                   Try Again
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handlePasswordReset} className="space-y-4">
-                <p className="text-slate-400 text-center mb-6">
+              <form onSubmit={handlePasswordReset} className="space-y-6">
+                <p className="text-slate-400 text-center mb-6 text-sm">
                   Enter your email address and we'll send you a link to reset your password.
                 </p>
                 <div className="space-y-2">
-                  <Label htmlFor="resetEmail" className="flex items-center gap-2 text-slate-300">
-                    <Mail className="w-4 h-4" />
+                  <Label htmlFor="resetEmail" className="text-slate-300 text-sm font-medium">
                     {t('email')}
                   </Label>
-                  <Input
-                    id="resetEmail"
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
-                    required
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <Input
+                      id="resetEmail"
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                      required
+                    />
+                  </div>
                 </div>
                 <Button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
+                  className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
                 >
                   {resetLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                       Sending...
                     </>
                   ) : (
@@ -220,10 +221,10 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-      <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
+      <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
       <div className="absolute top-6 right-6 z-20">
         <LanguageSelector />
@@ -238,21 +239,21 @@ const Auth = () => {
       </Link>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-8 shadow-2xl hover:shadow-tesla-red/10 transition-shadow duration-500">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <Zap className="w-8 h-8 text-tesla-red animate-pulse" />
-            <span className="text-2xl font-bold font-display tracking-tight">
-              <span className="text-tesla-red">Tesla</span>
-              <span className="text-slate-400">Invest</span>
-            </span>
+        <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
+          {/* Logo */}
+          <div className="flex flex-col items-center justify-center mb-8">
+            <img src={teslaLogo} alt="Tesla" className="h-20 w-auto mb-2" />
           </div>
 
-          <h2 className="text-2xl font-bold text-center mb-2 text-white">
-            {isLogin ? t('welcomeBack') : t('createAccount')}
-          </h2>
-          <p className="text-slate-400 text-center mb-6">
-            {isLogin ? t('signIn') : t('signUp')}
-          </p>
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {isLogin ? t('welcomeBack') : t('createAccount')}
+            </h2>
+            <p className="text-slate-400 text-sm">
+              {isLogin ? 'Sign in to access your account' : 'Create an account to get started'}
+            </p>
+          </div>
 
           {/* Google Sign-in Button */}
           <Button
@@ -260,7 +261,7 @@ const Auth = () => {
             variant="outline"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full mb-6 bg-white hover:bg-gray-100 text-gray-800 border-gray-300 font-medium flex items-center justify-center gap-3 py-5"
+            className="w-full h-12 mb-6 bg-white hover:bg-gray-50 text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -273,70 +274,83 @@ const Auth = () => {
           {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-600"></div>
+              <div className="w-full border-t border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-800/80 text-slate-400">or continue with email</span>
+              <span className="px-4 bg-slate-900 text-slate-500">or</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-2 animate-fade-in">
-                <Label htmlFor="fullName" className="flex items-center gap-2 text-slate-300">
-                  <User className="w-4 h-4" />
+                <Label htmlFor="fullName" className="text-slate-300 text-sm font-medium">
                   {t('fullName')}
                 </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 hover:border-tesla-red/50 transition-colors"
-                  required={!isLogin}
-                />
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                    required={!isLogin}
+                  />
+                </div>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2 text-slate-300">
-                <Mail className="w-4 h-4" />
+              <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
                 {t('email')}
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 hover:border-tesla-red/50 transition-colors"
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2 text-slate-300">
-                <Lock className="w-4 h-4" />
+              <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
                 {t('password')}
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 hover:border-tesla-red/50 transition-colors"
-                required
-                minLength={6}
-              />
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-12 pr-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             {isLogin && (
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm text-electric-blue hover:underline block"
+                className="text-sm text-tesla-red hover:text-tesla-red/80 transition-colors"
               >
                 {t('forgotPassword')}
               </button>
@@ -344,22 +358,37 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70 hover:scale-[1.02] transition-all duration-300"
+              className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
               disabled={loading}
             >
-              {loading ? t('processingText') : isLogin ? t('signIn') : t('createAccount')}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  {t('processingText')}
+                </>
+              ) : (
+                isLogin ? t('signIn') : t('createAccount')
+              )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center">
+            <span className="text-slate-500 text-sm">
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            </span>
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-electric-blue hover:underline transition-colors"
+              className="text-tesla-red hover:text-tesla-red/80 transition-colors text-sm font-medium"
             >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              {isLogin ? 'Sign up' : 'Sign in'}
             </button>
           </div>
         </div>
+        
+        {/* Footer text */}
+        <p className="text-center text-slate-600 text-xs mt-6">
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </p>
       </div>
     </div>
   );

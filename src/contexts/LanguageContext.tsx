@@ -88,8 +88,8 @@ const translations: Record<Language, Record<string, string>> = {
     'backToLogin': 'Back to Login',
     
     // Hero
-    'heroTitle': 'Secure Investing | Tesla Stocks',
-    'heroSubtitle': 'Join thousands of investors capitalizing on Tesla\'s revolutionary growth and market dominance.',
+    'heroTitle': 'Tesla Stock Is A Premier',
+    'heroSubtitle': 'Investment platform specializing in electric vehicle and sustainable energy stocks. Join thousands of investors capitalizing on Tesla\'s revolutionary growth.',
     'getStarted': 'Get Started',
     'learnMore': 'Learn More',
     
@@ -263,8 +263,8 @@ const translations: Record<Language, Record<string, string>> = {
     'backToLogin': 'Назад к входу',
     
     // Hero
-    'heroTitle': 'Безопасные инвестиции | Акции Tesla',
-    'heroSubtitle': 'Присоединяйтесь к тысячам инвесторов, извлекающих выгоду из революционного роста Tesla.',
+    'heroTitle': 'Tesla Stock — Ведущая',
+    'heroSubtitle': 'Инвестиционная платформа, специализирующаяся на акциях электромобилей и устойчивой энергетики. Присоединяйтесь к тысячам инвесторов.',
     'getStarted': 'Начать',
     'learnMore': 'Узнать больше',
     

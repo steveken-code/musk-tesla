@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Mail, Phone, MapPin, Shield, FileText, Scale, Building } from 'lucide-react';
+import teslaLogo from '@/assets/tesla-logo-new.png';
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -37,10 +38,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-6 group">
-              <span className="text-2xl font-bold font-display tracking-tight">
-                <span className="text-tesla-red group-hover:text-tesla-red/80 transition-colors">Tesla</span>
-                <span className="text-slate-400 group-hover:text-slate-300 transition-colors">Invest</span>
-              </span>
+              <img src={teslaLogo} alt="Tesla" className="h-12 w-auto" />
             </Link>
             <p className="text-slate-400 mb-6 max-w-md leading-relaxed">
               {t('footerDescription')}
@@ -135,7 +133,7 @@ const Footer = () => {
             
             <div className="text-center md:text-right">
               <p className="text-sm text-slate-400">
-                © 2024 Tesla Invest LLC. {t('allRightsReserved')}
+                © 2024 Tesla Stock LLC. {t('allRightsReserved')}
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 {t('registrationInfo')}

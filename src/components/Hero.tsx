@@ -86,9 +86,9 @@ const Hero = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display">
-            <span className="block text-foreground">{t('heroTitle').split(' ').slice(0, 2).join(' ')}</span>
+            <span className="block text-foreground">{t('heroTitle')}</span>
             <span className="block mt-2 bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent animate-glow-pulse font-extrabold">
-              {t('heroTitle').split(' ').slice(2).join(' ') || 'Future'}
+              Investment Platform
             </span>
           </h1>
 
