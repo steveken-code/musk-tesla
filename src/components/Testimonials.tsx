@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import elonCeo from '@/assets/elon-ceo.jpeg';
-import AnimatedSection from './AnimatedSection';
+import useEmblaCarousel from 'embla-carousel-react';
+import { useCallback, useEffect, useState } from 'react';
 
 const Testimonials = () => {
   const { t } = useLanguage();
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const testimonials = [
     {
@@ -65,6 +68,28 @@ const Testimonials = () => {
     },
   ];
 
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -83,6 +108,39 @@ const Testimonials = () => {
     },
   };
 
+  const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
+    <Card className="h-full p-6 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 group relative overflow-hidden">
+      {/* Growth Badge */}
+      <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
+        <span className="text-green-600 font-bold text-sm">{testimonial.growth}</span>
+      </div>
+      
+      <div className="flex items-start gap-4 mb-4 pr-20">
+        <div className="relative flex-shrink-0">
+          <img 
+            src={testimonial.avatar} 
+            alt={testimonial.name}
+            className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 group-hover:border-electric-blue transition-colors duration-300"
+          />
+          <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
+        </div>
+        <div className="min-w-0">
+          <h4 className="font-bold text-base text-slate-900">{testimonial.name}</h4>
+          <p className="text-sm text-slate-500">{testimonial.role}</p>
+          <p className="text-xs text-slate-400">{testimonial.location}</p>
+        </div>
+      </div>
+      <div className="flex gap-1 mb-4">
+        {[...Array(testimonial.rating)].map((_, i) => (
+          <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+        ))}
+      </div>
+      <p className="text-slate-600 group-hover:text-slate-800 transition-colors duration-300 text-sm leading-relaxed">
+        "{testimonial.text}"
+      </p>
+    </Card>
+  );
+
   return (
     <section className="py-24 md:py-32 relative overflow-hidden bg-slate-100">
       {/* Background effects */}
@@ -99,7 +157,7 @@ const Testimonials = () => {
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="max-w-4xl mx-auto mb-16 md:mb-20">
-            <Card className="p-6 md:p-8 lg:p-12 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-lg group">
+            <Card className="p-6 md:p-8 lg:p-12 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-lg group transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
               <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative flex-shrink-0">
                   <div className="w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-500">
@@ -149,46 +207,65 @@ const Testimonials = () => {
           </p>
         </motion.div>
 
-        {/* Testimonials Grid */}
+        {/* Mobile Carousel */}
+        <div className="sm:hidden">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="flex-[0_0_100%] min-w-0 px-2">
+                  <TestimonialCard testimonial={testimonial} />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Carousel Controls */}
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <button
+              onClick={scrollPrev}
+              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+              aria-label="Previous testimonial"
+            >
+              <ChevronLeft className="w-5 h-5 text-slate-600" />
+            </button>
+            
+            {/* Dots */}
+            <div className="flex gap-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => emblaApi?.scrollTo(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === selectedIndex 
+                      ? 'bg-tesla-red w-6' 
+                      : 'bg-slate-300 hover:bg-slate-400'
+                  }`}
+                  aria-label={`Go to testimonial ${index + 1}`}
+                />
+              ))}
+            </div>
+            
+            <button
+              onClick={scrollNext}
+              className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+              aria-label="Next testimonial"
+            >
+              <ChevronRight className="w-5 h-5 text-slate-600" />
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {testimonials.map((testimonial, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full p-6 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden">
-                {/* Growth Badge */}
-                <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
-                  <span className="text-green-600 font-bold text-sm">{testimonial.growth}</span>
-                </div>
-                
-                <div className="flex items-start gap-4 mb-4 pr-20">
-                  <div className="relative flex-shrink-0">
-                    <img 
-                      src={testimonial.avatar} 
-                      alt={testimonial.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 group-hover:border-electric-blue transition-colors duration-300"
-                    />
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="font-bold text-base text-slate-900">{testimonial.name}</h4>
-                    <p className="text-sm text-slate-500">{testimonial.role}</p>
-                    <p className="text-xs text-slate-400">{testimonial.location}</p>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                  ))}
-                </div>
-                <p className="text-slate-600 group-hover:text-slate-800 transition-colors duration-300 text-sm leading-relaxed">
-                  "{testimonial.text}"
-                </p>
-              </Card>
+              <TestimonialCard testimonial={testimonial} />
             </motion.div>
           ))}
         </motion.div>
