@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, User, ChevronLeft, ChevronRight, Sparkles, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/tesla-hero.jpg";
@@ -62,21 +62,6 @@ const Hero = () => {
         }} />
       </div>
 
-      {/* Slider Controls */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-20 p-3 bg-card/30 backdrop-blur-md border border-border/50 rounded-full hover:bg-card/60 transition-all hover:scale-110 group"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-5 h-5 text-foreground group-hover:text-tesla-red transition-colors" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-20 p-3 bg-card/30 backdrop-blur-md border border-border/50 rounded-full hover:bg-card/60 transition-all hover:scale-110 group"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-5 h-5 text-foreground group-hover:text-tesla-red transition-colors" />
-      </button>
 
       {/* Slide Indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">

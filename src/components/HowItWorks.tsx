@@ -48,16 +48,11 @@ const HowItWorks = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((item, index) => (
               <AnimatedSection key={index} delay={index * 0.15} direction="up">
-                <div className="relative text-center">
+                <div className="relative text-center glass-card rounded-2xl p-6">
                   {/* Step number */}
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-tesla-red to-tesla-red/70 flex items-center justify-center shadow-lg shadow-tesla-red/20">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  
-                  {/* Connector line for desktop */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute top-8 left-[60%] w-full h-px bg-gradient-to-r from-slate-700 to-transparent" />
-                  )}
                   
                   <div className="text-tesla-red font-bold text-sm mb-2">
                     Step {item.step}
