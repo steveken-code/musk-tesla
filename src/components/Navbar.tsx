@@ -55,11 +55,7 @@ const Navbar = () => {
 
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-slate-900 shadow-2xl' 
-          : 'bg-slate-900'
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border"
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -184,9 +180,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      
-      {/* Bottom Border Line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-700" />
     </nav>
   );
 };
