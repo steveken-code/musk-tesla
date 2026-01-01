@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://teslainvestment.lovable.app/sitemap.xml
+Sitemap: https://msktesla.net/sitemap.xml
