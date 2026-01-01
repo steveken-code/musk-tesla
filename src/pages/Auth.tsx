@@ -295,14 +295,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
+                    className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
                     required={!isLogin}
                   />
                 </div>
@@ -314,14 +314,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
+                  className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
                   required
                 />
               </div>
@@ -332,21 +332,21 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-slate-800/50 border-slate-700 hover:border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-0"
+                  className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-0"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-800 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
