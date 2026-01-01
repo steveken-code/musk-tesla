@@ -102,11 +102,8 @@ const Hero = () => {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display leading-[1.1]"
           >
             <span className="block text-foreground">Invest in the</span>
-            <span className="relative inline-block mt-2">
-              <span className="bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
-                Future of Electric Mobility
-              </span>
-              <span className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue rounded-full"></span>
+            <span className="bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
+              Future of Electric Mobility
             </span>
           </motion.h1>
 
