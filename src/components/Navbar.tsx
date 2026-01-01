@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import teslaLogo from '@/assets/tesla-logo-new.png';
 import { Menu, X, Zap, TrendingUp, Shield, Users } from 'lucide-react';
 
 const Navbar = () => {
@@ -36,15 +37,12 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo with Tagline */}
+          {/* Logo */}
           <Link 
             to="/" 
             className="flex items-center gap-3 group hover:scale-105 transition-transform duration-300"
           >
-            <span className="text-xl md:text-2xl font-bold font-display tracking-tight">
-              <span className="text-tesla-red">Tesla</span>
-              <span className="text-slate-400">Invest</span>
-            </span>
+            <img src={teslaLogo} alt="Tesla" className="h-8 md:h-10 w-auto" />
             <span className="hidden lg:block text-xs text-slate-500 border-l border-slate-600 pl-3">
               Trusted Tesla Stock Gateway
             </span>
