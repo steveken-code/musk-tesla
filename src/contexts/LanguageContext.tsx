@@ -137,7 +137,7 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonial3': 'The transparency and professionalism of Tesla Invest is unmatched. I feel secure knowing my investments are in good hands.',
     'testimonial4': 'Started with a small investment and have grown it significantly. The real-time tracking and profit notifications are fantastic.',
     'testimonial5': 'Best investment decision I have ever made. The team is responsive and the platform delivers on its promises.',
-    'testimonial6': 'Tesla Invest makes investing in EV stocks accessible and profitable. My portfolio has never looked better.',
+    'testimonial6': 'The platform has exceeded my expectations. Real-time tracking and expert market insights have helped me make smarter investment decisions.',
     'ceoQuote': 'Invest in the future where innovation meets sustainable returns. Tesla stock represents the convergence of technology, clean energy, and unprecedented market growth.',
     
     // Stock Growth
@@ -312,7 +312,7 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonial3': 'Прозрачность и профессионализм Tesla Invest не имеют себе равных. Я чувствую себя уверенно, зная, что мои инвестиции в надежных руках.',
     'testimonial4': 'Начал с небольшой инвестиции и значительно увеличил её. Отслеживание в реальном времени и уведомления о прибыли — это фантастика.',
     'testimonial5': 'Лучшее инвестиционное решение в моей жизни. Команда отзывчива, а платформа выполняет свои обещания.',
-    'testimonial6': 'Tesla Invest делает инвестиции в акции электромобилей доступными и прибыльными. Мой портфель никогда не выглядел лучше.',
+    'testimonial6': 'Платформа превзошла мои ожидания. Отслеживание в реальном времени помогло мне принимать более разумные инвестиционные решения.',
     'ceoQuote': 'Инвестируйте в будущее, где инновации сочетаются с устойчивой доходностью. Акции Tesla — это слияние технологий, чистой энергии и беспрецедентного роста рынка.',
     
     // Stock Growth

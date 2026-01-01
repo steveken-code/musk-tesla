@@ -3,9 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
-import ThemeToggle from './ThemeToggle';
 import teslaLogo from '@/assets/tesla-logo-new.png';
-import { Menu, X, Zap, TrendingUp, Shield, Users, HelpCircle, Info } from 'lucide-react';
+import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info } from 'lucide-react';
 
 const Navbar = () => {
   const { t } = useLanguage();
@@ -44,7 +43,7 @@ const Navbar = () => {
             to="/" 
             className="flex items-center gap-3 group hover:scale-105 transition-transform duration-300"
           >
-            <img src={teslaLogo} alt="Tesla" className="h-10 md:h-12 w-auto brightness-125" />
+            <img src={teslaLogo} alt="Tesla" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
             <span className="hidden lg:block text-xs text-slate-500 border-l border-slate-600 pl-3">
               Trusted Tesla Stock Gateway
             </span>
@@ -69,7 +68,6 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
             <LanguageSelector />
             <Link to="/auth">
               <Button 
@@ -93,7 +91,6 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
-            <ThemeToggle />
             <button
               className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

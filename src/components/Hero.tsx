@@ -85,11 +85,12 @@ const Hero = () => {
             <span className="text-sm text-muted-foreground">TSLA +$247.03 (12.4%) {t('yearToDate')}</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display">
-            <span className="block text-foreground">Invest in the Future with</span>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display leading-tight">
+            <span className="block text-foreground">Invest in the</span>
             <span className="block mt-2 bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent animate-glow-pulse font-extrabold">
-              Tesla-Powered Stocks
+              Future of Electric Mobility
             </span>
+            <span className="block text-foreground text-3xl sm:text-4xl md:text-5xl mt-3">with Tesla-Powered Stocks</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10">

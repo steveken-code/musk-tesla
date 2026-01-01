@@ -1,4 +1,5 @@
 import { UserPlus, ShoppingCart, LineChart, Wallet } from 'lucide-react';
+import AnimatedSection from '@/components/AnimatedSection';
 
 const HowItWorks = () => {
   const steps = [
@@ -36,7 +37,7 @@ const HowItWorks = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-electric-blue/10 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
+        <AnimatedSection className="text-center mb-16">
           <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-electric-blue bg-electric-blue/10 rounded-full border border-electric-blue/20">
             Getting Started
           </span>
@@ -46,31 +47,33 @@ const HowItWorks = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Start investing in Tesla stock in just 4 simple steps.
           </p>
-        </div>
+        </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="relative group">
-              {/* Connector line */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-border via-tesla-red/50 to-border z-0" />
-              )}
-              
-              <div className="relative bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-8 hover:border-tesla-red/50 transition-all duration-500 group-hover:-translate-y-2">
-                {/* Step number */}
-                <span className="absolute -top-4 -right-4 text-6xl font-black text-tesla-red/10 group-hover:text-tesla-red/20 transition-colors">
-                  {step.number}
-                </span>
+            <AnimatedSection key={index} delay={index * 0.1} direction="up">
+              <div className="relative group h-full">
+                {/* Connector line */}
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-border via-tesla-red/50 to-border z-0" />
+                )}
                 
-                <div className="relative z-10">
-                  <div className="inline-flex p-3 rounded-xl bg-gradient-to-br from-tesla-red/20 to-electric-blue/20 border border-tesla-red/30 mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <step.icon className="w-6 h-6 text-tesla-red" />
+                <div className="relative bg-card/60 backdrop-blur-xl border border-border rounded-2xl p-8 hover:border-tesla-red/50 transition-all duration-500 group-hover:-translate-y-2 h-full">
+                  {/* Step number */}
+                  <span className="absolute -top-4 -right-4 text-6xl font-black text-tesla-red/10 group-hover:text-tesla-red/20 transition-colors">
+                    {step.number}
+                  </span>
+                  
+                  <div className="relative z-10">
+                    <div className="inline-flex p-3 rounded-xl bg-gradient-to-br from-tesla-red/20 to-electric-blue/20 border border-tesla-red/30 mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <step.icon className="w-6 h-6 text-tesla-red" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 text-foreground">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
                   </div>
-                  <h3 className="text-xl font-bold mb-3 text-foreground">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
                 </div>
               </div>
-            </div>
+            </AnimatedSection>
           ))}
         </div>
       </div>
