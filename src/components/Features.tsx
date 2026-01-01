@@ -1,60 +1,71 @@
-import { Shield, Zap, Smartphone } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Shield, Zap, Smartphone, TrendingUp, Clock, HeadphonesIcon } from 'lucide-react';
 import AnimatedSection from '@/components/AnimatedSection';
 
 const Features = () => {
-  const { t } = useLanguage();
-  
   const features = [
     {
       icon: Shield,
-      title: 'Secure & Fast Transactions',
-      description: 'Bank-level encryption protects your investments with instant processing and real-time confirmation.',
-      gradient: 'from-green-500 to-emerald-600',
+      title: 'Bank-Level Security',
+      description: 'Your investments are protected with 256-bit encryption and multi-factor authentication.',
     },
     {
       icon: Zap,
-      title: 'Instant Payouts',
-      description: 'Withdraw your profits instantly via cryptocurrency or direct bank transfer. No delays, no hidden fees.',
-      gradient: 'from-tesla-red to-orange-500',
+      title: 'Instant Transactions',
+      description: 'Execute trades in milliseconds with our high-performance trading infrastructure.',
     },
     {
       icon: Smartphone,
-      title: 'Mobile-Friendly Dashboard',
-      description: 'Track your Tesla stock investments anywhere, anytime. Optimized for all devices with real-time updates.',
-      gradient: 'from-electric-blue to-cyan-500',
+      title: 'Mobile Optimized',
+      description: 'Full-featured trading experience on any device, anywhere in the world.',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Real-Time Analytics',
+      description: 'Track your portfolio performance with live charts and detailed insights.',
+    },
+    {
+      icon: Clock,
+      title: 'Fast Withdrawals',
+      description: 'Access your funds within 24 hours via bank transfer or cryptocurrency.',
+    },
+    {
+      icon: HeadphonesIcon,
+      title: '24/7 Support',
+      description: 'Dedicated support team available around the clock to assist you.',
     },
   ];
 
   return (
-    <section id="features" className="py-20 md:py-32 bg-gradient-to-b from-background via-slate-900/50 to-background">
-      <div className="container mx-auto px-4">
+    <section id="features" className="py-24 md:py-32 bg-slate-950 relative overflow-hidden">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      
+      <div className="container mx-auto px-4 relative z-10">
         <AnimatedSection className="text-center mb-16">
-          <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-tesla-red bg-tesla-red/10 rounded-full border border-tesla-red/20">
+          <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
             Why Choose Us
-          </span>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">
-            Built for <span className="text-gradient">Modern Investors</span>
+          </p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            Everything You Need to Invest
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Experience the future of Tesla stock trading with cutting-edge technology and unmatched security.
+          <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+            A complete platform designed for both beginners and experienced investors.
           </p>
         </AnimatedSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {features.map((feature, index) => (
-            <AnimatedSection key={index} delay={index * 0.15} direction="up">
-              <div className="group relative bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-8 hover:border-tesla-red/50 transition-all duration-500 hover:-translate-y-2 h-full">
-                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.gradient} mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="w-8 h-8 text-white" />
+            <AnimatedSection key={index} delay={index * 0.1} direction="up">
+              <div className="group bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all duration-300 h-full">
+                <div className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors">
+                  <feature.icon className="w-7 h-7 text-tesla-red" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-tesla-red transition-colors">
+                <h3 className="text-xl font-semibold text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-slate-400 leading-relaxed">
                   {feature.description}
                 </p>
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-tesla-red/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               </div>
             </AnimatedSection>
           ))}
