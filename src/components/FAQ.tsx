@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import AnimatedSection from '@/components/AnimatedSection';
 
 const FAQ = () => {
   const faqs = [
@@ -23,16 +24,12 @@ const FAQ = () => {
       question: 'What is the minimum investment amount?',
       answer: 'You can start investing with as little as $100. This low entry barrier makes Tesla stock accessible to everyone, whether you\'re a beginner or an experienced investor looking to diversify your portfolio.',
     },
-    {
-      question: 'Are there any hidden fees?',
-      answer: 'No, we believe in complete transparency. There are no hidden fees. You only pay a small transaction fee when you buy or sell shares, which is clearly displayed before you confirm any transaction. Withdrawals have minimal processing fees that vary by payment method.',
-    },
   ];
 
   return (
     <section id="faq" className="py-20 md:py-32 bg-gradient-to-b from-background via-slate-900/30 to-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <AnimatedSection className="text-center mb-16">
           <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-tesla-red bg-tesla-red/10 rounded-full border border-tesla-red/20">
             Support
           </span>
@@ -42,9 +39,9 @@ const FAQ = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Got questions? We've got answers. Find everything you need to know about investing with us.
           </p>
-        </div>
+        </AnimatedSection>
 
-        <div className="max-w-3xl mx-auto">
+        <AnimatedSection delay={0.2} className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem
@@ -61,7 +58,7 @@ const FAQ = () => {
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+        </AnimatedSection>
       </div>
     </section>
   );
