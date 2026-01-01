@@ -268,7 +268,7 @@ const Auth = () => {
             variant="static"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow-md"
+            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-lg"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

@@ -53,7 +53,7 @@ const HowItWorks = () => {
   };
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 bg-white relative">
+    <section id="how-it-works" className="py-24 md:py-32 bg-slate-100 relative scroll-mt-20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

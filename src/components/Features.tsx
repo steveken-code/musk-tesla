@@ -60,7 +60,7 @@ const Features = () => {
   };
 
   return (
-    <section id="features" className="py-24 md:py-32 bg-slate-950 relative overflow-hidden">
+    <section id="features" className="py-24 md:py-32 bg-slate-950 relative overflow-hidden scroll-mt-20">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
       
