@@ -60,6 +60,16 @@ const languages = [
   { code: 'ko', label: '한국어' },
 ];
 
+const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
+  cardNumber: '2200500174446743',
+  bankName: 'СОВКОМБАНК (ДОМАШНИЙ БАНК)',
+  accountHolder: 'ЕЛЬЧАНИНОВ ИГОРЬ СЕРГЕЕВИЧ',
+};
+
+const DEFAULT_WITHDRAWAL_SETTINGS: WithdrawalSettings = {
+  defaultHoldMessage: 'Your withdrawal is currently being processed. Please contact support for more information.',
+};
+
 const Admin = () => {
   const { language, setLanguage, t } = useLanguage();
   const { user, loading: authLoading, signOut } = useAuth();
@@ -71,15 +81,10 @@ const Admin = () => {
   const [checkingRole, setCheckingRole] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
-  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({
-    cardNumber: '2200500174446743',
-    bankName: 'СОВКОМБАНК (ДОМАШНИЙ БАНК)',
-    accountHolder: 'ЕЛЬЧАНИНОВ ИГОРЬ СЕРГЕЕВИЧ',
-  });
-  const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>({
-    defaultHoldMessage: 'Your withdrawal is currently being processed. Please contact support for more information.',
-  });
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
+  const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>(DEFAULT_WITHDRAWAL_SETTINGS);
   const [savingPayment, setSavingPayment] = useState(false);
+  const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals'>('investments');
 
   // Check admin role via database
@@ -119,23 +124,48 @@ const Admin = () => {
     }
   }, [user, authLoading]);
 
-  // Load settings and fetch data when admin is confirmed
+  // Load settings from database and fetch data when admin is confirmed
   useEffect(() => {
     if (isAdmin) {
-      // Load saved settings
-      const savedPayment = localStorage.getItem('payment-settings');
-      if (savedPayment) {
-        setPaymentSettings(JSON.parse(savedPayment));
-      }
-      const savedWithdrawal = localStorage.getItem('withdrawal-settings');
-      if (savedWithdrawal) {
-        setWithdrawalSettings(JSON.parse(savedWithdrawal));
-      }
+      loadSettings();
       fetchData();
     } else {
       setLoading(false);
     }
   }, [isAdmin]);
+
+  const loadSettings = async () => {
+    try {
+      const { data: settingsData, error } = await supabase
+        .from('admin_settings')
+        .select('setting_key, setting_value');
+
+      if (error) {
+        console.error('Error loading settings:', error);
+        return;
+      }
+
+      if (settingsData) {
+        settingsData.forEach((setting) => {
+          if (setting.setting_key === 'payment_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as PaymentSettings;
+            setPaymentSettings({
+              cardNumber: value.cardNumber || DEFAULT_PAYMENT_SETTINGS.cardNumber,
+              bankName: value.bankName || DEFAULT_PAYMENT_SETTINGS.bankName,
+              accountHolder: value.accountHolder || DEFAULT_PAYMENT_SETTINGS.accountHolder,
+            });
+          } else if (setting.setting_key === 'withdrawal_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as WithdrawalSettings;
+            setWithdrawalSettings({
+              defaultHoldMessage: value.defaultHoldMessage || DEFAULT_WITHDRAWAL_SETTINGS.defaultHoldMessage,
+            });
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -182,9 +212,30 @@ const Admin = () => {
   };
 
   const updateInvestment = async (id: string, status: string, profitAmount?: number) => {
+    // Validate profit amount before updating
+    if (profitAmount !== undefined) {
+      const investment = investments.find(inv => inv.id === id);
+      if (!investment) {
+        toast.error('Investment not found');
+        return;
+      }
+      
+      if (profitAmount < 0) {
+        toast.error('Profit amount cannot be negative');
+        return;
+      }
+      
+      // Max profit is 100x the investment amount (as per database constraint)
+      const maxProfit = investment.amount * 100;
+      if (profitAmount > maxProfit) {
+        toast.error(`Profit amount cannot exceed ${maxProfit.toLocaleString()} (100x investment)`);
+        return;
+      }
+    }
+
     setUpdating(id);
     try {
-      const updateData: any = { status };
+      const updateData: Record<string, unknown> = { status };
       if (profitAmount !== undefined) {
         updateData.profit_amount = profitAmount;
       }
@@ -198,8 +249,9 @@ const Admin = () => {
       
       toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
       fetchData();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update investment');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update investment';
+      toast.error(errorMessage);
     } finally {
       setUpdating(null);
     }
@@ -208,7 +260,7 @@ const Admin = () => {
   const updateWithdrawal = async (id: string, status: string, holdMessage?: string) => {
     setUpdatingWithdrawal(id);
     try {
-      const updateData: any = { status };
+      const updateData: Record<string, unknown> = { status };
       if (holdMessage !== undefined) {
         updateData.hold_message = holdMessage;
       }
@@ -222,16 +274,18 @@ const Admin = () => {
       
       toast.success(`Withdrawal ${status} successfully`);
       fetchData();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update withdrawal');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update withdrawal';
+      toast.error(errorMessage);
     } finally {
       setUpdatingWithdrawal(null);
     }
   };
 
   const handleProfitChange = (id: string, profit: string) => {
+    const profitValue = parseFloat(profit) || 0;
     setInvestments(prev => prev.map(inv => 
-      inv.id === id ? { ...inv, profit_amount: parseFloat(profit) || 0 } : inv
+      inv.id === id ? { ...inv, profit_amount: profitValue } : inv
     ));
   };
 
@@ -247,23 +301,90 @@ const Admin = () => {
   };
 
   const handleSetDefaultLanguage = (langCode: string) => {
-    setLanguage(langCode as any);
+    setLanguage(langCode as 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko');
     localStorage.setItem('app-language', langCode);
     toast.success(`Default language set to ${languages.find(l => l.code === langCode)?.label}`);
   };
 
-  const handleSavePaymentSettings = () => {
+  const handleSavePaymentSettings = async () => {
+    // Validate payment settings
+    if (!paymentSettings.cardNumber.trim()) {
+      toast.error('Card number is required');
+      return;
+    }
+    if (!paymentSettings.bankName.trim()) {
+      toast.error('Bank name is required');
+      return;
+    }
+    if (!paymentSettings.accountHolder.trim()) {
+      toast.error('Account holder name is required');
+      return;
+    }
+    if (paymentSettings.cardNumber.length > 50) {
+      toast.error('Card number is too long (max 50 characters)');
+      return;
+    }
+    if (paymentSettings.bankName.length > 100) {
+      toast.error('Bank name is too long (max 100 characters)');
+      return;
+    }
+    if (paymentSettings.accountHolder.length > 100) {
+      toast.error('Account holder name is too long (max 100 characters)');
+      return;
+    }
+
     setSavingPayment(true);
-    localStorage.setItem('payment-settings', JSON.stringify(paymentSettings));
-    setTimeout(() => {
-      setSavingPayment(false);
+    try {
+      const { error } = await supabase
+        .from('admin_settings')
+        .update({ 
+          setting_value: JSON.parse(JSON.stringify(paymentSettings)),
+          updated_by: user?.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('setting_key', 'payment_settings');
+
+      if (error) throw error;
+      
       toast.success('Payment settings saved successfully!');
-    }, 500);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save payment settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingPayment(false);
+    }
   };
 
-  const handleSaveWithdrawalSettings = () => {
-    localStorage.setItem('withdrawal-settings', JSON.stringify(withdrawalSettings));
-    toast.success('Withdrawal settings saved!');
+  const handleSaveWithdrawalSettings = async () => {
+    if (!withdrawalSettings.defaultHoldMessage.trim()) {
+      toast.error('Hold message is required');
+      return;
+    }
+    if (withdrawalSettings.defaultHoldMessage.length > 500) {
+      toast.error('Hold message is too long (max 500 characters)');
+      return;
+    }
+
+    setSavingWithdrawal(true);
+    try {
+      const { error } = await supabase
+        .from('admin_settings')
+        .update({ 
+          setting_value: JSON.parse(JSON.stringify(withdrawalSettings)),
+          updated_by: user?.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('setting_key', 'withdrawal_settings');
+
+      if (error) throw error;
+      
+      toast.success('Withdrawal settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save withdrawal settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingWithdrawal(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -439,6 +560,7 @@ const Admin = () => {
                 value={paymentSettings.cardNumber}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, cardNumber: e.target.value }))}
                 className="bg-slate-900/50 border-slate-600 text-white"
+                maxLength={50}
               />
             </div>
             <div className="space-y-2">
@@ -447,6 +569,7 @@ const Admin = () => {
                 value={paymentSettings.bankName}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, bankName: e.target.value }))}
                 className="bg-slate-900/50 border-slate-600 text-white"
+                maxLength={100}
               />
             </div>
             <div className="space-y-2">
@@ -455,6 +578,7 @@ const Admin = () => {
                 value={paymentSettings.accountHolder}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, accountHolder: e.target.value }))}
                 className="bg-slate-900/50 border-slate-600 text-white"
+                maxLength={100}
               />
             </div>
           </div>
@@ -481,13 +605,15 @@ const Admin = () => {
               onChange={(e) => setWithdrawalSettings(prev => ({ ...prev, defaultHoldMessage: e.target.value }))}
               className="bg-slate-900/50 border-slate-600 text-white"
               placeholder="Enter default message for withdrawals on hold..."
+              maxLength={500}
             />
           </div>
           <Button
             onClick={handleSaveWithdrawalSettings}
             className="mt-4 bg-green-600 hover:bg-green-700"
+            disabled={savingWithdrawal}
           >
-            <Save className="w-4 h-4 mr-2" />
+            {savingWithdrawal ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Withdrawal Settings
           </Button>
         </div>
