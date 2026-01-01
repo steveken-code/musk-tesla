@@ -2,27 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Zap, ArrowLeft, Phone, Lock } from 'lucide-react';
+import { Zap, ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LanguageSelector from '@/components/LanguageSelector';
-
-const VALID_PHONE = '08131166505';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -71,32 +69,32 @@ const Auth = () => {
     }
   };
 
-  const handlePhoneVerification = (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phoneNumber === VALID_PHONE) {
-      setPhoneVerified(true);
-      toast.success('Phone verified! You can now set a new password.');
-    } else {
-      toast.error(t('invalidPhone'));
+    
+    if (!resetEmail.trim()) {
+      toast.error('Please enter your email address');
+      return;
     }
-  };
 
-  const handlePasswordReset = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
+    setResetLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setResetEmailSent(true);
+        toast.success('Password reset email sent! Check your inbox.');
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setResetLoading(false);
     }
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-    toast.success(t('passwordChanged'));
-    setIsForgotPassword(false);
-    setPhoneVerified(false);
-    setPhoneNumber('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   if (isForgotPassword) {
@@ -113,7 +111,8 @@ const Auth = () => {
         <button 
           onClick={() => {
             setIsForgotPassword(false);
-            setPhoneVerified(false);
+            setResetEmailSent(false);
+            setResetEmail('');
           }}
           className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
         >
@@ -131,66 +130,62 @@ const Auth = () => {
               </span>
             </div>
 
-            {!phoneVerified ? (
-              <form onSubmit={handlePhoneVerification} className="space-y-4">
+            {resetEmailSent ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
+                  <Mail className="w-8 h-8 text-green-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">Check your email</h3>
+                <p className="text-slate-400">
+                  We've sent a password reset link to <span className="text-white font-medium">{resetEmail}</span>
+                </p>
+                <p className="text-slate-500 text-sm">
+                  Didn't receive the email? Check your spam folder or try again.
+                </p>
+                <Button
+                  onClick={() => {
+                    setResetEmailSent(false);
+                    setResetEmail('');
+                  }}
+                  variant="outline"
+                  className="mt-4 border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordReset} className="space-y-4">
                 <p className="text-slate-400 text-center mb-6">
-                  {t('enterPhone')}
+                  Enter your email address and we'll send you a link to reset your password.
                 </p>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2 text-slate-300">
-                    <Phone className="w-4 h-4" />
-                    {t('phoneNumber')}
+                  <Label htmlFor="resetEmail" className="flex items-center gap-2 text-slate-300">
+                    <Mail className="w-4 h-4" />
+                    {t('email')}
                   </Label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="08131166505"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    id="resetEmail"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
                     className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
                     required
                   />
                 </div>
                 <Button
                   type="submit"
+                  disabled={resetLoading}
                   className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
                 >
-                  Verify Phone
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handlePasswordReset} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-slate-300">{t('newPassword')}</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-slate-900/50 border-slate-600 text-white"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-slate-300">{t('confirmPassword')}</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-slate-900/50 border-slate-600 text-white"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                >
-                  {t('resetPassword')}
+                  {resetLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
                 </Button>
               </form>
             )}

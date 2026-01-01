@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, Eye, EyeOff, CreditCard, Save, Wallet, AlertCircle, Clock } from 'lucide-react';
-
-const ADMIN_PASSCODE = '@Bombing??1';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock } from 'lucide-react';
 
 interface Investment {
   id: string;
@@ -63,13 +62,13 @@ const languages = [
 
 const Admin = () => {
   const { language, setLanguage, t } = useLanguage();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [passcode, setPasscode] = useState('');
-  const [showPasscode, setShowPasscode] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({
@@ -83,38 +82,60 @@ const Admin = () => {
   const [savingPayment, setSavingPayment] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals'>('investments');
 
+  // Check admin role via database
   useEffect(() => {
-    const savedAuth = sessionStorage.getItem('admin-authenticated');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
+    const checkAdminRole = async () => {
+      if (!user) {
+        setCheckingRole(false);
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        // Query user_roles table to check if user has admin role
+        const { data: roleData, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking admin role:', error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!roleData);
+        }
+      } catch (err) {
+        console.error('Error checking admin role:', err);
+        setIsAdmin(false);
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+
+    if (!authLoading) {
+      checkAdminRole();
+    }
+  }, [user, authLoading]);
+
+  // Load settings and fetch data when admin is confirmed
+  useEffect(() => {
+    if (isAdmin) {
+      // Load saved settings
+      const savedPayment = localStorage.getItem('payment-settings');
+      if (savedPayment) {
+        setPaymentSettings(JSON.parse(savedPayment));
+      }
+      const savedWithdrawal = localStorage.getItem('withdrawal-settings');
+      if (savedWithdrawal) {
+        setWithdrawalSettings(JSON.parse(savedWithdrawal));
+      }
       fetchData();
     } else {
       setLoading(false);
     }
-    
-    // Load saved settings
-    const savedPayment = localStorage.getItem('payment-settings');
-    if (savedPayment) {
-      setPaymentSettings(JSON.parse(savedPayment));
-    }
-    const savedWithdrawal = localStorage.getItem('withdrawal-settings');
-    if (savedWithdrawal) {
-      setWithdrawalSettings(JSON.parse(savedWithdrawal));
-    }
-  }, []);
-
-  const handlePasscodeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passcode === ADMIN_PASSCODE) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin-authenticated', 'true');
-      toast.success('Access granted!');
-      fetchData();
-    } else {
-      toast.error(t('accessDenied'));
-      setPasscode('');
-    }
-  };
+  }, [isAdmin]);
 
   const fetchData = async () => {
     try {
@@ -220,9 +241,8 @@ const Admin = () => {
     ));
   };
 
-  const handleSignOut = () => {
-    sessionStorage.removeItem('admin-authenticated');
-    setIsAuthenticated(false);
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/');
   };
 
@@ -257,8 +277,17 @@ const Admin = () => {
     return styles[status] || styles.pending;
   };
 
-  // Passcode Entry Screen
-  if (!isAuthenticated) {
+  // Loading state
+  if (authLoading || checkingRole) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-tesla-red" />
+      </div>
+    );
+  }
+
+  // Not logged in - redirect to auth
+  if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 overflow-x-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
@@ -268,37 +297,65 @@ const Admin = () => {
         <div className="relative z-10 w-full max-w-md animate-fade-in">
           <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 md:p-8 shadow-2xl">
             <div className="flex items-center justify-center gap-2 mb-8">
-              <Lock className="w-10 h-10 text-tesla-red animate-pulse" />
+              <Lock className="w-10 h-10 text-tesla-red" />
             </div>
             
             <h2 className="text-xl md:text-2xl font-bold text-center mb-2 text-white">{t('adminPasscode')}</h2>
-            <p className="text-slate-400 text-center mb-6 text-sm">{t('enterPasscode')}</p>
+            <p className="text-slate-400 text-center mb-6 text-sm">Please sign in with an admin account to access this page.</p>
             
-            <form onSubmit={handlePasscodeSubmit} className="space-y-4">
-              <div className="relative">
-                <Input
-                  type={showPasscode ? 'text' : 'password'}
-                  placeholder="Enter passcode..."
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  className="bg-slate-900/50 border-slate-600 text-white pr-10 text-center text-lg tracking-wider"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasscode(!showPasscode)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                >
-                  {showPasscode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
+            <Button
+              onClick={() => navigate('/auth')}
+              className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
+            >
+              Sign In
+            </Button>
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate('/')}
+                className="text-electric-blue hover:underline text-sm"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not an admin - access denied
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 overflow-x-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+        <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse" />
+        
+        <div className="relative z-10 w-full max-w-md animate-fade-in">
+          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 md:p-8 shadow-2xl">
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <AlertCircle className="w-10 h-10 text-tesla-red" />
+            </div>
+            
+            <h2 className="text-xl md:text-2xl font-bold text-center mb-2 text-white">{t('accessDenied')}</h2>
+            <p className="text-slate-400 text-center mb-6 text-sm">You do not have admin privileges to access this page.</p>
+            
+            <div className="space-y-3">
               <Button
-                type="submit"
+                onClick={() => navigate('/dashboard')}
                 className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
               >
-                Access Admin Panel
+                Go to Dashboard
               </Button>
-            </form>
+              <Button
+                variant="outline"
+                onClick={handleSignOut}
+                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                Sign Out
+              </Button>
+            </div>
             
             <div className="mt-6 text-center">
               <button
@@ -458,74 +515,61 @@ const Admin = () => {
         {/* Investments Tab */}
         {activeTab === 'investments' && (
           <>
-            <h1 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <DollarSign className="w-6 h-6 text-tesla-red" />
-              Investment Management
-            </h1>
-
             {investments.length === 0 ? (
               <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-8 text-center animate-fade-in">
-                <p className="text-slate-400">No investments found.</p>
+                <DollarSign className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No investments yet</h3>
+                <p className="text-slate-400">When users make investments, they will appear here.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {investments.map((inv, index) => (
+              <div className="grid gap-4">
+                {investments.map((investment) => (
                   <div
-                    key={inv.id}
-                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 hover:border-tesla-red/30 transition-all duration-300 animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
+                    key={investment.id}
+                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in hover:border-slate-600 transition-colors"
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(inv.status)}`}>
-                            {inv.status.toUpperCase()}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {new Date(inv.created_at).toLocaleString()}
+                          <h3 className="text-lg font-semibold text-white">
+                            ${investment.amount.toLocaleString()}
+                          </h3>
+                          <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(investment.status)}`}>
+                            {investment.status}
                           </span>
                         </div>
-                        <p className="font-medium truncate text-white">
-                          {inv.profiles?.full_name || inv.profiles?.email || 'Unknown User'}
-                        </p>
-                        <p className="text-sm text-slate-400 truncate">{inv.profiles?.email}</p>
-                        <div className="flex flex-wrap items-center gap-4 mt-2">
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="w-4 h-4 text-tesla-red" />
-                            <span className="font-bold text-white">${Number(inv.amount).toLocaleString()}</span>
-                            <span className="text-xs text-slate-500">invested</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="w-4 h-4 text-green-500" />
-                            <span className="font-bold text-green-500">
-                              ${Number(inv.profit_amount).toLocaleString()}
-                            </span>
-                            <span className="text-xs text-slate-500">profit</span>
-                          </div>
+                        <div className="text-sm text-slate-400 space-y-1">
+                          <p>User: {investment.profiles?.full_name || 'Unknown'}</p>
+                          <p>Email: {investment.profiles?.email || 'N/A'}</p>
+                          <p>Date: {new Date(investment.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div className="flex flex-col gap-3 md:items-end">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-400">Profit:</span>
-                          <Input
-                            type="text"
-                            inputMode="decimal"
-                            value={inv.profit_amount}
-                            onChange={(e) => handleProfitChange(inv.id, e.target.value)}
-                            className="w-24 md:w-28 bg-slate-900/50 border-slate-600 text-white"
-                          />
+                          <Label className="text-slate-300 text-sm whitespace-nowrap">Profit:</Label>
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-400">$</span>
+                            <Input
+                              type="number"
+                              value={investment.profit_amount}
+                              onChange={(e) => handleProfitChange(investment.id, e.target.value)}
+                              className="w-24 bg-slate-900/50 border-slate-600 text-white text-right"
+                              min="0"
+                              step="0.01"
+                            />
+                          </div>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-2">
-                          {inv.status === 'pending' && (
+                          {investment.status === 'pending' && (
                             <Button
                               size="sm"
-                              onClick={() => updateInvestment(inv.id, 'active', inv.profit_amount)}
-                              disabled={updating === inv.id}
+                              onClick={() => updateInvestment(investment.id, 'active', investment.profit_amount)}
+                              disabled={updating === investment.id}
                               className="bg-green-600 hover:bg-green-700"
                             >
-                              {updating === inv.id ? (
+                              {updating === investment.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
                                 <CheckCircle className="w-4 h-4 mr-1" />
@@ -533,30 +577,27 @@ const Admin = () => {
                               Approve
                             </Button>
                           )}
-                          
-                          {inv.status === 'active' && (
-                            <Button
-                              size="sm"
-                              onClick={() => updateInvestment(inv.id, 'active', inv.profit_amount)}
-                              disabled={updating === inv.id}
-                              variant="outline"
-                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                            >
-                              {updating === inv.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                'Update'
-                              )}
-                            </Button>
-                          )}
-                          
-                          {(inv.status === 'pending' || inv.status === 'active') && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount)}
+                            disabled={updating === investment.id}
+                            className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
+                          >
+                            {updating === investment.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <TrendingUp className="w-4 h-4 mr-1" />
+                            )}
+                            Update Profit
+                          </Button>
+                          {investment.status !== 'cancelled' && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateInvestment(inv.id, 'cancelled')}
-                              disabled={updating === inv.id}
-                              className="border-red-500/50 text-red-500 hover:bg-red-500/10"
+                              onClick={() => updateInvestment(investment.id, 'cancelled')}
+                              disabled={updating === investment.id}
+                              className="border-red-500 text-red-500 hover:bg-red-500/10"
                             >
                               <XCircle className="w-4 h-4 mr-1" />
                               Cancel
@@ -575,75 +616,67 @@ const Admin = () => {
         {/* Withdrawals Tab */}
         {activeTab === 'withdrawals' && (
           <>
-            <h1 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-2 text-white">
-              <Wallet className="w-6 h-6 text-green-500" />
-              Withdrawal Management
-            </h1>
-
             {withdrawals.length === 0 ? (
               <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-8 text-center animate-fade-in">
-                <p className="text-slate-400">No withdrawals found.</p>
+                <Wallet className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No withdrawals yet</h3>
+                <p className="text-slate-400">When users request withdrawals, they will appear here.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {withdrawals.map((w, index) => (
+              <div className="grid gap-4">
+                {withdrawals.map((withdrawal) => (
                   <div
-                    key={w.id}
-                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 hover:border-green-500/30 transition-all duration-300 animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
+                    key={withdrawal.id}
+                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in hover:border-slate-600 transition-colors"
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(w.status)}`}>
-                            {w.status.toUpperCase().replace('_', ' ')}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {new Date(w.created_at).toLocaleString()}
+                          <h3 className="text-lg font-semibold text-white">
+                            ${withdrawal.amount.toLocaleString()}
+                          </h3>
+                          <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(withdrawal.status)}`}>
+                            {withdrawal.status}
                           </span>
                         </div>
-                        <p className="font-medium truncate text-white">
-                          {w.profiles?.full_name || w.profiles?.email || 'Unknown User'}
-                        </p>
-                        <p className="text-sm text-slate-400 truncate">{w.profiles?.email}</p>
-                        <div className="flex flex-wrap items-center gap-4 mt-2">
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="w-4 h-4 text-green-500" />
-                            <span className="font-bold text-white">${Number(w.amount).toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Globe className="w-4 h-4 text-electric-blue" />
-                            <span className="text-slate-300">{w.country}</span>
-                          </div>
+                        <div className="text-sm text-slate-400 space-y-1">
+                          <p>User: {withdrawal.profiles?.full_name || 'Unknown'}</p>
+                          <p>Email: {withdrawal.profiles?.email || 'N/A'}</p>
+                          <p>Country: {withdrawal.country}</p>
+                          <p>Payment Details: {withdrawal.payment_details}</p>
+                          <p>Date: {new Date(withdrawal.created_at).toLocaleDateString()}</p>
+                          {withdrawal.hold_message && (
+                            <p className="text-orange-400">
+                              <AlertCircle className="w-3 h-3 inline mr-1" />
+                              Hold Message: {withdrawal.hold_message}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-sm text-slate-400 mt-2">
-                          Payment Details: <span className="text-white font-mono">{w.payment_details}</span>
-                        </p>
                       </div>
 
-                      <div className="flex flex-col gap-3 min-w-[280px]">
-                        {/* Hold Message Input */}
-                        <div className="space-y-1">
-                          <Label className="text-slate-400 text-xs">Hold Message (shown to user)</Label>
-                          <Input
-                            type="text"
-                            value={w.hold_message || withdrawalSettings.defaultHoldMessage}
-                            onChange={(e) => handleWithdrawalHoldMessageChange(w.id, e.target.value)}
-                            className="bg-slate-900/50 border-slate-600 text-white text-sm"
-                            placeholder="Enter hold message..."
-                          />
-                        </div>
-                        
+                      <div className="flex flex-col gap-3 md:items-end">
+                        {withdrawal.status === 'on_hold' && (
+                          <div className="w-full md:w-64">
+                            <Label className="text-slate-300 text-sm">Hold Message:</Label>
+                            <Input
+                              value={withdrawal.hold_message || withdrawalSettings.defaultHoldMessage}
+                              onChange={(e) => handleWithdrawalHoldMessageChange(withdrawal.id, e.target.value)}
+                              className="mt-1 bg-slate-900/50 border-slate-600 text-white text-sm"
+                              placeholder="Enter hold message..."
+                            />
+                          </div>
+                        )}
+
                         <div className="flex flex-wrap gap-2">
-                          {w.status === 'pending' && (
+                          {withdrawal.status === 'pending' && (
                             <>
                               <Button
                                 size="sm"
-                                onClick={() => updateWithdrawal(w.id, 'completed')}
-                                disabled={updatingWithdrawal === w.id}
+                                onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
+                                disabled={updatingWithdrawal === withdrawal.id}
                                 className="bg-green-600 hover:bg-green-700"
                               >
-                                {updatingWithdrawal === w.id ? (
+                                {updatingWithdrawal === withdrawal.id ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -652,25 +685,25 @@ const Admin = () => {
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => updateWithdrawal(w.id, 'on_hold', w.hold_message || withdrawalSettings.defaultHoldMessage)}
-                                disabled={updatingWithdrawal === w.id}
-                                className="bg-orange-600 hover:bg-orange-700"
+                                variant="outline"
+                                onClick={() => updateWithdrawal(withdrawal.id, 'on_hold', withdrawalSettings.defaultHoldMessage)}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
                               >
-                                <AlertCircle className="w-4 h-4 mr-1" />
-                                Put On Hold
+                                <Clock className="w-4 h-4 mr-1" />
+                                Put on Hold
                               </Button>
                             </>
                           )}
-                          
-                          {w.status === 'on_hold' && (
+                          {withdrawal.status === 'on_hold' && (
                             <>
                               <Button
                                 size="sm"
-                                onClick={() => updateWithdrawal(w.id, 'completed')}
-                                disabled={updatingWithdrawal === w.id}
+                                onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
+                                disabled={updatingWithdrawal === withdrawal.id}
                                 className="bg-green-600 hover:bg-green-700"
                               >
-                                {updatingWithdrawal === w.id ? (
+                                {updatingWithdrawal === withdrawal.id ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -679,32 +712,23 @@ const Admin = () => {
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => updateWithdrawal(w.id, 'on_hold', w.hold_message || withdrawalSettings.defaultHoldMessage)}
-                                disabled={updatingWithdrawal === w.id}
                                 variant="outline"
-                                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                                onClick={() => updateWithdrawal(withdrawal.id, 'on_hold', withdrawal.hold_message || withdrawalSettings.defaultHoldMessage)}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
                               >
-                                <Save className="w-4 h-4 mr-1" />
                                 Update Message
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => updateWithdrawal(w.id, 'pending')}
-                                disabled={updatingWithdrawal === w.id}
                                 variant="outline"
-                                className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                                onClick={() => updateWithdrawal(withdrawal.id, 'pending')}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
                               >
-                                <Clock className="w-4 h-4 mr-1" />
                                 Set Pending
                               </Button>
                             </>
-                          )}
-                          
-                          {w.status === 'completed' && (
-                            <span className="text-green-400 flex items-center gap-1">
-                              <CheckCircle className="w-4 h-4" />
-                              Completed
-                            </span>
                           )}
                         </div>
                       </div>
