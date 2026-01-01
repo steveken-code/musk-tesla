@@ -20,6 +20,22 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// Password strength calculator
+const getPasswordStrength = (password: string): { level: number; label: string } => {
+  let score = 0;
+  
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  
+  if (score <= 1) return { level: 1, label: 'Weak - Add more characters' };
+  if (score === 2) return { level: 2, label: 'Fair - Add numbers or symbols' };
+  if (score === 3) return { level: 3, label: 'Good - Almost there!' };
+  return { level: 4, label: 'Strong - Great password!' };
+};
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -335,6 +351,40 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
               </div>
+              
+              {/* Password Strength Indicator - Only show on signup */}
+              {!isLogin && password.length > 0 && (
+                <div className="space-y-2 animate-fade-in">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4].map((level) => {
+                      const strength = getPasswordStrength(password);
+                      const isActive = level <= strength.level;
+                      const colors = {
+                        1: 'bg-red-500',
+                        2: 'bg-orange-500',
+                        3: 'bg-yellow-500',
+                        4: 'bg-green-500'
+                      };
+                      return (
+                        <div
+                          key={level}
+                          className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                            isActive ? colors[strength.level as keyof typeof colors] : 'bg-slate-700'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <p className={`text-xs transition-colors duration-300 ${
+                    getPasswordStrength(password).level === 1 ? 'text-red-400' :
+                    getPasswordStrength(password).level === 2 ? 'text-orange-400' :
+                    getPasswordStrength(password).level === 3 ? 'text-yellow-400' :
+                    'text-green-400'
+                  }`}>
+                    {getPasswordStrength(password).label}
+                  </p>
+                </div>
+              )}
             </div>
 
             {isLogin && (
