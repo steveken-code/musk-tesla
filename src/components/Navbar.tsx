@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import ThemeToggle from './ThemeToggle';
 import teslaLogo from '@/assets/tesla-logo-new.png';
-import { Menu, X, Zap, TrendingUp, Shield, Users } from 'lucide-react';
+import { Menu, X, Zap, TrendingUp, Shield, Users, HelpCircle, Info } from 'lucide-react';
 
 const Navbar = () => {
   const { t } = useLanguage();
@@ -22,9 +23,10 @@ const Navbar = () => {
 
   const navLinks = [
     { name: t('home'), href: '/', icon: Zap },
-    { name: t('about'), href: '#about', icon: Users },
-    { name: t('investments'), href: '#investments', icon: TrendingUp },
-    { name: t('security'), href: '#security', icon: Shield },
+    { name: t('about'), href: '/about', icon: Info },
+    { name: 'Features', href: '#features', icon: TrendingUp },
+    { name: 'How It Works', href: '#how-it-works', icon: Shield },
+    { name: 'FAQ', href: '#faq', icon: HelpCircle },
   ];
 
   return (
@@ -37,12 +39,12 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
+          {/* Logo - Larger and brighter */}
           <Link 
             to="/" 
             className="flex items-center gap-3 group hover:scale-105 transition-transform duration-300"
           >
-            <img src={teslaLogo} alt="Tesla" className="h-8 md:h-10 w-auto" />
+            <img src={teslaLogo} alt="Tesla" className="h-10 md:h-12 w-auto brightness-125" />
             <span className="hidden lg:block text-xs text-slate-500 border-l border-slate-600 pl-3">
               Trusted Tesla Stock Gateway
             </span>
@@ -51,9 +53,9 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="relative text-slate-400 hover:text-white transition-all duration-300 group py-2"
               >
                 <span className="flex items-center gap-1">
@@ -61,12 +63,13 @@ const Navbar = () => {
                   {link.name}
                 </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-tesla-red to-electric-blue group-hover:w-full transition-all duration-300" />
-              </a>
+              </Link>
             ))}
           </div>
 
-          {/* Right Side - NO Admin link visible */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Right Side */}
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             <LanguageSelector />
             <Link to="/auth">
               <Button 
@@ -89,34 +92,37 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <div className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-180' : ''}`}>
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </div>
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <div className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-180' : ''}`}>
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </div>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Menu - NO Admin link visible */}
+        {/* Mobile Menu */}
         <div 
           className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
           <div className="flex flex-col gap-2 py-4 border-t border-slate-700 bg-slate-900/95">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <link.icon className="w-5 h-5 text-tesla-red" />
                 {link.name}
-              </a>
+              </Link>
             ))}
             <div className="flex items-center gap-2 px-4 pt-4 border-t border-slate-700 mt-2">
               <LanguageSelector />
@@ -131,7 +137,7 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Bottom Border Line - Grey */}
+      {/* Bottom Border Line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-500/50 to-transparent" />
     </nav>
   );

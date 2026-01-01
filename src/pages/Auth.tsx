@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import LanguageSelector from '@/components/LanguageSelector';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 
 const GoogleIcon = () => (
@@ -130,10 +129,6 @@ const Auth = () => {
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
         
-        <div className="absolute top-6 right-6 z-20">
-          <LanguageSelector />
-        </div>
-        
         <button 
           onClick={() => {
             setIsForgotPassword(false);
@@ -149,7 +144,7 @@ const Auth = () => {
         <div className="relative z-10 w-full max-w-md animate-fade-in">
           <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
             <div className="flex flex-col items-center justify-center mb-10">
-              <img src={teslaLogo} alt="Tesla" className="h-16 w-auto mb-4" />
+              <img src={teslaLogo} alt="Tesla" className="h-20 w-auto mb-4 brightness-125" />
               <h2 className="text-xl font-semibold text-slate-300">Reset Password</h2>
             </div>
 
@@ -226,10 +221,6 @@ const Auth = () => {
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
-      <div className="absolute top-6 right-6 z-20">
-        <LanguageSelector />
-      </div>
-      
       <Link 
         to="/" 
         className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
@@ -240,9 +231,9 @@ const Auth = () => {
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
         <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
-          {/* Logo */}
+          {/* Logo - Larger and brighter */}
           <div className="flex flex-col items-center justify-center mb-8">
-            <img src={teslaLogo} alt="Tesla" className="h-20 w-auto mb-2" />
+            <img src={teslaLogo} alt="Tesla" className="h-24 w-auto mb-2 brightness-125" />
           </div>
 
           {/* Title */}
@@ -255,13 +246,13 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Google Sign-in Button */}
+          {/* Google Sign-in Button - No hover state change */}
           <Button
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white hover:bg-gray-50 text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm"
+            className="w-full h-12 mb-6 bg-white text-gray-800 border-0 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm"
           >
             {googleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

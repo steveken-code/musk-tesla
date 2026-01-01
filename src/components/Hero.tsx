@@ -86,26 +86,26 @@ const Hero = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display">
-            <span className="block text-foreground">{t('heroTitle')}</span>
+            <span className="block text-foreground">Invest in the Future with</span>
             <span className="block mt-2 bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent animate-glow-pulse font-extrabold">
-              Investment Platform
+              Tesla-Powered Stocks
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            {t('heroSubtitle')}
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
+            Trade and track Tesla stocks in real-time. Join thousands of investors capitalizing on Tesla's revolutionary growth.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="/auth">
               <Button variant="hero" size="lg" className="group">
-                {t('getStarted')}
+                Get Started
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link to="/dashboard">
+            <Link to="/auth">
               <Button variant="hero-outline" size="lg">
-                {t('dashboard')}
+                Create Account
               </Button>
             </Link>
           </div>
