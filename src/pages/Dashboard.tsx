@@ -17,6 +17,7 @@ import LanguageSelector from '@/components/LanguageSelector';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
+import DashboardSkeleton from '@/components/DashboardSkeleton';
 
 interface Investment {
   id: string;
