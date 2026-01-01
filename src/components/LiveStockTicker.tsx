@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 
 interface StockData {
   price: number;
@@ -24,7 +25,6 @@ const LiveStockTicker = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    // Simulate real-time updates every 3 seconds
     const interval = setInterval(() => {
       setIsUpdating(true);
       
@@ -54,32 +54,44 @@ const LiveStockTicker = () => {
   const isPositive = stockData.change >= 0;
 
   return (
-    <div className="bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-y border-slate-700/50 py-3 overflow-hidden">
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="sticky top-16 z-40 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800/50 py-3"
+    >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-6 text-sm">
+        <div className="flex items-center justify-between gap-6">
           {/* Stock Symbol & Price */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="flex items-center gap-2">
-              <Activity className={`w-4 h-4 ${isUpdating ? 'text-tesla-red animate-pulse' : 'text-green-500'}`} />
-              <span className="font-bold text-white">TSLA</span>
-              <span className="text-slate-500">NASDAQ</span>
+              <div className="relative">
+                <Activity className={`w-5 h-5 ${isUpdating ? 'text-tesla-red animate-pulse' : 'text-green-500'}`} />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              </div>
+              <span className="font-bold text-white text-lg">TSLA</span>
+              <span className="text-slate-500 text-sm hidden sm:inline">NASDAQ</span>
             </div>
             
-            <div className={`flex items-center gap-2 transition-all duration-300 ${isUpdating ? 'scale-105' : ''}`}>
-              <span className="text-xl font-bold text-white">${stockData.price.toFixed(2)}</span>
-              <div className={`flex items-center gap-1 px-2 py-0.5 rounded ${isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                <span className="font-medium">
+            <motion.div 
+              animate={{ scale: isUpdating ? 1.02 : 1 }}
+              className="flex items-center gap-3"
+            >
+              <span className="text-2xl md:text-3xl font-bold text-white">${stockData.price.toFixed(2)}</span>
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg ${isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                <span className="font-semibold text-sm">
                   {isPositive ? '+' : ''}{stockData.change.toFixed(2)} ({isPositive ? '+' : ''}{stockData.changePercent.toFixed(2)}%)
                 </span>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Additional Stats - Hidden on mobile */}
-          <div className="hidden md:flex items-center gap-6 text-slate-400">
-            <div>
-              <span className="text-slate-500">High:</span>{' '}
+          {/* Additional Stats */}
+          <div className="hidden lg:flex items-center gap-8 text-sm">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-slate-500" />
+              <span className="text-slate-500">High:</span>
               <span className="text-white font-medium">${stockData.high.toFixed(2)}</span>
             </div>
             <div>
@@ -90,14 +102,14 @@ const LiveStockTicker = () => {
               <span className="text-slate-500">Vol:</span>{' '}
               <span className="text-white font-medium">{stockData.volume}</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-slate-500">
+            <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/30">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Live
+              <span className="text-green-400 text-xs font-medium">Live Market</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
