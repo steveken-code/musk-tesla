@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Building2, User, CreditCard, Copy, Check } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Building2, User, CreditCard, Copy, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PaymentDetailsProps {
@@ -8,15 +9,59 @@ interface PaymentDetailsProps {
   rubAmount: number;
 }
 
+interface PaymentSettings {
+  cardNumber: string;
+  bankName: string;
+  accountHolder: string;
+}
+
+const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
+  cardNumber: '2200500174446743',
+  bankName: 'СОВКОМБАНК (ДОМАШНИЙ БАНК)',
+  accountHolder: 'ЕЛЬЧАНИНОВ ИГОРЬ СЕРГЕЕВИЧ',
+};
+
 const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
-  
-  const cardNumber = '2200500174446743';
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPaymentSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('admin_settings')
+          .select('setting_value')
+          .eq('setting_key', 'payment_settings')
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading payment settings:', error);
+          return;
+        }
+
+        if (data?.setting_value) {
+          const settings = data.setting_value as unknown as PaymentSettings;
+          setPaymentSettings({
+            cardNumber: settings.cardNumber || DEFAULT_PAYMENT_SETTINGS.cardNumber,
+            bankName: settings.bankName || DEFAULT_PAYMENT_SETTINGS.bankName,
+            accountHolder: settings.accountHolder || DEFAULT_PAYMENT_SETTINGS.accountHolder,
+          });
+        }
+      } catch (err) {
+        console.error('Error loading payment settings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPaymentSettings();
+  }, []);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(cardNumber);
+      await navigator.clipboard.writeText(paymentSettings.cardNumber);
       setCopied(true);
       toast.success(t('copied') || 'Card number copied!');
       setTimeout(() => setCopied(false), 2000);
@@ -24,6 +69,15 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
       toast.error('Failed to copy');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-tesla-red mr-2" />
+        <span className="text-muted-foreground text-sm">Loading payment details...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border space-y-3 animate-fade-in">
@@ -38,7 +92,7 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
           <div className="flex-1">
             <span className="text-muted-foreground">{t('cardNumber') || 'Card Number'}:</span>
             <div className="flex items-center gap-2">
-              <p className="font-mono font-semibold text-foreground">{cardNumber}</p>
+              <p className="font-mono font-semibold text-foreground">{paymentSettings.cardNumber}</p>
               <button
                 type="button"
                 onClick={handleCopy}
@@ -59,7 +113,7 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
           <Building2 className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
           <div>
             <span className="text-muted-foreground">{t('bankName')}:</span>
-            <p className="font-semibold text-foreground">СОВКОМБАНК (ДОМАШНИЙ БАНК)</p>
+            <p className="font-semibold text-foreground">{paymentSettings.bankName}</p>
           </div>
         </div>
         
@@ -67,7 +121,7 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
           <User className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
           <div>
             <span className="text-muted-foreground">{t('accountHolder')}:</span>
-            <p className="font-semibold text-foreground">ЕЛЬЧАНИНОВ ИГОРЬ СЕРГЕЕВИЧ</p>
+            <p className="font-semibold text-foreground">{paymentSettings.accountHolder}</p>
           </div>
         </div>
       </div>

@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      admin_settings_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_value: Json
+          old_value: Json | null
+          setting_key: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_value: Json
+          old_value?: Json | null
+          setting_key: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_value?: Json
+          old_value?: Json | null
+          setting_key?: string
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           amount: number
