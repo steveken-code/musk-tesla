@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<any>) => void;
+};
+
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -27,64 +31,49 @@ const generateToken = (): string => {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 };
 
-const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+async function sendWelcomeEmailTask(email: string, name: string, userId: string) {
+  console.log(`Sending welcome email to ${email} for user ${name}`);
+
+  // Create admin client with service role key
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  // Generate verification token (kept for backwards compatibility)
+  const verificationToken = generateToken();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  // Delete any existing tokens for this user
+  await supabaseAdmin
+    .from('email_verification_tokens')
+    .delete()
+    .eq('user_id', userId);
+
+  // Insert new verification token
+  const { error: insertError } = await supabaseAdmin
+    .from('email_verification_tokens')
+    .insert({
+      user_id: userId,
+      email: email.toLowerCase(),
+      token: verificationToken,
+      expires_at: expiresAt.toISOString(),
+    });
+
+  if (insertError) {
+    console.error("Failed to create verification token:", insertError);
   }
 
-  try {
-    const { name, email, userId }: WelcomeEmailRequest = await req.json();
+  const dashboardLink = `https://msktesla.net/dashboard`;
 
-    if (!email || !userId) {
-      return new Response(
-        JSON.stringify({ error: "Email and userId are required" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    console.log(`Sending welcome email to ${email} for user ${name}`);
-
-    // Create admin client with service role key
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Generate verification token
-    const verificationToken = generateToken();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Delete any existing tokens for this user
-    await supabaseAdmin
-      .from('email_verification_tokens')
-      .delete()
-      .eq('user_id', userId);
-
-    // Insert new verification token
-    const { error: insertError } = await supabaseAdmin
-      .from('email_verification_tokens')
-      .insert({
-        user_id: userId,
-        email: email.toLowerCase(),
-        token: verificationToken,
-        expires_at: expiresAt.toISOString(),
-      });
-
-    if (insertError) {
-      console.error("Failed to create verification token:", insertError);
-    }
-
-    const verifyLink = `https://msktesla.net/verify-email?token=${verificationToken}`;
-    const dashboardLink = `https://msktesla.net/dashboard`;
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [email],
-        subject: "🚗 Welcome to Tesla Stock - Your Investment Journey Begins!",
-        html: `
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: [email],
+      subject: "🚗 Welcome to Tesla Stock - Your Investment Journey Begins!",
+      html: `
           <!DOCTYPE html>
           <html>
           <head>
@@ -300,22 +289,42 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const errorData = await res.text();
-      console.error("Resend API error:", errorData);
-      throw new Error(`Failed to send email: ${errorData}`);
+  if (!res.ok) {
+    const errorData = await res.text();
+    console.error("Resend API error:", errorData);
+    return { success: false, error: errorData };
+  }
+
+  const data = await res.json();
+  console.log("Welcome email sent successfully:", data);
+  return { success: true, data };
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { name, email, userId }: WelcomeEmailRequest = await req.json();
+
+    if (!email || !userId) {
+      return new Response(
+        JSON.stringify({ error: "Email and userId are required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
-    const data = await res.json();
-    console.log("Welcome email sent successfully:", data);
+    // Use background task for faster response
+    EdgeRuntime.waitUntil(sendWelcomeEmailTask(email, name, userId));
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return new Response(
+      JSON.stringify({ success: true, message: "Welcome email queued" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-welcome-email function:", error);
     return new Response(
