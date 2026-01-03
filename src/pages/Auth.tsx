@@ -204,14 +204,14 @@ const Auth = () => {
                     {t('email')}
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <Input
                       id="resetEmail"
                       type="email"
                       placeholder="Enter your email address"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-slate-500/20 shadow-sm"
+                      className="pl-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20 shadow-sm"
                       required
                     />
                   </div>
@@ -319,7 +319,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                     required={!isLogin}
                   />
                 </div>
@@ -338,7 +338,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                   required
                 />
               </div>
@@ -356,7 +356,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 pr-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                   required
                   minLength={6}
                 />

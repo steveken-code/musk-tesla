@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: "🚗 Welcome to Tesla Stock - Verify Your Email to Get Started!",
+        subject: "🚗 Welcome to Tesla Stock - Your Investment Journey Begins!",
         html: `
           <!DOCTYPE html>
           <html>
@@ -100,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <!-- Header with Tesla Logo -->
                     <tr>
                       <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%);">
-                        <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;" />
+                        <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 120px; height: 120px; margin-bottom: 20px; border-radius: 16px;" />
                         <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
                           TESLA STOCK
                         </h1>
@@ -125,22 +125,22 @@ const handler = async (req: Request): Promise<Response> => {
                       <td style="padding: 0 40px 40px;">
                         <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
                           You've just joined an exclusive community of forward-thinking investors. 
-                          Please verify your email to unlock full access to your account.
+                          Your account is now active and ready to start investing!
                         </p>
                         
-                        <!-- Verification CTA -->
-                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 2px solid #22c55e; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center;">
-                          <div style="display: inline-block; background: #22c55e20; border-radius: 50%; width: 60px; height: 60px; line-height: 60px; margin-bottom: 15px;">
-                            <span style="font-size: 28px;">✉️</span>
+                        <!-- Dashboard CTA -->
+                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 2px solid #e31937; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center;">
+                          <div style="display: inline-block; background: #e3193720; border-radius: 50%; width: 60px; height: 60px; line-height: 60px; margin-bottom: 15px;">
+                            <span style="font-size: 28px;">🚀</span>
                           </div>
                           <h3 style="margin: 0 0 15px; color: #ffffff; font-size: 20px; font-weight: 700;">
-                            Verify Your Email
+                            Start Investing Today
                           </h3>
                           <p style="margin: 0 0 20px; color: #a3a3a3; font-size: 14px;">
-                            Click the button below to verify your email address
+                            Access your dashboard to make your first investment
                           </p>
-                          <a href="${verifyLink}" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.5);">
-                            Verify Email →
+                          <a href="${dashboardLink}" style="display: inline-block; background: linear-gradient(135deg, #e31937 0%, #cc0000 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 10px 30px -10px rgba(227, 25, 55, 0.5);">
+                            Go to Dashboard →
                           </a>
                         </div>
                         
@@ -180,11 +180,11 @@ const handler = async (req: Request): Promise<Response> => {
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                   <tr>
                                     <td width="50" style="vertical-align: top;">
-                                      <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">1</div>
+                                      <div style="background: linear-gradient(135deg, #e31937, #cc0000); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">1</div>
                                     </td>
                                     <td>
-                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Verify Your Email</div>
-                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Click the button above to confirm your account</div>
+                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Access Your Dashboard</div>
+                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Log in to your account anytime</div>
                                     </td>
                                   </tr>
                                 </table>
@@ -198,8 +198,8 @@ const handler = async (req: Request): Promise<Response> => {
                                       <div style="background: linear-gradient(135deg, #e31937, #cc0000); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">2</div>
                                     </td>
                                     <td>
-                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Complete Your Profile</div>
-                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Secure your account with full verification</div>
+                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Make Your First Investment</div>
+                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Start with as little as $100 and grow from there</div>
                                     </td>
                                   </tr>
                                 </table>
@@ -213,8 +213,8 @@ const handler = async (req: Request): Promise<Response> => {
                                       <div style="background: linear-gradient(135deg, #e31937, #cc0000); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">3</div>
                                     </td>
                                     <td>
-                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Make Your First Investment</div>
-                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Start with as little as $250 and grow from there</div>
+                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Send Payment & Submit</div>
+                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Complete your investment via WhatsApp confirmation</div>
                                     </td>
                                   </tr>
                                 </table>
@@ -238,10 +238,11 @@ const handler = async (req: Request): Promise<Response> => {
                           </table>
                         </div>
                         
-                        <!-- Secondary CTA -->
+                        <!-- WhatsApp Support -->
                         <div style="text-align: center; margin: 30px 0;">
-                          <a href="${dashboardLink}" style="display: inline-block; background: transparent; color: #e31937; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; border: 2px solid #e31937;">
-                            Go to Dashboard
+                          <p style="color: #a3a3a3; font-size: 14px; margin-bottom: 15px;">Need help? Contact us on WhatsApp</p>
+                          <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 14px; font-weight: 600; letter-spacing: 0.5px;">
+                            💬 WhatsApp Support
                           </a>
                         </div>
                         
