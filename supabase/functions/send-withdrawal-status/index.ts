@@ -6,7 +6,7 @@ declare const EdgeRuntime: {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@msktesla.net>";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Msk Tesla <noreply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -202,7 +202,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #dc2626; font-size: 20px; font-weight: 700;">
+                  <p style="margin: 0; color: #1e40af; font-size: 22px; font-weight: 700;">
                     Hello ${userName || 'Valued Investor'},
                   </p>
                 </td>
