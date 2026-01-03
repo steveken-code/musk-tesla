@@ -43,6 +43,12 @@ interface Profile {
 
 const USD_TO_RUB = 96.5;
 
+const withdrawalMethods = [
+  { code: 'card', name: 'Card Number', icon: '💳' },
+  { code: 'phone', name: 'Phone Number', icon: '📱' },
+  { code: 'crypto', name: 'Cryptocurrency', icon: '₿' },
+];
+
 const countries = [
   { code: 'RU', name: 'Russia', format: 'card', label: 'Card Number' },
   { code: 'US', name: 'United States', format: 'account', label: 'Account Number' },
@@ -72,6 +78,7 @@ const Dashboard = () => {
 
   // Withdrawal state
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawMethod, setWithdrawMethod] = useState('');
   const [withdrawCountry, setWithdrawCountry] = useState('');
   const [withdrawPaymentDetails, setWithdrawPaymentDetails] = useState('');
   const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
@@ -265,6 +272,7 @@ const Dashboard = () => {
       
       toast.success('Withdrawal request submitted!');
       setWithdrawAmount('');
+      setWithdrawMethod('');
       setWithdrawCountry('');
       setWithdrawPaymentDetails('');
       setShowWithdrawalForm(false);
@@ -527,54 +535,115 @@ const Dashboard = () => {
 
               {showWithdrawalForm && (
                 <>
+                  {/* Withdrawal Method Selection for Russia */}
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      Select Country
+                    <Label className="flex items-center gap-2 font-semibold">
+                      <Wallet className="w-4 h-4" />
+                      Select Withdrawal Method
                     </Label>
-                    <select
-                      value={withdrawCountry}
-                      onChange={(e) => setWithdrawCountry(e.target.value)}
-                      className="w-full p-2 bg-background/50 border border-border rounded-md text-foreground"
-                      required
-                    >
-                      <option value="">Select your country</option>
-                      {countries.map(country => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
+                    <div className="grid grid-cols-3 gap-2">
+                      {withdrawalMethods.map(method => (
+                        <button
+                          key={method.code}
+                          type="button"
+                          onClick={() => {
+                            setWithdrawMethod(method.code);
+                            setWithdrawPaymentDetails('');
+                          }}
+                          className={`p-3 rounded-lg border text-center transition-all duration-200 ${
+                            withdrawMethod === method.code 
+                              ? 'bg-tesla-red/20 border-tesla-red text-white' 
+                              : 'bg-background/50 border-border hover:border-tesla-red/50 text-muted-foreground hover:text-white'
+                          }`}
+                        >
+                          <span className="text-2xl mb-1 block">{method.icon}</span>
+                          <span className="text-xs font-medium">{method.name}</span>
+                        </button>
                       ))}
-                    </select>
+                    </div>
                   </div>
 
-                  {selectedCountry && (
-                    <div className="space-y-2">
-                      <Label>{selectedCountry.label}</Label>
-                      <Input
-                        type="text"
-                        placeholder={`Enter your ${selectedCountry.label.toLowerCase()}`}
-                        value={withdrawPaymentDetails}
-                        onChange={(e) => setWithdrawPaymentDetails(e.target.value)}
-                        className="bg-background/50 border-border"
-                        required
-                      />
+                  {/* Show Sberbank notice for card/phone methods */}
+                  {(withdrawMethod === 'card' || withdrawMethod === 'phone') && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 animate-fade-in">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-amber-500 font-semibold text-sm mb-1">Important Notice</p>
+                          <p className="text-amber-400/80 text-sm leading-relaxed">
+                            Please note: Sberbank may take longer than expected to process. Kindly allow additional time for the funds to reflect in your account.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
-                    disabled={submittingWithdrawal || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || !withdrawCountry || !withdrawPaymentDetails}
-                  >
-                    {submittingWithdrawal ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      'Submit Withdrawal'
-                    )}
-                  </Button>
+                  {withdrawMethod && (
+                    <>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Globe className="w-4 h-4" />
+                          Select Country
+                        </Label>
+                        <select
+                          value={withdrawCountry}
+                          onChange={(e) => setWithdrawCountry(e.target.value)}
+                          className="w-full p-3 bg-background/50 border border-border rounded-lg text-foreground font-medium"
+                          required
+                        >
+                          <option value="">Select your country</option>
+                          {countries.map(country => (
+                            <option key={country.code} value={country.code}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {withdrawCountry && (
+                        <div className="space-y-2 animate-fade-in">
+                          <Label className="font-medium">
+                            {withdrawMethod === 'crypto' 
+                              ? 'Wallet Address (USDT TRC20)' 
+                              : withdrawMethod === 'phone'
+                              ? 'Phone Number'
+                              : selectedCountry?.label || 'Payment Details'}
+                          </Label>
+                          <Input
+                            type="text"
+                            placeholder={
+                              withdrawMethod === 'crypto' 
+                                ? 'Enter your USDT TRC20 wallet address'
+                                : withdrawMethod === 'phone'
+                                ? 'Enter your phone number (e.g., +7 XXX XXX XX XX)'
+                                : `Enter your ${selectedCountry?.label?.toLowerCase() || 'payment details'}`
+                            }
+                            value={withdrawPaymentDetails}
+                            onChange={(e) => setWithdrawPaymentDetails(e.target.value)}
+                            className="bg-background/50 border-border h-12"
+                            required
+                          />
+                        </div>
+                      )}
+
+                      {withdrawCountry && withdrawPaymentDetails && (
+                        <Button
+                          type="submit"
+                          className="w-full h-12 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 font-semibold text-base animate-fade-in"
+                          disabled={submittingWithdrawal || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || !withdrawMethod || !withdrawCountry || !withdrawPaymentDetails}
+                        >
+                          {submittingWithdrawal ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            'Proceed with Withdrawal'
+                          )}
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </form>

@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TrendingUp, ArrowUpRight, BarChart3 } from 'lucide-react';
 import elonPresentation from '@/assets/elon-presentation.webp';
+import { motion } from 'framer-motion';
 
 const StockGrowthChart = () => {
   const { t } = useLanguage();
@@ -11,6 +12,29 @@ const StockGrowthChart = () => {
     { label: t('fiveYear'), value: '+1,250%', color: 'text-electric-blue' },
     { label: t('sinceIPO'), value: '+18,000%', color: 'text-tesla-red' },
   ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const,
+      },
+    },
+  };
 
   return (
     <section className="py-32 relative overflow-hidden">
@@ -31,7 +55,12 @@ const StockGrowthChart = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
-          <div className="animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
             <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-tesla-red/10 border border-tesla-red/30 rounded-full">
               <TrendingUp className="w-5 h-5 text-tesla-red" />
               <span className="text-sm font-medium text-tesla-red">{t('marketLeader')}</span>
@@ -47,24 +76,36 @@ const StockGrowthChart = () => {
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-3 gap-4"
+            >
               {stats.map((stat, index) => (
-                <Card 
-                  key={index}
-                  className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:border-tesla-red/50 transition-all duration-300 group animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <p className={`text-2xl md:text-3xl font-bold ${stat.color} group-hover:scale-110 transition-transform`}>
-                    {stat.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </Card>
+                <motion.div key={index} variants={cardVariants}>
+                  <Card 
+                    className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:border-tesla-red/50 transition-all duration-300 group"
+                  >
+                    <p className={`text-2xl md:text-3xl font-bold ${stat.color} group-hover:scale-110 transition-transform`}>
+                      {stat.value}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Right - Chart Visualization */}
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          >
             <Card className="p-8 bg-gradient-to-br from-card via-muted/30 to-card border-border/50 overflow-hidden group hover:shadow-glow-red transition-all duration-500">
               {/* Fake Chart Visualization */}
               <div className="flex items-center gap-3 mb-6">
@@ -156,7 +197,7 @@ const StockGrowthChart = () => {
             <div className="absolute -top-4 -right-4 bg-green-500 text-green-950 px-4 py-2 rounded-full font-bold animate-bounce">
               +$247.03 Today
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
