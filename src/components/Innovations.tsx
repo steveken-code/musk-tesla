@@ -56,8 +56,8 @@ const Innovations = () => {
   };
 
   return (
-    <section className="py-32 bg-white relative">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+    <section className="py-32 bg-navy relative">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
@@ -67,10 +67,10 @@ const Innovations = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             {t('innovationsTitle')}
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             {t('innovationsSubtitle')}
           </p>
         </motion.div>
@@ -85,7 +85,7 @@ const Innovations = () => {
           {innovations.map((innovation, index) => (
             <motion.div key={index} variants={cardVariants}>
               <Card 
-                className="p-8 bg-slate-50 border border-slate-200 hover:border-tesla-red/30 transition-all duration-300 hover:shadow-xl group"
+                className="p-8 bg-navy-light border border-white/10 hover:border-tesla-red/30 transition-all duration-300 hover:shadow-xl group"
               >
                 <div className="mb-6">
                   <div className="inline-flex p-4 bg-electric-blue/10 rounded-xl group-hover:bg-electric-blue/20 transition-colors">
@@ -93,12 +93,12 @@ const Innovations = () => {
                   </div>
                 </div>
                 
-                <h3 className="text-2xl font-bold mb-3 text-slate-900">{t(innovation.titleKey)}</h3>
-                <p className="text-slate-600 mb-4 leading-relaxed">
+                <h3 className="text-2xl font-bold mb-3 text-white">{t(innovation.titleKey)}</h3>
+                <p className="text-gray-400 mb-4 leading-relaxed">
                   {t(innovation.descKey)}
                 </p>
                 
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-4 border-t border-white/10">
                   <span className="text-electric-blue font-bold">{t(innovation.statKey)}</span>
                 </div>
               </Card>

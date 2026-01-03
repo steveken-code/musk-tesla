@@ -56,8 +56,8 @@ const HowItWorks = () => {
   };
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 bg-white relative scroll-mt-20">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+    <section id="how-it-works" className="py-24 md:py-32 bg-slate-900 relative scroll-mt-20">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -70,10 +70,10 @@ const HowItWorks = () => {
           <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
             {t('gettingStarted')}
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
             {t('howItWorks')}
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-300 max-w-2xl mx-auto text-lg">
             {t('howItWorksSubtitle')}
           </p>
         </motion.div>
@@ -91,7 +91,7 @@ const HowItWorks = () => {
                 key={index}
                 variants={cardVariants}
                 whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className="relative text-center bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-tesla-red/30 transition-all duration-300"
+                className="relative text-center bg-slate-800 border border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-tesla-red/30 transition-all duration-300"
               >
                 {/* Step number */}
                 <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-tesla-red to-tesla-red/70 flex items-center justify-center shadow-lg shadow-tesla-red/20">
@@ -101,10 +101,10 @@ const HowItWorks = () => {
                 <div className="text-tesla-red font-bold text-sm mb-2">
                   {t('step')} {item.step}
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                <h3 className="text-lg font-semibold text-white mb-2">
                   {t(item.titleKey)}
                 </h3>
-                <p className="text-slate-600 text-sm leading-relaxed">
+                <p className="text-gray-400 text-sm leading-relaxed">
                   {t(item.descKey)}
                 </p>
               </motion.div>
