@@ -299,14 +299,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
               <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#1E1E1E] border-[#333] hover:border-[#444] text-white placeholder:text-[#888] rounded-xl transition-all duration-300 focus:border-tesla-red focus:ring-2 focus:ring-tesla-red/20 focus:shadow-[0_0_15px_rgba(232,33,39,0.3)]"
+                    className="pl-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                     required={!isLogin}
                   />
                 </div>
@@ -318,14 +318,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#1E1E1E] border-[#333] hover:border-[#444] text-white placeholder:text-[#888] rounded-xl transition-all duration-300 focus:border-tesla-red focus:ring-2 focus:ring-tesla-red/20 focus:shadow-[0_0_15px_rgba(232,33,39,0.3)]"
+                  className="pl-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                   required
                 />
               </div>
@@ -336,21 +336,21 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#1E1E1E] border-[#333] hover:border-[#444] text-white placeholder:text-[#888] rounded-xl transition-all duration-300 focus:border-tesla-red focus:ring-2 focus:ring-tesla-red/20 focus:shadow-[0_0_15px_rgba(232,33,39,0.3)]"
+                  className="pl-14 pr-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-black hover:text-gray-700 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
@@ -403,7 +403,7 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
+              className="w-full h-12 bg-slate-200 hover:bg-slate-100 text-slate-900 font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-white/10"
               disabled={loading}
             >
               {loading ? (
@@ -417,13 +417,13 @@ const Auth = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center bg-gray-200/60 rounded-xl py-4 px-6">
-            <span className="text-slate-600 text-sm">
+          <div className="mt-8 text-center">
+            <span className="text-slate-500 text-sm">
               {isLogin ? t('noAccount') : t('alreadyHaveAccount')}
             </span>{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-tesla-red hover:text-tesla-red/80 transition-colors text-sm font-medium"
+              className="text-electric-blue hover:text-electric-blue/80 transition-colors text-sm font-medium"
             >
               {isLogin ? t('signUp') : t('signIn')}
             </button>

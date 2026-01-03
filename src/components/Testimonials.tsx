@@ -140,10 +140,10 @@ const Testimonials = () => {
   };
 
   const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
-    <Card className="h-full p-6 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 group relative overflow-hidden">
+    <Card className="h-full p-6 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 shadow-lg shadow-black/20 transition-all duration-300 hover:shadow-xl hover:shadow-slate-900/40 hover:scale-[1.02] hover:-translate-y-1 hover:border-slate-600/50 group relative overflow-hidden rounded-2xl">
       {/* Growth Badge */}
-      <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full">
-        <span className="text-green-600 font-bold text-sm">{testimonial.growth}</span>
+      <div className="absolute top-4 right-4 px-3 py-1 bg-slate-700/50 border border-slate-600/30 rounded-full">
+        <span className="text-slate-300 font-bold text-sm">{testimonial.growth}</span>
       </div>
       
       <div className="flex items-start gap-4 mb-4 pr-20">
@@ -151,22 +151,22 @@ const Testimonials = () => {
           <img 
             src={testimonial.avatar} 
             alt={testimonial.name}
-            className="w-14 h-14 rounded-full object-cover border-2 border-slate-200 group-hover:border-electric-blue transition-colors duration-300"
+            className="w-14 h-14 rounded-full object-cover border-2 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-300"
           />
-          <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white" />
+          <div className="absolute -bottom-1 -right-1 bg-slate-500 w-4 h-4 rounded-full border-2 border-slate-800" />
         </div>
         <div className="min-w-0">
-          <h4 className="font-bold text-base text-slate-900">{testimonial.name}</h4>
-          <p className="text-sm text-slate-500">{testimonial.role}</p>
-          <p className="text-xs text-slate-400">{testimonial.location}</p>
+          <h4 className="font-bold text-base text-white">{testimonial.name}</h4>
+          <p className="text-sm text-slate-400">{testimonial.role}</p>
+          <p className="text-xs text-slate-500">{testimonial.location}</p>
         </div>
       </div>
       <div className="flex gap-1 mb-4">
         {[...Array(testimonial.rating)].map((_, i) => (
-          <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+          <Star key={i} className="w-4 h-4 fill-slate-400 text-slate-400" />
         ))}
       </div>
-      <p className="text-slate-600 group-hover:text-slate-800 transition-colors duration-300 text-sm leading-relaxed">
+      <p className="text-slate-300 group-hover:text-slate-200 transition-colors duration-300 text-sm leading-relaxed">
         "{testimonial.text}"
       </p>
     </Card>
@@ -176,11 +176,11 @@ const Testimonials = () => {
   const ratings: RatingFilter[] = ['all', '5', '4'];
 
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden bg-slate-100">
+    <section className="py-24 md:py-32 relative overflow-hidden bg-slate-900">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="absolute top-20 left-0 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-0 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="absolute top-20 left-0 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-0 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
         {/* CEO Quote Section */}
@@ -191,7 +191,7 @@ const Testimonials = () => {
           transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="max-w-4xl mx-auto mb-16 md:mb-20">
-            <Card className="p-6 md:p-8 lg:p-12 bg-white/80 backdrop-blur-sm border border-slate-200 shadow-lg group transition-all duration-300 hover:shadow-xl hover:scale-[1.01]">
+            <Card className="p-6 md:p-8 lg:p-12 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 shadow-xl shadow-black/30 group transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
               <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative flex-shrink-0">
                   <div className="w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-500">
@@ -206,14 +206,14 @@ const Testimonials = () => {
                   </div>
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-slate-800 mb-4 italic leading-relaxed">
+                  <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-slate-200 mb-4 italic leading-relaxed">
                     "{t('ceoQuote')}"
                   </blockquote>
                   <div className="flex items-center gap-4 justify-center md:justify-start">
                     <div className="h-1 w-12 md:w-16 bg-gradient-to-r from-tesla-red to-electric-blue rounded-full" />
                     <div>
-                      <p className="font-bold text-lg md:text-xl text-slate-900">Elon Musk</p>
-                      <p className="text-slate-500 text-sm md:text-base">CEO, Tesla & SpaceX</p>
+                      <p className="font-bold text-lg md:text-xl text-white">Elon Musk</p>
+                      <p className="text-slate-400 text-sm md:text-base">CEO, Tesla & SpaceX</p>
                     </div>
                   </div>
                 </div>
@@ -230,13 +230,13 @@ const Testimonials = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 md:mb-12"
         >
-          <span className="inline-block px-4 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-600 text-sm font-medium mb-4">
+          <span className="inline-block px-4 py-1.5 bg-slate-700/50 border border-slate-600/30 rounded-full text-slate-300 text-sm font-medium mb-4">
             {t('successStories') || 'Success Stories'}
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-slate-900">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">
             {t('testimonialTitle')}
           </h2>
-          <p className="text-lg md:text-xl text-slate-600">
+          <p className="text-lg md:text-xl text-slate-400">
             {t('testimonialSubtitle')}
           </p>
         </motion.div>
@@ -251,7 +251,7 @@ const Testimonials = () => {
         >
           <div className="flex flex-wrap items-center justify-center gap-3">
             {/* Filter Type Buttons */}
-            <div className="flex items-center gap-2 bg-white rounded-full p-1.5 shadow-md border border-slate-200">
+            <div className="flex items-center gap-2 bg-slate-800/80 rounded-full p-1.5 shadow-lg border border-slate-700/50">
               <button
                 onClick={() => {
                   setActiveFilter('all');
@@ -260,8 +260,8 @@ const Testimonials = () => {
                 }}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                   activeFilter === 'all'
-                    ? 'bg-tesla-red text-white shadow-md'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-electric-blue text-white shadow-md'
+                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
                 }`}
               >
                 All
@@ -270,8 +270,8 @@ const Testimonials = () => {
                 onClick={() => setActiveFilter('location')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                   activeFilter === 'location'
-                    ? 'bg-tesla-red text-white shadow-md'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-electric-blue text-white shadow-md'
+                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
                 }`}
               >
                 <MapPin className="w-4 h-4" />
@@ -281,8 +281,8 @@ const Testimonials = () => {
                 onClick={() => setActiveFilter('rating')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                   activeFilter === 'rating'
-                    ? 'bg-tesla-red text-white shadow-md'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-electric-blue text-white shadow-md'
+                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
                 }`}
               >
                 <Star className="w-4 h-4" />
@@ -307,7 +307,7 @@ const Testimonials = () => {
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border ${
                         locationFilter === loc
                           ? 'bg-electric-blue text-white border-electric-blue shadow-md'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-electric-blue hover:text-electric-blue'
+                          : 'bg-slate-800/80 text-slate-400 border-slate-700/50 hover:border-electric-blue/50 hover:text-slate-200'
                       }`}
                     >
                       {loc === 'all' ? 'All Locations' : loc}
@@ -333,8 +333,8 @@ const Testimonials = () => {
                       onClick={() => setRatingFilter(rating)}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border flex items-center gap-1 ${
                         ratingFilter === rating
-                          ? 'bg-yellow-500 text-white border-yellow-500 shadow-md'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-yellow-500 hover:text-yellow-600'
+                          ? 'bg-slate-500 text-white border-slate-500 shadow-md'
+                          : 'bg-slate-800/80 text-slate-400 border-slate-700/50 hover:border-slate-500/50 hover:text-slate-200'
                       }`}
                     >
                       {rating === 'all' ? (
@@ -357,6 +357,24 @@ const Testimonials = () => {
           </p>
         </motion.div>
 
+        {/* Desktop Navigation Arrows */}
+        <div className="hidden sm:flex items-center justify-center gap-4 mb-8">
+          <button
+            onClick={scrollPrev}
+            className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700/50 shadow-lg flex items-center justify-center hover:bg-slate-700/80 hover:border-electric-blue/50 transition-all duration-300 group"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-6 h-6 text-electric-blue group-hover:text-electric-blue" />
+          </button>
+          <button
+            onClick={scrollNext}
+            className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700/50 shadow-lg flex items-center justify-center hover:bg-slate-700/80 hover:border-electric-blue/50 transition-all duration-300 group"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-6 h-6 text-electric-blue group-hover:text-electric-blue" />
+          </button>
+        </div>
+
         {/* Mobile Carousel */}
         <div className="sm:hidden">
           {filteredTestimonials.length > 0 ? (
@@ -371,45 +389,33 @@ const Testimonials = () => {
                 </div>
               </div>
               
-              {/* Carousel Controls */}
-              <div className="flex items-center justify-center gap-4 mt-6">
+              {/* Carousel Controls - Arrows Only */}
+              <div className="flex items-center justify-center gap-6 mt-6">
                 <button
                   onClick={scrollPrev}
-                  className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700/50 shadow-lg flex items-center justify-center hover:bg-slate-700/80 hover:border-electric-blue/50 transition-all duration-300"
                   aria-label="Previous testimonial"
                 >
-                  <ChevronLeft className="w-5 h-5 text-slate-600" />
+                  <ChevronLeft className="w-6 h-6 text-electric-blue" />
                 </button>
                 
-                {/* Dots */}
-                <div className="flex gap-2">
-                  {filteredTestimonials.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => emblaApi?.scrollTo(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === selectedIndex 
-                          ? 'bg-tesla-red w-6' 
-                          : 'bg-slate-300 hover:bg-slate-400'
-                      }`}
-                      aria-label={`Go to testimonial ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                <span className="text-slate-400 text-sm">
+                  {selectedIndex + 1} / {filteredTestimonials.length}
+                </span>
                 
                 <button
                   onClick={scrollNext}
-                  className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                  className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700/50 shadow-lg flex items-center justify-center hover:bg-slate-700/80 hover:border-electric-blue/50 transition-all duration-300"
                   aria-label="Next testimonial"
                 >
-                  <ChevronRight className="w-5 h-5 text-slate-600" />
+                  <ChevronRight className="w-6 h-6 text-electric-blue" />
                 </button>
               </div>
             </>
           ) : (
             <div className="text-center py-12">
-              <Filter className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">No testimonials match your filter.</p>
+              <Filter className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400">No testimonials match your filter.</p>
             </div>
           )}
         </div>
