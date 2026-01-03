@@ -125,7 +125,7 @@ const AdminLogin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@example.com"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
@@ -179,7 +179,13 @@ const AdminLogin = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
+            <Link to="/reset-password" className="text-tesla-red hover:underline text-sm">
+              Forgot Password?
+            </Link>
+          </div>
+
+          <div className="mt-4 text-center">
             <p className="text-slate-500 text-sm">
               Not an administrator?{' '}
               <Link to="/auth" className="text-electric-blue hover:underline">
