@@ -11,14 +11,72 @@ import {
   LogOut, TrendingUp, DollarSign, Clock, 
   CheckCircle, XCircle, Loader2, ArrowLeft,
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
-  CreditCard, Phone, Bitcoin, ChevronDown, X
+  CreditCard, Phone, Bitcoin, ChevronDown, X, History
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
-import teslaLogo from '@/assets/tesla-logo.png';
+import teslaLogo from '@/assets/tesla-logo-red.png';
+
+// Create notification sound using Web Audio API
+const createNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a pleasant notification chime
+    const createChime = () => {
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator1.type = 'sine';
+      oscillator2.type = 'sine';
+      
+      // Chord: C and E
+      oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
+      
+      // Fade in and out
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
+      
+      oscillator1.start(audioContext.currentTime);
+      oscillator2.start(audioContext.currentTime);
+      oscillator1.stop(audioContext.currentTime + 0.5);
+      oscillator2.stop(audioContext.currentTime + 0.5);
+    };
+    
+    // Add second chime after delay
+    setTimeout(() => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime); // G5
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.25, audioContext.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    }, 150);
+    
+    createChime();
+  } catch (error) {
+    console.log('Audio notification not supported');
+  }
+};
 
 interface Investment {
   id: string;
@@ -203,6 +261,8 @@ const Dashboard = () => {
             
             if (updated.profit_amount > previousProfit) {
               const profitDiff = updated.profit_amount - previousProfit;
+              // Play notification sound
+              createNotificationSound();
               toast.success(t('profitNotification'), {
                 description: `${t('profitMessage')} +$${profitDiff.toLocaleString()}!`,
               });
@@ -628,6 +688,14 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Transaction History Link */}
+        <div className="mb-6">
+          <Link to="/transactions" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <History className="w-4 h-4" />
+            View Full Transaction History →
+          </Link>
+        </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

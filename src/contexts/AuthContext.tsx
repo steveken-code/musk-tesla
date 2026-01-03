@@ -76,7 +76,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    // Send welcome/login notification email
+    if (!error && data?.user) {
+      // We could send a login notification here if desired
+      console.log('User signed in:', data.user.email);
+    }
+    
     return { error };
   };
 
