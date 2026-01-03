@@ -271,8 +271,35 @@ const Admin = () => {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Find the withdrawal to get user details for email
+      const withdrawal = withdrawals.find(w => w.id === id);
+      if (withdrawal && withdrawal.profiles?.email) {
+        // Send email notification
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await supabase.functions.invoke('send-withdrawal-status', {
+              body: {
+                userEmail: withdrawal.profiles.email,
+                userName: withdrawal.profiles.full_name || 'Valued Investor',
+                amount: withdrawal.amount,
+                status: status,
+                holdMessage: holdMessage || withdrawal.hold_message,
+                paymentDetails: withdrawal.payment_details,
+                country: withdrawal.country,
+              },
+            });
+            toast.success(`Withdrawal ${status} - Email notification sent!`);
+          }
+        } catch (emailError) {
+          console.error('Error sending email notification:', emailError);
+          toast.success(`Withdrawal ${status} successfully (email notification failed)`);
+        }
+      } else {
+        toast.success(`Withdrawal ${status} successfully`);
+      }
       
-      toast.success(`Withdrawal ${status} successfully`);
       fetchData();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update withdrawal';
@@ -458,10 +485,10 @@ const Admin = () => {
             <p className="text-slate-400 text-center mb-6 text-sm">Please sign in with an admin account to access this page.</p>
             
             <Button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/admin-login')}
               className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
             >
-              Sign In
+              Admin Sign In
             </Button>
             
             <div className="mt-6 text-center">
