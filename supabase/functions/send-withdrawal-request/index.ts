@@ -8,29 +8,32 @@ declare const EdgeRuntime: {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/new_tesla-removebg-preview.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-interface WithdrawalStatusRequest {
-  userEmail: string;
-  userName: string;
+interface WithdrawalRequestEmail {
+  email: string;
+  name: string;
   amount: number;
-  status: string;
-  holdMessage?: string;
-  paymentDetails: string;
   country: string;
+  paymentMethod: string;
+  paymentDetails: string;
+  withdrawalId: string;
+  supportPhone?: string;
+  supportType?: string;
 }
 
-async function sendStatusEmail(data: WithdrawalStatusRequest) {
-  const { userEmail, userName, amount, status, holdMessage, paymentDetails, country } = data;
-
-  console.log(`Sending withdrawal status email to ${userEmail} for $${amount} - Status: ${status}`);
+async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
+  const { email, name, amount, country, paymentMethod, paymentDetails, withdrawalId, supportPhone, supportType } = data;
+  
+  console.log(`Sending withdrawal request email to ${email} for $${amount}`);
 
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -44,43 +47,11 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     day: 'numeric',
   });
 
-  let subject = "";
-  let statusLabel = "";
-  let statusBgColor = "";
-  let statusTextColor = "";
-  let statusMessage = "";
-  let showSupportCTA = false;
-
-  switch (status) {
-    case "completed":
-      subject = `✅ Withdrawal Completed - ${formattedAmount} | Tesla Stock`;
-      statusLabel = "COMPLETED";
-      statusBgColor = "#dcfce7";
-      statusTextColor = "#166534";
-      statusMessage = "Your withdrawal has been successfully processed! The funds have been transferred to your account.";
-      break;
-    case "on_hold":
-      subject = `⚠️ Withdrawal On Hold - Action Required | Tesla Stock`;
-      statusLabel = "ON HOLD";
-      statusBgColor = "#ffedd5";
-      statusTextColor = "#9a3412";
-      statusMessage = holdMessage || "Your withdrawal requires additional verification. Please contact support.";
-      showSupportCTA = true;
-      break;
-    case "pending":
-      subject = `🕐 Withdrawal Processing - ${formattedAmount} | Tesla Stock`;
-      statusLabel = "PROCESSING";
-      statusBgColor = "#fef3c7";
-      statusTextColor = "#92400e";
-      statusMessage = "Your withdrawal is being processed. You will receive an update once it's completed.";
-      break;
-    default:
-      subject = `Withdrawal Status Update | Tesla Stock`;
-      statusLabel = status.toUpperCase().replace('_', ' ');
-      statusBgColor = "#f3f4f6";
-      statusTextColor = "#374151";
-      statusMessage = `Your withdrawal status has been updated to: ${status}`;
-  }
+  const whatsappNumber = supportPhone || "12186500840";
+  const supportLink = supportType === 'telegram' 
+    ? `https://t.me/${whatsappNumber.replace(/[^0-9]/g, '')}`
+    : `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
+  const supportLabel = supportType === 'telegram' ? 'Telegram' : 'WhatsApp';
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -98,12 +69,12 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <!-- Header -->
               <tr>
                 <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);">
-                  <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 16px;" />
-                  <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1px;">
+                  <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 100px; height: 100px; margin-bottom: 20px; border-radius: 16px;" />
+                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     TESLA STOCK PLATFORM
                   </h1>
-                  <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px; font-weight: 500;">
-                    ${status === 'completed' ? 'Transaction Receipt' : 'Withdrawal Status Update'}
+                  <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 18px; font-weight: 600;">
+                    Withdrawal Status Update
                   </p>
                 </td>
               </tr>
@@ -112,21 +83,16 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <tr>
                 <td style="padding: 30px 40px 10px;">
                   <p style="margin: 0; color: #7c3aed; font-size: 18px; font-weight: 600;">
-                    Hello ${userName || 'Valued Investor'},
+                    Hello ${name || 'Valued Investor'},
                   </p>
                 </td>
               </tr>
               
-              <!-- Status Badge -->
+              <!-- Status Message -->
               <tr>
                 <td style="padding: 10px 40px 20px;">
-                  <div style="text-align: center; margin: 20px 0;">
-                    <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 12px 30px; border-radius: 50px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-                      ${statusLabel}
-                    </span>
-                  </div>
-                  <p style="margin: 20px 0 0; color: #374151; font-size: 16px; line-height: 1.6; text-align: center;">
-                    ${statusMessage}
+                  <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                    Your withdrawal request has been received and is currently being processed. Please contact our support team to complete your withdrawal.
                   </p>
                 </td>
               </tr>
@@ -144,8 +110,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                         <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Amount</td>
-                              <td style="color: #059669; font-size: 20px; text-align: right; font-weight: 800;">${formattedAmount}</td>
+                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Reference ID</td>
+                              <td style="color: #111827; font-size: 14px; text-align: right; font-family: monospace; font-weight: 600;">${withdrawalId.slice(0, 8)}...</td>
                             </tr>
                           </table>
                         </td>
@@ -154,7 +120,17 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                         <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Date</td>
+                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Amount</td>
+                              <td style="color: #059669; font-size: 18px; text-align: right; font-weight: 800;">${formattedAmount}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Request Date</td>
                               <td style="color: #111827; font-size: 14px; text-align: right;">${formattedDate}</td>
                             </tr>
                           </table>
@@ -174,8 +150,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                         <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Payment Details</td>
-                              <td style="color: #111827; font-size: 14px; text-align: right; word-break: break-all;">${paymentDetails}</td>
+                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Payment Method</td>
+                              <td style="color: #111827; font-size: 14px; text-align: right; text-transform: capitalize;">${paymentMethod}</td>
                             </tr>
                           </table>
                         </td>
@@ -186,7 +162,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Status</td>
                               <td style="text-align: right;">
-                                <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">${statusLabel}</span>
+                                <span style="background: #fef3c7; color: #92400e; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">PROCESSING</span>
                               </td>
                             </tr>
                           </table>
@@ -197,8 +173,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                 </td>
               </tr>
               
-              ${showSupportCTA ? `
-              <!-- Support CTA -->
+              <!-- Important Notice -->
               <tr>
                 <td style="padding: 0 40px 30px;">
                   <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 25px; text-align: center;">
@@ -206,22 +181,12 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                       ⚠️ Action Required
                     </p>
                     <p style="margin: 0 0 20px; color: #78350f; font-size: 14px; line-height: 1.6;">
-                      Please contact our Customer Support Team to complete your withdrawal.
+                      Please contact our Customer Support Team to complete your withdrawal process.
                     </p>
-                    <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
-                      💬 Contact Support on WhatsApp
+                    <a href="${supportLink}" style="display: inline-block; background: ${supportType === 'telegram' ? '#0088cc' : '#25D366'}; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                      💬 Contact Support on ${supportLabel}
                     </a>
                   </div>
-                </td>
-              </tr>
-              ` : ''}
-              
-              <!-- Dashboard CTA -->
-              <tr>
-                <td style="padding: 0 40px 30px; text-align: center;">
-                  <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; text-decoration: none; padding: 16px 50px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
-                    View Dashboard →
-                  </a>
                 </td>
               </tr>
               
@@ -252,8 +217,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     },
     body: JSON.stringify({
       from: FROM_EMAIL,
-      to: [userEmail],
-      subject: subject,
+      to: [email],
+      subject: `📤 Withdrawal Request Received - ${formattedAmount} | Tesla Stock`,
       html: emailHtml,
     }),
   });
@@ -265,12 +230,11 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
   }
 
   const result = await res.json();
-  console.log("Withdrawal status email sent successfully:", result);
+  console.log("Withdrawal request email sent successfully:", result);
   return { success: true, data: result };
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -280,56 +244,46 @@ serve(async (req) => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    // Verify admin authorization
+    // Verify authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized - No authorization header" }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Create Supabase client with service role for admin verification
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const supabaseClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Verify the user is an admin
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Check admin role
-    const { data: roleData } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
+    const requestData: WithdrawalRequestEmail = await req.json();
 
-    if (!roleData) {
+    // Verify email matches authenticated user
+    if (user.email !== requestData.email) {
       return new Response(
-        JSON.stringify({ error: "Forbidden - Admin access required" }),
+        JSON.stringify({ error: "Forbidden" }),
         { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    const requestData = await req.json() as WithdrawalStatusRequest;
-
     // Use background task for faster response
-    EdgeRuntime.waitUntil(sendStatusEmail(requestData));
+    EdgeRuntime.waitUntil(sendWithdrawalRequestEmail(requestData));
 
     return new Response(
-      JSON.stringify({ success: true, message: "Status email queued" }),
+      JSON.stringify({ success: true, message: "Withdrawal request email queued" }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
-    console.error("Error in send-withdrawal-status:", error);
+    console.error("Error in send-withdrawal-request:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }

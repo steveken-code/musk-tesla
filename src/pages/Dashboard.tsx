@@ -434,7 +434,7 @@ const Dashboard = () => {
 
     setSubmittingWithdrawal(true);
     try {
-      const { error } = await supabase
+      const { data: withdrawalData, error } = await supabase
         .from('withdrawals')
         .insert({ 
           user_id: user!.id, 
@@ -442,11 +442,32 @@ const Dashboard = () => {
           country: withdrawCountry,
           payment_details: withdrawPaymentDetails,
           status: 'pending' 
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       
-      toast.success('Withdrawal request submitted successfully!');
+      // Send withdrawal request email
+      if (profile?.email && withdrawalData) {
+        try {
+          await supabase.functions.invoke('send-withdrawal-request', {
+            body: {
+              email: profile.email,
+              name: profile.full_name || 'Valued Investor',
+              amount: parseFloat(withdrawAmount),
+              country: selectedCountryData?.name || withdrawCountry,
+              paymentMethod: withdrawMethod,
+              paymentDetails: withdrawPaymentDetails,
+              withdrawalId: withdrawalData.id,
+            },
+          });
+        } catch (emailError) {
+          console.error('Error sending withdrawal email:', emailError);
+        }
+      }
+      
+      toast.success('Withdrawal request submitted successfully! Check your email for details.');
       setShowWithdrawalModal(false);
       fetchData();
     } catch (error: any) {
@@ -858,7 +879,7 @@ const Dashboard = () => {
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-[#1E1E1E] border border-[#333] rounded-xl shadow-xl max-h-64 overflow-hidden">
+                      <div className="absolute z-50 w-full mt-2 bg-[#1E1E1E] border border-[#333] rounded-xl shadow-xl max-h-48 overflow-hidden bottom-full mb-2">
                         <div className="p-2 border-b border-[#333]">
                           <Input
                             placeholder="Search countries..."
@@ -867,7 +888,7 @@ const Dashboard = () => {
                             className="bg-[#2a2a2a] border-[#444] text-white placeholder:text-[#888]"
                           />
                         </div>
-                        <div className="max-h-48 overflow-y-auto">
+                        <div className="max-h-36 overflow-y-auto">
                           {filteredCountries.map(country => (
                             <button
                               key={country.code}
