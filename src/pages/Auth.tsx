@@ -272,14 +272,22 @@ const Auth = () => {
             variant="static"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full h-12 mb-6 bg-white text-gray-800 border border-gray-200 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:border-gray-300"
+            className="w-full h-12 mb-6 bg-white text-gray-800 border border-gray-200 font-medium flex items-center justify-center gap-3 rounded-xl shadow-sm transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:border-gray-300 disabled:opacity-80"
           >
             {googleLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="flex items-center gap-3">
+                <div className="relative w-5 h-5">
+                  <div className="absolute inset-0 rounded-full border-2 border-gray-300"></div>
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-gray-700 animate-spin"></div>
+                </div>
+                <span className="animate-pulse">{t('connecting')}</span>
+              </div>
             ) : (
-              <GoogleIcon />
+              <>
+                <GoogleIcon />
+                {t('continueWithGoogle')}
+              </>
             )}
-            {googleLoading ? t('connecting') : t('continueWithGoogle')}
           </Button>
 
           {/* Divider */}
@@ -403,14 +411,17 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
+              className="w-full h-14 bg-tesla-red hover:bg-tesla-red/90 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25 disabled:opacity-80"
               disabled={loading}
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {t('processingText')}
-                </>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="relative w-5 h-5">
+                    <div className="absolute inset-0 rounded-full border-2 border-white/30"></div>
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-white animate-spin"></div>
+                  </div>
+                  <span className="animate-pulse">{isLogin ? 'Signing in...' : 'Creating account...'}</span>
+                </div>
               ) : (
                 isLogin ? t('signIn') : t('createAccount')
               )}
