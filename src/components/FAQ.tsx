@@ -52,7 +52,7 @@ const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="py-20 md:py-32 bg-white">
+    <section id="faq" className="py-20 md:py-32 bg-navy">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -64,10 +64,10 @@ const FAQ = () => {
           <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-tesla-red bg-tesla-red/10 rounded-full border border-tesla-red/20">
             {t('support')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white">
             {t('faqTitle')} <span className="text-tesla-red">{t('faqTitleHighlight')}</span>
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-300 max-w-2xl mx-auto text-lg">
             {t('faqSubtitle')}
           </p>
         </motion.div>
@@ -84,12 +84,12 @@ const FAQ = () => {
               <motion.div key={index} variants={itemVariants}>
                 <AccordionItem
                   value={`item-${index}`}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-6 data-[state=open]:border-tesla-red/50 transition-colors"
+                  className="bg-navy-light border border-white/10 rounded-xl px-6 data-[state=open]:border-tesla-red/50 transition-colors"
                 >
-                  <AccordionTrigger className="text-left text-slate-900 hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
+                  <AccordionTrigger className="text-left text-white hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
                     {t(faq.questionKey)}
                   </AccordionTrigger>
-                  <AccordionContent className="text-slate-600 pb-6 text-base leading-relaxed">
+                  <AccordionContent className="text-gray-400 pb-6 text-base leading-relaxed">
                     {t(faq.answerKey)}
                   </AccordionContent>
                 </AccordionItem>
