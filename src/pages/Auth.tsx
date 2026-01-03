@@ -306,7 +306,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                     required={!isLogin}
                   />
                 </div>
@@ -325,7 +325,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                   required
                 />
               </div>
@@ -343,7 +343,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#121212] border-[#2a2a2a] hover:border-white/20 text-white placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-electric-blue/50 focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                   required
                   minLength={6}
                 />
@@ -395,7 +395,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-xs text-[#FF3B30] hover:text-[#FF3B30]/80 transition-colors font-medium"
+                className="text-xs text-slate-400 hover:text-electric-blue hover:underline transition-colors font-medium"
               >
                 {t('forgotPassword')}
               </button>
@@ -403,7 +403,7 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-slate-200 hover:bg-slate-100 text-slate-900 font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-white/10"
+              className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
               disabled={loading}
             >
               {loading ? (

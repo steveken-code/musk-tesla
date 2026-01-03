@@ -141,9 +141,9 @@ const Testimonials = () => {
 
   const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
     <Card className="h-full p-6 bg-slate-800/95 backdrop-blur-sm border border-slate-700/50 shadow-lg shadow-black/20 transition-all duration-300 hover:shadow-xl hover:shadow-slate-900/40 hover:scale-[1.02] hover:-translate-y-1 hover:border-slate-600/50 group relative overflow-hidden rounded-2xl">
-      {/* Growth Badge */}
-      <div className="absolute top-4 right-4 px-3 py-1 bg-slate-700/50 border border-slate-600/30 rounded-full">
-        <span className="text-slate-300 font-bold text-sm">{testimonial.growth}</span>
+      {/* Growth Badge - Green for percentages */}
+      <div className="absolute top-4 right-4 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+        <span className="text-green-400 font-bold text-sm">{testimonial.growth}</span>
       </div>
       
       <div className="flex items-start gap-4 mb-4 pr-20">
@@ -153,7 +153,8 @@ const Testimonials = () => {
             alt={testimonial.name}
             className="w-14 h-14 rounded-full object-cover border-2 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-300"
           />
-          <div className="absolute -bottom-1 -right-1 bg-slate-500 w-4 h-4 rounded-full border-2 border-slate-800" />
+          {/* Online indicator - Green */}
+          <div className="absolute -bottom-1 -right-1 bg-green-500 w-4 h-4 rounded-full border-2 border-slate-800" />
         </div>
         <div className="min-w-0">
           <h4 className="font-bold text-base text-white">{testimonial.name}</h4>
@@ -161,9 +162,10 @@ const Testimonials = () => {
           <p className="text-xs text-slate-500">{testimonial.location}</p>
         </div>
       </div>
+      {/* Ratings - Yellow stars */}
       <div className="flex gap-1 mb-4">
         {[...Array(testimonial.rating)].map((_, i) => (
-          <Star key={i} className="w-4 h-4 fill-slate-400 text-slate-400" />
+          <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
         ))}
       </div>
       <p className="text-slate-300 group-hover:text-slate-200 transition-colors duration-300 text-sm leading-relaxed">

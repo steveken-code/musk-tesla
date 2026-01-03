@@ -3,8 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import ThemeToggle from './ThemeToggle';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const { t } = useLanguage();
@@ -111,6 +113,7 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
             <LanguageSelector />
             <Link to="/auth">
               <Button 
@@ -146,47 +149,72 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        <div 
-          className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-            isMobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="flex flex-col gap-2 py-4 border-t border-slate-700 bg-slate-900/95">
-            {navLinks.map((link, index) => (
-              link.isAnchor ? (
-                <button
-                  key={link.name}
-                  onClick={() => handleNavClick(link)}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in text-left"
-                  style={{ animationDelay: `${index * 0.05}s` }}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="md:hidden overflow-hidden"
+            >
+              <motion.div 
+                className="flex flex-col gap-2 py-4 border-t border-slate-700 bg-slate-900/95"
+                initial={{ y: -10 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              >
+                {navLinks.map((link, index) => (
+                  link.isAnchor ? (
+                    <motion.button
+                      key={link.name}
+                      onClick={() => handleNavClick(link)}
+                      className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 text-left active:scale-[0.98]"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <link.icon className="w-5 h-5 text-tesla-red" />
+                      {link.name}
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                    >
+                      <Link
+                        to={link.href}
+                        className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 active:scale-[0.98]"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <link.icon className="w-5 h-5 text-tesla-red" />
+                        {link.name}
+                      </Link>
+                    </motion.div>
+                  )
+                ))}
+                <motion.div 
+                  className="flex items-center gap-2 px-4 pt-4 border-t border-slate-700 mt-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: 0.3 }}
                 >
-                  <link.icon className="w-5 h-5 text-tesla-red" />
-                  {link.name}
-                </button>
-              ) : (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <link.icon className="w-5 h-5 text-tesla-red" />
-                  {link.name}
-                </Link>
-              )
-            ))}
-            <div className="flex items-center gap-2 px-4 pt-4 border-t border-slate-700 mt-2">
-              <LanguageSelector />
-              <Link to="/auth" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">{t('signIn')}</Button>
-              </Link>
-              <Link to="/dashboard" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="hero" className="w-full">{t('dashboard')}</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+                  <ThemeToggle />
+                  <LanguageSelector />
+                  <Link to="/auth" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">{t('signIn')}</Button>
+                  </Link>
+                  <Link to="/dashboard" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="hero" className="w-full">{t('dashboard')}</Button>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );
