@@ -1,31 +1,34 @@
 import { UserPlus, CreditCard, LineChart, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const HowItWorks = () => {
+  const { t } = useLanguage();
+
   const steps = [
     {
       step: 1,
       icon: UserPlus,
-      title: 'Create Your Account',
-      description: 'Sign up in under 2 minutes with your email. Verification is quick and secure.',
+      titleKey: 'howStep1Title',
+      descKey: 'howStep1Desc',
     },
     {
       step: 2,
       icon: CreditCard,
-      title: 'Fund Your Wallet',
-      description: 'Deposit funds via bank transfer, credit card, or cryptocurrency.',
+      titleKey: 'howStep2Title',
+      descKey: 'howStep2Desc',
     },
     {
       step: 3,
       icon: LineChart,
-      title: 'Invest in Tesla',
-      description: 'Purchase Tesla shares starting from just $100 with instant confirmation.',
+      titleKey: 'howStep3Title',
+      descKey: 'howStep3Desc',
     },
     {
       step: 4,
       icon: Wallet,
-      title: 'Grow & Withdraw',
-      description: 'Watch your investment grow and withdraw profits anytime you want.',
+      titleKey: 'howStep4Title',
+      descKey: 'howStep4Desc',
     },
   ];
 
@@ -53,8 +56,10 @@ const HowItWorks = () => {
   };
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 bg-slate-100 relative scroll-mt-20">
-      <div className="container mx-auto px-4">
+    <section id="how-it-works" className="py-24 md:py-32 bg-white relative scroll-mt-20">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -63,13 +68,13 @@ const HowItWorks = () => {
           className="text-center mb-16"
         >
           <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
-            Getting Started
+            {t('gettingStarted')}
           </p>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-            How It Works
+            {t('howItWorks')}
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Start your investment journey in four simple steps.
+            {t('howItWorksSubtitle')}
           </p>
         </motion.div>
 
@@ -94,13 +99,13 @@ const HowItWorks = () => {
                 </div>
                 
                 <div className="text-tesla-red font-bold text-sm mb-2">
-                  Step {item.step}
+                  {t('step')} {item.step}
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                  {item.title}
+                  {t(item.titleKey)}
                 </h3>
                 <p className="text-slate-600 text-sm leading-relaxed">
-                  {item.description}
+                  {t(item.descKey)}
                 </p>
               </motion.div>
             ))}
