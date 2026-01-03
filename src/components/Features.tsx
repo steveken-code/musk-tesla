@@ -1,37 +1,40 @@
 import { Shield, Zap, Smartphone, TrendingUp, Clock, HeadphonesIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Features = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: Shield,
-      title: 'Bank-Level Security',
-      description: 'Your investments are protected with 256-bit encryption and multi-factor authentication.',
+      titleKey: 'featureSecurity',
+      descKey: 'featureSecurityDesc',
     },
     {
       icon: Zap,
-      title: 'Instant Transactions',
-      description: 'Execute trades in milliseconds with our high-performance trading infrastructure.',
+      titleKey: 'featureInstant',
+      descKey: 'featureInstantDesc',
     },
     {
       icon: Smartphone,
-      title: 'Mobile Optimized',
-      description: 'Full-featured trading experience on any device, anywhere in the world.',
+      titleKey: 'featureMobile',
+      descKey: 'featureMobileDesc',
     },
     {
       icon: TrendingUp,
-      title: 'Real-Time Analytics',
-      description: 'Track your portfolio performance with live charts and detailed insights.',
+      titleKey: 'featureAnalytics',
+      descKey: 'featureAnalyticsDesc',
     },
     {
       icon: Clock,
-      title: 'Fast Withdrawals',
-      description: 'Access your funds within 24 hours via bank transfer or cryptocurrency.',
+      titleKey: 'featureWithdrawals',
+      descKey: 'featureWithdrawalsDesc',
     },
     {
       icon: HeadphonesIcon,
-      title: '24/7 Support',
-      description: 'Dedicated support team available around the clock to assist you.',
+      titleKey: 'featureSupport',
+      descKey: 'featureSupportDesc',
     },
   ];
 
@@ -60,9 +63,9 @@ const Features = () => {
   };
 
   return (
-    <section id="features" className="py-24 md:py-32 bg-slate-950 relative overflow-hidden scroll-mt-20">
+    <section id="features" className="py-24 md:py-32 bg-white relative overflow-hidden scroll-mt-20">
       {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
       
       <div className="container mx-auto px-4 relative z-10">
         <motion.div 
@@ -73,13 +76,13 @@ const Features = () => {
           className="text-center mb-16"
         >
           <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
-            Why Choose Us
+            {t('whyChooseUs')}
           </p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-            Everything You Need to Invest
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+            {t('featuresTitle')}
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-            A complete platform designed for both beginners and experienced investors.
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+            {t('featuresSubtitle')}
           </p>
         </motion.div>
 
@@ -99,7 +102,7 @@ const Features = () => {
                 scale: 1.02,
                 transition: { duration: 0.3 }
               }}
-              className="group glass-card rounded-2xl p-8 h-full cursor-pointer"
+              className="group bg-slate-50 border border-slate-200 rounded-2xl p-8 h-full cursor-pointer hover:shadow-xl hover:border-tesla-red/30 transition-all duration-300"
             >
               <motion.div 
                 className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors"
@@ -108,11 +111,11 @@ const Features = () => {
               >
                 <feature.icon className="w-7 h-7 text-tesla-red" />
               </motion.div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
+              <h3 className="text-xl font-semibold text-slate-900 mb-3">
+                {t(feature.titleKey)}
               </h3>
-              <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
-                {feature.description}
+              <p className="text-slate-600 leading-relaxed group-hover:text-slate-700 transition-colors">
+                {t(feature.descKey)}
               </p>
             </motion.div>
           ))}

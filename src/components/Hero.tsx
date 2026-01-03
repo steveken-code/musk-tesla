@@ -101,9 +101,9 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display leading-[1.1]"
           >
-            <span className="block text-foreground mb-2">Invest in the</span>
+            <span className="block text-foreground mb-2">{t('heroTitle')}</span>
             <span className="block bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
-              Future of Electric Mobility
+              {t('heroTitleHighlight')}
             </span>
           </motion.h1>
 
@@ -114,8 +114,7 @@ const Hero = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed"
           >
-            Trade and track Tesla stocks in real-time. Join thousands of investors 
-            capitalizing on Tesla's revolutionary growth.
+            {t('heroSubtitle')}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -127,14 +126,14 @@ const Hero = () => {
           >
             <Link to="/auth">
               <Button size="lg" className="group px-8 py-6 text-lg bg-gradient-to-r from-tesla-red to-red-600 hover:from-red-600 hover:to-tesla-red border-0 shadow-lg shadow-tesla-red/25">
-                Get Started
+                {t('getStarted')}
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link to="/auth">
-              <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-border/50 bg-card/30 backdrop-blur-sm hover:bg-card/50 hover:border-tesla-red/50">
+              <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-slate-300 bg-slate-200 text-slate-900 backdrop-blur-sm hover:bg-slate-300 hover:border-tesla-red/50 hover:shadow-md transition-all">
                 <User className="mr-2 w-5 h-5" />
-                Create Account
+                {t('createAccount')}
               </Button>
             </Link>
           </motion.div>
