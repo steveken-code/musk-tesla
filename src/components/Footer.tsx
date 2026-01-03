@@ -41,23 +41,6 @@ const Footer = () => {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-tesla-red/5 rounded-full blur-[150px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-electric-blue/5 rounded-full blur-[150px]" />
 
-      {/* Newsletter Section */}
-      <div className="border-b border-slate-800/50">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-2">Ready to start investing?</h3>
-              <p className="text-slate-400">Join thousands of investors growing their wealth with Tesla.</p>
-            </div>
-            <Link to="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-tesla-red to-red-600 hover:from-red-600 hover:to-tesla-red border-0 group">
-                Get Started Free
-                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
 
       <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
