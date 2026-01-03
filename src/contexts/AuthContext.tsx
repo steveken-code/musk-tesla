@@ -25,18 +25,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-
-        // Send welcome email for new sign-ups
-        if (event === 'SIGNED_IN' && session?.user) {
-          const isNewUser = session.user.created_at && 
-            (new Date().getTime() - new Date(session.user.created_at).getTime()) < 60000;
-          
-          if (isNewUser) {
-            setTimeout(() => {
-              sendWelcomeEmail(session.user);
-            }, 0);
-          }
-        }
       }
     );
 
@@ -49,12 +37,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const sendWelcomeEmail = async (user: User) => {
+  const sendWelcomeEmail = async (userId: string, email: string, name: string) => {
     try {
       const { error } = await supabase.functions.invoke('send-welcome-email', {
         body: {
-          email: user.email,
-          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Investor'
+          userId,
+          email,
+          name
         }
       });
       if (error) {
@@ -67,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -75,6 +64,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         data: { full_name: fullName }
       }
     });
+    
+    // Send welcome email with verification link (no auth required)
+    if (!error && data?.user) {
+      setTimeout(() => {
+        sendWelcomeEmail(data.user!.id, email, fullName);
+      }, 0);
+    }
+    
     return { error };
   };
 

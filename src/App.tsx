@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
 import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
