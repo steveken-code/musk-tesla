@@ -312,14 +312,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
               <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
+                    className="pl-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                     required={!isLogin}
                   />
                 </div>
@@ -331,14 +331,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
+                  className="pl-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                   required
                 />
               </div>
@@ -349,23 +349,23 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
+                  className="pl-14 pr-14 h-14 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-700"
                 >
-                  {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               
