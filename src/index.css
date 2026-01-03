@@ -36,7 +36,7 @@
     /* Refined Borders */
     --border: 222 30% 22%;
     --input: 222 30% 18%;
-    --ring: 0 72% 51%;
+    --ring: 220 15% 45%;
 
     --radius: 0.5rem;
 
@@ -122,7 +122,7 @@
     /* Refined Borders */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 0 72% 51%;
+    --ring: 220 15% 50%;
 
     /* Premium Color Tokens - Light variants */
     --navy: 222 47% 95%;
