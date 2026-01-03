@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { 
   LogOut, TrendingUp, DollarSign, Clock, 
   CheckCircle, XCircle, Loader2, ArrowLeft,
-  Wallet, Globe, AlertCircle
+  Wallet, Globe, AlertCircle, Mail, RefreshCw
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import TeslaChart from '@/components/TeslaChart';
@@ -39,6 +39,7 @@ interface Withdrawal {
 interface Profile {
   full_name: string | null;
   email: string | null;
+  email_verified: boolean;
 }
 
 const USD_TO_RUB = 96.5;
@@ -83,6 +84,7 @@ const Dashboard = () => {
   const [withdrawPaymentDetails, setWithdrawPaymentDetails] = useState('');
   const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
   const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
 
@@ -179,7 +181,7 @@ const Dashboard = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('profiles')
-          .select('full_name, email')
+          .select('full_name, email, email_verified')
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase
@@ -289,6 +291,25 @@ const Dashboard = () => {
     navigate('/');
   };
 
+  const handleResendVerification = async () => {
+    if (!profile?.email) return;
+    
+    setResendingVerification(true);
+    try {
+      const { error } = await supabase.functions.invoke('resend-verification-email', {
+        body: { email: profile.email }
+      });
+      
+      if (error) throw error;
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (error: any) {
+      console.error('Error resending verification:', error);
+      toast.error('Failed to resend verification email');
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
   const totalInvested = investments
     .filter(i => i.status === 'active' || i.status === 'completed')
     .reduce((sum, i) => sum + Number(i.amount), 0);
@@ -359,6 +380,42 @@ const Dashboard = () => {
           </h1>
           <p className="text-muted-foreground mt-1">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
+
+        {/* Email Verification Banner */}
+        {profile && !profile.email_verified && (
+          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-500/20 rounded-lg">
+                <Mail className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div>
+                <p className="text-foreground font-medium">Verify your email address</p>
+                <p className="text-sm text-muted-foreground">
+                  Please verify your email to secure your account and receive important updates.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleResendVerification}
+              disabled={resendingVerification}
+              className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 whitespace-nowrap"
+            >
+              {resendingVerification ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Resend Email
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
