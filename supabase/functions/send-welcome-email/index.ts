@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "TeslaInvest <onboarding@resend.dev>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,52 +15,61 @@ const corsHeaders = {
 interface WelcomeEmailRequest {
   email: string;
   name: string;
+  userId: string;
 }
 
+const generateToken = (): string => {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header provided");
+    const { name, email, userId }: WelcomeEmailRequest = await req.json();
+
+    if (!email || !userId) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized - No authorization header" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // Create authenticated Supabase client
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Verify the user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      console.error("Auth error:", authError);
-      return new Response(
-        JSON.stringify({ error: "Unauthorized - Invalid token" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    const { name, email }: WelcomeEmailRequest = await req.json();
-
-    // Verify the email matches the authenticated user
-    if (user.email !== email) {
-      console.error("Email mismatch: requested email does not match authenticated user");
-      return new Response(
-        JSON.stringify({ error: "Forbidden - Email does not match authenticated user" }),
-        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ error: "Email and userId are required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     console.log(`Sending welcome email to ${email} for user ${name}`);
+
+    // Create admin client with service role key
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Generate verification token
+    const verificationToken = generateToken();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Delete any existing tokens for this user
+    await supabaseAdmin
+      .from('email_verification_tokens')
+      .delete()
+      .eq('user_id', userId);
+
+    // Insert new verification token
+    const { error: insertError } = await supabaseAdmin
+      .from('email_verification_tokens')
+      .insert({
+        user_id: userId,
+        email: email.toLowerCase(),
+        token: verificationToken,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (insertError) {
+      console.error("Failed to create verification token:", insertError);
+    }
+
+    const verifyLink = `https://msktesla.net/verify-email?token=${verificationToken}`;
+    const dashboardLink = `https://msktesla.net/dashboard`;
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -71,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: "🚗 Welcome to TeslaInvest - Your Journey to Electric Returns Starts Now!",
+        subject: "🚗 Welcome to TeslaInvest - Verify Your Email to Get Started!",
         html: `
           <!DOCTYPE html>
           <html>
@@ -115,8 +124,24 @@ const handler = async (req: Request): Promise<Response> => {
                       <td style="padding: 0 40px 40px;">
                         <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
                           You've just joined an exclusive community of forward-thinking investors. 
-                          Your journey to building wealth with Tesla and revolutionary clean energy begins now.
+                          Please verify your email to unlock full access to your account.
                         </p>
+                        
+                        <!-- Verification CTA -->
+                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 2px solid #22c55e; border-radius: 16px; padding: 30px; margin: 30px 0; text-align: center;">
+                          <div style="display: inline-block; background: #22c55e20; border-radius: 50%; width: 60px; height: 60px; line-height: 60px; margin-bottom: 15px;">
+                            <span style="font-size: 28px;">✉️</span>
+                          </div>
+                          <h3 style="margin: 0 0 15px; color: #ffffff; font-size: 20px; font-weight: 700;">
+                            Verify Your Email
+                          </h3>
+                          <p style="margin: 0 0 20px; color: #a3a3a3; font-size: 14px;">
+                            Click the button below to verify your email address
+                          </p>
+                          <a href="${verifyLink}" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.5);">
+                            Verify Email →
+                          </a>
+                        </div>
                         
                         <!-- Stats Cards -->
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -154,11 +179,11 @@ const handler = async (req: Request): Promise<Response> => {
                                 <table width="100%" cellpadding="0" cellspacing="0">
                                   <tr>
                                     <td width="50" style="vertical-align: top;">
-                                      <div style="background: linear-gradient(135deg, #e31937, #cc0000); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">1</div>
+                                      <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">1</div>
                                     </td>
                                     <td>
-                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Complete Your Profile</div>
-                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Secure your account with full verification</div>
+                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Verify Your Email</div>
+                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Click the button above to confirm your account</div>
                                     </td>
                                   </tr>
                                 </table>
@@ -172,8 +197,8 @@ const handler = async (req: Request): Promise<Response> => {
                                       <div style="background: linear-gradient(135deg, #e31937, #cc0000); color: white; width: 32px; height: 32px; border-radius: 50%; text-align: center; line-height: 32px; font-weight: bold; font-size: 14px;">2</div>
                                     </td>
                                     <td>
-                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Explore Investment Plans</div>
-                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Choose from our curated Tesla investment packages</div>
+                                      <div style="color: #ffffff; font-weight: 600; font-size: 15px;">Complete Your Profile</div>
+                                      <div style="color: #737373; font-size: 13px; margin-top: 4px;">Secure your account with full verification</div>
                                     </td>
                                   </tr>
                                 </table>
@@ -212,10 +237,10 @@ const handler = async (req: Request): Promise<Response> => {
                           </table>
                         </div>
                         
-                        <!-- CTA Button -->
-                        <div style="text-align: center; margin: 40px 0 30px;">
-                          <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%); color: #ffffff; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 15px 40px -10px rgba(227, 25, 55, 0.5);">
-                            Access Your Dashboard →
+                        <!-- Secondary CTA -->
+                        <div style="text-align: center; margin: 30px 0;">
+                          <a href="${dashboardLink}" style="display: inline-block; background: transparent; color: #e31937; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; border: 2px solid #e31937;">
+                            Go to Dashboard
                           </a>
                         </div>
                         

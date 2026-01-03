@@ -65,6 +65,36 @@ export type Database = {
         }
         Relationships: []
       }
+      email_verification_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          token: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          token: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           amount: number
@@ -129,6 +159,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          email_verified: boolean
           full_name: string | null
           id: string
           phone: string | null
@@ -138,6 +169,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          email_verified?: boolean
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -147,6 +179,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          email_verified?: boolean
           full_name?: string | null
           id?: string
           phone?: string | null
