@@ -29,6 +29,20 @@ const Navbar = () => {
     { name: 'FAQ', href: '#faq', icon: HelpCircle, isAnchor: true },
   ];
 
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      const headerOffset = 80; // Account for fixed navbar height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const handleNavClick = (link: typeof navLinks[0]) => {
     setIsMobileMenuOpen(false);
     
@@ -38,17 +52,11 @@ const Navbar = () => {
         navigate('/');
         // Wait for navigation then scroll
         setTimeout(() => {
-          const element = document.querySelector(link.href);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 100);
+          scrollToSection(link.href);
+        }, 150);
       } else {
         // Already on home page, just scroll
-        const element = document.querySelector(link.href);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        scrollToSection(link.href);
       }
     }
   };
