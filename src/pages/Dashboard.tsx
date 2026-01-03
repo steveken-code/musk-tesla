@@ -363,7 +363,7 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      toast.success(t('investmentSubmitted'));
+      toast.success('Investment submitted successfully! Your investment is now pending activation.');
       setInvestAmount('');
       setShowPaymentDetails(false);
       fetchData();
@@ -562,41 +562,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground mt-1">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
 
-        {/* Email Verification Banner */}
-        {profile && !profile.email_verified && (
-          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Mail className="w-5 h-5 text-yellow-500" />
-              </div>
-              <div>
-                <p className="text-foreground font-medium">Verify your email address</p>
-                <p className="text-sm text-muted-foreground">
-                  Please verify your email to secure your account and receive important updates.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResendVerification}
-              disabled={resendingVerification}
-              className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 whitespace-nowrap"
-            >
-              {resendingVerification ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Resend Email
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+        {/* Email verification is now automatic - banner removed */}
 
         {/* Stats with Withdrawal */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
@@ -847,16 +813,16 @@ const Dashboard = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Withdrawal Amount</Label>
+                    <Label className="text-white">Withdrawal Amount</Label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-slate-400">$</span>
                       <Input
                         type="text"
                         inputMode="decimal"
                         placeholder="0.00"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-10 h-14 text-xl font-bold"
+                        className="pl-10 h-14 text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888]"
                       />
                     </div>
                     <button
@@ -892,13 +858,13 @@ const Dashboard = () => {
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-card border border-border rounded-xl shadow-xl max-h-64 overflow-hidden">
-                        <div className="p-2 border-b border-border">
+                      <div className="absolute z-10 w-full mt-2 bg-[#1E1E1E] border border-[#333] rounded-xl shadow-xl max-h-64 overflow-hidden">
+                        <div className="p-2 border-b border-[#333]">
                           <Input
                             placeholder="Search countries..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
-                            className="bg-background/50"
+                            className="bg-[#2a2a2a] border-[#444] text-white placeholder:text-[#888]"
                           />
                         </div>
                         <div className="max-h-48 overflow-y-auto">
@@ -989,7 +955,7 @@ const Dashboard = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>
+                    <Label className="text-white">
                       {withdrawMethod === 'crypto' ? 'USDT TRC20 Wallet Address' :
                        withdrawMethod === 'phone' ? 'Phone Number' : 'Card Number'}
                     </Label>
@@ -1003,15 +969,8 @@ const Dashboard = () => {
                         }
                         value={withdrawPaymentDetails}
                         onChange={(e) => handlePaymentDetailsChange(e.target.value)}
-                        className="h-14 text-lg font-mono"
+                        className="h-14 text-lg font-mono bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888]"
                       />
-                      {withdrawMethod === 'card' && detectedCard && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                          <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded-full font-medium">
-                            {detectedCard.type}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
 
