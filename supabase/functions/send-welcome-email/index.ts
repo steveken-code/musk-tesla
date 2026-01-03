@@ -2,9 +2,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "TeslaInvest <noreply@msktesla.net>";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Tesla logo URL for email
+const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/tesla-logo-red.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: "🚗 Welcome to TeslaInvest - Verify Your Email to Get Started!",
+        subject: "🚗 Welcome to Tesla Stock - Verify Your Email to Get Started!",
         html: `
           <!DOCTYPE html>
           <html>
@@ -97,11 +100,9 @@ const handler = async (req: Request): Promise<Response> => {
                     <!-- Header with Tesla Logo -->
                     <tr>
                       <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%);">
-                        <div style="display: inline-block; background: #ffffff; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
-                          <span style="color: #e31937; font-size: 40px; font-weight: bold;">T</span>
-                        </div>
+                        <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;" />
                         <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                          TESLAINVEST
+                          TESLA STOCK
                         </h1>
                         <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 1px;">
                           Accelerating Your Financial Future
@@ -250,7 +251,7 @@ const handler = async (req: Request): Promise<Response> => {
                             "The future of energy is bright, and so is your investment potential."
                           </p>
                           <p style="color: #737373; font-size: 14px; margin: 10px 0 0; font-weight: 600;">
-                            — TeslaInvest Team
+                            — Tesla Stock Team
                           </p>
                         </div>
                       </td>
@@ -278,13 +279,13 @@ const handler = async (req: Request): Promise<Response> => {
                     <tr>
                       <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
                         <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
-                          © ${new Date().getFullYear()} TeslaInvest. All rights reserved.
+                          © ${new Date().getFullYear()} Tesla Stock. All rights reserved.
                         </p>
                         <p style="margin: 0 0 15px; color: #404040; font-size: 12px;">
                           This email was sent to ${email}
                         </p>
                         <p style="margin: 0; color: #404040; font-size: 11px;">
-                          TeslaInvest | Smart Investing in Clean Energy
+                          Tesla Stock | Smart Investing in Clean Energy
                         </p>
                       </td>
                     </tr>
