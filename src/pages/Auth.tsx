@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import teslaLogo from '@/assets/tesla-logo-new.png';
+import LanguageSelector from '@/components/LanguageSelector';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
@@ -140,10 +141,14 @@ const Auth = () => {
 
   if (isForgotPassword) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
+        
+        <div className="absolute top-6 right-6 z-20">
+          <LanguageSelector />
+        </div>
         
         <button 
           onClick={() => {
@@ -151,7 +156,7 @@ const Auth = () => {
             setResetEmailSent(false);
             setResetEmail('');
           }}
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
+          className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
         >
           <ArrowLeft className="w-5 h-5" />
           {t('backToLogin')}
@@ -232,14 +237,18 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
+      <div className="absolute top-6 right-6 z-20">
+        <LanguageSelector />
+      </div>
+      
       <Link 
         to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
       >
         <ArrowLeft className="w-5 h-5" />
         {t('home')}
@@ -258,6 +267,7 @@ const Auth = () => {
               {isLogin ? t('welcomeBack') : t('createAccount')}
             </h2>
             <p className="text-slate-400 text-sm">
+              {isLogin ? t('signInSubtitle') : t('createAccountSubtitle')}
               {isLogin ? 'Sign in to access your account' : 'Create an account to get started'}
             </p>
           </div>
@@ -275,7 +285,7 @@ const Auth = () => {
             ) : (
               <GoogleIcon />
             )}
-            {googleLoading ? 'Connecting...' : 'Continue with Google'}
+            {googleLoading ? t('connecting') : t('continueWithGoogle')}
           </Button>
 
           {/* Divider */}
@@ -284,7 +294,7 @@ const Auth = () => {
               <div className="w-full border-t border-slate-700"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-slate-900 text-slate-500">or</span>
+              <span className="px-4 bg-slate-900 text-slate-500">{t('or')}</span>
             </div>
           </div>
 
@@ -299,7 +309,7 @@ const Auth = () => {
                   <Input
                     id="fullName"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
@@ -318,7 +328,7 @@ const Auth = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
@@ -336,7 +346,7 @@ const Auth = () => {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
@@ -415,20 +425,20 @@ const Auth = () => {
 
           <div className="mt-8 text-center">
             <span className="text-slate-500 text-sm">
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin ? t('noAccount') : t('alreadyHaveAccount')}
             </span>
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="text-tesla-red hover:text-tesla-red/80 transition-colors text-sm font-medium"
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
+              {isLogin ? t('signUp') : t('signIn')}
             </button>
           </div>
         </div>
         
         {/* Footer text */}
-        <p className="text-center text-slate-600 text-xs mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy
+        <p className="text-center text-slate-700 text-xs mt-6">
+          {t('termsAgreement')}
         </p>
       </div>
     </div>
