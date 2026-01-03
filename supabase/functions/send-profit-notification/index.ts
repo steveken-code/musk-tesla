@@ -6,12 +6,9 @@ declare const EdgeRuntime: {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@msktesla.net>";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Msk Tesla <noreply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-// Tesla logo URL for email
-const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/new_tesla-removebg-preview.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,6 +48,13 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
   const displayName = name || email.split('@')[0];
   const dashboardLink = `https://msktesla.net/dashboard`;
   const profitPercentage = ((totalProfit / investmentAmount) * 100).toFixed(1);
+  const transactionId = investmentId.substring(0, 8).toUpperCase();
+  const formattedDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -69,120 +73,194 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+        <body style="margin: 0; padding: 0; background-color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
             <tr>
               <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #171717 0%, #0a0a0a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #262626;">
+                <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                   
-                  <!-- Header with Tesla Logo -->
+                  <!-- Header -->
                   <tr>
-                    <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);">
-                      <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 120px; height: 120px; margin-bottom: 20px; border-radius: 16px;" />
-                      <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                        TESLA STOCK
+                    <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                      <h1 style="margin: 0; color: #1f2937; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                        Tesla Stock Platform
                       </h1>
-                      <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 1px;">
-                        Profit Alert! 🎉
+                      <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
+                        Profit Notification 🎉
+                      </p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Greeting -->
+                  <tr>
+                    <td style="padding: 40px 50px 15px;">
+                      <p style="margin: 0; color: #1e40af; font-size: 22px; font-weight: 700;">
+                        Hello ${displayName},
                       </p>
                     </td>
                   </tr>
                   
                   <!-- Profit Banner -->
                   <tr>
-                    <td style="padding: 40px 40px 20px; text-align: center;">
-                      <h2 style="margin: 0; color: #22c55e; font-size: 48px; font-weight: 800;">
-                        +$${profitAmount.toLocaleString()}
-                      </h2>
-                      <p style="margin: 10px 0 0; color: #a3a3a3; font-size: 16px;">
-                        Profit Added to Your Account
+                    <td style="padding: 15px 50px 25px;">
+                      <div style="text-align: center; margin: 25px 0;">
+                        <span style="background: #dcfce7; color: #166534; padding: 14px 35px; border-radius: 50px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block;">
+                          💰 PROFIT EARNED
+                        </span>
+                      </div>
+                      <p style="margin: 25px 0 0; color: #374151; font-size: 16px; line-height: 1.7; text-align: center;">
+                        Congratulations! Your Tesla Stock investment is performing well.
                       </p>
-                      <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #22c55e, #16a34a); margin: 20px auto; border-radius: 2px;"></div>
                     </td>
                   </tr>
                   
-                  <!-- Main Content -->
+                  <!-- Profit Amount Display -->
                   <tr>
-                    <td style="padding: 0 40px 40px;">
-                      <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
-                        Congratulations, ${displayName}! Your Tesla Stock investment is performing well.
-                      </p>
-                      
-                      <!-- Stats Cards -->
-                      <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                    <td style="padding: 0 50px 25px; text-align: center;">
+                      <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Profit Added</p>
+                      <p style="color: #16a34a; font-size: 52px; font-weight: 800; margin: 0;">+$${profitAmount.toLocaleString()}</p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Stats Cards -->
+                  <tr>
+                    <td style="padding: 0 50px 35px;">
+                      <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
-                          <td width="50%" style="padding: 10px;">
-                            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 1px solid #22c55e; border-radius: 12px; padding: 20px; text-align: center;">
-                              <div style="color: #22c55e; font-size: 28px; font-weight: 800;">$${totalProfit.toLocaleString()}</div>
-                              <div style="color: #737373; font-size: 12px; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Total Profit</div>
+                          <td width="48%" style="padding: 10px;">
+                            <div style="background: #dcfce7; border: 2px solid #22c55e; border-radius: 16px; padding: 25px; text-align: center;">
+                              <div style="color: #166534; font-size: 28px; font-weight: 800;">$${totalProfit.toLocaleString()}</div>
+                              <div style="color: #15803d; font-size: 13px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Profit</div>
                             </div>
                           </td>
-                          <td width="50%" style="padding: 10px;">
-                            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center;">
-                              <div style="color: #3b82f6; font-size: 28px; font-weight: 800;">+${profitPercentage}%</div>
-                              <div style="color: #737373; font-size: 12px; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px;">ROI</div>
+                          <td width="4%"></td>
+                          <td width="48%" style="padding: 10px;">
+                            <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 16px; padding: 25px; text-align: center;">
+                              <div style="color: #1e40af; font-size: 28px; font-weight: 800;">+${profitPercentage}%</div>
+                              <div style="color: #1d4ed8; font-size: 13px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">ROI</div>
                             </div>
                           </td>
                         </tr>
                       </table>
-                      
-                      <!-- Investment Summary -->
-                      <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 16px; padding: 25px; margin: 30px 0;">
-                        <h3 style="margin: 0 0 15px; color: #ffffff; font-size: 18px; font-weight: 700;">
+                    </td>
+                  </tr>
+                  
+                  <!-- Investment Details Card -->
+                  <tr>
+                    <td style="padding: 0 50px 35px;">
+                      <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
+                        <h3 style="margin: 0 0 25px; color: #dc2626; font-size: 20px; font-weight: 700;">
                           📊 Investment Summary
                         </h3>
+                        
                         <table width="100%" cellpadding="0" cellspacing="0">
                           <tr>
-                            <td style="padding: 10px 0; border-bottom: 1px solid #262626;">
-                              <span style="color: #737373;">Initial Investment</span>
-                            </td>
-                            <td style="padding: 10px 0; border-bottom: 1px solid #262626; text-align: right;">
-                              <span style="color: #ffffff; font-weight: 600;">$${investmentAmount.toLocaleString()}</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 10px 0; border-bottom: 1px solid #262626;">
-                              <span style="color: #737373;">This Profit</span>
-                            </td>
-                            <td style="padding: 10px 0; border-bottom: 1px solid #262626; text-align: right;">
-                              <span style="color: #22c55e; font-weight: 600;">+$${profitAmount.toLocaleString()}</span>
+                            <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Transaction ID</td>
+                                  <td style="color: #111827; font-size: 15px; text-align: right; font-weight: 700; font-family: monospace;">#${transactionId}</td>
+                                </tr>
+                              </table>
                             </td>
                           </tr>
                           <tr>
-                            <td style="padding: 10px 0;">
-                              <span style="color: #737373;">Total Profit</span>
+                            <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Description</td>
+                                  <td style="color: #111827; font-size: 15px; text-align: right;">Profit Distribution</td>
+                                </tr>
+                              </table>
                             </td>
-                            <td style="padding: 10px 0; text-align: right;">
-                              <span style="color: #22c55e; font-weight: 700; font-size: 18px;">$${totalProfit.toLocaleString()}</span>
+                          </tr>
+                          <tr>
+                            <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Date</td>
+                                  <td style="color: #111827; font-size: 15px; text-align: right;">${formattedDate}</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Initial Investment</td>
+                                  <td style="color: #111827; font-size: 15px; text-align: right; font-weight: 600;">$${investmentAmount.toLocaleString()}</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">This Profit</td>
+                                  <td style="color: #059669; font-size: 18px; text-align: right; font-weight: 800;">+$${profitAmount.toLocaleString()}</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 15px 0;">
+                              <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Total Profit</td>
+                                  <td style="color: #059669; font-size: 22px; text-align: right; font-weight: 800;">$${totalProfit.toLocaleString()}</td>
+                                </tr>
+                              </table>
                             </td>
                           </tr>
                         </table>
                       </div>
-                      
-                      <!-- Dashboard CTA -->
-                      <div style="text-align: center; margin: 30px 0;">
-                        <a href="${dashboardLink}" style="display: inline-block; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.5);">
-                          View Dashboard →
-                        </a>
-                      </div>
-                      
-                      <!-- Tip -->
-                      <div style="border-left: 4px solid #22c55e; padding-left: 20px; margin: 30px 0;">
-                        <p style="color: #d4d4d4; font-size: 14px; line-height: 1.6; margin: 0;">
-                          <strong style="color: #22c55e;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
+                    </td>
+                  </tr>
+                  
+                  <!-- Pro Tip -->
+                  <tr>
+                    <td style="padding: 0 50px 35px;">
+                      <div style="border-left: 5px solid #dc2626; padding-left: 25px;">
+                        <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0;">
+                          <strong style="color: #dc2626;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
                         </p>
+                      </div>
+                    </td>
+                  </tr>
+                  
+                  <!-- Dashboard CTA -->
+                  <tr>
+                    <td style="padding: 0 50px 35px; text-align: center;">
+                      <a href="${dashboardLink}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                        View Dashboard →
+                      </a>
+                    </td>
+                  </tr>
+                  
+                  <!-- Support -->
+                  <tr>
+                    <td style="padding: 0 50px 35px;">
+                      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
+                        <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
+                          Questions about your profits?
+                        </p>
+                        <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 15px; font-weight: 700;">
+                          💬 Contact Support on WhatsApp
+                        </a>
                       </div>
                     </td>
                   </tr>
                   
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
-                      <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
-                        © ${new Date().getFullYear()} Tesla Stock. All rights reserved.
+                    <td style="background: #f9fafb; padding: 35px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
+                      <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px; font-weight: 600;">
+                        © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                       </p>
-                      <p style="margin: 0; color: #404040; font-size: 11px;">
-                        Tesla Stock | Smart Investing in Clean Energy
+                      <p style="margin: 0; color: #9ca3af; font-size: 13px;">
+                        This is an automated message. Please do not reply directly to this email.
                       </p>
                     </td>
                   </tr>
