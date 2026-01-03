@@ -206,7 +206,7 @@ const Auth = () => {
                       placeholder="Enter your email address"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                      className="pl-12 h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-xl focus:border-slate-500 focus:ring-slate-500/20 shadow-sm"
                       required
                     />
                   </div>
