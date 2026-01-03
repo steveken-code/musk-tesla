@@ -306,7 +306,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
+                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
                     required={!isLogin}
                   />
                 </div>
@@ -325,7 +325,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
+                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
                   required
                 />
               </div>
@@ -343,7 +343,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
+                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-slate-500 focus:ring-slate-500/20"
                   required
                   minLength={6}
                 />
