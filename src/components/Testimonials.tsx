@@ -232,7 +232,7 @@ const Testimonials = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 md:mb-12"
         >
-          <span className="inline-block px-4 py-1.5 bg-slate-700/50 border border-slate-600/30 rounded-full text-slate-300 text-sm font-medium mb-4">
+          <span className="inline-block px-4 py-1.5 bg-green-500/20 border border-green-500/30 rounded-full text-green-400 text-sm font-medium mb-4">
             {t('successStories') || 'Success Stories'}
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white">

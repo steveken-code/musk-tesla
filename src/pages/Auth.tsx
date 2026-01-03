@@ -306,7 +306,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                    className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
                     required={!isLogin}
                   />
                 </div>
@@ -325,7 +325,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  className="pl-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
                   required
                 />
               </div>
@@ -343,7 +343,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-electric-blue focus:ring-2 focus:ring-electric-blue/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  className="pl-14 pr-14 h-14 bg-[#121212] border-slate-600 text-white placeholder:text-slate-400 rounded-xl"
                   required
                   minLength={6}
                 />
@@ -423,7 +423,7 @@ const Auth = () => {
             </span>{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-electric-blue hover:text-electric-blue/80 transition-colors text-sm font-medium"
+              className="text-tesla-red hover:text-tesla-red/80 transition-colors text-sm font-medium"
             >
               {isLogin ? t('signUp') : t('signIn')}
             </button>
