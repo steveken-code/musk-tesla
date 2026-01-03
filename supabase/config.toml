@@ -25,7 +25,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.resend-verification-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-investment-activation]
 verify_jwt = false
