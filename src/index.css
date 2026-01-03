@@ -88,6 +88,70 @@
     --background: 222 47% 7%;
     --foreground: 220 20% 98%;
   }
+
+  .light {
+    /* Light Theme Colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 220 20% 97%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Tesla Red - Primary Actions */
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Ocean Blue - Secondary Elements */
+    --secondary: 210 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted States */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent Colors */
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Refined Borders */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 72% 51%;
+
+    /* Premium Color Tokens - Light variants */
+    --navy: 222 47% 95%;
+    --midnight: 220 20% 97%;
+    --dark-steel: 220 14% 96%;
+    --steel: 220 13% 91%;
+    --slate: 220 9% 46%;
+    
+    /* Section backgrounds - Light */
+    --section-dark: 220 20% 97%;
+    --section-mid: 0 0% 100%;
+    --section-light: 0 0% 100%;
+    --section-accent: 220 14% 96%;
+
+    /* Premium Gradients - Light */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(220 20% 97%) 50%, hsl(220 14% 96%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 20% 97%) 100%);
+    --gradient-accent: linear-gradient(90deg, hsl(0 72% 51%) 0%, hsl(210 100% 50%) 100%);
+    --gradient-section: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 97%) 50%, hsl(0 0% 100%) 100%);
+    --gradient-navy: linear-gradient(180deg, hsl(220 20% 97%) 0%, hsl(0 0% 100%) 100%);
+    --gradient-midnight: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 20% 97%) 100%);
+    
+    /* Premium Shadows - Light */
+    --glow-red: 0 0 40px hsl(0 72% 51% / 0.15);
+    --glow-blue: 0 0 40px hsl(210 100% 50% / 0.15);
+    --glow-combined: 0 0 60px hsl(0 72% 51% / 0.08), 0 0 120px hsl(210 100% 50% / 0.05);
+    --shadow-card: 0 4px 24px hsl(220 13% 91% / 0.5);
+    --shadow-elevated: 0 8px 32px hsl(220 13% 91% / 0.6);
+  }
 }
 
 @layer base {
