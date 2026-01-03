@@ -212,9 +212,10 @@ const Admin = () => {
   };
 
   const updateInvestment = async (id: string, status: string, profitAmount?: number) => {
+    const investment = investments.find(inv => inv.id === id);
+    
     // Validate profit amount before updating
     if (profitAmount !== undefined) {
-      const investment = investments.find(inv => inv.id === id);
       if (!investment) {
         toast.error('Investment not found');
         return;
@@ -247,7 +248,30 @@ const Admin = () => {
 
       if (error) throw error;
       
-      toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
+      // Send confirmation email when investment is activated
+      if (status === 'active' && investment && investment.profiles?.email) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            await supabase.functions.invoke('send-investment-activation', {
+              body: {
+                userEmail: investment.profiles.email,
+                userName: investment.profiles.full_name || 'Valued Investor',
+                amount: investment.amount,
+                investmentId: investment.id,
+                investmentDate: investment.created_at,
+              },
+            });
+            toast.success('Investment approved - Email notification sent!');
+          }
+        } catch (emailError) {
+          console.error('Error sending activation email:', emailError);
+          toast.success('Investment approved (email notification failed)');
+        }
+      } else {
+        toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
+      }
+      
       fetchData();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update investment';

@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.resend-verification-email]
 verify_jwt = false
+
+[functions.send-investment-activation]
+verify_jwt = false
+
+[functions.send-withdrawal-status]
+verify_jwt = false
