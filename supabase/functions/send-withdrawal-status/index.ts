@@ -25,10 +25,87 @@ interface WithdrawalStatusRequest {
   holdMessage?: string;
   paymentDetails: string;
   country: string;
+  withdrawalId?: string;
+}
+
+// Country code to full name mapping
+const countryNames: Record<string, string> = {
+  "US": "United States",
+  "UK": "United Kingdom",
+  "RU": "Russia",
+  "NG": "Nigeria",
+  "GH": "Ghana",
+  "KE": "Kenya",
+  "ZA": "South Africa",
+  "CA": "Canada",
+  "AU": "Australia",
+  "DE": "Germany",
+  "FR": "France",
+  "ES": "Spain",
+  "IT": "Italy",
+  "BR": "Brazil",
+  "IN": "India",
+  "CN": "China",
+  "JP": "Japan",
+  "KR": "South Korea",
+  "MX": "Mexico",
+  "AE": "United Arab Emirates",
+  "SA": "Saudi Arabia",
+  "EG": "Egypt",
+  "PK": "Pakistan",
+  "BD": "Bangladesh",
+  "PH": "Philippines",
+  "ID": "Indonesia",
+  "MY": "Malaysia",
+  "SG": "Singapore",
+  "TH": "Thailand",
+  "VN": "Vietnam",
+  "TR": "Turkey",
+  "PL": "Poland",
+  "NL": "Netherlands",
+  "BE": "Belgium",
+  "SE": "Sweden",
+  "NO": "Norway",
+  "DK": "Denmark",
+  "FI": "Finland",
+  "AT": "Austria",
+  "CH": "Switzerland",
+  "IE": "Ireland",
+  "PT": "Portugal",
+  "GR": "Greece",
+  "CZ": "Czech Republic",
+  "RO": "Romania",
+  "HU": "Hungary",
+  "UA": "Ukraine",
+  "IL": "Israel",
+  "NZ": "New Zealand",
+  "AR": "Argentina",
+  "CL": "Chile",
+  "CO": "Colombia",
+  "PE": "Peru",
+  "VE": "Venezuela"
+};
+
+// Detect if payment details is a card number or phone number
+function getPaymentType(details: string): { type: string; label: string } {
+  const cleanDetails = details.replace(/\s+/g, '');
+  
+  // Card patterns (starts with digits, 13-19 characters, may have spaces/dashes)
+  if (/^\d{13,19}$/.test(cleanDetails) || /^\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{0,7}$/.test(details)) {
+    return { type: 'card', label: 'Card Number' };
+  }
+  
+  // Phone patterns (starts with + or has country code format)
+  if (/^\+?\d{10,15}$/.test(cleanDetails) || /^\+\d/.test(details)) {
+    return { type: 'phone', label: 'Phone Number' };
+  }
+  
+  // Default to payment details
+  return { type: 'other', label: 'Payment Details' };
 }
 
 async function sendStatusEmail(data: WithdrawalStatusRequest) {
-  const { userEmail, userName, amount, status, holdMessage, paymentDetails, country } = data;
+  const { userEmail, userName, amount, status, holdMessage, paymentDetails, country, withdrawalId } = data;
 
   console.log(`Sending withdrawal status email to ${userEmail} for $${amount} - Status: ${status}`);
 
@@ -44,11 +121,21 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     day: 'numeric',
   });
 
+  // Get full country name
+  const fullCountryName = countryNames[country] || country;
+  
+  // Get payment type
+  const paymentType = getPaymentType(paymentDetails);
+  
+  // Generate transaction ID if not provided
+  const transactionId = withdrawalId ? withdrawalId.substring(0, 8).toUpperCase() : `TXN${Date.now().toString(36).toUpperCase()}`;
+
   let subject = "";
   let statusLabel = "";
   let statusBgColor = "";
   let statusTextColor = "";
   let statusMessage = "";
+  let statusIcon = "";
   let showSupportCTA = false;
 
   switch (status) {
@@ -58,21 +145,25 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusBgColor = "#dcfce7";
       statusTextColor = "#166534";
       statusMessage = "Your withdrawal has been successfully processed! The funds have been transferred to your account.";
+      statusIcon = "✅";
       break;
     case "on_hold":
-      subject = `⚠️ Withdrawal On Hold - Action Required | Tesla Stock`;
+      subject = `⏸️ Withdrawal On Hold - Action Required | Tesla Stock`;
       statusLabel = "ON HOLD";
       statusBgColor = "#ffedd5";
       statusTextColor = "#9a3412";
       statusMessage = holdMessage || "Your withdrawal requires additional verification. Please contact support.";
+      statusIcon = "⏸️";
       showSupportCTA = true;
       break;
     case "pending":
+    case "processing":
       subject = `🕐 Withdrawal Processing - ${formattedAmount} | Tesla Stock`;
       statusLabel = "PROCESSING";
       statusBgColor = "#fef3c7";
       statusTextColor = "#92400e";
       statusMessage = "Your withdrawal is being processed. You will receive an update once it's completed.";
+      statusIcon = "🕐";
       break;
     default:
       subject = `Withdrawal Status Update | Tesla Stock`;
@@ -80,6 +171,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusBgColor = "#f3f4f6";
       statusTextColor = "#374151";
       statusMessage = `Your withdrawal status has been updated to: ${status}`;
+      statusIcon = "📋";
   }
 
   const emailHtml = `
@@ -93,16 +185,15 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
         <tr>
           <td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
               
               <!-- Header -->
               <tr>
-                <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);">
-                  <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 16px;" />
-                  <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1px;">
-                    TESLA STOCK PLATFORM
+                <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                  <h1 style="margin: 0; color: #1f2937; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                    Tesla Stock Platform
                   </h1>
-                  <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px; font-weight: 500;">
+                  <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
                     ${status === 'completed' ? 'Transaction Receipt' : 'Withdrawal Status Update'}
                   </p>
                 </td>
@@ -110,8 +201,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               
               <!-- Greeting -->
               <tr>
-                <td style="padding: 30px 40px 10px;">
-                  <p style="margin: 0; color: #7c3aed; font-size: 18px; font-weight: 600;">
+                <td style="padding: 40px 50px 15px;">
+                  <p style="margin: 0; color: #dc2626; font-size: 20px; font-weight: 700;">
                     Hello ${userName || 'Valued Investor'},
                   </p>
                 </td>
@@ -119,13 +210,13 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               
               <!-- Status Badge -->
               <tr>
-                <td style="padding: 10px 40px 20px;">
-                  <div style="text-align: center; margin: 20px 0;">
-                    <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 12px 30px; border-radius: 50px; font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-                      ${statusLabel}
+                <td style="padding: 15px 50px 25px;">
+                  <div style="text-align: center; margin: 25px 0;">
+                    <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 14px 35px; border-radius: 50px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block;">
+                      ${statusIcon} ${statusLabel}
                     </span>
                   </div>
-                  <p style="margin: 20px 0 0; color: #374151; font-size: 16px; line-height: 1.6; text-align: center;">
+                  <p style="margin: 25px 0 0; color: #374151; font-size: 16px; line-height: 1.7; text-align: center;">
                     ${statusMessage}
                   </p>
                 </td>
@@ -133,60 +224,80 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               
               <!-- Withdrawal Details Card -->
               <tr>
-                <td style="padding: 0 40px 30px;">
-                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 25px; margin: 0;">
-                    <h3 style="margin: 0 0 20px; color: #7c3aed; font-size: 18px; font-weight: 700;">
+                <td style="padding: 0 50px 35px;">
+                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
+                    <h3 style="margin: 0 0 25px; color: #dc2626; font-size: 20px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Amount</td>
-                              <td style="color: #059669; font-size: 20px; text-align: right; font-weight: 800;">${formattedAmount}</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Transaction ID</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right; font-weight: 700; font-family: monospace;">#${transactionId}</td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Date</td>
-                              <td style="color: #111827; font-size: 14px; text-align: right;">${formattedDate}</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Description</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right;">Withdrawal Request</td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Country</td>
-                              <td style="color: #111827; font-size: 14px; text-align: right;">${country}</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Amount</td>
+                              <td style="color: #059669; font-size: 22px; text-align: right; font-weight: 800;">${formattedAmount}</td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Payment Details</td>
-                              <td style="color: #111827; font-size: 14px; text-align: right; word-break: break-all;">${paymentDetails}</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Date</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right;">${formattedDate}</td>
                             </tr>
                           </table>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0;">
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Status</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Country</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right;">${fullCountryName}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">${paymentType.label}</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right; word-break: break-all; font-family: ${paymentType.type === 'card' ? 'monospace' : 'inherit'};">${paymentDetails}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 0;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Status</td>
                               <td style="text-align: right;">
-                                <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">${statusLabel}</span>
+                                <span style="background: ${statusBgColor}; color: ${statusTextColor}; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase;">${statusIcon} ${statusLabel}</span>
                               </td>
                             </tr>
                           </table>
@@ -200,15 +311,15 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               ${showSupportCTA ? `
               <!-- Support CTA -->
               <tr>
-                <td style="padding: 0 40px 30px;">
-                  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 25px; text-align: center;">
-                    <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 700;">
-                      ⚠️ Action Required
+                <td style="padding: 0 50px 35px;">
+                  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
+                    <p style="margin: 0 0 15px; color: #92400e; font-size: 18px; font-weight: 700;">
+                      ⏸️ Action Required
                     </p>
-                    <p style="margin: 0 0 20px; color: #78350f; font-size: 14px; line-height: 1.6;">
+                    <p style="margin: 0 0 25px; color: #78350f; font-size: 15px; line-height: 1.7;">
                       Please contact our Customer Support Team to complete your withdrawal.
                     </p>
-                    <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                    <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 16px 45px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
                       💬 Contact Support on WhatsApp
                     </a>
                   </div>
@@ -218,8 +329,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               
               <!-- Dashboard CTA -->
               <tr>
-                <td style="padding: 0 40px 30px; text-align: center;">
-                  <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; text-decoration: none; padding: 16px 50px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                <td style="padding: 0 50px 35px; text-align: center;">
+                  <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
                     View Dashboard →
                   </a>
                 </td>
@@ -227,11 +338,11 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               
               <!-- Footer -->
               <tr>
-                <td style="background: #f9fafb; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
-                  <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
+                <td style="background: #f9fafb; padding: 35px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
+                  <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px; font-weight: 600;">
                     © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                   </p>
-                  <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                  <p style="margin: 0; color: #9ca3af; font-size: 13px;">
                     This is an automated message. Please do not reply directly to this email.
                   </p>
                 </td>
@@ -243,7 +354,6 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     </body>
     </html>
   `;
-
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
