@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th';
 
@@ -1221,8 +1222,37 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('app-language');
-    return (saved as Language) || 'ru'; // Default to Russian
+    return (saved as Language) || 'en'; // Default to English initially
   });
+
+  // Fetch default language from admin settings for new users
+  useEffect(() => {
+    const fetchDefaultLanguage = async () => {
+      const saved = localStorage.getItem('app-language');
+      if (!saved) {
+        // No user preference saved, check admin settings for default
+        try {
+          const { data, error } = await supabase
+            .from('admin_settings')
+            .select('setting_value')
+            .eq('setting_key', 'default_language')
+            .maybeSingle();
+          
+          if (data && !error) {
+            const defaultLang = (data.setting_value as { language: string })?.language;
+            if (defaultLang) {
+              setLanguage(defaultLang as Language);
+              localStorage.setItem('app-language', defaultLang);
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching default language:', err);
+        }
+      }
+    };
+    
+    fetchDefaultLanguage();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('app-language', language);
