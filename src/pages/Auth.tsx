@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import teslaLogo from '@/assets/tesla-logo-new.png';
-import LanguageSelector from '@/components/LanguageSelector';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
@@ -146,9 +145,7 @@ const Auth = () => {
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
         
-        <div className="absolute top-6 right-6 z-20">
-          <LanguageSelector />
-        </div>
+        {/* Remove language selector from Auth page - only on Index and Admin */}
         
         <button 
           onClick={() => {
@@ -242,9 +239,7 @@ const Auth = () => {
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
-      <div className="absolute top-6 right-6 z-20">
-        <LanguageSelector />
-      </div>
+      {/* Remove language selector from Auth page - only on Index and Admin */}
       
       <Link 
         to="/" 
@@ -268,7 +263,6 @@ const Auth = () => {
             </h2>
             <p className="text-slate-400 text-sm">
               {isLogin ? t('signInSubtitle') : t('createAccountSubtitle')}
-              {isLogin ? 'Sign in to access your account' : 'Create an account to get started'}
             </p>
           </div>
 
@@ -304,15 +298,15 @@ const Auth = () => {
                 <Label htmlFor="fullName" className="text-slate-300 text-sm font-medium">
                   {t('fullName')}
                 </Label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+              <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-900" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                    className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-black placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     required={!isLogin}
                   />
                 </div>
@@ -324,14 +318,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-900" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  className="pl-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-black placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                   required
                 />
               </div>
@@ -342,21 +336,21 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-900" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-slate-900 placeholder:text-slate-400 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                  className="pl-14 pr-14 h-14 bg-white border-slate-300 hover:border-slate-400 text-black placeholder:text-slate-500 rounded-xl transition-all duration-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-800 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900 hover:text-black transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>

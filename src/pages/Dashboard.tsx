@@ -13,7 +13,6 @@ import {
   Wallet, Globe, AlertCircle
 } from 'lucide-react';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import LanguageSelector from '@/components/LanguageSelector';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
@@ -335,7 +334,7 @@ const Dashboard = () => {
             <span className="text-muted-foreground hidden sm:block text-sm truncate max-w-[120px]">
               {displayName}
             </span>
-            <LanguageSelector />
+            {/* Language selector removed - only on Index and Admin pages */}
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">{t('signOut')}</span>

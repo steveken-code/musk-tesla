@@ -300,10 +300,43 @@ const Admin = () => {
     navigate('/');
   };
 
-  const handleSetDefaultLanguage = (langCode: string) => {
-    setLanguage(langCode as 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko');
-    localStorage.setItem('app-language', langCode);
-    toast.success(`Default language set to ${languages.find(l => l.code === langCode)?.label}`);
+  const handleSetDefaultLanguage = async (langCode: string) => {
+    try {
+      // First check if default_language setting exists
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'default_language')
+        .maybeSingle();
+
+      if (existingSetting) {
+        // Update existing setting
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify({ language: langCode })),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'default_language');
+      } else {
+        // Insert new setting
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'default_language',
+            setting_value: JSON.parse(JSON.stringify({ language: langCode })),
+            updated_by: user?.id
+          });
+      }
+      
+      setLanguage(langCode as 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko');
+      localStorage.setItem('app-language', langCode);
+      toast.success(`Default language set to ${languages.find(l => l.code === langCode)?.label}`);
+    } catch (error) {
+      console.error('Error saving default language:', error);
+      toast.error('Failed to save default language');
+    }
   };
 
   const handleSavePaymentSettings = async () => {
