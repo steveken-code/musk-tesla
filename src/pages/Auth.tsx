@@ -121,15 +121,20 @@ const Auth = () => {
     setResetLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+      // Use custom password reset edge function
+      const { data, error } = await supabase.functions.invoke('request-password-reset', {
+        body: { email: resetEmail }
       });
 
       if (error) {
         toast.error(error.message);
-      } else {
+      } else if (data?.success) {
         setResetEmailSent(true);
         toast.success('Password reset email sent! Check your inbox.');
+      } else {
+        // Still show success to prevent email enumeration
+        setResetEmailSent(true);
+        toast.success('If an account exists, a reset link has been sent.');
       }
     } catch (err) {
       toast.error('An unexpected error occurred');
