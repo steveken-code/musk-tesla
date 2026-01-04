@@ -36,7 +36,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative bg-slate-950 border-t border-slate-800/50 overflow-hidden">
+    <footer className="relative bg-[#0a0a0f] border-t border-gray-800/50 overflow-hidden color-scheme-dark">
       {/* Decorative Elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-tesla-red/5 rounded-full blur-[150px]" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-electric-blue/5 rounded-full blur-[150px]" />
@@ -49,7 +49,7 @@ const Footer = () => {
             <Link to="/" className="inline-block mb-6">
               <img src={teslaLogo} alt="Tesla Stock" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
             </Link>
-            <p className="text-slate-400 mb-6 max-w-md leading-relaxed">
+            <p className="text-gray-400 mb-6 max-w-md leading-relaxed">
               Tesla Stock is a premier investment platform specializing in electric vehicle and sustainable energy stocks. We provide secure, transparent, and profitable investment opportunities.
             </p>
             
@@ -60,26 +60,26 @@ const Footer = () => {
                   key={index}
                   href={social.href}
                   whileHover={{ scale: 1.1 }}
-                  className="p-5 bg-slate-800/50 rounded-lg hover:bg-tesla-red/20 transition-colors group"
+                  className="p-5 bg-gray-800/50 rounded-lg hover:bg-tesla-red/20 transition-colors group"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-9 h-9 text-slate-400 group-hover:text-tesla-red transition-colors" />
+                  <social.icon className="w-9 h-9 text-gray-400 group-hover:text-tesla-red transition-colors" />
                 </motion.a>
               ))}
             </div>
 
             <div className="space-y-3">
-              <a href="mailto:support@teslastock.com" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group">
+              <a href="mailto:support@teslastock.com" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                 <Mail className="w-5 h-5 text-tesla-red group-hover:scale-110 transition-transform" />
-                support@teslastock.com
+                <span className="text-gray-400 hover:text-white">support@teslastock.com</span>
               </a>
-              <a href="tel:+12186500840" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group">
+              <a href="tel:+12186500840" className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group">
                 <Phone className="w-5 h-5 text-electric-blue group-hover:scale-110 transition-transform" />
-                +1 (218) 650-0840
+                <span className="text-gray-400 hover:text-white">+1 (218) 650-0840</span>
               </a>
-              <div className="flex items-center gap-3 text-slate-400">
+              <div className="flex items-center gap-3 text-gray-400">
                 <MapPin className="w-5 h-5 text-tesla-red" />
-                3500 Deer Creek Road, Palo Alto, CA 94304
+                <span className="text-gray-400">3500 Deer Creek Road, Palo Alto, CA 94304</span>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link 
                     to={link.href} 
-                    className="text-slate-400 hover:text-white hover:pl-2 transition-all duration-300"
+                    className="text-gray-400 hover:text-white hover:pl-2 transition-all duration-300"
                   >
                     {link.name}
                   </Link>
@@ -115,7 +115,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a 
                     href={link.href} 
-                    className="text-slate-400 hover:text-white hover:pl-2 transition-all duration-300"
+                    className="text-gray-400 hover:text-white hover:pl-2 transition-all duration-300"
                   >
                     {link.name}
                   </a>
@@ -135,7 +135,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a 
                     href={link.href} 
-                    className="text-slate-400 hover:text-white hover:pl-2 transition-all duration-300"
+                    className="text-gray-400 hover:text-white hover:pl-2 transition-all duration-300"
                   >
                     {link.name}
                   </a>
@@ -146,21 +146,21 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-16 pt-8 border-t border-slate-800/50">
+        <div className="mt-16 pt-8 border-t border-gray-800/50">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <Shield className="w-14 h-14 text-tesla-red" />
               <div>
                 <p className="font-semibold text-sm text-white">{t('regulatedEntity')}</p>
-                <p className="text-xs text-slate-500">{t('licenseNumber')}: 2024/INV/001234</p>
+                <p className="text-xs text-gray-500">{t('licenseNumber')}: 2024/INV/001234</p>
               </div>
             </div>
             
             <div className="text-center md:text-right">
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-400">
                 © 2024 Tesla Stock. {t('allRightsReserved')}
               </p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 {t('registrationInfo')}
               </p>
             </div>
