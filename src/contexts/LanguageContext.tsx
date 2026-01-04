@@ -46,6 +46,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Payment Details
     'paymentDetails': 'Payment Details',
+    'investmentDetails': 'Investment Details',
     'bankName': 'Bank Name',
     'accountHolder': 'Account Holder',
     'cardNumber': 'Card Number',
@@ -299,6 +300,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Payment Details
     'paymentDetails': 'Платежные реквизиты',
+    'investmentDetails': 'Детали инвестиции',
     'bankName': 'Наименование банка',
     'accountHolder': 'Владелец счета',
     'cardNumber': 'Номер карты',
@@ -522,7 +524,7 @@ const translations: Record<Language, Record<string, string>> = {
     'pending': 'En attente', 'active': 'Actif', 'marketCap': 'Cap. boursière', 'stockPrice': 'Prix action', 'globalDeliveries': 'Livraisons', 'superchargers': 'Superchargeurs',
     'makeNewInvestment': 'Nouvel investissement', 'investmentAmount': 'Montant (USD)', 'enterAmount': 'Entrez le montant (min 100$)',
     'submitInvestment': 'Soumettre', 'processingText': 'Traitement...', 'loadingPayment': 'Chargement...',
-    'paymentDetails': 'Détails de paiement', 'bankName': 'Nom de la banque', 'accountHolder': 'Titulaire', 'accountNumber': 'Numéro de compte',
+    'paymentDetails': 'Détails de paiement', 'investmentDetails': 'Détails d\'investissement', 'bankName': 'Nom de la banque', 'accountHolder': 'Titulaire', 'accountNumber': 'Numéro de compte',
     'signIn': 'Connexion', 'signUp': 'Inscription', 'email': 'Email', 'password': 'Mot de passe', 'fullName': 'Nom complet',
     'heroTitle': 'Investissez dans', 'heroTitleHighlight': 'L\'avenir de la mobilité électrique', 'heroSubtitle': 'Négociez et suivez les actions Tesla en temps réel. Rejoignez des milliers d\'investisseurs.',
     'getStarted': 'Commencer',
