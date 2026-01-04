@@ -739,68 +739,68 @@ const Dashboard = () => {
       
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+        <div className="container mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link to="/" className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity">
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             </Link>
-            <img src={teslaLogo} alt="Tesla Stock" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
+            <img src={teslaLogo} alt="Tesla Stock" className="h-10 sm:h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="text-muted-foreground hidden sm:block text-sm truncate max-w-[120px]">
+            <span className="text-muted-foreground hidden sm:block text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[120px]">
               {displayName}
             </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('signOut')}</span>
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 sm:h-9 px-2 sm:px-3">
+              <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline text-xs sm:text-sm">{t('signOut')}</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-4 max-w-full overflow-x-hidden">
+      <main className="relative z-10 container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-full overflow-x-hidden">
         {/* Welcome Message */}
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+        <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in">
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
             {t('welcomeBack')}, <span className="text-brand-purple drop-shadow-[0_0_20px_hsl(270_70%_60%/0.5)]">{displayName}</span>!
           </h1>
-          <p className="text-muted-foreground mt-3 text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
+          <p className="text-muted-foreground mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
 
         {/* Email verification is now automatic - banner removed */}
 
         {/* Stats with Withdrawal */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-tesla-red/30 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red flex-shrink-0" />
-              <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalInvested')}</span>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-tesla-red/30 transition-colors">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-tesla-red flex-shrink-0" />
+              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('totalInvested')}</span>
             </div>
-            <p className="text-lg sm:text-2xl md:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-green-500/30 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-              <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalProfit')}</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-green-500/30 transition-colors">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('totalProfit')}</span>
             </div>
-            <p className="text-lg sm:text-2xl md:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-yellow-500/30 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
-              <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('pending')}</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-yellow-500/30 transition-colors">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0" />
+              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('pending')}</span>
             </div>
-            <p className="text-lg sm:text-2xl md:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-electric-blue/30 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue flex-shrink-0" />
-              <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('active')}</span>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-electric-blue/30 transition-colors">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-electric-blue flex-shrink-0" />
+              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('active')}</span>
             </div>
-            <p className="text-lg sm:text-2xl md:text-3xl font-bold">
+            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">
               {investments.filter(i => i.status === 'active').length}
             </p>
           </div>
@@ -808,15 +808,15 @@ const Dashboard = () => {
           {/* Withdraw Card */}
           <div 
             onClick={totalProfit > 0 ? handleWithdrawStart : undefined}
-            className={`bg-gradient-to-br from-green-600/20 to-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-xl p-4 sm:p-6 transition-all col-span-2 md:col-span-1 ${
+            className={`bg-gradient-to-br from-green-600/20 to-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 transition-all col-span-2 md:col-span-1 ${
               totalProfit > 0 ? 'cursor-pointer hover:border-green-500/60 hover:scale-[1.02]' : 'opacity-60'
             }`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-              <span className="text-green-400 text-xs sm:text-sm font-medium">Withdraw</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+              <span className="text-green-400 text-[10px] sm:text-xs md:text-sm font-medium">Withdraw</span>
             </div>
-            <p className="text-lg sm:text-xl font-bold text-green-400">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-green-400">
               {totalProfit > 0 ? 'Click to Withdraw' : 'No Profit Yet'}
             </p>
           </div>
@@ -824,34 +824,34 @@ const Dashboard = () => {
 
         {/* Active Withdrawal Status */}
         {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && (
-          <div className={`mb-6 p-4 rounded-xl border animate-fade-in ${
+          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg sm:rounded-xl border animate-fade-in ${
             withdrawals[0].status === 'on_hold' 
               ? 'bg-orange-500/10 border-orange-500/30' 
               : withdrawals[0].status === 'pending'
               ? 'bg-yellow-500/10 border-yellow-500/30'
               : 'bg-green-500/10 border-green-500/30'
           }`}>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {getStatusIcon(withdrawals[0].status)}
                 <div>
-                  <span className="font-semibold capitalize block">
+                  <span className="font-semibold capitalize block text-sm sm:text-base">
                     Withdrawal {withdrawals[0].status === 'on_hold' ? 'On Hold' : withdrawals[0].status}
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     ${Number(withdrawals[0].amount).toLocaleString()}
                   </span>
                 </div>
               </div>
               {withdrawals[0].hold_message && (
-                <p className="text-sm text-orange-400 w-full sm:w-auto">{withdrawals[0].hold_message}</p>
+                <p className="text-xs sm:text-sm text-orange-400 w-full sm:w-auto">{withdrawals[0].hold_message}</p>
               )}
               {withdrawals[0].status === 'on_hold' && (
                 <a 
                   href="https://wa.me/12186500840" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors"
                 >
                   Contact Support
                 </a>
@@ -861,29 +861,29 @@ const Dashboard = () => {
         )}
 
         {/* Transaction History Link */}
-        <div className="mb-6">
-          <Link to="/transactions" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <History className="w-4 h-4" />
+        <div className="mb-4 sm:mb-6">
+          <Link to="/transactions" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             View Full Transaction History →
           </Link>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           <TeslaChart />
           <InvestmentChart investments={investments} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 mb-4 sm:mb-6 md:mb-8">
           {/* New Investment Form */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-tesla-red" />
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
               {t('makeNewInvestment')}
             </h2>
-            <form onSubmit={handleInvest} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="amount">{t('investmentAmount')}</Label>
+            <form onSubmit={handleInvest} className="space-y-3 sm:space-y-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
                 <Input
                   id="amount"
                   type="text"
@@ -894,20 +894,20 @@ const Dashboard = () => {
                     const value = e.target.value.replace(/[^0-9.]/g, '');
                     setInvestAmount(value);
                   }}
-                  className="bg-background/50 border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="bg-background/50 border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 h-10 sm:h-11 text-sm sm:text-base"
                   required
                 />
                 {investAmount && parseFloat(investAmount) >= 100 && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {t('exchangeRate')} {USD_TO_RUB} ₽
                   </div>
                 )}
               </div>
               
               {loadingPayment && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-tesla-red mr-2" />
-                  <span className="text-muted-foreground">{t('loadingPayment')}</span>
+                <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
+                  <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-tesla-red mr-2" />
+                  <span className="text-muted-foreground text-xs sm:text-sm">{t('loadingPayment')}</span>
                 </div>
               )}
               
@@ -920,13 +920,13 @@ const Dashboard = () => {
               
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
                 disabled={submitting || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('processingText')}
+                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 animate-spin" />
+                    <span className="text-xs sm:text-sm">{t('processingText')}</span>
                   </>
                 ) : (
                   t('submitInvestment')
@@ -936,33 +936,33 @@ const Dashboard = () => {
           </div>
 
           {/* Investment History */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold mb-4">{t('investmentHistory')}</h2>
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4">{t('investmentHistory')}</h2>
             {investments.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8 text-sm">
+              <p className="text-muted-foreground text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm">
                 {t('noInvestments')}
               </p>
             ) : (
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 max-h-[300px] sm:max-h-[350px] md:max-h-[400px] overflow-y-auto">
                 {investments.map((inv) => (
                   <div
                     key={inv.id}
-                    className="flex items-center justify-between p-3 sm:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
+                    className="flex items-center justify-between p-2.5 sm:p-3 md:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm sm:text-base">${Number(inv.amount).toLocaleString()}</p>
+                      <p className="font-semibold text-xs sm:text-sm md:text-base">${Number(inv.amount).toLocaleString()}</p>
                       {inv.profit_amount > 0 && (
-                        <p className="text-xs sm:text-sm text-green-500">
+                        <p className="text-[10px] sm:text-xs md:text-sm text-green-500">
                           +${Number(inv.profit_amount).toLocaleString()} {t('profit')}
                         </p>
                       )}
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {new Date(inv.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                       {getStatusIcon(inv.status)}
-                      <span className="capitalize text-xs sm:text-sm">{inv.status}</span>
+                      <span className="capitalize text-[10px] sm:text-xs md:text-sm">{inv.status}</span>
                     </div>
                   </div>
                 ))}
@@ -974,29 +974,29 @@ const Dashboard = () => {
 
       {/* Withdrawal Modal */}
       {showWithdrawalModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-card border border-border rounded-xl sm:rounded-2xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Wallet className="w-7 h-7 text-green-500" />
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <Wallet className="w-5 h-5 sm:w-7 sm:h-7 text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Withdraw Funds</h3>
-                  <p className="text-xs text-muted-foreground">Step {withdrawStep} of 4</p>
+                  <h3 className="font-bold text-sm sm:text-lg">Withdraw Funds</h3>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Step {withdrawStep} of 4</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowWithdrawalModal(false)}
-                className="p-2 hover:bg-muted rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-muted rounded-lg transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             {/* Progress Bar */}
-            <div className="px-4 pt-4">
+            <div className="px-3 sm:px-4 pt-3 sm:pt-4">
               <div className="h-1 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
@@ -1006,34 +1006,34 @@ const Dashboard = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {/* Step 1: Amount */}
               {withdrawStep === 1 && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="text-center mb-6">
-                    <p className="text-2xl font-bold text-green-500 mb-1">
+                <div className="space-y-3 sm:space-y-4 animate-fade-in">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <p className="text-xl sm:text-2xl font-bold text-green-500 mb-0.5 sm:mb-1">
                       ${totalProfit.toLocaleString()}
                     </p>
-                    <p className="text-sm text-muted-foreground">Available for withdrawal</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Available for withdrawal</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-white">Withdrawal Amount</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label className="text-white text-xs sm:text-sm">Withdrawal Amount</Label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-slate-400">$</span>
+                      <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-slate-400">$</span>
                       <Input
                         type="text"
                         inputMode="decimal"
                         placeholder="0.00"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-10 h-14 text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                        className="pl-8 sm:pl-10 h-11 sm:h-14 text-lg sm:text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                       />
                     </div>
                     <button
                       type="button"
                       onClick={() => setWithdrawAmount(totalProfit.toString())}
-                      className="text-sm text-green-500 hover:underline"
+                      className="text-xs sm:text-sm text-green-500 hover:underline"
                     >
                       Withdraw all
                     </button>
