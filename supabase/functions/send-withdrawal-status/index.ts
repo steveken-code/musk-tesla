@@ -190,7 +190,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <!-- Header - Tesla Red -->
               <tr>
                 <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                  <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
                   <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
