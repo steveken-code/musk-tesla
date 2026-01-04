@@ -978,7 +978,7 @@ const Admin = () => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
                               }}
-                              className="w-28 bg-slate-700 border-slate-600 text-white text-right font-semibold placeholder:text-slate-400"
+                              className="w-28 bg-slate-900/50 border-slate-600 text-white text-right font-semibold"
                             />
                           </div>
                         </div>
@@ -1204,7 +1204,7 @@ const Admin = () => {
                     <textarea
                       value={statusModalMessage}
                       onChange={(e) => setStatusModalMessage(e.target.value)}
-                      className="w-full h-24 bg-slate-700 border border-slate-600 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-slate-400"
+                      className="w-full h-24 bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
                       placeholder="Enter the billing fee or hold message..."
                     />
                   </div>
@@ -1227,7 +1227,7 @@ const Admin = () => {
                           key={index}
                           type="button"
                           onClick={() => setStatusModalMessage(template)}
-                          className="text-left text-xs p-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                          className="text-left text-xs p-2 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
                         >
                           {template}
                         </button>
