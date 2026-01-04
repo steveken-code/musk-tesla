@@ -230,7 +230,7 @@ const TransactionHistory = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-tesla-red/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-tesla-red" />
+              <DollarSign className="w-6 h-6 text-tesla-red" />
               <span className="text-muted-foreground text-xs">Total Invested</span>
             </div>
             <p className="text-xl font-bold">${totalInvested.toLocaleString()}</p>
@@ -238,7 +238,7 @@ const TransactionHistory = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-green-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-green-500" />
+              <TrendingUp className="w-6 h-6 text-green-500" />
               <span className="text-muted-foreground text-xs">Total Profit</span>
             </div>
             <p className="text-xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
@@ -246,7 +246,7 @@ const TransactionHistory = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-electric-blue/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <Wallet className="w-4 h-4 text-electric-blue" />
+              <Wallet className="w-6 h-6 text-electric-blue" />
               <span className="text-muted-foreground text-xs">Withdrawn</span>
             </div>
             <p className="text-xl font-bold text-electric-blue">${totalWithdrawn.toLocaleString()}</p>
@@ -254,7 +254,7 @@ const TransactionHistory = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-yellow-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-yellow-500" />
+              <Clock className="w-6 h-6 text-yellow-500" />
               <span className="text-muted-foreground text-xs">Pending</span>
             </div>
             <p className="text-xl font-bold text-yellow-500">${pendingWithdrawals.toLocaleString()}</p>
