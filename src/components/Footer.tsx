@@ -47,7 +47,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6">
-              <img src={teslaLogo} alt="Tesla Stock" className="h-14 w-auto brightness-110" />
+              <img src={teslaLogo} alt="Tesla Stock" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
             </Link>
             <p className="text-slate-400 mb-6 max-w-md leading-relaxed">
               Tesla Stock is a premier investment platform specializing in electric vehicle and sustainable energy stocks. We provide secure, transparent, and profitable investment opportunities.
