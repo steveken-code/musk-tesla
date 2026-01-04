@@ -725,8 +725,11 @@ const Dashboard = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-tesla-red" />
+      <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-muted rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-tesla-red rounded-full animate-spin"></div>
+        </div>
       </div>
     );
   }
