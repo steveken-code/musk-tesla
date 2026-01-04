@@ -120,14 +120,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                     required={!isLogin}
                   />
                 </div>
@@ -139,14 +139,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                  className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -157,21 +157,21 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 sm:pl-14 pr-11 sm:pr-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                  className="pl-11 sm:pl-14 pr-11 sm:pr-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200"
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
