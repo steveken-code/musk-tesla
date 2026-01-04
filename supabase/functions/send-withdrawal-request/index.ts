@@ -82,7 +82,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 30px 40px 10px;">
-                  <p style="margin: 0; color: #a855f7; font-size: 18px; font-weight: 600;">
+                  <p style="margin: 0; color: #c4b5fd; font-size: 18px; font-weight: 600;">
                     Hello ${name || 'Valued Investor'},
                   </p>
                 </td>
@@ -101,7 +101,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               <tr>
                 <td style="padding: 0 40px 30px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 25px; margin: 0;">
-                    <h3 style="margin: 0 0 20px; color: #a855f7; font-size: 18px; font-weight: 700;">
+                    <h3 style="margin: 0 0 20px; color: #c4b5fd; font-size: 18px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
                     

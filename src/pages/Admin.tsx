@@ -319,6 +319,15 @@ const Admin = () => {
 
     setUpdating(investment.id);
     try {
+      // First save the profit to database
+      const { error: updateError } = await supabase
+        .from('investments')
+        .update({ profit_amount: investment.profit_amount })
+        .eq('id', investment.id);
+
+      if (updateError) throw updateError;
+
+      // Then send the profit email
       await supabase.functions.invoke('send-profit-notification', {
         body: {
           userId: investment.user_id,
@@ -328,9 +337,11 @@ const Admin = () => {
           investmentAmount: investment.amount,
         },
       });
-      toast.success(`Profit email sent! ($${investment.profit_amount.toLocaleString()})`);
-    } catch (emailError) {
-      console.error('Error sending profit notification:', emailError);
+      
+      toast.success(`Profit saved & email sent! ($${investment.profit_amount.toLocaleString()})`);
+      fetchData(); // Refresh data to show updated profit
+    } catch (error) {
+      console.error('Error sending profit notification:', error);
       toast.error('Failed to send profit email');
     } finally {
       setUpdating(null);
