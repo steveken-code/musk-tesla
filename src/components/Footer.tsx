@@ -60,10 +60,10 @@ const Footer = () => {
                   key={index}
                   href={social.href}
                   whileHover={{ scale: 1.1 }}
-                  className="p-3 bg-slate-800/50 rounded-lg hover:bg-tesla-red/20 transition-colors group"
+                  className="p-4 bg-slate-800/50 rounded-lg hover:bg-tesla-red/20 transition-colors group"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-5 h-5 text-slate-400 group-hover:text-tesla-red transition-colors" />
+                  <social.icon className="w-7 h-7 text-slate-400 group-hover:text-tesla-red transition-colors" />
                 </motion.a>
               ))}
             </div>
