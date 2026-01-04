@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, Bar, ComposedChart, Line } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, Bar, ComposedChart, Line, Brush } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { TrendingUp, Activity, BarChart3, LineChart } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, LineChart, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DataPoint {
@@ -15,6 +15,10 @@ interface DataPoint {
   volume: number;
   sma20?: number;
   ema12?: number;
+  rsi?: number;
+  macd?: number;
+  macdSignal?: number;
+  macdHistogram?: number;
 }
 
 type TimeRange = 'intraday' | '30d';
@@ -42,6 +46,81 @@ const calculateEMA = (data: DataPoint[], period: number): DataPoint[] => {
     }
     ema = (point.close - ema) * multiplier + ema;
     return { ...point, ema12: Math.round(ema * 100) / 100 };
+  });
+};
+
+// Calculate RSI (Relative Strength Index)
+const calculateRSI = (data: DataPoint[], period: number = 14): DataPoint[] => {
+  let gains = 0;
+  let losses = 0;
+  
+  return data.map((point, index) => {
+    if (index === 0) {
+      return { ...point, rsi: 50 };
+    }
+    
+    const change = point.close - data[index - 1].close;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? Math.abs(change) : 0;
+    
+    if (index < period) {
+      gains += gain;
+      losses += loss;
+      if (index === period - 1) {
+        gains = gains / period;
+        losses = losses / period;
+      }
+      return { ...point, rsi: 50 };
+    }
+    
+    gains = (gains * (period - 1) + gain) / period;
+    losses = (losses * (period - 1) + loss) / period;
+    
+    const rs = losses === 0 ? 100 : gains / losses;
+    const rsi = 100 - (100 / (1 + rs));
+    
+    return { ...point, rsi: Math.round(rsi * 100) / 100 };
+  });
+};
+
+// Calculate MACD
+const calculateMACD = (data: DataPoint[]): DataPoint[] => {
+  // EMA 12
+  const ema12Multiplier = 2 / 13;
+  let ema12 = data[0]?.close || 0;
+  
+  // EMA 26
+  const ema26Multiplier = 2 / 27;
+  let ema26 = data[0]?.close || 0;
+  
+  // Signal line (EMA 9 of MACD)
+  const signalMultiplier = 2 / 10;
+  let signalLine = 0;
+  
+  return data.map((point, index) => {
+    if (index === 0) {
+      return { ...point, macd: 0, macdSignal: 0, macdHistogram: 0 };
+    }
+    
+    ema12 = (point.close - ema12) * ema12Multiplier + ema12;
+    ema26 = (point.close - ema26) * ema26Multiplier + ema26;
+    
+    const macd = ema12 - ema26;
+    
+    if (index === 1) {
+      signalLine = macd;
+    } else {
+      signalLine = (macd - signalLine) * signalMultiplier + signalLine;
+    }
+    
+    const histogram = macd - signalLine;
+    
+    return { 
+      ...point, 
+      macd: Math.round(macd * 100) / 100, 
+      macdSignal: Math.round(signalLine * 100) / 100,
+      macdHistogram: Math.round(histogram * 100) / 100
+    };
   });
 };
 
@@ -77,9 +156,11 @@ const generateIntradayData = (): DataPoint[] => {
     });
   }
   
-  // Add SMA and EMA
+  // Add all indicators
   let result = calculateSMA(data, 20);
   result = calculateEMA(result, 12);
+  result = calculateRSI(result, 14);
+  result = calculateMACD(result);
   
   return result;
 };
@@ -115,9 +196,11 @@ const generate30DayData = (): DataPoint[] => {
     });
   }
   
-  // Add SMA and EMA
+  // Add all indicators
   let result = calculateSMA(data, 20);
   result = calculateEMA(result, 12);
+  result = calculateRSI(result, 14);
+  result = calculateMACD(result);
   
   return result;
 };
@@ -187,6 +270,28 @@ const VolumeBar = (props: any) => {
   );
 };
 
+// MACD Histogram bar component
+const MACDBar = (props: any) => {
+  const { x, y, width, height, payload } = props;
+  if (!payload) return null;
+  
+  const { macdHistogram } = payload;
+  const isPositive = macdHistogram >= 0;
+  const color = isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
+  
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={Math.abs(height)}
+      fill={color}
+      opacity={0.7}
+      rx={1}
+    />
+  );
+};
+
 const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState<TimeRange>('intraday');
@@ -198,6 +303,10 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showSMA, setShowSMA] = useState(true);
   const [showEMA, setShowEMA] = useState(true);
+  const [showRSI, setShowRSI] = useState(true);
+  const [showMACD, setShowMACD] = useState(true);
+  const [zoomStart, setZoomStart] = useState(0);
+  const [zoomEnd, setZoomEnd] = useState(data.length - 1);
   const animationRef = useRef<number | null>(null);
   const wavePhase = useRef(0);
 
@@ -208,11 +317,15 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
       setData(newData);
       setPreviousPrice(newData[0]?.price || 248);
       setCurrentPrice(newData[newData.length - 1]?.price || 248);
+      setZoomStart(0);
+      setZoomEnd(newData.length - 1);
     } else {
       const newData = generate30DayData();
       setData(newData);
       setPreviousPrice(newData[0]?.price || 248);
       setCurrentPrice(newData[newData.length - 1]?.price || 248);
+      setZoomStart(0);
+      setZoomEnd(newData.length - 1);
     }
   }, [timeRange]);
 
@@ -264,9 +377,11 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           };
         });
         
-        // Recalculate SMA and EMA
+        // Recalculate all indicators
         let result = calculateSMA(newData, 20);
         result = calculateEMA(result, 12);
+        result = calculateRSI(result, 14);
+        result = calculateMACD(result);
         
         const lastPrice = result[result.length - 1].price;
         const change = lastPrice - previousPrice;
@@ -304,9 +419,11 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             volume: Math.floor(Math.random() * 500000 + 100000),
           });
           
-          // Recalculate SMA and EMA
+          // Recalculate all indicators
           let result = calculateSMA(newData, 20);
           result = calculateEMA(result, 12);
+          result = calculateRSI(result, 14);
+          result = calculateMACD(result);
           
           return result;
         });
@@ -322,11 +439,41 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
     };
   }, [isTradeActive, previousPrice, animatePrice, timeRange]);
 
+  const handleZoomIn = () => {
+    const range = zoomEnd - zoomStart;
+    const newRange = Math.max(10, Math.floor(range * 0.7));
+    const center = Math.floor((zoomStart + zoomEnd) / 2);
+    setZoomStart(Math.max(0, center - Math.floor(newRange / 2)));
+    setZoomEnd(Math.min(data.length - 1, center + Math.floor(newRange / 2)));
+  };
+
+  const handleZoomOut = () => {
+    const range = zoomEnd - zoomStart;
+    const newRange = Math.min(data.length - 1, Math.floor(range * 1.5));
+    const center = Math.floor((zoomStart + zoomEnd) / 2);
+    setZoomStart(Math.max(0, center - Math.floor(newRange / 2)));
+    setZoomEnd(Math.min(data.length - 1, center + Math.floor(newRange / 2)));
+  };
+
+  const handleResetZoom = () => {
+    setZoomStart(0);
+    setZoomEnd(data.length - 1);
+  };
+
+  const handleBrushChange = (e: any) => {
+    if (e && e.startIndex !== undefined && e.endIndex !== undefined) {
+      setZoomStart(e.startIndex);
+      setZoomEnd(e.endIndex);
+    }
+  };
+
   const isPositive = priceChange >= 0;
   const percentChange = previousPrice > 0 ? ((priceChange / previousPrice) * 100) : 0;
-  const minPrice = Math.min(...data.map(d => d.low));
-  const maxPrice = Math.max(...data.map(d => d.high));
-  const maxVolume = Math.max(...data.map(d => d.volume));
+  
+  const visibleData = data.slice(zoomStart, zoomEnd + 1);
+  const minPrice = Math.min(...visibleData.map(d => d.low));
+  const maxPrice = Math.max(...visibleData.map(d => d.high));
+  const maxVolume = Math.max(...visibleData.map(d => d.volume));
 
   const formatVolume = (vol: number) => {
     if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
@@ -392,23 +539,34 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           </Button>
         </div>
 
-        {/* Indicator Toggles */}
-        <div className="flex items-center gap-2">
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
           <Button
-            variant={showSMA ? 'default' : 'outline'}
+            variant="ghost"
             size="sm"
-            className={`h-7 px-2 text-xs ${showSMA ? 'bg-orange-500/80 hover:bg-orange-500' : 'border-orange-500/50 text-orange-400'}`}
-            onClick={() => setShowSMA(!showSMA)}
+            className="h-7 px-2"
+            onClick={handleZoomIn}
+            title="Zoom In"
           >
-            SMA
+            <ZoomIn className="w-4 h-4" />
           </Button>
           <Button
-            variant={showEMA ? 'default' : 'outline'}
+            variant="ghost"
             size="sm"
-            className={`h-7 px-2 text-xs ${showEMA ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'border-cyan-500/50 text-cyan-400'}`}
-            onClick={() => setShowEMA(!showEMA)}
+            className="h-7 px-2"
+            onClick={handleZoomOut}
+            title="Zoom Out"
           >
-            EMA
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2"
+            onClick={handleResetZoom}
+            title="Reset Zoom"
+          >
+            <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
 
@@ -432,12 +590,48 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           </Button>
         </div>
       </div>
+
+      {/* Indicator Toggles */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <Button
+          variant={showSMA ? 'default' : 'outline'}
+          size="sm"
+          className={`h-6 px-2 text-xs ${showSMA ? 'bg-orange-500/80 hover:bg-orange-500' : 'border-orange-500/50 text-orange-400'}`}
+          onClick={() => setShowSMA(!showSMA)}
+        >
+          SMA
+        </Button>
+        <Button
+          variant={showEMA ? 'default' : 'outline'}
+          size="sm"
+          className={`h-6 px-2 text-xs ${showEMA ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'border-cyan-500/50 text-cyan-400'}`}
+          onClick={() => setShowEMA(!showEMA)}
+        >
+          EMA
+        </Button>
+        <Button
+          variant={showRSI ? 'default' : 'outline'}
+          size="sm"
+          className={`h-6 px-2 text-xs ${showRSI ? 'bg-purple-500/80 hover:bg-purple-500' : 'border-purple-500/50 text-purple-400'}`}
+          onClick={() => setShowRSI(!showRSI)}
+        >
+          RSI
+        </Button>
+        <Button
+          variant={showMACD ? 'default' : 'outline'}
+          size="sm"
+          className={`h-6 px-2 text-xs ${showMACD ? 'bg-pink-500/80 hover:bg-pink-500' : 'border-pink-500/50 text-pink-400'}`}
+          onClick={() => setShowMACD(!showMACD)}
+        >
+          MACD
+        </Button>
+      </div>
       
       {/* Price Chart */}
-      <div className="h-[180px] w-full">
+      <div className="h-[160px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <ComposedChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ComposedChart data={visibleData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorPriceTesla" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.4}/>
@@ -508,6 +702,12 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                               <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
                             </div>
                           )}
+                          {showRSI && d.rsi && (
+                            <div className="flex justify-between gap-4">
+                              <span className="text-purple-400">RSI:</span>
+                              <span className="font-mono text-purple-400">{d.rsi.toFixed(1)}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between gap-4">
                             <span className="text-muted-foreground">Volume:</span>
                             <span className="font-mono">{formatVolume(d.volume)}</span>
@@ -554,7 +754,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
               )}
             </ComposedChart>
           ) : (
-            <ComposedChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ComposedChart data={visibleData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <CartesianGrid 
                 strokeDasharray="3 3" 
                 stroke="hsl(0, 0%, 20%)" 
@@ -658,13 +858,13 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
       </div>
 
       {/* Volume Chart */}
-      <div className="h-[60px] w-full mt-2">
+      <div className="h-[50px] w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+          <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
             <XAxis 
               dataKey={timeRange === 'intraday' ? 'time' : 'date'}
               stroke="hsl(0, 0%, 50%)" 
-              fontSize={9}
+              fontSize={8}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
@@ -672,13 +872,13 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             />
             <YAxis 
               stroke="hsl(0, 0%, 50%)" 
-              fontSize={9}
+              fontSize={8}
               tickLine={false}
               axisLine={false}
               domain={[0, maxVolume * 1.1]}
               tickFormatter={formatVolume}
               tick={{ fill: 'hsl(0, 0%, 40%)' }}
-              width={45}
+              width={40}
             />
             <Bar 
               dataKey="volume" 
@@ -689,33 +889,159 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </ResponsiveContainer>
       </div>
 
+      {/* RSI Chart */}
+      {showRSI && (
+        <div className="h-[50px] w-full mt-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] text-purple-400 font-medium">RSI (14)</span>
+          </div>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(0, 0%, 15%)" 
+                vertical={false}
+                opacity={0.5}
+              />
+              <XAxis 
+                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
+                hide
+              />
+              <YAxis 
+                stroke="hsl(0, 0%, 50%)" 
+                fontSize={8}
+                tickLine={false}
+                axisLine={false}
+                domain={[0, 100]}
+                ticks={[30, 70]}
+                tick={{ fill: 'hsl(0, 0%, 40%)' }}
+                width={40}
+              />
+              <ReferenceLine y={70} stroke="hsl(0, 72%, 51%)" strokeDasharray="3 3" strokeOpacity={0.5} />
+              <ReferenceLine y={30} stroke="hsl(142, 76%, 45%)" strokeDasharray="3 3" strokeOpacity={0.5} />
+              <Line 
+                type="monotone" 
+                dataKey="rsi" 
+                stroke="hsl(270, 70%, 60%)"
+                strokeWidth={1.5}
+                dot={false}
+                animationDuration={300}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* MACD Chart */}
+      {showMACD && (
+        <div className="h-[50px] w-full mt-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] text-pink-400 font-medium">MACD (12,26,9)</span>
+          </div>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(0, 0%, 15%)" 
+                vertical={false}
+                opacity={0.5}
+              />
+              <XAxis 
+                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
+                hide
+              />
+              <YAxis 
+                stroke="hsl(0, 0%, 50%)" 
+                fontSize={8}
+                tickLine={false}
+                axisLine={false}
+                domain={['auto', 'auto']}
+                tick={{ fill: 'hsl(0, 0%, 40%)' }}
+                width={40}
+              />
+              <ReferenceLine y={0} stroke="hsl(0, 0%, 30%)" strokeWidth={1} />
+              <Bar 
+                dataKey="macdHistogram" 
+                shape={(props: any) => <MACDBar {...props} />}
+                animationDuration={300}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="macd" 
+                stroke="hsl(330, 80%, 60%)"
+                strokeWidth={1.5}
+                dot={false}
+                animationDuration={300}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="macdSignal" 
+                stroke="hsl(200, 80%, 60%)"
+                strokeWidth={1.5}
+                dot={false}
+                animationDuration={300}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Brush for zoom selection */}
+      <div className="h-[30px] w-full mt-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+            <Brush 
+              dataKey={timeRange === 'intraday' ? 'time' : 'date'}
+              height={25}
+              stroke="hsl(0, 0%, 30%)"
+              fill="hsl(0, 0%, 10%)"
+              startIndex={zoomStart}
+              endIndex={zoomEnd}
+              onChange={handleBrushChange}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-2 text-xs">
+      <div className="flex items-center justify-center gap-3 mt-2 text-xs flex-wrap">
         {showSMA && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-0.5 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0 0 0', borderColor: 'hsl(30, 100%, 50%)' }} />
-            <span className="text-orange-400">SMA(20)</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0 0 0', borderColor: 'hsl(30, 100%, 50%)' }} />
+            <span className="text-orange-400 text-[10px]">SMA(20)</span>
           </div>
         )}
         {showEMA && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-0.5 bg-cyan-500" />
-            <span className="text-cyan-400">EMA(12)</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-cyan-500" />
+            <span className="text-cyan-400 text-[10px]">EMA(12)</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 bg-green-500/50 rounded-sm" />
-          <span className="text-muted-foreground">Volume</span>
+        {showRSI && (
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-purple-500" />
+            <span className="text-purple-400 text-[10px]">RSI</span>
+          </div>
+        )}
+        {showMACD && (
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-pink-500" />
+            <span className="text-pink-400 text-[10px]">MACD</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 bg-green-500/50 rounded-sm" />
+          <span className="text-muted-foreground text-[10px]">Vol</span>
         </div>
       </div>
       
       {/* Bottom stats */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+        <div className="flex items-center gap-3">
           <span>Low: <span className="text-red-400 font-mono">${minPrice.toFixed(2)}</span></span>
           <span>High: <span className="text-green-400 font-mono">${maxPrice.toFixed(2)}</span></span>
         </div>
-        <span className="text-muted-foreground/60">
+        <span className="text-muted-foreground/60 text-[10px]">
           {timeRange === 'intraday' ? 'Intraday' : '30 Day'} • Auto-refresh
         </span>
       </div>

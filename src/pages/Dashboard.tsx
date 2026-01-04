@@ -760,11 +760,11 @@ const Dashboard = () => {
 
       <main className="relative z-10 container mx-auto px-4 py-4 max-w-full overflow-x-hidden">
         {/* Welcome Message */}
-        <div className="mb-6 animate-fade-in">
+        <div className="mb-8 animate-fade-in">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             {t('welcomeBack')}, <span className="text-brand-purple drop-shadow-[0_0_20px_hsl(270_70%_60%/0.5)]">{displayName}</span>!
           </h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
+          <p className="text-muted-foreground mt-3 text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
 
         {/* Email verification is now automatic - banner removed */}
