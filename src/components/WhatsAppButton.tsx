@@ -12,7 +12,7 @@ const WhatsAppButton = () => {
   // Only include the message when user is on main website pages (not in investment dashboard)
   const message = isInvestmentArea 
     ? '' 
-    : encodeURIComponent('Hello! I would like to learn more about Tesla stocks not investments.');
+    : encodeURIComponent('Hello! I would like to learn more about Tesla stocks.');
   
   const whatsappUrl = message 
     ? `https://wa.me/${phoneNumber.replace('+', '')}?text=${message}`
