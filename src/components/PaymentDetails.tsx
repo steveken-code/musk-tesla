@@ -73,7 +73,7 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
   if (loading) {
     return (
       <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border flex items-center justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-tesla-red mr-2" />
+        <Loader2 className="w-5 h-5 animate-spin text-brand-purple mr-2" />
         <span className="text-muted-foreground text-sm">Loading payment details...</span>
       </div>
     );
@@ -81,7 +81,7 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
 
   return (
     <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border space-y-3 animate-fade-in">
-      <h3 className="font-semibold text-tesla-red flex items-center gap-2">
+      <h3 className="font-semibold text-brand-purple flex items-center gap-2">
         <CreditCard className="w-4 h-4" />
         {t('paymentDetails')}
       </h3>
