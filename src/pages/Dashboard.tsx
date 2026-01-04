@@ -578,7 +578,7 @@ const Dashboard = () => {
         {/* Welcome Message */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            {t('welcomeBack')}, <span className="text-tesla-red">{displayName}</span>!
+            {t('welcomeBack')}, <span className="text-brand-purple">{displayName}</span>!
           </h1>
           <p className="text-muted-foreground mt-1">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
