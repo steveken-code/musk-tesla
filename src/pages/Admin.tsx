@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail } from 'lucide-react';
+import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
   id: string;
@@ -105,7 +106,7 @@ const Admin = () => {
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals'>('investments');
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails'>('investments');
   
   // Status modal state
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -848,7 +849,7 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <Button
             variant={activeTab === 'investments' ? 'default' : 'outline'}
             onClick={() => setActiveTab('investments')}
@@ -865,7 +866,22 @@ const Admin = () => {
             <Wallet className="w-4 h-4 mr-2" />
             Withdrawals ({withdrawals.length})
           </Button>
+          <Button
+            variant={activeTab === 'emails' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('emails')}
+            className={activeTab === 'emails' ? 'bg-electric-blue' : 'border-slate-600 text-slate-300'}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Email Monitor
+          </Button>
         </div>
+
+        {/* Email Monitoring Tab */}
+        {activeTab === 'emails' && (
+          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in">
+            <EmailMonitoringDashboard />
+          </div>
+        )}
 
         {/* Investments Tab */}
         {activeTab === 'investments' && (
