@@ -181,14 +181,14 @@ const Auth = () => {
                     {t('email')}
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
                     <Input
                       id="resetEmail"
                       type="email"
                       placeholder="Enter your email address"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      className="pl-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 shadow-sm"
+                      className="pl-12 h-12 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 shadow-sm"
                       required
                     />
                   </div>
@@ -255,14 +255,14 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
               <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                    className="pl-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                     required={!isLogin}
                   />
                 </div>
@@ -274,14 +274,14 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
               </div>
@@ -292,21 +292,21 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-14 pr-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white transition-colors p-1 rounded-md hover:bg-slate-700"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>

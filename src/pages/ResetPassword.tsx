@@ -202,8 +202,9 @@ const ResetPassword = () => {
       <div className="relative z-10 w-full max-w-md animate-fade-in">
         <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
           <div className="flex flex-col items-center justify-center mb-10">
-            <img src={teslaLogo} alt="Tesla Stock" className="h-20 w-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-300">Create New Password</h2>
+            <img src={teslaLogo} alt="Msk Tesla" className="h-20 w-auto mb-4" />
+            <h2 className="text-xl font-semibold text-slate-300">Msk Tesla</h2>
+            <p className="text-lg text-slate-400 mt-1">Create New Password</p>
             {email && (
               <p className="text-slate-400 text-sm mt-2 font-medium">for {email}</p>
             )}
@@ -215,21 +216,21 @@ const ResetPassword = () => {
                 New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20"
+                  className="pl-12 pr-12 h-12 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -275,21 +276,21 @@ const ResetPassword = () => {
                 Confirm New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20"
+                  className="pl-12 pr-12 h-12 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
