@@ -144,7 +144,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
 
   switch (status) {
     case "completed":
-      subject = `Withdrawal Completed - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+      subject = `Withdrawal Completed - ${formattedAmount}`;
       statusLabel = "COMPLETED";
       statusBgColor = "#dcfce7";
       statusTextColor = "#166534";
@@ -152,7 +152,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusIcon = "✅";
       break;
     case "on_hold":
-      subject = `Withdrawal On Hold - Action Required - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+      subject = `Withdrawal On Hold - Action Required`;
       statusLabel = "ON HOLD";
       statusBgColor = "#ffedd5";
       statusTextColor = "#9a3412";
@@ -162,7 +162,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       break;
     case "pending":
     case "processing":
-      subject = `Withdrawal Processing - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+      subject = `Withdrawal Processing - ${formattedAmount}`;
       statusLabel = "PROCESSING";
       statusBgColor = "#fef3c7";
       statusTextColor = "#92400e";
@@ -170,7 +170,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusIcon = "🕐";
       break;
     default:
-      subject = `Withdrawal Status Update - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+      subject = `Withdrawal Status Update`;
       statusLabel = status.toUpperCase().replace('_', ' ');
       statusBgColor = "#f3f4f6";
       statusTextColor = "#374151";
@@ -371,6 +371,8 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       headers: {
         "X-Entity-Ref-ID": uniqueId,
         "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+        "X-Priority": "1",
+        "Importance": "high",
       },
       html: emailHtml,
     }),

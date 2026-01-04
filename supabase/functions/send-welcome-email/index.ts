@@ -74,10 +74,12 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      subject: `Welcome to Tesla Stock Platform - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      subject: `Welcome to Tesla Stock Platform`,
       headers: {
         "X-Entity-Ref-ID": uniqueId,
         "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+        "X-Priority": "1",
+        "Importance": "high",
       },
       html: `
         <!DOCTYPE html>

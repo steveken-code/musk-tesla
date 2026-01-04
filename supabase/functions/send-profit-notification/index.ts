@@ -69,10 +69,12 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      subject: `You just earned $${profitAmount.toLocaleString()} profit! - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      subject: `You just earned $${profitAmount.toLocaleString()} profit!`,
       headers: {
         "X-Entity-Ref-ID": uniqueId,
         "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+        "X-Priority": "1",
+        "Importance": "high",
       },
       html: `
         <!DOCTYPE html>

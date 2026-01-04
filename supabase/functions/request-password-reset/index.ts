@@ -120,10 +120,12 @@ const handler = async (req: Request): Promise<Response> => {
           from: FROM_EMAIL,
           to: [email],
           reply_to: "support@msktesla.net",
-          subject: `Password Reset Request - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          subject: `Password Reset Request`,
           headers: {
             "X-Entity-Ref-ID": uniqueId,
             "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+            "X-Priority": "1",
+            "Importance": "high",
           },
           html: `
             <!DOCTYPE html>
