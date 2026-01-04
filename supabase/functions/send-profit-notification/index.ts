@@ -278,14 +278,15 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     }),
   });
 
+  const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error("Resend API error:", errorData);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${email} | Type: profit_notification | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const data = await res.json();
-  console.log("Profit notification email sent successfully:", data);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${email} | Type: profit_notification | Resend_ID: ${data.id} | Time: ${sendTime}`);
   return { success: true, data };
 }
 

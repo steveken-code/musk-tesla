@@ -236,14 +236,15 @@ const handler = async (req: Request): Promise<Response> => {
         }),
       });
 
+      const sendTime = Date.now();
       if (!res.ok) {
         const errorData = await res.text();
-        console.error("Resend API error:", errorData);
+        console.error(`[EMAIL_MONITOR] FAILED | To: ${email} | Type: investment_confirmation | Error: ${errorData}`);
         throw new Error(`Failed to send email: ${errorData}`);
       }
 
       const result = await res.json();
-      console.log("Investment confirmation email sent successfully:", result);
+      console.log(`[EMAIL_MONITOR] SENT | To: ${email} | Type: investment_confirmation | Resend_ID: ${result.id} | Time: ${sendTime}`);
       return result;
     };
 

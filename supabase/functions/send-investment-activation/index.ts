@@ -250,14 +250,15 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     }),
   });
 
+  const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error("Resend API error:", errorData);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${userEmail} | Type: investment_activation | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const result = await res.json();
-  console.log("Investment activation email sent successfully:", result);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${userEmail} | Type: investment_activation | Resend_ID: ${result.id} | Time: ${sendTime}`);
   return { success: true, data: result };
 }
 
