@@ -739,12 +739,12 @@ const Dashboard = () => {
       
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </Link>
-            <img src={teslaLogo} alt="Tesla Stock" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
+            <img src={teslaLogo} alt="Tesla Stock" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-muted-foreground hidden sm:block text-sm truncate max-w-[120px]">
@@ -758,13 +758,13 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
+      <main className="relative z-10 container mx-auto px-4 py-4 max-w-full overflow-x-hidden">
         {/* Welcome Message */}
-        <div className="mb-8 animate-fade-in">
+        <div className="mb-6 animate-fade-in">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             {t('welcomeBack')}, <span className="text-brand-purple drop-shadow-[0_0_20px_hsl(270_70%_60%/0.5)]">{displayName}</span>!
           </h1>
-          <p className="text-muted-foreground mt-1">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
+          <p className="text-muted-foreground mt-0.5 text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
         </div>
 
         {/* Email verification is now automatic - banner removed */}
