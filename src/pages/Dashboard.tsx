@@ -1029,7 +1029,7 @@ const Dashboard = () => {
                   <div className="space-y-1.5 sm:space-y-2">
                     <Label className="text-white text-xs sm:text-sm">Withdrawal Amount</Label>
                     <div className="relative">
-                      <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-slate-400">$</span>
+                      <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-muted-foreground">$</span>
                       <Input
                         type="text"
                         inputMode="decimal"
