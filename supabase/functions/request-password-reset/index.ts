@@ -6,9 +6,23 @@ declare const EdgeRuntime: {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Msk Tesla <support@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Force the correct sender - ignore FROM_EMAIL if it contains "no-reply" or is invalid
+const getFromEmail = (): string => {
+  const defaultSender = "Msk Tesla <support@msktesla.net>";
+  const envFrom = Deno.env.get("FROM_EMAIL");
+  
+  if (!envFrom || envFrom.toLowerCase().includes("no-reply") || envFrom.toLowerCase().includes("noreply")) {
+    console.log(`FROM_EMAIL env is "${envFrom}", using default: ${defaultSender}`);
+    return defaultSender;
+  }
+  
+  return envFrom;
+};
+
+const FROM_EMAIL = getFromEmail();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,6 +108,8 @@ const handler = async (req: Request): Promise<Response> => {
     const userName = profile?.full_name || user.user_metadata?.full_name || email.split('@')[0];
     const resetLink = `https://msktesla.net/reset-password?token=${token}`;
 
+    console.log(`Sending password reset email with FROM: ${FROM_EMAIL}`);
+    
     // Send email in background for faster response
     const sendEmailTask = async () => {
       const res = await fetch("https://api.resend.com/emails", {
@@ -105,6 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
+          reply_to: "support@msktesla.net",
           subject: "🔐 Reset Your Tesla Stock Password",
           html: `
             <!DOCTYPE html>
