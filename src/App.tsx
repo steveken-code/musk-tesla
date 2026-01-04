@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import About from "./pages/About";
 import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import TransactionHistory from "./pages/TransactionHistory";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
         <Route path="/transactions" element={<PageTransition><TransactionHistory /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
