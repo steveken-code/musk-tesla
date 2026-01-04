@@ -83,9 +83,9 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
               <td align="center">
                 <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                   
-                  <!-- Header -->
+                  <!-- Header - Tesla Red -->
                   <tr>
-                    <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);">
+                    <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
                       <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                         Tesla Stock Platform
                       </h1>
@@ -98,7 +98,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <!-- Greeting -->
                   <tr>
                     <td style="padding: 40px 50px 15px;">
-                      <p style="margin: 0; color: #1e40af; font-size: 22px; font-weight: 700;">
+                      <p style="margin: 0; color: #a855f7; font-size: 22px; font-weight: 700;">
                         Hello ${displayName},
                       </p>
                     </td>
@@ -153,7 +153,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <tr>
                     <td style="padding: 0 50px 35px;">
                       <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                        <h3 style="margin: 0 0 25px; color: #7c3aed; font-size: 20px; font-weight: 700;">
+                        <h3 style="margin: 0 0 25px; color: #a855f7; font-size: 20px; font-weight: 700;">
                           📊 Investment Summary
                         </h3>
                         
@@ -226,18 +226,18 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <!-- Pro Tip -->
                   <tr>
                     <td style="padding: 0 50px 35px;">
-                      <div style="border-left: 5px solid #7c3aed; padding-left: 25px;">
+                      <div style="border-left: 5px solid #a855f7; padding-left: 25px;">
                         <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0;">
-                          <strong style="color: #7c3aed;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
+                          <strong style="color: #a855f7;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
                         </p>
                       </div>
                     </td>
                   </tr>
                   
-                  <!-- Dashboard CTA -->
+                  <!-- Dashboard CTA - Tesla Red -->
                   <tr>
                     <td style="padding: 0 50px 35px; text-align: center;">
-                      <a href="${dashboardLink}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                      <a href="${dashboardLink}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
                         View Dashboard →
                       </a>
                     </td>

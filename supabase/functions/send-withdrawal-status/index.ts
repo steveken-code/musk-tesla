@@ -187,10 +187,10 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
           <td align="center">
             <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
               
-              <!-- Header -->
+              <!-- Header - Tesla Red -->
               <tr>
                 <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
-                  <h1 style="margin: 0; color: #1f2937; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
                   <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
@@ -202,7 +202,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #1e40af; font-size: 22px; font-weight: 700;">
+                  <p style="margin: 0; color: #a855f7; font-size: 22px; font-weight: 700;">
                     Hello ${userName || 'Valued Investor'},
                   </p>
                 </td>
@@ -226,7 +226,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #dc2626; font-size: 20px; font-weight: 700;">
+                    <h3 style="margin: 0 0 25px; color: #a855f7; font-size: 20px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
                     
@@ -327,7 +327,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               </tr>
               ` : ''}
               
-              <!-- Dashboard CTA -->
+              <!-- Dashboard CTA - Tesla Red -->
               <tr>
                 <td style="padding: 0 50px 35px; text-align: center;">
                   <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
@@ -440,14 +440,20 @@ serve(async (req) => {
     EdgeRuntime.waitUntil(sendStatusEmail(requestData));
 
     return new Response(
-      JSON.stringify({ success: true, message: "Status email queued" }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      JSON.stringify({ success: true, message: "Withdrawal status email queued" }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
     );
   } catch (error: any) {
     console.error("Error in send-withdrawal-status:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
     );
   }
 });
