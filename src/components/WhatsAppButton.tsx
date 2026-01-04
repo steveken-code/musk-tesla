@@ -1,9 +1,22 @@
+import { useLocation } from 'react-router-dom';
 import whatsappIcon from '@/assets/whatsapp-icon.png';
 
 const WhatsAppButton = () => {
+  const location = useLocation();
   const phoneNumber = '+12186500840';
-  const message = encodeURIComponent('Hello! I would like to learn more about Tesla investments.');
-  const whatsappUrl = `https://wa.me/${phoneNumber.replace('+', '')}?text=${message}`;
+  
+  // Pages where user is in investment/dashboard area - no pre-filled message
+  const investmentPages = ['/dashboard', '/admin', '/transaction-history'];
+  const isInvestmentArea = investmentPages.some(page => location.pathname.startsWith(page));
+  
+  // Only include the message when user is on main website pages (not in investment dashboard)
+  const message = isInvestmentArea 
+    ? '' 
+    : encodeURIComponent('Hello! I would like to learn more about Tesla stocks not investments.');
+  
+  const whatsappUrl = message 
+    ? `https://wa.me/${phoneNumber.replace('+', '')}?text=${message}`
+    : `https://wa.me/${phoneNumber.replace('+', '')}`;
 
   return (
     <a
