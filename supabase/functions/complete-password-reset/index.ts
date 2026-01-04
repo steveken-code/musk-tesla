@@ -4,11 +4,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 interface CompleteResetRequest {
   token: string;
@@ -16,6 +22,9 @@ interface CompleteResetRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -30,9 +39,10 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    if (newPassword.length < 6) {
+    // Updated to 8 character minimum per NIST guidelines
+    if (newPassword.length < 8) {
       return new Response(
-        JSON.stringify({ success: false, error: "Password must be at least 6 characters" }),
+        JSON.stringify({ success: false, error: "Password must be at least 8 characters" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -66,7 +76,23 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Update the user's password
+    // SECURITY FIX: Mark token as used FIRST (atomic operation) to prevent race conditions
+    const { data: updateResult, error: tokenUpdateError } = await supabaseAdmin
+      .from('password_reset_tokens')
+      .update({ used: true })
+      .eq('id', tokenData.id)
+      .eq('used', false) // Ensure it wasn't already used
+      .select();
+
+    if (tokenUpdateError || !updateResult || updateResult.length === 0) {
+      console.log("Token already used or race condition detected");
+      return new Response(
+        JSON.stringify({ success: false, error: "Token has already been used" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Now update the user's password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       tokenData.user_id,
       { password: newPassword }
@@ -74,17 +100,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (updateError) {
       console.error("Failed to update password:", updateError);
+      // Don't expose internal error details to client
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to update password" }),
+        JSON.stringify({ success: false, error: "Failed to update password. Please try again." }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
-
-    // Mark token as used
-    await supabaseAdmin
-      .from('password_reset_tokens')
-      .update({ used: true })
-      .eq('id', tokenData.id);
 
     console.log("Password reset completed successfully");
 
@@ -94,8 +115,9 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in complete-password-reset function:", error);
+    // Return generic error message to client
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: "An error occurred while processing your request. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }

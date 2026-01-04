@@ -10,10 +10,17 @@ const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 interface PasswordResetRequest {
   email: string;
@@ -145,6 +152,9 @@ async function sendPasswordResetEmailTask({ email, name, resetLink }: PasswordRe
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -156,7 +166,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!authHeader) {
       console.error("No authorization header provided");
       return new Response(
-        JSON.stringify({ error: "Unauthorized - No authorization header" }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -171,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (authError || !user) {
       console.error("Auth error:", authError);
       return new Response(
-        JSON.stringify({ error: "Unauthorized - Invalid token" }),
+        JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -182,7 +192,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (user.email !== payload.email) {
       console.error("Email mismatch: requested email does not match authenticated user");
       return new Response(
-        JSON.stringify({ error: "Forbidden - Email does not match authenticated user" }),
+        JSON.stringify({ error: "Forbidden" }),
         { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -196,7 +206,8 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-password-reset function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    // Return generic error message to client
+    return new Response(JSON.stringify({ error: "An error occurred while processing your request. Please try again." }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

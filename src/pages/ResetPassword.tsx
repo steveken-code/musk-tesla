@@ -80,8 +80,8 @@ const ResetPassword = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
@@ -224,7 +224,7 @@ const ResetPassword = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-12 pr-12 h-12 bg-slate-100 border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -284,7 +284,7 @@ const ResetPassword = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-12 pr-12 h-12 bg-slate-100 border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -305,7 +305,7 @@ const ResetPassword = () => {
 
             <Button
               type="submit"
-              disabled={loading || password !== confirmPassword || password.length < 6}
+              disabled={loading || password !== confirmPassword || password.length < 8}
               className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25 disabled:opacity-50"
             >
               {loading ? (
