@@ -332,7 +332,7 @@ const Admin = () => {
       if (updateError) throw updateError;
 
       // Then send the profit email
-      await supabase.functions.invoke('send-profit-notification', {
+      const { data, error } = await supabase.functions.invoke('send-profit-notification', {
         body: {
           userId: investment.user_id,
           investmentId: investment.id,
@@ -341,7 +341,10 @@ const Admin = () => {
           investmentAmount: investment.amount,
         },
       });
-      
+
+      if (error) throw error;
+
+      console.log('Profit email invoke response:', data);
       toast.success('Profit saved and sent via email!');
       fetchData(); // Refresh data to show updated profit
     } catch (error) {
@@ -974,10 +977,6 @@ const Admin = () => {
                               onChange={(e) => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
-                              }}
-                              onBlur={() => {
-                                // Auto-save profit on blur
-                                updateInvestment(investment.id, investment.status, investment.profit_amount);
                               }}
                               className="w-28 bg-slate-900/50 border-slate-600 text-white text-right font-semibold"
                             />
