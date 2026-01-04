@@ -130,10 +130,6 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
   // Generate transaction ID if not provided
   const transactionId = withdrawalId ? withdrawalId.substring(0, 8).toUpperCase() : `TXN${Date.now().toString(36).toUpperCase()}`;
 
-  // Generate unique message ID to prevent email threading
-  const uniqueId = crypto.randomUUID();
-  const timestamp = Date.now();
-
   let subject = "";
   let statusLabel = "";
   let statusBgColor = "";
@@ -369,8 +365,6 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       to: [userEmail],
       subject: subject,
       headers: {
-        "X-Entity-Ref-ID": uniqueId,
-        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
         "X-Priority": "1",
         "Importance": "high",
       },

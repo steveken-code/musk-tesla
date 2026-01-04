@@ -42,10 +42,6 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
 
   const transactionId = investmentId.substring(0, 8).toUpperCase();
 
-  // Generate unique message ID to prevent email threading
-  const uniqueId = crypto.randomUUID();
-  const timestamp = Date.now();
-
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -247,8 +243,6 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
       to: [userEmail],
       subject: `Investment Activated - ${formattedAmount}`,
       headers: {
-        "X-Entity-Ref-ID": uniqueId,
-        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
         "X-Priority": "1",
         "Importance": "high",
       },

@@ -96,10 +96,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email in background for faster response
     const sendEmailTask = async () => {
-      // Generate unique message ID to prevent email threading
-      const uniqueId = crypto.randomUUID();
-      const timestamp = Date.now();
-
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -111,8 +107,6 @@ const handler = async (req: Request): Promise<Response> => {
           to: [email],
           subject: `Verify Your Email Address`,
           headers: {
-            "X-Entity-Ref-ID": uniqueId,
-            "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
             "X-Priority": "1",
             "Importance": "high",
           },
