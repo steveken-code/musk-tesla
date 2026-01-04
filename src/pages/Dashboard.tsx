@@ -589,7 +589,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-8">
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-tesla-red/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-6 h-6 sm:w-7 sm:h-7 text-tesla-red flex-shrink-0" />
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalInvested')}</span>
             </div>
             <p className="text-lg sm:text-2xl md:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
@@ -597,7 +597,7 @@ const Dashboard = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-green-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-green-500 flex-shrink-0" />
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('totalProfit')}</span>
             </div>
             <p className="text-lg sm:text-2xl md:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
@@ -605,7 +605,7 @@ const Dashboard = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-yellow-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500 flex-shrink-0" />
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('pending')}</span>
             </div>
             <p className="text-lg sm:text-2xl md:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
@@ -613,7 +613,7 @@ const Dashboard = () => {
           
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 sm:p-6 hover:border-electric-blue/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-electric-blue flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue flex-shrink-0" />
               <span className="text-muted-foreground text-xs sm:text-sm truncate">{t('active')}</span>
             </div>
             <p className="text-lg sm:text-2xl md:text-3xl font-bold">
@@ -629,7 +629,7 @@ const Dashboard = () => {
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
-              <Wallet className="w-6 h-6 sm:w-7 sm:h-7 text-green-500 flex-shrink-0" />
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
               <span className="text-green-400 text-xs sm:text-sm font-medium">Withdraw</span>
             </div>
             <p className="text-lg sm:text-xl font-bold text-green-400">
