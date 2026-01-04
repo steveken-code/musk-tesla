@@ -120,7 +120,7 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-field-light-placeholder" />
                   <Input
                     id="fullName"
                     type="text"
@@ -139,7 +139,7 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-field-light-placeholder" />
                 <Input
                   id="email"
                   type="email"
@@ -157,7 +157,7 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-field-light-placeholder" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -171,7 +171,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-md hover:bg-slate-200"
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-field-light-placeholder hover:text-field-light-foreground transition-colors p-1 rounded-md hover:bg-field-light-border"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
