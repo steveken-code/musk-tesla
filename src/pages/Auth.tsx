@@ -29,15 +29,11 @@ const getPasswordStrength = (password: string): { level: number; label: string }
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -85,135 +81,6 @@ const Auth = () => {
       setLoading(false);
     }
   };
-
-
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!resetEmail.trim()) {
-      toast.error('Please enter your email address');
-      return;
-    }
-
-    setResetLoading(true);
-
-    try {
-      // Use custom password reset edge function
-      const { data, error } = await supabase.functions.invoke('request-password-reset', {
-        body: { email: resetEmail }
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else if (data?.success) {
-        setResetEmailSent(true);
-        toast.success('Password reset email sent! Check your inbox.');
-      } else {
-        // Still show success to prevent email enumeration
-        setResetEmailSent(true);
-        toast.success('If an account exists, a reset link has been sent.');
-      }
-    } catch (err) {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
-  if (isForgotPassword) {
-    return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
-        <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
-        
-        {/* Remove language selector from Auth page - only on Index and Admin */}
-        
-        <button 
-          onClick={() => {
-            setIsForgotPassword(false);
-            setResetEmailSent(false);
-            setResetEmail('');
-          }}
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          {t('backToLogin')}
-        </button>
-
-        <div className="relative z-10 w-full max-w-md animate-fade-in">
-          <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
-            <div className="flex flex-col items-center justify-center mb-10">
-              <img src={teslaLogo} alt="Tesla" className="h-20 w-auto mb-4 brightness-125" />
-              <h2 className="text-xl font-semibold text-slate-300">Reset Password</h2>
-            </div>
-
-            {resetEmailSent ? (
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
-                  <Mail className="w-8 h-8 text-green-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white">Check your email</h3>
-                <p className="text-slate-400">
-                  We've sent a password reset link to <span className="text-white font-medium">{resetEmail}</span>
-                </p>
-                <p className="text-slate-500 text-sm">
-                  Didn't receive the email? Check your spam folder or try again.
-                </p>
-                <Button
-                  onClick={() => {
-                    setResetEmailSent(false);
-                    setResetEmail('');
-                  }}
-                  variant="outline"
-                  className="mt-4 border-slate-700 text-slate-300 hover:bg-slate-800"
-                >
-                  Try Again
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handlePasswordReset} className="space-y-6">
-                <p className="text-slate-400 text-center mb-6 text-sm">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-                <div className="space-y-2">
-                  <Label htmlFor="resetEmail" className="text-slate-300 text-sm font-medium">
-                    {t('email')}
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
-                    <Input
-                      id="resetEmail"
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      className="pl-12 h-12 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 shadow-sm"
-                      required
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  disabled={resetLoading}
-                  className="w-full h-12 bg-tesla-red hover:bg-tesla-red/90 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25"
-                >
-                  {resetLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-              </form>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
@@ -348,13 +215,12 @@ const Auth = () => {
             </div>
 
             {isLogin && (
-              <button
-                type="button"
-                onClick={() => setIsForgotPassword(true)}
+              <Link
+                to="/forgot-password"
                 className="text-xs text-slate-400 hover:text-electric-blue hover:underline transition-colors font-medium"
               >
                 {t('forgotPassword')}
-              </button>
+              </Link>
             )}
 
             <Button
