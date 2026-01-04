@@ -166,16 +166,33 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  @media screen and (max-width: 768px) {
+    input, select, textarea, button {
+      font-size: 16px !important;
+    }
   }
 }
 
