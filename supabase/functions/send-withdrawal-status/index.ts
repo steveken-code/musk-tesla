@@ -372,14 +372,15 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     }),
   });
 
+  const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error("Resend API error:", errorData);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${userEmail} | Type: withdrawal_status_${status} | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const result = await res.json();
-  console.log("Withdrawal status email sent successfully:", result);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${userEmail} | Type: withdrawal_status_${status} | Resend_ID: ${result.id} | Time: ${sendTime}`);
   return { success: true, data: result };
 }
 

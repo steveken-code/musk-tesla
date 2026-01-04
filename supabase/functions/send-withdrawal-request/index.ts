@@ -227,14 +227,15 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
     }),
   });
 
+  const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error("Resend API error:", errorData);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${email} | Type: withdrawal_request | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const result = await res.json();
-  console.log("Withdrawal request email sent successfully:", result);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${email} | Type: withdrawal_request | Resend_ID: ${result.id} | Time: ${sendTime}`);
   return { success: true, data: result };
 }
 

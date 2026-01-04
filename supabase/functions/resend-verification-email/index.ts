@@ -200,13 +200,15 @@ const handler = async (req: Request): Promise<Response> => {
         }),
       });
 
+      const sendTime = Date.now();
       if (!res.ok) {
         const errorData = await res.text();
-        console.error("Resend API error:", errorData);
+        console.error(`[EMAIL_MONITOR] FAILED | To: ${email} | Type: verification_resend | Error: ${errorData}`);
         throw new Error(`Failed to send email: ${errorData}`);
       }
 
-      console.log("Verification email resent successfully");
+      const data = await res.json();
+      console.log(`[EMAIL_MONITOR] SENT | To: ${email} | Type: verification_resend | Resend_ID: ${data.id} | Time: ${sendTime}`);
     };
 
     // Send immediately in background

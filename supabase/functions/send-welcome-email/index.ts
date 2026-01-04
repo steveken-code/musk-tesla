@@ -213,14 +213,15 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
     }),
   });
 
+  const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error("Resend API error:", errorData);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${email} | Type: welcome | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const data = await res.json();
-  console.log("Welcome email sent successfully:", data);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${email} | Type: welcome | Resend_ID: ${data.id} | Time: ${sendTime}`);
   return { success: true, data };
 }
 
