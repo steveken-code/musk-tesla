@@ -219,7 +219,7 @@ const TransactionHistory = () => {
             <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </Link>
-            <img src={teslaLogo} alt="Tesla" className="h-8 w-auto" />
+            <img src={teslaLogo} alt="Tesla" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
           </div>
           <h1 className="text-lg font-bold text-foreground">Transaction History</h1>
         </div>
