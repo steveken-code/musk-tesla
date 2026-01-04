@@ -603,19 +603,25 @@ const Dashboard = () => {
 
     setSubmittingWithdrawal(true);
     try {
-      const { data: withdrawalData, error } = await supabase
-        .from('withdrawals')
-        .insert({ 
-          user_id: user!.id, 
-          amount: parseFloat(withdrawAmount), 
+      // Use edge function for server-side validation
+      const { data: response, error: fnError } = await supabase.functions.invoke('create-withdrawal', {
+        body: {
+          amount: parseFloat(withdrawAmount),
           country: withdrawCountry,
           payment_details: withdrawPaymentDetails,
-          status: 'pending' 
-        })
-        .select()
-        .single();
+          payment_method: withdrawMethod
+        }
+      });
 
-      if (error) throw error;
+      if (fnError) {
+        throw new Error(fnError.message || 'Failed to create withdrawal');
+      }
+
+      if (!response?.success) {
+        throw new Error(response?.error || 'Failed to create withdrawal');
+      }
+
+      const withdrawalData = response.data;
       
       // Send withdrawal request email to user
       if (profile?.email && withdrawalData) {
