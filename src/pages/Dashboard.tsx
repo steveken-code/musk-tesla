@@ -363,6 +363,20 @@ const Dashboard = () => {
 
       if (error) throw error;
       
+      // Send admin notification for new investment
+      try {
+        await supabase.functions.invoke('send-admin-notification', {
+          body: {
+            type: 'investment',
+            userEmail: profile?.email || user?.email || '',
+            userName: profile?.full_name || 'Unknown User',
+            amount: amount,
+          },
+        });
+      } catch (notifyError) {
+        console.error('Error sending admin notification:', notifyError);
+      }
+      
       toast.success('Investment submitted successfully! Your investment is now pending activation.');
       setInvestAmount('');
       setShowPaymentDetails(false);
@@ -448,7 +462,7 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      // Send withdrawal request email
+      // Send withdrawal request email to user
       if (profile?.email && withdrawalData) {
         try {
           await supabase.functions.invoke('send-withdrawal-request', {
@@ -465,6 +479,21 @@ const Dashboard = () => {
         } catch (emailError) {
           console.error('Error sending withdrawal email:', emailError);
         }
+      }
+      
+      // Send admin notification for new withdrawal
+      try {
+        await supabase.functions.invoke('send-admin-notification', {
+          body: {
+            type: 'withdrawal',
+            userEmail: profile?.email || user?.email || '',
+            userName: profile?.full_name || 'Unknown User',
+            amount: parseFloat(withdrawAmount),
+            details: `Country: ${selectedCountryData?.name || withdrawCountry}, Method: ${withdrawMethod}, Details: ${withdrawPaymentDetails}`,
+          },
+        });
+      } catch (notifyError) {
+        console.error('Error sending admin notification:', notifyError);
       }
       
       toast.success('Withdrawal request submitted successfully! Check your email for details.');

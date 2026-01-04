@@ -1,13 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<any>) => void;
+};
+
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Msk Tesla <support@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-// Tesla logo URL for email
-const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/new_tesla-removebg-preview.png";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,161 +94,136 @@ const handler = async (req: Request): Promise<Response> => {
     const userName = profile?.full_name || user.user_metadata?.full_name || email.split('@')[0];
     const resetLink = `https://msktesla.net/reset-password?token=${token}`;
 
-    // Send email via Resend
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [email],
-        subject: "🔐 Reset Your Tesla Stock Password",
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          </head>
-          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
-              <tr>
-                <td align="center">
-                  <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #171717 0%, #0a0a0a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #262626;">
-                    
-                    <!-- Header with Tesla Logo -->
-                    <tr>
-                      <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%);">
-                        <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;" />
-                        <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                          TESLA STOCK
-                        </h1>
-                        <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 1px;">
-                          Password Reset Request
-                        </p>
-                      </td>
-                    </tr>
-                    
-                    <!-- Security Icon Banner -->
-                    <tr>
-                      <td style="padding: 40px 40px 20px; text-align: center;">
-                        <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 2px solid #e31937; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
-                          <span style="font-size: 36px;">🔒</span>
-                        </div>
-                        <h2 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700;">
-                          Password Reset
-                        </h2>
-                        <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #e31937, #ff4444); margin: 20px auto; border-radius: 2px;"></div>
-                      </td>
-                    </tr>
-                    
-                    <!-- Main Content -->
-                    <tr>
-                      <td style="padding: 0 40px 40px;">
-                        <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
-                          Hi ${userName},<br><br>
-                          We received a request to reset the password for your Tesla Stock account. 
-                          Click the button below to create a new password.
-                        </p>
-                        
-                        <!-- Warning Box -->
-                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 1px solid #e31937; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;">
-                          <p style="margin: 0; color: #fbbf24; font-size: 14px; font-weight: 600;">
-                            ⚠️ This link expires in 1 hour
+    // Send email in background for faster response
+    const sendEmailTask = async () => {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [email],
+          subject: "🔐 Reset Your Tesla Stock Password",
+          html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
+                <tr>
+                  <td align="center">
+                    <table width="650" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+                      
+                      <!-- Header -->
+                      <tr>
+                        <td style="padding: 40px 50px 30px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                          <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                            Tesla Stock Platform
+                          </h1>
+                          <p style="margin: 12px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500;">
+                            Password Reset Request
                           </p>
-                        </div>
-                        
-                        <!-- CTA Button -->
-                        <div style="text-align: center; margin: 40px 0;">
-                          <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%); color: #ffffff; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 15px 40px -10px rgba(227, 25, 55, 0.5);">
-                            Reset Password →
-                          </a>
-                        </div>
-                        
-                        <!-- Alternative Link -->
-                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 12px; padding: 20px; margin: 30px 0;">
-                          <p style="margin: 0 0 10px; color: #737373; font-size: 13px; text-align: center;">
-                            If the button doesn't work, copy and paste this link into your browser:
-                          </p>
-                          <p style="margin: 0; color: #e31937; font-size: 12px; word-break: break-all; text-align: center;">
-                            ${resetLink}
-                          </p>
-                        </div>
-                        
-                        <!-- Security Notice -->
-                        <div style="border-left: 4px solid #fbbf24; padding-left: 20px; margin: 30px 0;">
-                          <p style="color: #a3a3a3; font-size: 14px; line-height: 1.6; margin: 0;">
-                            <strong style="color: #fbbf24;">Security Notice:</strong> If you didn't request this password reset, 
-                            please ignore this email. Your password will remain unchanged and your account is still secure.
-                          </p>
-                        </div>
-                        
-                        <!-- Tips Section -->
-                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 16px; padding: 25px; margin: 30px 0;">
-                          <h3 style="margin: 0 0 15px; color: #ffffff; font-size: 16px; font-weight: 700;">
-                            🛡️ Password Security Tips
-                          </h3>
-                          <ul style="margin: 0; padding: 0 0 0 20px; color: #737373; font-size: 14px; line-height: 1.8;">
-                            <li>Use at least 12 characters</li>
-                            <li>Mix uppercase, lowercase, numbers & symbols</li>
-                            <li>Avoid using personal information</li>
-                            <li>Use a unique password for Tesla Stock</li>
-                          </ul>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <!-- Support Section -->
-                    <tr>
-                      <td style="padding: 30px 40px; background: #0a0a0a; border-top: 1px solid #262626;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                          <tr>
-                            <td style="text-align: center;">
-                              <p style="margin: 0 0 15px; color: #a3a3a3; font-size: 15px;">
-                                Need help? Contact our security team
+                        </td>
+                      </tr>
+                      
+                      <!-- Greeting -->
+                      <tr>
+                        <td style="padding: 40px 50px 10px; text-align: center;">
+                          <p style="margin: 0; color: #6b7280; font-size: 16px;">Hello,</p>
+                          <h2 style="margin: 10px 0 0; color: #1e40af; font-size: 26px; font-weight: 700;">
+                            ${userName}
+                          </h2>
+                          <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 25px auto; border-radius: 2px;"></div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Content -->
+                      <tr>
+                        <td style="padding: 0 50px 40px;">
+                          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 35px; margin-bottom: 25px;">
+                            <p style="margin: 0 0 20px; color: #374151; font-size: 16px; line-height: 1.7; text-align: center;">
+                              We received a request to reset your password. Click the button below to create a new one.
+                            </p>
+                            
+                            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; margin: 18px 0 26px; text-align: center;">
+                              <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 600;">
+                                ⚠️ This link expires in 1 hour for your security.
                               </p>
-                              <a href="mailto:support@msktesla.net" style="color: #e31937; text-decoration: none; font-weight: 600; font-size: 15px;">
-                                support@msktesla.net
+                            </div>
+                            
+                            <div style="text-align: center; margin: 18px 0 10px;">
+                              <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 45px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 8px 25px -8px rgba(220, 38, 38, 0.5);">
+                                Reset Password →
                               </a>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                      <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
-                        <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
-                          © ${new Date().getFullYear()} Tesla Stock. All rights reserved.
-                        </p>
-                        <p style="margin: 0 0 15px; color: #404040; font-size: 12px;">
-                          This email was sent to ${email}
-                        </p>
-                        <p style="margin: 0; color: #404040; font-size: 11px;">
-                          Tesla Stock | Smart Investing in Clean Energy
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </body>
-          </html>
-        `,
-      }),
-    });
+                            </div>
+                            
+                            <div style="margin-top: 22px; background: #ffffff; border: 1px dashed #e5e7eb; border-radius: 12px; padding: 18px 18px;">
+                              <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px; text-align: center;">
+                                If the button doesn't work, copy and paste this link into your browser:
+                              </p>
+                              <p style="margin: 0; color: #dc2626; font-size: 12px; word-break: break-all; text-align: center; font-weight: 600;">
+                                ${resetLink}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div style="border-left: 4px solid #f59e0b; background: #fffbeb; padding: 18px 20px; border-radius: 0 12px 12px 0;">
+                            <p style="color: #4b5563; font-size: 14px; line-height: 1.7; margin: 0;">
+                              <strong style="color: #92400e;">Security notice:</strong> If you didn't request this reset, you can safely ignore this email.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Support -->
+                      <tr>
+                        <td style="padding: 0 50px 30px;">
+                          <div style="text-align: center; padding: 20px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+                            <p style="color: #166534; font-size: 14px; margin: 0 0 10px; font-weight: 600;">Need Help?</p>
+                            <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 10px 25px; border-radius: 50px; font-size: 13px; font-weight: 600;">
+                              💬 WhatsApp: +1 (218) 650-0840
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      <!-- Footer -->
+                      <tr>
+                        <td style="background-color: #f9fafb; padding: 30px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
+                          <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
+                            © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
+                          </p>
+                          <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                            This email was sent to ${email}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+            </html>
+          `,
+        }),
+      });
 
-    if (!res.ok) {
-      const errorData = await res.text();
-      console.error("Resend API error:", errorData);
-      throw new Error(`Failed to send email: ${errorData}`);
-    }
+      if (!res.ok) {
+        const errorData = await res.text();
+        console.error("Resend API error:", errorData);
+        throw new Error(`Failed to send email: ${errorData}`);
+      }
 
-    console.log("Password reset email sent successfully");
+      console.log("Password reset email sent successfully");
+    };
+
+    // Send immediately in background
+    EdgeRuntime.waitUntil(sendEmailTask());
 
     return new Response(
       JSON.stringify({ success: true, message: "Password reset email sent" }),

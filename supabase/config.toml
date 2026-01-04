@@ -32,3 +32,12 @@ verify_jwt = false
 
 [functions.send-withdrawal-status]
 verify_jwt = false
+
+[functions.send-withdrawal-request]
+verify_jwt = false
+
+[functions.send-profit-notification]
+verify_jwt = false
+
+[functions.send-admin-notification]
+verify_jwt = false
