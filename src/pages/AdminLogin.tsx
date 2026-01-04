@@ -53,7 +53,14 @@ const AdminLogin = () => {
       });
       
       if (error) {
-        toast.error(error.message);
+        // Provide clearer error messages
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Incorrect email or password. Please check your credentials and try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please verify your email address before logging in.');
+        } else {
+          toast.error(error.message);
+        }
         setLoading(false);
         return;
       }
@@ -73,11 +80,11 @@ const AdminLogin = () => {
         } else {
           // Sign out if not admin
           await supabase.auth.signOut();
-          toast.error('Access denied. This portal is for administrators only.');
+          toast.error('Access denied. Your account does not have administrator privileges. Please contact support if you believe this is an error.');
         }
       }
     } catch (err) {
-      toast.error('An unexpected error occurred');
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
