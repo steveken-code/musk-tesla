@@ -293,13 +293,17 @@ const Admin = () => {
               investmentDate: investment.created_at,
             },
           });
-          toast.success('Investment approved - Email notification sent!');
+          toast.success('Investment Approved! User notified via email.');
         } catch (emailError) {
           console.error('Error sending activation email:', emailError);
-          toast.success('Investment approved (email notification failed)');
+          toast.success('Investment Approved! (email notification failed)');
         }
+      } else if (status === 'declined') {
+        toast.success('Investment Declined.');
+      } else if (status === 'pending') {
+        toast.success('Investment set to Pending.');
       } else {
-        toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
+        toast.success('Investment updated successfully.');
       }
       
       fetchData();
@@ -338,7 +342,7 @@ const Admin = () => {
         },
       });
       
-      toast.success(`Profit saved & email sent! ($${investment.profit_amount.toLocaleString()})`);
+      toast.success('Profit saved and sent via email!');
       fetchData(); // Refresh data to show updated profit
     } catch (error) {
       console.error('Error sending profit notification:', error);
