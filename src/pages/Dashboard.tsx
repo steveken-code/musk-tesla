@@ -737,8 +737,8 @@ const Dashboard = () => {
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="absolute inset-0 bg-gradient-hero opacity-30" />
+    <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
+      <div className="absolute inset-0 bg-gradient-hero opacity-30 pointer-events-none" />
       
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
@@ -872,14 +872,14 @@ const Dashboard = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 md:mb-10">
           <TeslaChart />
           <InvestmentChart investments={investments} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 mb-4 sm:mb-6 md:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
           {/* New Investment Form */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
               {t('makeNewInvestment')}
@@ -939,7 +939,7 @@ const Dashboard = () => {
           </div>
 
           {/* Investment History */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6">
+          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4">{t('investmentHistory')}</h2>
             {investments.length === 0 ? (
               <p className="text-muted-foreground text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm">
