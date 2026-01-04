@@ -9,20 +9,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Force the correct sender - ignore FROM_EMAIL if it contains "no-reply" or is invalid
-const getFromEmail = (): string => {
-  const defaultSender = "Msk Tesla <support@msktesla.net>";
-  const envFrom = Deno.env.get("FROM_EMAIL");
-  
-  if (!envFrom || envFrom.toLowerCase().includes("no-reply") || envFrom.toLowerCase().includes("noreply")) {
-    console.log(`FROM_EMAIL env is "${envFrom}", using default: ${defaultSender}`);
-    return defaultSender;
-  }
-  
-  return envFrom;
-};
-
-const FROM_EMAIL = getFromEmail();
+// Sender with proper display name
+const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
