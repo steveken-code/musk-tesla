@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, Bar, ComposedChart } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, Bar, ComposedChart, Line } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TrendingUp, Activity, BarChart3, LineChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,37 @@ interface DataPoint {
   low: number;
   close: number;
   volume: number;
+  sma20?: number;
+  ema12?: number;
 }
 
 type TimeRange = 'intraday' | '30d';
 type ChartType = 'area' | 'candlestick';
+
+// Calculate SMA (Simple Moving Average)
+const calculateSMA = (data: DataPoint[], period: number): DataPoint[] => {
+  return data.map((point, index) => {
+    if (index < period - 1) {
+      return { ...point, sma20: undefined };
+    }
+    const sum = data.slice(index - period + 1, index + 1).reduce((acc, p) => acc + p.close, 0);
+    return { ...point, sma20: Math.round((sum / period) * 100) / 100 };
+  });
+};
+
+// Calculate EMA (Exponential Moving Average)
+const calculateEMA = (data: DataPoint[], period: number): DataPoint[] => {
+  const multiplier = 2 / (period + 1);
+  let ema = data[0]?.close || 0;
+  
+  return data.map((point, index) => {
+    if (index === 0) {
+      return { ...point, ema12: Math.round(ema * 100) / 100 };
+    }
+    ema = (point.close - ema) * multiplier + ema;
+    return { ...point, ema12: Math.round(ema * 100) / 100 };
+  });
+};
 
 // Generate realistic intraday Tesla stock data
 const generateIntradayData = (): DataPoint[] => {
@@ -50,7 +77,11 @@ const generateIntradayData = (): DataPoint[] => {
     });
   }
   
-  return data;
+  // Add SMA and EMA
+  let result = calculateSMA(data, 20);
+  result = calculateEMA(result, 12);
+  
+  return result;
 };
 
 // Generate 30-day historical data
@@ -84,7 +115,11 @@ const generate30DayData = (): DataPoint[] => {
     });
   }
   
-  return data;
+  // Add SMA and EMA
+  let result = calculateSMA(data, 20);
+  result = calculateEMA(result, 12);
+  
+  return result;
 };
 
 interface TeslaChartProps {
@@ -100,9 +135,6 @@ const CandlestickBar = (props: any) => {
   const isUp = close >= open;
   const color = isUp ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
   const bodyHeight = Math.abs(close - open);
-  const wickTop = high;
-  const wickBottom = low;
-  
   const scale = height / (high - low || 1);
   const bodyY = y + (high - Math.max(open, close)) * scale;
   const bodyH = Math.max(bodyHeight * scale, 2);
@@ -133,6 +165,28 @@ const CandlestickBar = (props: any) => {
   );
 };
 
+// Volume bar component
+const VolumeBar = (props: any) => {
+  const { x, y, width, height, payload } = props;
+  if (!payload) return null;
+  
+  const { open, close } = payload;
+  const isUp = close >= open;
+  const color = isUp ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
+  
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={color}
+      opacity={0.5}
+      rx={1}
+    />
+  );
+};
+
 const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState<TimeRange>('intraday');
@@ -142,6 +196,8 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const [previousPrice, setPreviousPrice] = useState(data[0]?.price || 248);
   const [priceChange, setPriceChange] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showSMA, setShowSMA] = useState(true);
+  const [showEMA, setShowEMA] = useState(true);
   const animationRef = useRef<number | null>(null);
   const wavePhase = useRef(0);
 
@@ -188,14 +244,12 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   useEffect(() => {
     if (!isTradeActive) return;
 
-    // Fast continuous updates for smooth wave movement
     const waveInterval = setInterval(() => {
       wavePhase.current += 0.15;
       setIsAnimating(true);
       
       setData(prevData => {
         const newData = prevData.map((point, index) => {
-          // Create smooth wave effect across all points
           const waveOffset = Math.sin(wavePhase.current + index * 0.2) * 0.3;
           const microNoise = (Math.random() - 0.5) * 0.15;
           const newPrice = point.price + waveOffset + microNoise;
@@ -206,22 +260,25 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             close: Math.round(Math.max(200, Math.min(300, newPrice)) * 100) / 100,
             high: Math.max(point.high, newPrice + 0.5),
             low: Math.min(point.low, newPrice - 0.5),
+            volume: point.volume + Math.floor((Math.random() - 0.5) * 10000),
           };
         });
         
-        // Update current price from last point
-        const lastPrice = newData[newData.length - 1].price;
+        // Recalculate SMA and EMA
+        let result = calculateSMA(newData, 20);
+        result = calculateEMA(result, 12);
+        
+        const lastPrice = result[result.length - 1].price;
         const change = lastPrice - previousPrice;
         setPriceChange(change);
         animatePrice(lastPrice);
         
-        return newData;
+        return result;
       });
       
       setTimeout(() => setIsAnimating(false), 300);
     }, 1500);
 
-    // Add new data point periodically
     const dataInterval = setInterval(() => {
       if (timeRange === 'intraday') {
         setData(prevData => {
@@ -247,7 +304,11 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             volume: Math.floor(Math.random() * 500000 + 100000),
           });
           
-          return newData;
+          // Recalculate SMA and EMA
+          let result = calculateSMA(newData, 20);
+          result = calculateEMA(result, 12);
+          
+          return result;
         });
       }
     }, 20000);
@@ -265,7 +326,13 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const percentChange = previousPrice > 0 ? ((priceChange / previousPrice) * 100) : 0;
   const minPrice = Math.min(...data.map(d => d.low));
   const maxPrice = Math.max(...data.map(d => d.high));
-  const avgPrice = data.reduce((sum, d) => sum + d.price, 0) / data.length;
+  const maxVolume = Math.max(...data.map(d => d.volume));
+
+  const formatVolume = (vol: number) => {
+    if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
+    if (vol >= 1000) return `${(vol / 1000).toFixed(0)}K`;
+    return vol.toString();
+  };
 
   return (
     <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-6 relative overflow-hidden">
@@ -304,7 +371,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
       </div>
 
       {/* Toggle Controls */}
-      <div className="flex items-center justify-between mb-4 gap-2">
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         {/* Time Range Toggle */}
         <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
           <Button
@@ -322,6 +389,26 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             onClick={() => setTimeRange('30d')}
           >
             30D
+          </Button>
+        </div>
+
+        {/* Indicator Toggles */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant={showSMA ? 'default' : 'outline'}
+            size="sm"
+            className={`h-7 px-2 text-xs ${showSMA ? 'bg-orange-500/80 hover:bg-orange-500' : 'border-orange-500/50 text-orange-400'}`}
+            onClick={() => setShowSMA(!showSMA)}
+          >
+            SMA
+          </Button>
+          <Button
+            variant={showEMA ? 'default' : 'outline'}
+            size="sm"
+            className={`h-7 px-2 text-xs ${showEMA ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'border-cyan-500/50 text-cyan-400'}`}
+            onClick={() => setShowEMA(!showEMA)}
+          >
+            EMA
           </Button>
         </div>
 
@@ -346,10 +433,11 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </div>
       </div>
       
-      <div className="h-[200px] w-full">
+      {/* Price Chart */}
+      <div className="h-[180px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ComposedChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorPriceTesla" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.4}/>
@@ -364,65 +452,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   </feMerge>
                 </filter>
               </defs>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(0, 0%, 20%)" 
-                vertical={false}
-                opacity={0.5}
-              />
-              <ReferenceLine 
-                y={avgPrice} 
-                stroke="hsl(0, 0%, 40%)" 
-                strokeDasharray="5 5" 
-                strokeWidth={1}
-              />
-              <XAxis 
-                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                interval="preserveStartEnd"
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
-              />
-              <YAxis 
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                domain={[minPrice - 2, maxPrice + 2]}
-                tickFormatter={(value) => `$${value.toFixed(0)}`}
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(0, 0%, 8%)', 
-                  border: '1px solid hsl(0, 0%, 25%)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                }}
-                labelStyle={{ color: 'hsl(0, 0%, 60%)', marginBottom: '4px', fontSize: '11px' }}
-                formatter={(value: number) => [
-                  <span key="price" className="font-mono font-bold text-foreground">${value.toFixed(2)}</span>,
-                  'TSLA'
-                ]}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="price" 
-                stroke={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'}
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill="url(#colorPriceTesla)"
-                filter="url(#glow)"
-                animationDuration={300}
-                animationEasing="ease-out"
-                isAnimationActive={true}
-              />
-            </AreaChart>
-          ) : (
-            <ComposedChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
               <CartesianGrid 
                 strokeDasharray="3 3" 
                 stroke="hsl(0, 0%, 20%)" 
@@ -458,22 +487,138 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                 labelStyle={{ color: 'hsl(0, 0%, 60%)', marginBottom: '4px', fontSize: '11px' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length > 0) {
-                    const data = payload[0].payload;
-                    const isUp = data.close >= data.open;
+                    const d = payload[0].payload;
+                    return (
+                      <div className="bg-background/95 border border-border rounded-lg p-3 shadow-xl text-xs">
+                        <p className="text-muted-foreground mb-2">{d.time || d.date}</p>
+                        <div className="space-y-1">
+                          <div className="flex justify-between gap-4">
+                            <span className="text-muted-foreground">Price:</span>
+                            <span className="font-mono font-bold">${d.price.toFixed(2)}</span>
+                          </div>
+                          {showSMA && d.sma20 && (
+                            <div className="flex justify-between gap-4">
+                              <span className="text-orange-400">SMA(20):</span>
+                              <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {showEMA && d.ema12 && (
+                            <div className="flex justify-between gap-4">
+                              <span className="text-cyan-400">EMA(12):</span>
+                              <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between gap-4">
+                            <span className="text-muted-foreground">Volume:</span>
+                            <span className="font-mono">{formatVolume(d.volume)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="price" 
+                stroke={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'}
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorPriceTesla)"
+                filter="url(#glow)"
+                animationDuration={300}
+                animationEasing="ease-out"
+                isAnimationActive={true}
+              />
+              {showSMA && (
+                <Line 
+                  type="monotone" 
+                  dataKey="sma20" 
+                  stroke="hsl(30, 100%, 50%)"
+                  strokeWidth={1.5}
+                  dot={false}
+                  strokeDasharray="4 2"
+                  animationDuration={300}
+                />
+              )}
+              {showEMA && (
+                <Line 
+                  type="monotone" 
+                  dataKey="ema12" 
+                  stroke="hsl(190, 100%, 50%)"
+                  strokeWidth={1.5}
+                  dot={false}
+                  animationDuration={300}
+                />
+              )}
+            </ComposedChart>
+          ) : (
+            <ComposedChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(0, 0%, 20%)" 
+                vertical={false}
+                opacity={0.5}
+              />
+              <XAxis 
+                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
+                stroke="hsl(0, 0%, 50%)" 
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+              />
+              <YAxis 
+                stroke="hsl(0, 0%, 50%)" 
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                domain={[minPrice - 2, maxPrice + 2]}
+                tickFormatter={(value) => `$${value.toFixed(0)}`}
+                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(0, 0%, 8%)', 
+                  border: '1px solid hsl(0, 0%, 25%)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0) {
+                    const d = payload[0].payload;
+                    const isUp = d.close >= d.open;
                     return (
                       <div className="bg-background/95 border border-border rounded-lg p-3 shadow-xl">
-                        <p className="text-xs text-muted-foreground mb-2">{data.time || data.date}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{d.time || d.date}</p>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                           <span className="text-muted-foreground">Open:</span>
-                          <span className="font-mono">${data.open.toFixed(2)}</span>
+                          <span className="font-mono">${d.open.toFixed(2)}</span>
                           <span className="text-muted-foreground">High:</span>
-                          <span className="font-mono text-green-400">${data.high.toFixed(2)}</span>
+                          <span className="font-mono text-green-400">${d.high.toFixed(2)}</span>
                           <span className="text-muted-foreground">Low:</span>
-                          <span className="font-mono text-red-400">${data.low.toFixed(2)}</span>
+                          <span className="font-mono text-red-400">${d.low.toFixed(2)}</span>
                           <span className="text-muted-foreground">Close:</span>
                           <span className={`font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                            ${data.close.toFixed(2)}
+                            ${d.close.toFixed(2)}
                           </span>
+                          {showSMA && d.sma20 && (
+                            <>
+                              <span className="text-orange-400">SMA:</span>
+                              <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
+                            </>
+                          )}
+                          {showEMA && d.ema12 && (
+                            <>
+                              <span className="text-cyan-400">EMA:</span>
+                              <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
+                            </>
+                          )}
+                          <span className="text-muted-foreground">Vol:</span>
+                          <span className="font-mono">{formatVolume(d.volume)}</span>
                         </div>
                       </div>
                     );
@@ -486,9 +631,82 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                 shape={(props: any) => <CandlestickBar {...props} />}
                 animationDuration={300}
               />
+              {showSMA && (
+                <Line 
+                  type="monotone" 
+                  dataKey="sma20" 
+                  stroke="hsl(30, 100%, 50%)"
+                  strokeWidth={1.5}
+                  dot={false}
+                  strokeDasharray="4 2"
+                  animationDuration={300}
+                />
+              )}
+              {showEMA && (
+                <Line 
+                  type="monotone" 
+                  dataKey="ema12" 
+                  stroke="hsl(190, 100%, 50%)"
+                  strokeWidth={1.5}
+                  dot={false}
+                  animationDuration={300}
+                />
+              )}
             </ComposedChart>
           )}
         </ResponsiveContainer>
+      </div>
+
+      {/* Volume Chart */}
+      <div className="h-[60px] w-full mt-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+            <XAxis 
+              dataKey={timeRange === 'intraday' ? 'time' : 'date'}
+              stroke="hsl(0, 0%, 50%)" 
+              fontSize={9}
+              tickLine={false}
+              axisLine={false}
+              interval="preserveStartEnd"
+              tick={{ fill: 'hsl(0, 0%, 40%)' }}
+            />
+            <YAxis 
+              stroke="hsl(0, 0%, 50%)" 
+              fontSize={9}
+              tickLine={false}
+              axisLine={false}
+              domain={[0, maxVolume * 1.1]}
+              tickFormatter={formatVolume}
+              tick={{ fill: 'hsl(0, 0%, 40%)' }}
+              width={45}
+            />
+            <Bar 
+              dataKey="volume" 
+              shape={(props: any) => <VolumeBar {...props} />}
+              animationDuration={300}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 mt-2 text-xs">
+        {showSMA && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-0.5 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0 0 0', borderColor: 'hsl(30, 100%, 50%)' }} />
+            <span className="text-orange-400">SMA(20)</span>
+          </div>
+        )}
+        {showEMA && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-0.5 bg-cyan-500" />
+            <span className="text-cyan-400">EMA(12)</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 bg-green-500/50 rounded-sm" />
+          <span className="text-muted-foreground">Volume</span>
+        </div>
       </div>
       
       {/* Bottom stats */}
