@@ -73,6 +73,7 @@ export default {
         "ocean-blue": "hsl(var(--ocean-blue))",
         "tesla-red": "hsl(var(--tesla-red))",
         "deep-crimson": "hsl(var(--deep-crimson))",
+        "brand-purple": "hsl(var(--brand-purple))",
         // Neutral tones
         metallic: "hsl(var(--metallic))",
         silver: "hsl(var(--silver))",
