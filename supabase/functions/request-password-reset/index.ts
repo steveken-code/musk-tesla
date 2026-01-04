@@ -12,6 +12,9 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // Sender with proper display name
 const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
 
+// Always use production URL for reset links
+const PRODUCTION_URL = "https://msktesla.net";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -95,19 +98,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     const userName = profile?.full_name || user.user_metadata?.full_name || email.split('@')[0];
 
-    // Build a reset link that works in any environment (production, preview, custom domains)
-    const configuredSiteUrl = Deno.env.get("SITE_URL") || Deno.env.get("PUBLIC_SITE_URL");
-    const origin = req.headers.get("origin");
-    const baseUrlRaw = (configuredSiteUrl && configuredSiteUrl.startsWith("http"))
-      ? configuredSiteUrl
-      : (origin && origin.startsWith("http"))
-        ? origin
-        : "https://msktesla.net";
-
-    const baseUrl = baseUrlRaw.replace(/\/$/, "");
-    const resetLink = `${baseUrl}/reset-password?token=${token}`;
+    // Always use production URL for reset links - never use preview/dev URLs
+    const resetLink = `${PRODUCTION_URL}/reset-password?token=${token}`;
 
     console.log(`Sending password reset email with FROM: ${FROM_EMAIL}`);
+    console.log(`Reset link: ${resetLink}`);
     
     // Generate unique message ID to prevent email threading
     const uniqueId = crypto.randomUUID();

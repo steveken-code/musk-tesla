@@ -90,6 +90,10 @@ const handler = async (req: Request): Promise<Response> => {
     const verifyLink = `https://msktesla.net/verify-email?token=${verificationToken}`;
     const userName = profile?.full_name || user.user_metadata?.full_name || email.split('@')[0];
 
+    // Generate unique message ID to prevent email threading
+    const uniqueId = crypto.randomUUID();
+    const timestamp = Date.now();
+
     // Send verification email
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -100,7 +104,11 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: "✉️ Verify Your TeslaInvest Email Address",
+        subject: `Verify Your Email Address - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+        headers: {
+          "X-Entity-Ref-ID": uniqueId,
+          "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+        },
         html: `
           <!DOCTYPE html>
           <html>

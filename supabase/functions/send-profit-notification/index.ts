@@ -56,6 +56,10 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     day: 'numeric',
   });
 
+  // Generate unique message ID to prevent email threading
+  const uniqueId = crypto.randomUUID();
+  const timestamp = Date.now();
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -65,7 +69,11 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      subject: `💰 You just earned $${profitAmount.toLocaleString()} profit! - Tesla Stock`,
+      subject: `You just earned $${profitAmount.toLocaleString()} profit! - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      headers: {
+        "X-Entity-Ref-ID": uniqueId,
+        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+      },
       html: `
         <!DOCTYPE html>
         <html>

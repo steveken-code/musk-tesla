@@ -96,6 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric',
     });
 
+    // Generate unique message ID to prevent email threading
+    const uniqueId = crypto.randomUUID();
+    const timestamp = Date.now();
+
     const sendTask = async () => {
       if (!RESEND_API_KEY) {
         throw new Error('RESEND_API_KEY is not configured');
@@ -110,7 +114,11 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
-          subject: `✅ Investment Confirmed - ${formattedAmount} | TeslaInvest`,
+          subject: `Investment Confirmed - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          headers: {
+            "X-Entity-Ref-ID": uniqueId,
+            "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+          },
           html: `
             <!DOCTYPE html>
             <html>

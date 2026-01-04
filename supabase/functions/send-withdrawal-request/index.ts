@@ -53,6 +53,10 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
     : `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
   const supportLabel = supportType === 'telegram' ? 'Telegram' : 'WhatsApp';
 
+  // Generate unique message ID to prevent email threading
+  const uniqueId = crypto.randomUUID();
+  const timestamp = Date.now();
+
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -218,7 +222,11 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      subject: `📤 Withdrawal Request Received - ${formattedAmount} | Tesla Stock`,
+      subject: `Withdrawal Request Received - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      headers: {
+        "X-Entity-Ref-ID": uniqueId,
+        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+      },
       html: emailHtml,
     }),
   });
