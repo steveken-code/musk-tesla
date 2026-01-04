@@ -244,7 +244,7 @@ const Admin = () => {
     }
   };
 
-  const updateInvestment = async (id: string, status: string, profitAmount?: number) => {
+  const updateInvestment = async (id: string, status: string, profitAmount?: number, sendProfitEmail?: boolean) => {
     const investment = investments.find(inv => inv.id === id);
     
     // Validate profit amount before updating
@@ -282,7 +282,7 @@ const Admin = () => {
       if (error) throw error;
       
       // Send confirmation email when investment is activated
-      if (status === 'active' && investment && investment.profiles?.email) {
+      if (status === 'active' && investment && investment.profiles?.email && !sendProfitEmail) {
         try {
           await supabase.functions.invoke('send-investment-activation', {
             body: {
@@ -297,6 +297,23 @@ const Admin = () => {
         } catch (emailError) {
           console.error('Error sending activation email:', emailError);
           toast.success('Investment approved (email notification failed)');
+        }
+      } else if (sendProfitEmail && investment && profitAmount !== undefined && profitAmount > 0) {
+        // Send profit notification email
+        try {
+          await supabase.functions.invoke('send-profit-notification', {
+            body: {
+              userId: investment.user_id,
+              investmentId: investment.id,
+              profitAmount: profitAmount,
+              totalProfit: profitAmount,
+              investmentAmount: investment.amount,
+            },
+          });
+          toast.success(`Profit updated to $${profitAmount.toLocaleString()} - Email sent to user!`);
+        } catch (emailError) {
+          console.error('Error sending profit notification:', emailError);
+          toast.success(`Profit updated to $${profitAmount.toLocaleString()} (email failed)`);
         }
       } else {
         toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
@@ -899,7 +916,7 @@ const Admin = () => {
                     key={investment.id}
                     className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in hover:border-slate-600 transition-colors"
                   >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                           <h3 className="text-lg font-semibold text-white">
@@ -908,6 +925,11 @@ const Admin = () => {
                           <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(investment.status)}`}>
                             {investment.status}
                           </span>
+                          {investment.profit_amount > 0 && (
+                            <span className="px-3 py-1 text-sm rounded-full bg-green-500/20 text-green-400 border border-green-500/30 font-semibold">
+                              +${investment.profit_amount.toLocaleString()} profit
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm text-slate-400 space-y-1">
                           <p>User: {investment.profiles?.full_name || 'Unknown'}</p>
@@ -918,7 +940,7 @@ const Admin = () => {
 
                       <div className="flex flex-col gap-3 md:items-end">
                         <div className="flex items-center gap-2">
-                          <Label className="text-slate-300 text-sm whitespace-nowrap">Profit:</Label>
+                          <Label className="text-slate-300 text-sm whitespace-nowrap">Set Profit:</Label>
                           <div className="flex items-center gap-1">
                             <span className="text-slate-400">$</span>
                             <Input
@@ -929,7 +951,7 @@ const Admin = () => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
                               }}
-                              className="w-24 bg-slate-900/50 border-slate-600 text-white text-right"
+                              className="w-28 bg-slate-900/50 border-slate-600 text-white text-right font-semibold"
                             />
                           </div>
                         </div>
@@ -955,14 +977,27 @@ const Admin = () => {
                             variant="outline"
                             onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount)}
                             disabled={updating === investment.id}
-                            className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
+                            className="border-slate-500 text-slate-300 hover:bg-slate-700/50"
                           >
                             {updating === investment.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <TrendingUp className="w-4 h-4 mr-1" />
+                              <Save className="w-4 h-4 mr-1" />
                             )}
-                            Update Profit
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount, true)}
+                            disabled={updating === investment.id || investment.profit_amount <= 0}
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            {updating === investment.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Send className="w-4 h-4 mr-1" />
+                            )}
+                            Send Profit Email
                           </Button>
                           {investment.status !== 'cancelled' && (
                             <Button
