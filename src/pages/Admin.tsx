@@ -951,6 +951,10 @@ const Admin = () => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
                               }}
+                              onBlur={() => {
+                                // Auto-save profit on blur
+                                updateInvestment(investment.id, investment.status, investment.profit_amount);
+                              }}
                               className="w-28 bg-slate-900/50 border-slate-600 text-white text-right font-semibold"
                             />
                           </div>
@@ -972,20 +976,6 @@ const Admin = () => {
                               Approve
                             </Button>
                           )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount)}
-                            disabled={updating === investment.id}
-                            className="border-slate-500 text-slate-300 hover:bg-slate-700/50"
-                          >
-                            {updating === investment.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Save className="w-4 h-4 mr-1" />
-                            )}
-                            Save
-                          </Button>
                           <Button
                             size="sm"
                             onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount, true)}
