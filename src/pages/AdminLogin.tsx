@@ -128,7 +128,7 @@ const AdminLogin = () => {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 h-12 bg-slate-700/50 border-slate-600 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
               </div>
@@ -146,7 +146,7 @@ const AdminLogin = () => {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                   minLength={6}
                 />

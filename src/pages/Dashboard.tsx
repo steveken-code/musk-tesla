@@ -710,7 +710,7 @@ const Dashboard = () => {
                     const value = e.target.value.replace(/[^0-9.]/g, '');
                     setInvestAmount(value);
                   }}
-                  className="bg-background/50 border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="bg-background/50 border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
                 {investAmount && parseFloat(investAmount) >= 100 && (
@@ -843,7 +843,7 @@ const Dashboard = () => {
                         placeholder="0.00"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-10 h-14 text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888]"
+                        className="pl-10 h-14 text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                       />
                     </div>
                     <button
@@ -885,7 +885,7 @@ const Dashboard = () => {
                             placeholder="Search countries..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
-                            className="bg-[#2a2a2a] border-[#444] text-white placeholder:text-[#888]"
+                            className="bg-[#2a2a2a] border-[#444] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                           />
                         </div>
                         <div className="max-h-36 overflow-y-auto">
@@ -990,7 +990,7 @@ const Dashboard = () => {
                         }
                         value={withdrawPaymentDetails}
                         onChange={(e) => handlePaymentDetailsChange(e.target.value)}
-                        className="h-14 text-lg font-mono bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888]"
+                        className="h-14 text-lg font-mono bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                       />
                     </div>
                   </div>
