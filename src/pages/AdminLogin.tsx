@@ -12,7 +12,7 @@ import teslaLogo from '@/assets/tesla-logo-new.png';
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
