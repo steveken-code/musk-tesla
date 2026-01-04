@@ -82,8 +82,8 @@ const PaymentDetails = ({ amount, rubAmount }: PaymentDetailsProps) => {
   return (
     <div className="mt-4 p-4 bg-background/50 rounded-lg border border-border space-y-3 animate-fade-in">
       <h3 className="font-semibold text-brand-purple flex items-center gap-2">
-        <CreditCard className="w-4 h-4" />
-        {t('paymentDetails')}
+        <CreditCard className="w-4 h-4 text-brand-purple" />
+        {t('investmentDetails') || 'Investment Details'}
       </h3>
       
       <div className="space-y-2 text-sm">
