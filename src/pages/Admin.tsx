@@ -922,12 +922,14 @@ const Admin = () => {
                           <div className="flex items-center gap-1">
                             <span className="text-slate-400">$</span>
                             <Input
-                              type="number"
+                              type="text"
+                              inputMode="decimal"
                               value={investment.profit_amount}
-                              onChange={(e) => handleProfitChange(investment.id, e.target.value)}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9.]/g, '');
+                                handleProfitChange(investment.id, value);
+                              }}
                               className="w-24 bg-slate-900/50 border-slate-600 text-white text-right"
-                              min="0"
-                              step="0.01"
                             />
                           </div>
                         </div>
