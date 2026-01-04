@@ -121,14 +121,14 @@ const AdminLogin = () => {
                 Admin Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tesla-red" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-900" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-12 h-12 bg-slate-700/50 border-slate-600 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
               </div>
@@ -139,14 +139,14 @@ const AdminLogin = () => {
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tesla-red" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-900" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                   minLength={6}
                 />

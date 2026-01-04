@@ -211,7 +211,7 @@ const Auth = () => {
                       placeholder="Enter your email address"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      className="pl-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20 shadow-sm"
+                      className="pl-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 shadow-sm"
                       required
                     />
                   </div>
@@ -319,7 +319,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                     required={!isLogin}
                   />
                 </div>
@@ -338,7 +338,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
               </div>
@@ -356,7 +356,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-tesla-red focus:ring-tesla-red/20"
+                  className="pl-14 pr-14 h-14 bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                   minLength={6}
                 />
