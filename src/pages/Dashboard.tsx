@@ -560,7 +560,7 @@ const Dashboard = () => {
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </Link>
-            <img src={teslaLogo} alt="Tesla Stock" className="h-12 w-auto" />
+            <img src={teslaLogo} alt="Tesla Stock" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-muted-foreground hidden sm:block text-sm truncate max-w-[120px]">
