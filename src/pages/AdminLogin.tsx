@@ -87,25 +87,25 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="dark color-scheme-dark relative min-h-screen bg-background flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
       {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/10 via-transparent to-transparent" />
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
-
-      <Link
-        to="/"
-        className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors z-20"
+      
+      <Link 
+        to="/" 
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
       >
         <ArrowLeft className="w-5 h-5" />
         Home
       </Link>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-card/90 backdrop-blur-2xl border border-border rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-2xl shadow-black/50">
+        <div className="bg-slate-800/90 backdrop-blur-2xl border border-slate-700 rounded-3xl p-10 shadow-2xl shadow-black/50">
           {/* Logo */}
           <div className="flex flex-col items-center justify-center mb-8">
-            <img src={teslaLogo} alt="Tesla" className="h-16 sm:h-24 w-auto brightness-150 drop-shadow-lg mb-4" />
+            <img src={teslaLogo} alt="Tesla" className="h-24 w-auto brightness-150 drop-shadow-lg mb-4" />
             <div className="flex items-center gap-2 px-4 py-2 bg-tesla-red/10 border border-tesla-red/30 rounded-full">
               <Shield className="w-5 h-5 text-tesla-red" />
               <span className="text-sm font-semibold text-tesla-red">Admin Portal</span>
@@ -114,7 +114,7 @@ const AdminLogin = () => {
 
           {/* Title */}
           <div className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Administrator Access</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Administrator Access</h2>
             <p className="text-slate-400 text-sm">
               Sign in with your admin credentials
             </p>
@@ -122,43 +122,43 @@ const AdminLogin = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-muted-foreground text-sm font-medium">
+              <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
                 Admin Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 h-12 bg-input text-foreground placeholder:text-muted-foreground border-border rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue/20 focus-visible:border-electric-blue"
+                  className="pl-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-muted-foreground text-sm font-medium">
+              <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-input text-foreground placeholder:text-muted-foreground border-border rounded-xl focus-visible:ring-2 focus-visible:ring-electric-blue/20 focus-visible:border-electric-blue"
+                  className="pl-12 pr-12 h-12 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
