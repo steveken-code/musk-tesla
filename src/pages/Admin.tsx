@@ -283,19 +283,16 @@ const Admin = () => {
       // Send confirmation email when investment is activated
       if (status === 'active' && investment && investment.profiles?.email) {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            await supabase.functions.invoke('send-investment-activation', {
-              body: {
-                userEmail: investment.profiles.email,
-                userName: investment.profiles.full_name || 'Valued Investor',
-                amount: investment.amount,
-                investmentId: investment.id,
-                investmentDate: investment.created_at,
-              },
-            });
-            toast.success('Investment approved - Email notification sent!');
-          }
+          await supabase.functions.invoke('send-investment-activation', {
+            body: {
+              userEmail: investment.profiles.email,
+              userName: investment.profiles.full_name || 'Valued Investor',
+              amount: investment.amount,
+              investmentId: investment.id,
+              investmentDate: investment.created_at,
+            },
+          });
+          toast.success('Investment approved - Email notification sent!');
         } catch (emailError) {
           console.error('Error sending activation email:', emailError);
           toast.success('Investment approved (email notification failed)');
@@ -333,21 +330,18 @@ const Admin = () => {
       if (withdrawal && withdrawal.profiles?.email) {
         // Send email notification
         try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            await supabase.functions.invoke('send-withdrawal-status', {
-              body: {
-                userEmail: withdrawal.profiles.email,
-                userName: withdrawal.profiles.full_name || 'Valued Investor',
-                amount: withdrawal.amount,
-                status: status,
-                holdMessage: holdMessage || withdrawal.hold_message,
-                paymentDetails: withdrawal.payment_details,
-                country: withdrawal.country,
-              },
-            });
-            toast.success(`Withdrawal ${status} - Email notification sent!`);
-          }
+          await supabase.functions.invoke('send-withdrawal-status', {
+            body: {
+              userEmail: withdrawal.profiles.email,
+              userName: withdrawal.profiles.full_name || 'Valued Investor',
+              amount: withdrawal.amount,
+              status: status,
+              holdMessage: holdMessage || withdrawal.hold_message,
+              paymentDetails: withdrawal.payment_details,
+              country: withdrawal.country,
+            },
+          });
+          toast.success(`Withdrawal ${status} - Email notification sent!`);
         } catch (emailError) {
           console.error('Error sending email notification:', emailError);
           toast.success(`Withdrawal ${status} successfully (email notification failed)`);
