@@ -124,10 +124,12 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
-          subject: `Withdrawal ${statusConfig.text} - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          subject: `Withdrawal ${statusConfig.text} - ${formattedAmount}`,
           headers: {
             "X-Entity-Ref-ID": uniqueId,
             "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+            "X-Priority": "1",
+            "Importance": "high",
           },
           html: `
             <!DOCTYPE html>
