@@ -202,9 +202,8 @@ const ResetPassword = () => {
       <div className="relative z-10 w-full max-w-md animate-fade-in">
         <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
           <div className="flex flex-col items-center justify-center mb-10">
-            <img src={teslaLogo} alt="Msk Tesla" className="h-20 w-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-300">Msk Tesla</h2>
-            <p className="text-lg text-slate-400 mt-1">Create New Password</p>
+            <img src={teslaLogo} alt="Tesla Stock" className="h-20 w-auto mb-4" />
+            <h2 className="text-xl font-semibold text-slate-300">Create New Password</h2>
             {email && (
               <p className="text-slate-400 text-sm mt-2 font-medium">for {email}</p>
             )}
