@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, ReferenceLine, Bar, ComposedChart, Line, Brush } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { TrendingUp, Activity, BarChart3, LineChart, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, LineChart, ZoomIn, ZoomOut, RotateCcw, Bell, BellRing, X, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface DataPoint {
   date: string;
@@ -19,6 +21,16 @@ interface DataPoint {
   macd?: number;
   macdSignal?: number;
   macdHistogram?: number;
+  bollingerUpper?: number;
+  bollingerMiddle?: number;
+  bollingerLower?: number;
+}
+
+interface PriceAlert {
+  id: string;
+  price: number;
+  type: 'above' | 'below';
+  triggered: boolean;
 }
 
 type TimeRange = 'intraday' | '30d';
@@ -46,6 +58,28 @@ const calculateEMA = (data: DataPoint[], period: number): DataPoint[] => {
     }
     ema = (point.close - ema) * multiplier + ema;
     return { ...point, ema12: Math.round(ema * 100) / 100 };
+  });
+};
+
+// Calculate Bollinger Bands
+const calculateBollingerBands = (data: DataPoint[], period: number = 20, stdDev: number = 2): DataPoint[] => {
+  return data.map((point, index) => {
+    if (index < period - 1) {
+      return { ...point, bollingerUpper: undefined, bollingerMiddle: undefined, bollingerLower: undefined };
+    }
+    
+    const slice = data.slice(index - period + 1, index + 1);
+    const mean = slice.reduce((acc, p) => acc + p.close, 0) / period;
+    const squaredDiffs = slice.map(p => Math.pow(p.close - mean, 2));
+    const variance = squaredDiffs.reduce((acc, d) => acc + d, 0) / period;
+    const std = Math.sqrt(variance);
+    
+    return {
+      ...point,
+      bollingerMiddle: Math.round(mean * 100) / 100,
+      bollingerUpper: Math.round((mean + stdDev * std) * 100) / 100,
+      bollingerLower: Math.round((mean - stdDev * std) * 100) / 100,
+    };
   });
 };
 
@@ -85,15 +119,10 @@ const calculateRSI = (data: DataPoint[], period: number = 14): DataPoint[] => {
 
 // Calculate MACD
 const calculateMACD = (data: DataPoint[]): DataPoint[] => {
-  // EMA 12
   const ema12Multiplier = 2 / 13;
   let ema12 = data[0]?.close || 0;
-  
-  // EMA 26
   const ema26Multiplier = 2 / 27;
   let ema26 = data[0]?.close || 0;
-  
-  // Signal line (EMA 9 of MACD)
   const signalMultiplier = 2 / 10;
   let signalLine = 0;
   
@@ -159,6 +188,7 @@ const generateIntradayData = (): DataPoint[] => {
   // Add all indicators
   let result = calculateSMA(data, 20);
   result = calculateEMA(result, 12);
+  result = calculateBollingerBands(result, 20, 2);
   result = calculateRSI(result, 14);
   result = calculateMACD(result);
   
@@ -199,6 +229,7 @@ const generate30DayData = (): DataPoint[] => {
   // Add all indicators
   let result = calculateSMA(data, 20);
   result = calculateEMA(result, 12);
+  result = calculateBollingerBands(result, 20, 2);
   result = calculateRSI(result, 14);
   result = calculateMACD(result);
   
@@ -224,26 +255,8 @@ const CandlestickBar = (props: any) => {
   
   return (
     <g>
-      {/* Wick */}
-      <line
-        x1={x + width / 2}
-        y1={y}
-        x2={x + width / 2}
-        y2={y + height}
-        stroke={color}
-        strokeWidth={1}
-      />
-      {/* Body */}
-      <rect
-        x={x + 2}
-        y={bodyY}
-        width={width - 4}
-        height={bodyH}
-        fill={isUp ? color : color}
-        stroke={color}
-        strokeWidth={1}
-        rx={1}
-      />
+      <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke={color} strokeWidth={1} />
+      <rect x={x + 2} y={bodyY} width={width - 4} height={bodyH} fill={color} stroke={color} strokeWidth={1} rx={1} />
     </g>
   );
 };
@@ -257,17 +270,7 @@ const VolumeBar = (props: any) => {
   const isUp = close >= open;
   const color = isUp ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
   
-  return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      fill={color}
-      opacity={0.5}
-      rx={1}
-    />
-  );
+  return <rect x={x} y={y} width={width} height={height} fill={color} opacity={0.5} rx={1} />;
 };
 
 // MACD Histogram bar component
@@ -279,17 +282,7 @@ const MACDBar = (props: any) => {
   const isPositive = macdHistogram >= 0;
   const color = isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
   
-  return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={Math.abs(height)}
-      fill={color}
-      opacity={0.7}
-      rx={1}
-    />
-  );
+  return <rect x={x} y={y} width={width} height={Math.abs(height)} fill={color} opacity={0.7} rx={1} />;
 };
 
 const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
@@ -303,12 +296,59 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showSMA, setShowSMA] = useState(true);
   const [showEMA, setShowEMA] = useState(true);
+  const [showBollinger, setShowBollinger] = useState(true);
   const [showRSI, setShowRSI] = useState(true);
   const [showMACD, setShowMACD] = useState(true);
   const [zoomStart, setZoomStart] = useState(0);
   const [zoomEnd, setZoomEnd] = useState(data.length - 1);
+  const [showAlertPanel, setShowAlertPanel] = useState(false);
+  const [alerts, setAlerts] = useState<PriceAlert[]>([]);
+  const [newAlertPrice, setNewAlertPrice] = useState('');
+  const [newAlertType, setNewAlertType] = useState<'above' | 'below'>('above');
   const animationRef = useRef<number | null>(null);
   const wavePhase = useRef(0);
+  const lastAlertCheck = useRef<number>(0);
+
+  // Check price alerts
+  useEffect(() => {
+    const now = Date.now();
+    if (now - lastAlertCheck.current < 2000) return; // Throttle checks
+    lastAlertCheck.current = now;
+
+    alerts.forEach(alert => {
+      if (alert.triggered) return;
+      
+      const shouldTrigger = 
+        (alert.type === 'above' && currentPrice >= alert.price) ||
+        (alert.type === 'below' && currentPrice <= alert.price);
+      
+      if (shouldTrigger) {
+        setAlerts(prev => prev.map(a => 
+          a.id === alert.id ? { ...a, triggered: true } : a
+        ));
+        
+        // Play notification sound
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {}
+        
+        toast.success(`🔔 Price Alert Triggered!`, {
+          description: `TSLA ${alert.type === 'above' ? 'reached' : 'dropped to'} $${alert.price.toFixed(2)} (Current: $${currentPrice.toFixed(2)})`,
+          duration: 8000,
+        });
+      }
+    });
+  }, [currentPrice, alerts]);
 
   // Switch data based on time range
   useEffect(() => {
@@ -329,7 +369,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
     }
   }, [timeRange]);
 
-  // Smooth price animation
   const animatePrice = useCallback((targetPrice: number, duration: number = 600) => {
     const startPrice = currentPrice;
     const startTime = performance.now();
@@ -377,9 +416,9 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           };
         });
         
-        // Recalculate all indicators
         let result = calculateSMA(newData, 20);
         result = calculateEMA(result, 12);
+        result = calculateBollingerBands(result, 20, 2);
         result = calculateRSI(result, 14);
         result = calculateMACD(result);
         
@@ -419,9 +458,9 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             volume: Math.floor(Math.random() * 500000 + 100000),
           });
           
-          // Recalculate all indicators
           let result = calculateSMA(newData, 20);
           result = calculateEMA(result, 12);
+          result = calculateBollingerBands(result, 20, 2);
           result = calculateRSI(result, 14);
           result = calculateMACD(result);
           
@@ -467,13 +506,37 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
     }
   };
 
+  const addAlert = () => {
+    const price = parseFloat(newAlertPrice);
+    if (isNaN(price) || price <= 0) {
+      toast.error('Please enter a valid price');
+      return;
+    }
+    
+    const newAlert: PriceAlert = {
+      id: Date.now().toString(),
+      price,
+      type: newAlertType,
+      triggered: false,
+    };
+    
+    setAlerts(prev => [...prev, newAlert]);
+    setNewAlertPrice('');
+    toast.success(`Alert set for $${price.toFixed(2)} (${newAlertType === 'above' ? '↑ Above' : '↓ Below'})`);
+  };
+
+  const removeAlert = (id: string) => {
+    setAlerts(prev => prev.filter(a => a.id !== id));
+  };
+
   const isPositive = priceChange >= 0;
   const percentChange = previousPrice > 0 ? ((priceChange / previousPrice) * 100) : 0;
   
   const visibleData = data.slice(zoomStart, zoomEnd + 1);
-  const minPrice = Math.min(...visibleData.map(d => d.low));
-  const maxPrice = Math.max(...visibleData.map(d => d.high));
+  const minPrice = Math.min(...visibleData.map(d => Math.min(d.low, d.bollingerLower || d.low)));
+  const maxPrice = Math.max(...visibleData.map(d => Math.max(d.high, d.bollingerUpper || d.high)));
   const maxVolume = Math.max(...visibleData.map(d => d.volume));
+  const activeAlerts = alerts.filter(a => !a.triggered);
 
   const formatVolume = (vol: number) => {
     if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
@@ -541,34 +604,27 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
 
         {/* Zoom Controls */}
         <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2"
-            onClick={handleZoomIn}
-            title="Zoom In"
-          >
+          <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleZoomIn} title="Zoom In">
             <ZoomIn className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2"
-            onClick={handleZoomOut}
-            title="Zoom Out"
-          >
+          <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleZoomOut} title="Zoom Out">
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2"
-            onClick={handleResetZoom}
-            title="Reset Zoom"
-          >
+          <Button variant="ghost" size="sm" className="h-7 px-2" onClick={handleResetZoom} title="Reset Zoom">
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Price Alerts Toggle */}
+        <Button
+          variant={showAlertPanel ? 'default' : 'outline'}
+          size="sm"
+          className={`h-7 px-3 text-xs gap-1 ${showAlertPanel ? 'bg-amber-500 hover:bg-amber-600' : 'border-amber-500/50 text-amber-400'}`}
+          onClick={() => setShowAlertPanel(!showAlertPanel)}
+        >
+          {activeAlerts.length > 0 ? <BellRing className="w-3.5 h-3.5" /> : <Bell className="w-3.5 h-3.5" />}
+          Alerts {activeAlerts.length > 0 && `(${activeAlerts.length})`}
+        </Button>
 
         {/* Chart Type Toggle */}
         <div className="flex items-center gap-1 bg-background/50 rounded-lg p-1">
@@ -591,6 +647,87 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </div>
       </div>
 
+      {/* Price Alerts Panel */}
+      {showAlertPanel && (
+        <div className="mb-4 p-3 bg-background/50 rounded-lg border border-amber-500/20 animate-fade-in">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <Bell className="w-4 h-4 text-amber-500" />
+              Price Alerts
+            </h3>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setShowAlertPanel(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          {/* Add new alert */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1 bg-background/50 rounded p-0.5">
+              <Button
+                variant={newAlertType === 'above' ? 'default' : 'ghost'}
+                size="sm"
+                className={`h-6 px-2 text-xs ${newAlertType === 'above' ? 'bg-green-500/80' : ''}`}
+                onClick={() => setNewAlertType('above')}
+              >
+                ↑ Above
+              </Button>
+              <Button
+                variant={newAlertType === 'below' ? 'default' : 'ghost'}
+                size="sm"
+                className={`h-6 px-2 text-xs ${newAlertType === 'below' ? 'bg-red-500/80' : ''}`}
+                onClick={() => setNewAlertType('below')}
+              >
+                ↓ Below
+              </Button>
+            </div>
+            <Input
+              type="number"
+              placeholder={`$${currentPrice.toFixed(0)}`}
+              value={newAlertPrice}
+              onChange={(e) => setNewAlertPrice(e.target.value)}
+              className="h-7 w-24 text-xs"
+            />
+            <Button size="sm" className="h-7 px-2 bg-amber-500 hover:bg-amber-600" onClick={addAlert}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          {/* Active alerts list */}
+          {alerts.length > 0 ? (
+            <div className="space-y-1 max-h-24 overflow-y-auto">
+              {alerts.map(alert => (
+                <div 
+                  key={alert.id} 
+                  className={`flex items-center justify-between px-2 py-1 rounded text-xs ${
+                    alert.triggered 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-background/30'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className={alert.type === 'above' ? 'text-green-400' : 'text-red-400'}>
+                      {alert.type === 'above' ? '↑' : '↓'}
+                    </span>
+                    ${alert.price.toFixed(2)}
+                    {alert.triggered && <span className="text-green-400">(Triggered!)</span>}
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-5 w-5 p-0 hover:text-red-400"
+                    onClick={() => removeAlert(alert.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground text-center py-2">No price alerts set</p>
+          )}
+        </div>
+      )}
+
       {/* Indicator Toggles */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <Button
@@ -608,6 +745,14 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           onClick={() => setShowEMA(!showEMA)}
         >
           EMA
+        </Button>
+        <Button
+          variant={showBollinger ? 'default' : 'outline'}
+          size="sm"
+          className={`h-6 px-2 text-xs ${showBollinger ? 'bg-yellow-500/80 hover:bg-yellow-500' : 'border-yellow-500/50 text-yellow-400'}`}
+          onClick={() => setShowBollinger(!showBollinger)}
+        >
+          BB
         </Button>
         <Button
           variant={showRSI ? 'default' : 'outline'}
@@ -638,6 +783,10 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   <stop offset="50%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.15}/>
                   <stop offset="100%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0}/>
                 </linearGradient>
+                <linearGradient id="bollingerFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.02}/>
+                </linearGradient>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                   <feMerge>
@@ -646,12 +795,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   </feMerge>
                 </filter>
               </defs>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(0, 0%, 20%)" 
-                vertical={false}
-                opacity={0.5}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 20%)" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
                 stroke="hsl(0, 0%, 50%)" 
@@ -670,6 +814,22 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                 tickFormatter={(value) => `$${value.toFixed(0)}`}
                 tick={{ fill: 'hsl(0, 0%, 50%)' }}
               />
+              {/* Price Alert Lines */}
+              {alerts.filter(a => !a.triggered).map(alert => (
+                <ReferenceLine 
+                  key={alert.id}
+                  y={alert.price} 
+                  stroke={alert.type === 'above' ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} 
+                  strokeDasharray="5 5" 
+                  strokeWidth={1.5}
+                  label={{ 
+                    value: `$${alert.price}`, 
+                    position: 'right',
+                    fill: alert.type === 'above' ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)',
+                    fontSize: 10,
+                  }}
+                />
+              ))}
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'hsl(0, 0%, 8%)', 
@@ -678,7 +838,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   padding: '12px',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                 }}
-                labelStyle={{ color: 'hsl(0, 0%, 60%)', marginBottom: '4px', fontSize: '11px' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length > 0) {
                     const d = payload[0].payload;
@@ -690,16 +849,22 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                             <span className="text-muted-foreground">Price:</span>
                             <span className="font-mono font-bold">${d.price.toFixed(2)}</span>
                           </div>
+                          {showBollinger && d.bollingerUpper && (
+                            <>
+                              <div className="flex justify-between gap-4">
+                                <span className="text-yellow-400">BB Upper:</span>
+                                <span className="font-mono text-yellow-400">${d.bollingerUpper.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between gap-4">
+                                <span className="text-yellow-400">BB Lower:</span>
+                                <span className="font-mono text-yellow-400">${d.bollingerLower.toFixed(2)}</span>
+                              </div>
+                            </>
+                          )}
                           {showSMA && d.sma20 && (
                             <div className="flex justify-between gap-4">
                               <span className="text-orange-400">SMA(20):</span>
                               <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
-                            </div>
-                          )}
-                          {showEMA && d.ema12 && (
-                            <div className="flex justify-between gap-4">
-                              <span className="text-cyan-400">EMA(12):</span>
-                              <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
                             </div>
                           )}
                           {showRSI && d.rsi && (
@@ -708,10 +873,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                               <span className="font-mono text-purple-400">{d.rsi.toFixed(1)}</span>
                             </div>
                           )}
-                          <div className="flex justify-between gap-4">
-                            <span className="text-muted-foreground">Volume:</span>
-                            <span className="font-mono">{formatVolume(d.volume)}</span>
-                          </div>
                         </div>
                       </div>
                     );
@@ -719,6 +880,39 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   return null;
                 }}
               />
+              {/* Bollinger Bands */}
+              {showBollinger && (
+                <>
+                  <Area 
+                    type="monotone" 
+                    dataKey="bollingerUpper" 
+                    stroke="hsl(45, 93%, 47%)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    fillOpacity={0}
+                    animationDuration={300}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="bollingerLower" 
+                    stroke="hsl(45, 93%, 47%)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    fill="url(#bollingerFill)"
+                    fillOpacity={1}
+                    animationDuration={300}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="bollingerMiddle" 
+                    stroke="hsl(45, 93%, 47%)"
+                    strokeWidth={1}
+                    strokeOpacity={0.5}
+                    dot={false}
+                    animationDuration={300}
+                  />
+                </>
+              )}
               <Area 
                 type="monotone" 
                 dataKey="price" 
@@ -728,8 +922,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                 fill="url(#colorPriceTesla)"
                 filter="url(#glow)"
                 animationDuration={300}
-                animationEasing="ease-out"
-                isAnimationActive={true}
               />
               {showSMA && (
                 <Line 
@@ -755,12 +947,13 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             </ComposedChart>
           ) : (
             <ComposedChart data={visibleData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(0, 0%, 20%)" 
-                vertical={false}
-                opacity={0.5}
-              />
+              <defs>
+                <linearGradient id="bollingerFillCandle" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.1}/>
+                  <stop offset="100%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.02}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 20%)" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
                 stroke="hsl(0, 0%, 50%)" 
@@ -779,6 +972,16 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                 tickFormatter={(value) => `$${value.toFixed(0)}`}
                 tick={{ fill: 'hsl(0, 0%, 50%)' }}
               />
+              {/* Price Alert Lines */}
+              {alerts.filter(a => !a.triggered).map(alert => (
+                <ReferenceLine 
+                  key={alert.id}
+                  y={alert.price} 
+                  stroke={alert.type === 'above' ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} 
+                  strokeDasharray="5 5" 
+                  strokeWidth={1.5}
+                />
+              ))}
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'hsl(0, 0%, 8%)', 
@@ -805,20 +1008,14 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                           <span className={`font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
                             ${d.close.toFixed(2)}
                           </span>
-                          {showSMA && d.sma20 && (
+                          {showBollinger && d.bollingerUpper && (
                             <>
-                              <span className="text-orange-400">SMA:</span>
-                              <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
+                              <span className="text-yellow-400">BB Upper:</span>
+                              <span className="font-mono text-yellow-400">${d.bollingerUpper.toFixed(2)}</span>
+                              <span className="text-yellow-400">BB Lower:</span>
+                              <span className="font-mono text-yellow-400">${d.bollingerLower.toFixed(2)}</span>
                             </>
                           )}
-                          {showEMA && d.ema12 && (
-                            <>
-                              <span className="text-cyan-400">EMA:</span>
-                              <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
-                            </>
-                          )}
-                          <span className="text-muted-foreground">Vol:</span>
-                          <span className="font-mono">{formatVolume(d.volume)}</span>
                         </div>
                       </div>
                     );
@@ -826,31 +1023,36 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   return null;
                 }}
               />
-              <Bar 
-                dataKey="high" 
-                shape={(props: any) => <CandlestickBar {...props} />}
-                animationDuration={300}
-              />
+              {/* Bollinger Bands */}
+              {showBollinger && (
+                <>
+                  <Area 
+                    type="monotone" 
+                    dataKey="bollingerUpper" 
+                    stroke="hsl(45, 93%, 47%)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    fillOpacity={0}
+                    animationDuration={300}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="bollingerLower" 
+                    stroke="hsl(45, 93%, 47%)"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    fill="url(#bollingerFillCandle)"
+                    fillOpacity={1}
+                    animationDuration={300}
+                  />
+                </>
+              )}
+              <Bar dataKey="high" shape={(props: any) => <CandlestickBar {...props} />} animationDuration={300} />
               {showSMA && (
-                <Line 
-                  type="monotone" 
-                  dataKey="sma20" 
-                  stroke="hsl(30, 100%, 50%)"
-                  strokeWidth={1.5}
-                  dot={false}
-                  strokeDasharray="4 2"
-                  animationDuration={300}
-                />
+                <Line type="monotone" dataKey="sma20" stroke="hsl(30, 100%, 50%)" strokeWidth={1.5} dot={false} strokeDasharray="4 2" animationDuration={300} />
               )}
               {showEMA && (
-                <Line 
-                  type="monotone" 
-                  dataKey="ema12" 
-                  stroke="hsl(190, 100%, 50%)"
-                  strokeWidth={1.5}
-                  dot={false}
-                  animationDuration={300}
-                />
+                <Line type="monotone" dataKey="ema12" stroke="hsl(190, 100%, 50%)" strokeWidth={1.5} dot={false} animationDuration={300} />
               )}
             </ComposedChart>
           )}
@@ -861,30 +1063,9 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
       <div className="h-[50px] w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
-            <XAxis 
-              dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-              stroke="hsl(0, 0%, 50%)" 
-              fontSize={8}
-              tickLine={false}
-              axisLine={false}
-              interval="preserveStartEnd"
-              tick={{ fill: 'hsl(0, 0%, 40%)' }}
-            />
-            <YAxis 
-              stroke="hsl(0, 0%, 50%)" 
-              fontSize={8}
-              tickLine={false}
-              axisLine={false}
-              domain={[0, maxVolume * 1.1]}
-              tickFormatter={formatVolume}
-              tick={{ fill: 'hsl(0, 0%, 40%)' }}
-              width={40}
-            />
-            <Bar 
-              dataKey="volume" 
-              shape={(props: any) => <VolumeBar {...props} />}
-              animationDuration={300}
-            />
+            <XAxis dataKey={timeRange === 'intraday' ? 'time' : 'date'} stroke="hsl(0, 0%, 50%)" fontSize={8} tickLine={false} axisLine={false} interval="preserveStartEnd" tick={{ fill: 'hsl(0, 0%, 40%)' }} />
+            <YAxis stroke="hsl(0, 0%, 50%)" fontSize={8} tickLine={false} axisLine={false} domain={[0, maxVolume * 1.1]} tickFormatter={formatVolume} tick={{ fill: 'hsl(0, 0%, 40%)' }} width={40} />
+            <Bar dataKey="volume" shape={(props: any) => <VolumeBar {...props} />} animationDuration={300} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -897,36 +1078,12 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           </div>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(0, 0%, 15%)" 
-                vertical={false}
-                opacity={0.5}
-              />
-              <XAxis 
-                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-                hide
-              />
-              <YAxis 
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
-                tickLine={false}
-                axisLine={false}
-                domain={[0, 100]}
-                ticks={[30, 70]}
-                tick={{ fill: 'hsl(0, 0%, 40%)' }}
-                width={40}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 15%)" vertical={false} opacity={0.5} />
+              <XAxis dataKey={timeRange === 'intraday' ? 'time' : 'date'} hide />
+              <YAxis stroke="hsl(0, 0%, 50%)" fontSize={8} tickLine={false} axisLine={false} domain={[0, 100]} ticks={[30, 70]} tick={{ fill: 'hsl(0, 0%, 40%)' }} width={40} />
               <ReferenceLine y={70} stroke="hsl(0, 72%, 51%)" strokeDasharray="3 3" strokeOpacity={0.5} />
               <ReferenceLine y={30} stroke="hsl(142, 76%, 45%)" strokeDasharray="3 3" strokeOpacity={0.5} />
-              <Line 
-                type="monotone" 
-                dataKey="rsi" 
-                stroke="hsl(270, 70%, 60%)"
-                strokeWidth={1.5}
-                dot={false}
-                animationDuration={300}
-              />
+              <Line type="monotone" dataKey="rsi" stroke="hsl(270, 70%, 60%)" strokeWidth={1.5} dot={false} animationDuration={300} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -940,47 +1097,13 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           </div>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(0, 0%, 15%)" 
-                vertical={false}
-                opacity={0.5}
-              />
-              <XAxis 
-                dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-                hide
-              />
-              <YAxis 
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
-                tickLine={false}
-                axisLine={false}
-                domain={['auto', 'auto']}
-                tick={{ fill: 'hsl(0, 0%, 40%)' }}
-                width={40}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 15%)" vertical={false} opacity={0.5} />
+              <XAxis dataKey={timeRange === 'intraday' ? 'time' : 'date'} hide />
+              <YAxis stroke="hsl(0, 0%, 50%)" fontSize={8} tickLine={false} axisLine={false} domain={['auto', 'auto']} tick={{ fill: 'hsl(0, 0%, 40%)' }} width={40} />
               <ReferenceLine y={0} stroke="hsl(0, 0%, 30%)" strokeWidth={1} />
-              <Bar 
-                dataKey="macdHistogram" 
-                shape={(props: any) => <MACDBar {...props} />}
-                animationDuration={300}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="macd" 
-                stroke="hsl(330, 80%, 60%)"
-                strokeWidth={1.5}
-                dot={false}
-                animationDuration={300}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="macdSignal" 
-                stroke="hsl(200, 80%, 60%)"
-                strokeWidth={1.5}
-                dot={false}
-                animationDuration={300}
-              />
+              <Bar dataKey="macdHistogram" shape={(props: any) => <MACDBar {...props} />} animationDuration={300} />
+              <Line type="monotone" dataKey="macd" stroke="hsl(330, 80%, 60%)" strokeWidth={1.5} dot={false} animationDuration={300} />
+              <Line type="monotone" dataKey="macdSignal" stroke="hsl(200, 80%, 60%)" strokeWidth={1.5} dot={false} animationDuration={300} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -1008,13 +1131,19 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         {showSMA && (
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0 0 0', borderColor: 'hsl(30, 100%, 50%)' }} />
-            <span className="text-orange-400 text-[10px]">SMA(20)</span>
+            <span className="text-orange-400 text-[10px]">SMA</span>
           </div>
         )}
         {showEMA && (
           <div className="flex items-center gap-1">
             <div className="w-3 h-0.5 bg-cyan-500" />
-            <span className="text-cyan-400 text-[10px]">EMA(12)</span>
+            <span className="text-cyan-400 text-[10px]">EMA</span>
+          </div>
+        )}
+        {showBollinger && (
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-yellow-500" style={{ borderStyle: 'dashed' }} />
+            <span className="text-yellow-400 text-[10px]">BB</span>
           </div>
         )}
         {showRSI && (
@@ -1029,10 +1158,6 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
             <span className="text-pink-400 text-[10px]">MACD</span>
           </div>
         )}
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 bg-green-500/50 rounded-sm" />
-          <span className="text-muted-foreground text-[10px]">Vol</span>
-        </div>
       </div>
       
       {/* Bottom stats */}
