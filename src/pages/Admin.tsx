@@ -720,7 +720,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 overflow-x-hidden color-scheme-dark">
+    <div className="min-h-screen bg-slate-900 overflow-x-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       
       {/* Header */}
@@ -785,7 +785,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.cardNumber}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, cardNumber: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-900/50 border-slate-600 text-white"
                 maxLength={50}
               />
             </div>
@@ -794,7 +794,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.bankName}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, bankName: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-900/50 border-slate-600 text-white"
                 maxLength={100}
               />
             </div>
@@ -803,7 +803,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.accountHolder}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, accountHolder: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-900/50 border-slate-600 text-white"
                 maxLength={100}
               />
             </div>
@@ -829,7 +829,7 @@ const Admin = () => {
             <Input
               value={withdrawalSettings.defaultHoldMessage}
               onChange={(e) => setWithdrawalSettings(prev => ({ ...prev, defaultHoldMessage: e.target.value }))}
-              className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+              className="bg-slate-900/50 border-slate-600 text-white"
               placeholder="Enter default message for withdrawals on hold..."
               maxLength={500}
             />
@@ -877,7 +877,7 @@ const Admin = () => {
               <Input
                 value={supportSettings.phone}
                 onChange={(e) => setSupportSettings(prev => ({ ...prev, phone: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-900/50 border-slate-600 text-white"
                 placeholder={supportSettings.type === 'telegram' ? '@username or phone' : '+12186500840'}
               />
             </div>
