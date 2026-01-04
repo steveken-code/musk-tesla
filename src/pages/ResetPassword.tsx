@@ -200,36 +200,36 @@ const ResetPassword = () => {
       </Link>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
+        <div className="bg-black backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
           <div className="flex flex-col items-center justify-center mb-10">
             <img src={teslaLogo} alt="Tesla Stock" className="h-20 w-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-300">Create New Password</h2>
+            <h2 className="text-xl font-semibold text-gray-400">Create New Password</h2>
             {email && (
-              <p className="text-slate-400 text-sm mt-2 font-medium">for {email}</p>
+              <p className="text-gray-500 text-sm mt-2 font-medium">for {email}</p>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
+              <Label htmlFor="password" className="text-gray-400 text-sm font-medium">
                 New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-field-light-icon" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-field-light border-field-light-border text-field-light-foreground placeholder:text-field-light-placeholder rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary autofill:shadow-[inset_0_0_0px_1000px_hsl(var(--field-light))] [&:-webkit-autofill]:[-webkit-text-fill-color:hsl(var(--field-light-foreground))]"
+                  className="pl-12 pr-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-white/70 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-field-light-foreground/70 hover:text-field-light-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -271,25 +271,25 @@ const ResetPassword = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">
+              <Label htmlFor="confirmPassword" className="text-gray-400 text-sm font-medium">
                 Confirm New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-field-light-icon" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-field-light border-field-light-border text-field-light-foreground placeholder:text-field-light-placeholder rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary autofill:shadow-[inset_0_0_0px_1000px_hsl(var(--field-light))] [&:-webkit-autofill]:[-webkit-text-fill-color:hsl(var(--field-light-foreground))]"
+                  className="pl-12 pr-12 h-12 bg-[#1E1E1E] border-[#333] text-white placeholder:text-white/70 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-field-light-foreground/70 hover:text-field-light-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
