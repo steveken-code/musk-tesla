@@ -59,7 +59,14 @@
     --silver: 220 15% 75%;
     --platinum: 220 20% 90%;
     --chrome: 220 10% 85%;
-    
+
+    /* Light field tokens (for white inputs on dark surfaces, like Reset Password) */
+    --field-light: 0 0% 100%;
+    --field-light-foreground: 222 47% 11%;
+    --field-light-border: 220 13% 91%;
+    --field-light-placeholder: 220 9% 46%;
+    --field-light-icon: 222 47% 11%;
+
     /* Section backgrounds */
     --section-dark: 222 50% 5%;
     --section-mid: 222 39% 13%;
