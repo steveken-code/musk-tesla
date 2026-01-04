@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [email],
-        subject: "🔐 Reset Your TeslaInvest Password",
+        subject: "🔐 Reset Your Tesla Stock Platform Password",
         html: `
           <!DOCTYPE html>
           <html>
@@ -80,91 +80,96 @@ const handler = async (req: Request): Promise<Response> => {
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
-          <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+          <body style="margin: 0; padding: 0; background-color: #fef2f2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef2f2; padding: 40px 20px;">
               <tr>
                 <td align="center">
-                  <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #171717 0%, #0a0a0a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #262626;">
+                  <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(220, 38, 38, 0.15);">
                     
-                    <!-- Header with Tesla Logo -->
+                    <!-- Header -->
                     <tr>
-                      <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%);">
-                        <div style="display: inline-block; background: #ffffff; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
-                          <span style="color: #e31937; font-size: 40px; font-weight: bold;">T</span>
-                        </div>
-                        <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                          TESLAINVEST
+                      <td style="padding: 40px 50px 30px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                        <h1 style="margin: 0 0 10px; color: #1f2937; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                          Tesla Stock Platform
                         </h1>
-                        <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 1px;">
+                        <p style="margin: 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 0.5px;">
                           Password Reset Request
                         </p>
                       </td>
                     </tr>
                     
-                    <!-- Security Icon Banner -->
+                    <!-- Security Icon -->
                     <tr>
-                      <td style="padding: 40px 40px 20px; text-align: center;">
-                        <div style="display: inline-block; background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 2px solid #e31937; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
-                          <span style="font-size: 36px;">🔒</span>
+                      <td style="padding: 40px 50px 20px; text-align: center;">
+                        <div style="display: inline-block; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 3px solid #dc2626; border-radius: 50%; width: 90px; height: 90px; line-height: 90px; margin-bottom: 20px;">
+                          <span style="font-size: 42px;">🔒</span>
                         </div>
-                        <h2 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700;">
+                        <h2 style="margin: 0; color: #1f2937; font-size: 26px; font-weight: 700;">
                           Password Reset
                         </h2>
-                        <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #e31937, #ff4444); margin: 20px auto; border-radius: 2px;"></div>
+                        <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 20px auto; border-radius: 2px;"></div>
+                      </td>
+                    </tr>
+                    
+                    <!-- Greeting -->
+                    <tr>
+                      <td style="padding: 0 50px 10px; text-align: center;">
+                        <p style="margin: 0; color: #1e40af; font-size: 22px; font-weight: 700;">
+                          Hi ${name || 'Valued Investor'},
+                        </p>
                       </td>
                     </tr>
                     
                     <!-- Main Content -->
                     <tr>
-                      <td style="padding: 0 40px 40px;">
-                        <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
-                          Hi ${name || 'Investor'},<br><br>
-                          We received a request to reset the password for your TeslaInvest account. 
-                          Click the button below to create a new password.
+                      <td style="padding: 20px 50px 40px;">
+                        <p style="margin: 0 0 25px; color: #4b5563; font-size: 16px; line-height: 1.8; text-align: center;">
+                          We received a request to reset the password for your Tesla Stock Platform account. 
+                          Click the button below to create a new secure password.
                         </p>
                         
                         <!-- Warning Box -->
-                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border: 1px solid #e31937; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;">
-                          <p style="margin: 0; color: #fbbf24; font-size: 14px; font-weight: 600;">
-                            ⚠️ This link expires in 1 hour
+                        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border: 2px solid #f59e0b; border-radius: 12px; padding: 18px 24px; margin: 25px 0; text-align: center;">
+                          <p style="margin: 0; color: #92400e; font-size: 15px; font-weight: 600;">
+                            ⚠️ This link expires in 1 hour for your security
                           </p>
                         </div>
                         
                         <!-- CTA Button -->
-                        <div style="text-align: center; margin: 40px 0;">
-                          <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #e31937 0%, #cc0000 50%, #990000 100%); color: #ffffff; text-decoration: none; padding: 18px 50px; border-radius: 50px; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 15px 40px -10px rgba(227, 25, 55, 0.5);">
+                        <div style="text-align: center; margin: 35px 0;">
+                          <a href="${resetLink}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 17px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 30px -8px rgba(220, 38, 38, 0.5);">
                             Reset Password →
                           </a>
                         </div>
                         
                         <!-- Alternative Link -->
-                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 12px; padding: 20px; margin: 30px 0;">
-                          <p style="margin: 0 0 10px; color: #737373; font-size: 13px; text-align: center;">
+                        <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 24px; margin: 30px 0;">
+                          <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px; text-align: center;">
                             If the button doesn't work, copy and paste this link into your browser:
                           </p>
-                          <p style="margin: 0; color: #e31937; font-size: 12px; word-break: break-all; text-align: center;">
+                          <p style="margin: 0; color: #dc2626; font-size: 12px; word-break: break-all; text-align: center; font-weight: 500;">
                             ${resetLink}
                           </p>
                         </div>
                         
                         <!-- Security Notice -->
-                        <div style="border-left: 4px solid #fbbf24; padding-left: 20px; margin: 30px 0;">
-                          <p style="color: #a3a3a3; font-size: 14px; line-height: 1.6; margin: 0;">
-                            <strong style="color: #fbbf24;">Security Notice:</strong> If you didn't request this password reset, 
-                            please ignore this email. Your password will remain unchanged and your account is still secure.
+                        <div style="border-left: 4px solid #f59e0b; background: #fffbeb; padding: 18px 20px; margin: 30px 0; border-radius: 0 12px 12px 0;">
+                          <p style="color: #4b5563; font-size: 14px; line-height: 1.7; margin: 0;">
+                            <strong style="color: #92400e;">🛡️ Security Notice:</strong> If you didn't request this password reset, 
+                            please ignore this email. Your password will remain unchanged and your account is secure.
                           </p>
                         </div>
                         
                         <!-- Tips Section -->
-                        <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 16px; padding: 25px; margin: 30px 0;">
-                          <h3 style="margin: 0 0 15px; color: #ffffff; font-size: 16px; font-weight: 700;">
-                            🛡️ Password Security Tips
+                        <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border: 1px solid #e5e7eb; border-radius: 16px; padding: 25px 30px; margin: 30px 0;">
+                          <h3 style="margin: 0 0 18px; color: #1f2937; font-size: 17px; font-weight: 700;">
+                            🔐 Password Security Tips
                           </h3>
-                          <ul style="margin: 0; padding: 0 0 0 20px; color: #737373; font-size: 14px; line-height: 1.8;">
-                            <li>Use at least 12 characters</li>
-                            <li>Mix uppercase, lowercase, numbers & symbols</li>
-                            <li>Avoid using personal information</li>
-                            <li>Use a unique password for TeslaInvest</li>
+                          <ul style="margin: 0; padding: 0 0 0 22px; color: #4b5563; font-size: 14px; line-height: 2;">
+                            <li>Use at least 12 characters for maximum security</li>
+                            <li>Mix uppercase, lowercase, numbers & special symbols</li>
+                            <li>Avoid using personal information or common words</li>
+                            <li>Use a unique password for your Tesla Stock account</li>
                           </ul>
                         </div>
                       </td>
@@ -172,14 +177,14 @@ const handler = async (req: Request): Promise<Response> => {
                     
                     <!-- Support Section -->
                     <tr>
-                      <td style="padding: 30px 40px; background: #0a0a0a; border-top: 1px solid #262626;">
+                      <td style="padding: 30px 50px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
                         <table width="100%" cellpadding="0" cellspacing="0">
                           <tr>
                             <td style="text-align: center;">
-                              <p style="margin: 0 0 15px; color: #a3a3a3; font-size: 15px;">
+                              <p style="margin: 0 0 12px; color: #6b7280; font-size: 15px;">
                                 Need help? Contact our security team
                               </p>
-                              <a href="mailto:support@msktesla.net" style="color: #e31937; text-decoration: none; font-weight: 600; font-size: 15px;">
+                              <a href="mailto:support@msktesla.net" style="color: #dc2626; text-decoration: none; font-weight: 600; font-size: 15px;">
                                 support@msktesla.net
                               </a>
                             </td>
@@ -190,15 +195,15 @@ const handler = async (req: Request): Promise<Response> => {
                     
                     <!-- Footer -->
                     <tr>
-                      <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
-                        <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
-                          © ${new Date().getFullYear()} TeslaInvest. All rights reserved.
+                      <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px 50px; text-align: center;">
+                        <p style="margin: 0 0 8px; color: rgba(255, 255, 255, 0.95); font-size: 14px; font-weight: 600;">
+                          © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                         </p>
-                        <p style="margin: 0 0 15px; color: #404040; font-size: 12px;">
+                        <p style="margin: 0 0 10px; color: rgba(255, 255, 255, 0.8); font-size: 12px;">
                           This email was sent to ${email}
                         </p>
-                        <p style="margin: 0; color: #404040; font-size: 11px;">
-                          TeslaInvest | Smart Investing in Clean Energy
+                        <p style="margin: 0; color: rgba(255, 255, 255, 0.7); font-size: 11px;">
+                          Tesla Stock Platform | Smart Investing in Clean Energy
                         </p>
                       </td>
                     </tr>
