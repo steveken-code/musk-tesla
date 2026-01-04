@@ -45,5 +45,5 @@ verify_jwt = false
 [functions.update-user-email]
 verify_jwt = false
 
-[functions.fix-admin-email]
-verify_jwt = false
+[functions.create-withdrawal]
+verify_jwt = true
