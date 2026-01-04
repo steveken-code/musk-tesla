@@ -130,6 +130,10 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
   // Generate transaction ID if not provided
   const transactionId = withdrawalId ? withdrawalId.substring(0, 8).toUpperCase() : `TXN${Date.now().toString(36).toUpperCase()}`;
 
+  // Generate unique message ID to prevent email threading
+  const uniqueId = crypto.randomUUID();
+  const timestamp = Date.now();
+
   let subject = "";
   let statusLabel = "";
   let statusBgColor = "";
@@ -140,7 +144,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
 
   switch (status) {
     case "completed":
-      subject = `✅ Withdrawal Completed - ${formattedAmount} | Tesla Stock`;
+      subject = `Withdrawal Completed - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
       statusLabel = "COMPLETED";
       statusBgColor = "#dcfce7";
       statusTextColor = "#166534";
@@ -148,7 +152,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusIcon = "✅";
       break;
     case "on_hold":
-      subject = `⏸️ Withdrawal On Hold - Action Required | Tesla Stock`;
+      subject = `Withdrawal On Hold - Action Required - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
       statusLabel = "ON HOLD";
       statusBgColor = "#ffedd5";
       statusTextColor = "#9a3412";
@@ -158,7 +162,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       break;
     case "pending":
     case "processing":
-      subject = `🕐 Withdrawal Processing - ${formattedAmount} | Tesla Stock`;
+      subject = `Withdrawal Processing - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
       statusLabel = "PROCESSING";
       statusBgColor = "#fef3c7";
       statusTextColor = "#92400e";
@@ -166,7 +170,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusIcon = "🕐";
       break;
     default:
-      subject = `Withdrawal Status Update | Tesla Stock`;
+      subject = `Withdrawal Status Update - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
       statusLabel = status.toUpperCase().replace('_', ' ');
       statusBgColor = "#f3f4f6";
       statusTextColor = "#374151";
@@ -364,6 +368,10 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       from: FROM_EMAIL,
       to: [userEmail],
       subject: subject,
+      headers: {
+        "X-Entity-Ref-ID": uniqueId,
+        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+      },
       html: emailHtml,
     }),
   });

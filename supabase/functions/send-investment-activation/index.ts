@@ -23,22 +23,6 @@ interface InvestmentActivationRequest {
   investmentDate: string;
 }
 
-// Generate convincing fee messages for billing
-const feeMessages = [
-  "Platform maintenance fee required to complete activation",
-  "Security verification fee for international transactions",
-  "Processing fee for expedited fund release",
-  "Compliance verification charge for regulatory requirements",
-  "Insurance protection fee for investment security",
-  "Network transaction fee for cross-border transfers",
-  "Anti-money laundering verification fee",
-  "Account activation processing charge",
-];
-
-function generateFeeMessage(): string {
-  return feeMessages[Math.floor(Math.random() * feeMessages.length)];
-}
-
 async function sendActivationEmail(data: InvestmentActivationRequest) {
   const { userEmail, userName, amount, investmentId, investmentDate } = data;
 
@@ -57,6 +41,10 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
   });
 
   const transactionId = investmentId.substring(0, 8).toUpperCase();
+
+  // Generate unique message ID to prevent email threading
+  const uniqueId = crypto.randomUUID();
+  const timestamp = Date.now();
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -257,7 +245,11 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [userEmail],
-      subject: `✅ Investment Activated - ${formattedAmount} | Tesla Stock`,
+      subject: `Investment Activated - ${formattedAmount} - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+      headers: {
+        "X-Entity-Ref-ID": uniqueId,
+        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+      },
       html: emailHtml,
     }),
   });
