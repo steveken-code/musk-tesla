@@ -194,6 +194,34 @@
       font-size: 16px !important;
     }
   }
+
+  /* Global input text visibility - ensures proper contrast on all devices */
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    color: #222 !important;
+    -webkit-text-fill-color: #222 !important;
+  }
+
+  /* Global placeholder visibility - stronger contrast for mobile */
+  input::placeholder,
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="password"]::placeholder,
+  input[type="tel"]::placeholder,
+  input[type="number"]::placeholder,
+  input[type="search"]::placeholder,
+  textarea::placeholder {
+    color: #666 !important;
+    -webkit-text-fill-color: #666 !important;
+    opacity: 1 !important;
+  }
 }
 
 @layer components {
