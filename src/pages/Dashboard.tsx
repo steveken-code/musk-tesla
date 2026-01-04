@@ -170,8 +170,75 @@ const allCountries = [
 ];
 
 // Card type detection
+// Country-specific banking formats
+const countryBankingFormats: Record<string, { 
+  cardLength: number; 
+  phoneCode: string; 
+  phoneLength: number; 
+  phoneFormat: string;
+  cardFormat: string;
+}> = {
+  RU: { cardLength: 16, phoneCode: '+7', phoneLength: 11, phoneFormat: '+7 XXX XXX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  US: { cardLength: 16, phoneCode: '+1', phoneLength: 11, phoneFormat: '+1 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  GB: { cardLength: 16, phoneCode: '+44', phoneLength: 12, phoneFormat: '+44 XXXX XXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  DE: { cardLength: 16, phoneCode: '+49', phoneLength: 13, phoneFormat: '+49 XXX XXXXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  FR: { cardLength: 16, phoneCode: '+33', phoneLength: 11, phoneFormat: '+33 X XX XX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CN: { cardLength: 19, phoneCode: '+86', phoneLength: 13, phoneFormat: '+86 XXX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX XXX' },
+  JP: { cardLength: 16, phoneCode: '+81', phoneLength: 12, phoneFormat: '+81 XX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  KR: { cardLength: 16, phoneCode: '+82', phoneLength: 12, phoneFormat: '+82 XX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  BR: { cardLength: 16, phoneCode: '+55', phoneLength: 13, phoneFormat: '+55 XX XXXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  AE: { cardLength: 16, phoneCode: '+971', phoneLength: 12, phoneFormat: '+971 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  IN: { cardLength: 16, phoneCode: '+91', phoneLength: 12, phoneFormat: '+91 XXXXX XXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  AU: { cardLength: 16, phoneCode: '+61', phoneLength: 11, phoneFormat: '+61 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CA: { cardLength: 16, phoneCode: '+1', phoneLength: 11, phoneFormat: '+1 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  IT: { cardLength: 16, phoneCode: '+39', phoneLength: 12, phoneFormat: '+39 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  ES: { cardLength: 16, phoneCode: '+34', phoneLength: 11, phoneFormat: '+34 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  NL: { cardLength: 16, phoneCode: '+31', phoneLength: 11, phoneFormat: '+31 X XXXXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CH: { cardLength: 16, phoneCode: '+41', phoneLength: 11, phoneFormat: '+41 XX XXX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  SE: { cardLength: 16, phoneCode: '+46', phoneLength: 11, phoneFormat: '+46 XX XXX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  NO: { cardLength: 16, phoneCode: '+47', phoneLength: 10, phoneFormat: '+47 XXX XX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  DK: { cardLength: 16, phoneCode: '+45', phoneLength: 10, phoneFormat: '+45 XX XX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  FI: { cardLength: 16, phoneCode: '+358', phoneLength: 12, phoneFormat: '+358 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  PL: { cardLength: 16, phoneCode: '+48', phoneLength: 11, phoneFormat: '+48 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  AT: { cardLength: 16, phoneCode: '+43', phoneLength: 12, phoneFormat: '+43 XXX XXXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  BE: { cardLength: 16, phoneCode: '+32', phoneLength: 11, phoneFormat: '+32 XXX XX XX XX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  PT: { cardLength: 16, phoneCode: '+351', phoneLength: 12, phoneFormat: '+351 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  GR: { cardLength: 16, phoneCode: '+30', phoneLength: 12, phoneFormat: '+30 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CZ: { cardLength: 16, phoneCode: '+420', phoneLength: 12, phoneFormat: '+420 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  HU: { cardLength: 16, phoneCode: '+36', phoneLength: 11, phoneFormat: '+36 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  RO: { cardLength: 16, phoneCode: '+40', phoneLength: 11, phoneFormat: '+40 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  UA: { cardLength: 16, phoneCode: '+380', phoneLength: 12, phoneFormat: '+380 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  TR: { cardLength: 16, phoneCode: '+90', phoneLength: 12, phoneFormat: '+90 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  SA: { cardLength: 16, phoneCode: '+966', phoneLength: 12, phoneFormat: '+966 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  IL: { cardLength: 16, phoneCode: '+972', phoneLength: 12, phoneFormat: '+972 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  ZA: { cardLength: 16, phoneCode: '+27', phoneLength: 11, phoneFormat: '+27 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  NG: { cardLength: 16, phoneCode: '+234', phoneLength: 13, phoneFormat: '+234 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  EG: { cardLength: 16, phoneCode: '+20', phoneLength: 12, phoneFormat: '+20 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  KE: { cardLength: 16, phoneCode: '+254', phoneLength: 12, phoneFormat: '+254 XXX XXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  MX: { cardLength: 16, phoneCode: '+52', phoneLength: 12, phoneFormat: '+52 XX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  AR: { cardLength: 16, phoneCode: '+54', phoneLength: 13, phoneFormat: '+54 XX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CL: { cardLength: 16, phoneCode: '+56', phoneLength: 11, phoneFormat: '+56 X XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  CO: { cardLength: 16, phoneCode: '+57', phoneLength: 12, phoneFormat: '+57 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  PE: { cardLength: 16, phoneCode: '+51', phoneLength: 11, phoneFormat: '+51 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  VE: { cardLength: 16, phoneCode: '+58', phoneLength: 12, phoneFormat: '+58 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  TH: { cardLength: 16, phoneCode: '+66', phoneLength: 11, phoneFormat: '+66 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  VN: { cardLength: 16, phoneCode: '+84', phoneLength: 12, phoneFormat: '+84 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  ID: { cardLength: 16, phoneCode: '+62', phoneLength: 13, phoneFormat: '+62 XXX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  MY: { cardLength: 16, phoneCode: '+60', phoneLength: 12, phoneFormat: '+60 XX XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  SG: { cardLength: 16, phoneCode: '+65', phoneLength: 10, phoneFormat: '+65 XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  PH: { cardLength: 16, phoneCode: '+63', phoneLength: 12, phoneFormat: '+63 XXX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  PK: { cardLength: 16, phoneCode: '+92', phoneLength: 12, phoneFormat: '+92 XXX XXXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  BD: { cardLength: 16, phoneCode: '+880', phoneLength: 13, phoneFormat: '+880 XXXX XXXXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  NZ: { cardLength: 16, phoneCode: '+64', phoneLength: 11, phoneFormat: '+64 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  IE: { cardLength: 16, phoneCode: '+353', phoneLength: 12, phoneFormat: '+353 XX XXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  LU: { cardLength: 16, phoneCode: '+352', phoneLength: 11, phoneFormat: '+352 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  HK: { cardLength: 16, phoneCode: '+852', phoneLength: 11, phoneFormat: '+852 XXXX XXXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+  TW: { cardLength: 16, phoneCode: '+886', phoneLength: 12, phoneFormat: '+886 XXX XXX XXX', cardFormat: 'XXXX XXXX XXXX XXXX' },
+};
+
 const detectCardType = (cardNumber: string): { type: string; icon: string } | null => {
   const cleaned = cardNumber.replace(/\s/g, '');
+  if (cleaned.length < 1) return null;
   if (cleaned.startsWith('4')) return { type: 'Visa', icon: '💳' };
   if (/^5[1-5]/.test(cleaned) || /^2[2-7]/.test(cleaned)) return { type: 'MasterCard', icon: '💳' };
   if (/^220[0-4]/.test(cleaned)) return { type: 'Mir', icon: '🏦' };
@@ -182,27 +249,105 @@ const detectCardType = (cardNumber: string): { type: string; icon: string } | nu
   return null;
 };
 
-// Format card number with spaces
-const formatCardNumber = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '').slice(0, 19);
+// Format card number with spaces (country-aware)
+const formatCardNumber = (value: string, countryCode: string): string => {
+  const format = countryBankingFormats[countryCode] || { cardLength: 16 };
+  const cleaned = value.replace(/\D/g, '').slice(0, format.cardLength);
   const groups = cleaned.match(/.{1,4}/g);
   return groups ? groups.join(' ') : cleaned;
 };
 
-// Format Russian phone number
-const formatRussianPhone = (value: string): string => {
+// Format phone number based on country
+const formatPhoneNumber = (value: string, countryCode: string): string => {
+  const format = countryBankingFormats[countryCode];
+  if (!format) return value;
+  
   const cleaned = value.replace(/\D/g, '');
   if (cleaned.length === 0) return '';
   
-  let formatted = '+7';
-  if (cleaned.length > 1 || cleaned[0] !== '7') {
-    const digits = cleaned.startsWith('7') ? cleaned.slice(1) : cleaned;
-    if (digits.length > 0) formatted += ' ' + digits.slice(0, 3);
-    if (digits.length > 3) formatted += ' ' + digits.slice(3, 6);
-    if (digits.length > 6) formatted += ' ' + digits.slice(6, 8);
-    if (digits.length > 8) formatted += ' ' + digits.slice(8, 10);
+  const phoneCode = format.phoneCode;
+  const codeDigits = phoneCode.replace(/\D/g, '');
+  
+  // Remove country code from start if present
+  let digits = cleaned;
+  if (cleaned.startsWith(codeDigits)) {
+    digits = cleaned.slice(codeDigits.length);
   }
+  
+  // Limit to correct length minus country code
+  const maxLocalDigits = format.phoneLength - codeDigits.length;
+  digits = digits.slice(0, maxLocalDigits);
+  
+  // Format based on country
+  let formatted = phoneCode;
+  
+  switch (countryCode) {
+    case 'RU': // +7 XXX XXX XX XX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 3);
+      if (digits.length > 3) formatted += ' ' + digits.slice(3, 6);
+      if (digits.length > 6) formatted += ' ' + digits.slice(6, 8);
+      if (digits.length > 8) formatted += ' ' + digits.slice(8, 10);
+      break;
+    case 'US': case 'CA': // +1 XXX XXX XXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 3);
+      if (digits.length > 3) formatted += ' ' + digits.slice(3, 6);
+      if (digits.length > 6) formatted += ' ' + digits.slice(6, 10);
+      break;
+    case 'GB': // +44 XXXX XXXXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 4);
+      if (digits.length > 4) formatted += ' ' + digits.slice(4, 10);
+      break;
+    case 'DE': case 'AT': // +49 XXX XXXXXXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 3);
+      if (digits.length > 3) formatted += ' ' + digits.slice(3, 11);
+      break;
+    case 'FR': // +33 X XX XX XX XX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 1);
+      if (digits.length > 1) formatted += ' ' + digits.slice(1, 3);
+      if (digits.length > 3) formatted += ' ' + digits.slice(3, 5);
+      if (digits.length > 5) formatted += ' ' + digits.slice(5, 7);
+      if (digits.length > 7) formatted += ' ' + digits.slice(7, 9);
+      break;
+    case 'CN': // +86 XXX XXXX XXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 3);
+      if (digits.length > 3) formatted += ' ' + digits.slice(3, 7);
+      if (digits.length > 7) formatted += ' ' + digits.slice(7, 11);
+      break;
+    case 'IN': // +91 XXXXX XXXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 5);
+      if (digits.length > 5) formatted += ' ' + digits.slice(5, 10);
+      break;
+    case 'BR': // +55 XX XXXXX XXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 2);
+      if (digits.length > 2) formatted += ' ' + digits.slice(2, 7);
+      if (digits.length > 7) formatted += ' ' + digits.slice(7, 11);
+      break;
+    case 'JP': case 'KR': // +81/82 XX XXXX XXXX
+      if (digits.length > 0) formatted += ' ' + digits.slice(0, 2);
+      if (digits.length > 2) formatted += ' ' + digits.slice(2, 6);
+      if (digits.length > 6) formatted += ' ' + digits.slice(6, 10);
+      break;
+    default: // Default grouping
+      const remaining = digits;
+      if (remaining.length > 0) formatted += ' ' + remaining.slice(0, 3);
+      if (remaining.length > 3) formatted += ' ' + remaining.slice(3, 6);
+      if (remaining.length > 6) formatted += ' ' + remaining.slice(6, 10);
+      break;
+  }
+  
   return formatted;
+};
+
+// Get validation info for current country
+const getValidationInfo = (countryCode: string, method: string) => {
+  const format = countryBankingFormats[countryCode];
+  if (!format) {
+    return { expectedLength: method === 'card' ? 16 : 11, format: method === 'card' ? 'XXXX XXXX XXXX XXXX' : '+X XXX XXX XXXX' };
+  }
+  if (method === 'card') {
+    return { expectedLength: format.cardLength, format: format.cardFormat };
+  }
+  return { expectedLength: format.phoneLength, format: format.phoneFormat };
 };
 
 const Dashboard = () => {
@@ -434,15 +579,25 @@ const Dashboard = () => {
       return;
     }
 
-    // Validate card/phone for Russia
-    if (withdrawCountry === 'RU') {
-      if (withdrawMethod === 'card' && !detectedCard) {
-        toast.error('Please enter a valid card number');
-        return;
+    // Validate card/phone based on country format
+    const format = countryBankingFormats[withdrawCountry];
+    if (format) {
+      const cleanedDetails = withdrawPaymentDetails.replace(/\D/g, '');
+      if (withdrawMethod === 'card') {
+        if (cleanedDetails.length !== format.cardLength) {
+          toast.error(`Please enter a valid ${format.cardLength}-digit card number`);
+          return;
+        }
+        if (!detectedCard) {
+          toast.error('Please enter a valid card number');
+          return;
+        }
       }
-      if (withdrawMethod === 'phone' && withdrawPaymentDetails.replace(/\D/g, '').length < 11) {
-        toast.error('Please enter a valid Russian phone number');
-        return;
+      if (withdrawMethod === 'phone') {
+        if (cleanedDetails.length !== format.phoneLength) {
+          toast.error(`Please enter a valid ${format.phoneLength}-digit phone number (${format.phoneFormat})`);
+          return;
+        }
       }
     }
 
@@ -532,9 +687,9 @@ const Dashboard = () => {
 
   const handlePaymentDetailsChange = (value: string) => {
     if (withdrawMethod === 'card') {
-      setWithdrawPaymentDetails(formatCardNumber(value));
-    } else if (withdrawMethod === 'phone' && withdrawCountry === 'RU') {
-      setWithdrawPaymentDetails(formatRussianPhone(value));
+      setWithdrawPaymentDetails(formatCardNumber(value, withdrawCountry));
+    } else if (withdrawMethod === 'phone') {
+      setWithdrawPaymentDetails(formatPhoneNumber(value, withdrawCountry));
     } else {
       setWithdrawPaymentDetails(value);
     }
@@ -1009,13 +1164,23 @@ const Dashboard = () => {
                       {withdrawMethod === 'crypto' ? 'USDT TRC20 Wallet Address' :
                        withdrawMethod === 'phone' ? 'Phone Number' : 'Card Number'}
                     </Label>
+                    {withdrawMethod !== 'crypto' && countryBankingFormats[withdrawCountry] && (
+                      <p className="text-xs text-[#888]">
+                        Format: {withdrawMethod === 'phone' 
+                          ? countryBankingFormats[withdrawCountry].phoneFormat 
+                          : countryBankingFormats[withdrawCountry].cardFormat}
+                        {withdrawMethod === 'card' && ` (${countryBankingFormats[withdrawCountry].cardLength} digits)`}
+                        {withdrawMethod === 'phone' && ` (${countryBankingFormats[withdrawCountry].phoneLength} digits)`}
+                      </p>
+                    )}
                     <div className="relative">
                       <Input
                         type="text"
                         placeholder={
                           withdrawMethod === 'crypto' ? 'TRC20 wallet address' :
-                          withdrawMethod === 'phone' ? '+7 XXX XXX XX XX' :
-                          '0000 0000 0000 0000'
+                          withdrawMethod === 'phone' 
+                            ? (countryBankingFormats[withdrawCountry]?.phoneFormat || '+X XXX XXX XXXX')
+                            : (countryBankingFormats[withdrawCountry]?.cardFormat || '0000 0000 0000 0000')
                         }
                         value={withdrawPaymentDetails}
                         onChange={(e) => handlePaymentDetailsChange(e.target.value)}
