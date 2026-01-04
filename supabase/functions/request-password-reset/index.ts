@@ -109,6 +109,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending password reset email with FROM: ${FROM_EMAIL}`);
     
+    // Generate unique message ID to prevent email threading
+    const uniqueId = crypto.randomUUID();
+    const timestamp = Date.now();
+    
     // Send email in background for faster response
     const sendEmailTask = async () => {
       const res = await fetch("https://api.resend.com/emails", {
@@ -121,7 +125,11 @@ const handler = async (req: Request): Promise<Response> => {
           from: FROM_EMAIL,
           to: [email],
           reply_to: "support@msktesla.net",
-          subject: "🔐 Reset Your Tesla Stock Password",
+          subject: `Password Reset Request - ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`,
+          headers: {
+            "X-Entity-Ref-ID": uniqueId,
+            "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
+          },
           html: `
             <!DOCTYPE html>
             <html>
