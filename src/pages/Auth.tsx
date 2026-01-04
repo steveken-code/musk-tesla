@@ -83,105 +83,103 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-200 flex items-center justify-center px-3 sm:px-4 py-8 sm:py-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
-      <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
-      
-      {/* Remove language selector from Auth page - only on Index and Admin */}
+      <div className="absolute top-10 sm:top-20 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 sm:bottom-20 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
       <Link 
         to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
+        className="absolute top-4 sm:top-6 left-3 sm:left-6 flex items-center gap-1.5 sm:gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20 text-sm sm:text-base"
       >
-        <ArrowLeft className="w-5 h-5" />
-        {t('home')}
+        <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+        <span className="hidden xs:inline">{t('home')}</span>
       </Link>
 
-      <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
-          {/* Logo - Larger, centered, and brighter */}
-          <div className="flex flex-col items-center justify-center mb-10">
-            <img src={teslaLogo} alt="Tesla" className="h-32 w-auto brightness-150 drop-shadow-lg" />
+      <div className="relative z-10 w-full max-w-[calc(100%-1rem)] sm:max-w-md animate-fade-in">
+        <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl shadow-black/50">
+          {/* Logo */}
+          <div className="flex flex-col items-center justify-center mb-6 sm:mb-8 md:mb-10">
+            <img src={teslaLogo} alt="Tesla" className="h-20 sm:h-24 md:h-32 w-auto brightness-150 drop-shadow-lg" />
           </div>
 
           {/* Title */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">
+          <div className="text-center mb-5 sm:mb-6 md:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5 sm:mb-2">
               {isLogin ? t('welcomeBack') : t('createAccount')}
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs sm:text-sm px-2">
               {isLogin ? t('signInSubtitle') : t('createAccountSubtitle')}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {!isLogin && (
-              <div className="space-y-2 animate-fade-in">
-                <Label htmlFor="fullName" className="text-slate-300 text-sm font-medium">
+              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                <Label htmlFor="fullName" className="text-slate-300 text-xs sm:text-sm font-medium">
                   {t('fullName')}
                 </Label>
-              <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                <div className="relative">
+                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
                   <Input
                     id="fullName"
                     type="text"
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                     required={!isLogin}
                   />
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="email" className="text-slate-300 text-xs sm:text-sm font-medium">
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
                 <Input
                   id="email"
                   type="email"
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="password" className="text-slate-300 text-xs sm:text-sm font-medium">
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-600" />
+                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-14 pr-14 h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                  className="pl-11 sm:pl-14 pr-11 sm:pr-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200"
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-md hover:bg-slate-200"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
               
-              {/* Password Strength Indicator - Only show on signup */}
+              {/* Password Strength Indicator */}
               {!isLogin && password.length > 0 && (
-                <div className="space-y-2 animate-fade-in">
+                <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
                   <div className="flex gap-1">
                     {[1, 2, 3, 4].map((level) => {
                       const strength = getPasswordStrength(password);
@@ -195,14 +193,14 @@ const Auth = () => {
                       return (
                         <div
                           key={level}
-                          className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                          className={`h-1 sm:h-1.5 flex-1 rounded-full transition-all duration-300 ${
                             isActive ? colors[strength.level as keyof typeof colors] : 'bg-slate-700'
                           }`}
                         />
                       );
                     })}
                   </div>
-                  <p className={`text-xs transition-colors duration-300 ${
+                  <p className={`text-[10px] sm:text-xs transition-colors duration-300 ${
                     getPasswordStrength(password).level === 1 ? 'text-red-400' :
                     getPasswordStrength(password).level === 2 ? 'text-orange-400' :
                     getPasswordStrength(password).level === 3 ? 'text-yellow-400' :
@@ -217,7 +215,7 @@ const Auth = () => {
             {isLogin && (
               <Link
                 to="/forgot-password"
-                className="text-xs text-slate-400 hover:text-electric-blue hover:underline transition-colors font-medium"
+                className="text-[11px] sm:text-xs text-slate-400 hover:text-electric-blue hover:underline transition-colors font-medium block"
               >
                 {t('forgotPassword')}
               </Link>
@@ -225,16 +223,16 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full h-14 bg-tesla-red hover:bg-tesla-red/90 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25 disabled:opacity-80"
+              className="w-full h-12 sm:h-14 bg-tesla-red hover:bg-tesla-red/90 text-white font-bold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-tesla-red/25 disabled:opacity-80 text-sm sm:text-base"
               disabled={loading}
             >
               {loading ? (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="relative w-5 h-5">
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
+                  <div className="relative w-4 h-4 sm:w-5 sm:h-5">
                     <div className="absolute inset-0 rounded-full border-2 border-white/30"></div>
                     <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-white animate-spin"></div>
                   </div>
-                  <span className="animate-pulse">{isLogin ? 'Signing in...' : 'Creating account...'}</span>
+                  <span className="animate-pulse text-sm sm:text-base">{isLogin ? 'Signing in...' : 'Creating account...'}</span>
                 </div>
               ) : (
                 isLogin ? t('signIn') : t('createAccount')
@@ -242,13 +240,13 @@ const Auth = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
-            <span className="text-slate-500 text-sm">
+          <div className="mt-5 sm:mt-6 md:mt-8 text-center">
+            <span className="text-slate-500 text-xs sm:text-sm">
               {isLogin ? t('noAccount') : t('alreadyHaveAccount')}
             </span>{' '}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-tesla-red hover:text-tesla-red/80 transition-colors text-sm font-medium"
+              className="text-tesla-red hover:text-tesla-red/80 transition-colors text-xs sm:text-sm font-medium"
             >
               {isLogin ? t('signUp') : t('signIn')}
             </button>
@@ -256,7 +254,7 @@ const Auth = () => {
         </div>
         
         {/* Footer text */}
-        <p className="text-center text-slate-700 text-xs mt-6">
+        <p className="text-center text-slate-700 text-[10px] sm:text-xs mt-4 sm:mt-6 px-4">
           {t('termsAgreement')}
         </p>
       </div>
