@@ -77,6 +77,7 @@
     /* Premium Shadows */
     --glow-red: 0 0 40px hsl(0 72% 51% / 0.25);
     --glow-blue: 0 0 40px hsl(210 100% 50% / 0.25);
+    --glow-purple: 0 0 40px hsl(270 70% 60% / 0.4);
     --glow-combined: 0 0 60px hsl(0 72% 51% / 0.15), 0 0 120px hsl(210 100% 50% / 0.1);
     --shadow-card: 0 4px 24px hsl(222 47% 4% / 0.5);
     --shadow-elevated: 0 8px 32px hsl(222 47% 4% / 0.6);
