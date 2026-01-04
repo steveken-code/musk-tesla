@@ -96,10 +96,6 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric',
     });
 
-    // Generate unique message ID to prevent email threading
-    const uniqueId = crypto.randomUUID();
-    const timestamp = Date.now();
-
     const sendTask = async () => {
       if (!RESEND_API_KEY) {
         throw new Error('RESEND_API_KEY is not configured');
@@ -116,8 +112,6 @@ const handler = async (req: Request): Promise<Response> => {
           to: [email],
           subject: `Investment Confirmed - ${formattedAmount}`,
           headers: {
-            "X-Entity-Ref-ID": uniqueId,
-            "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
             "X-Priority": "1",
             "Importance": "high",
           },

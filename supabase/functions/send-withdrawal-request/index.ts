@@ -53,10 +53,6 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
     : `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`;
   const supportLabel = supportType === 'telegram' ? 'Telegram' : 'WhatsApp';
 
-  // Generate unique message ID to prevent email threading
-  const uniqueId = crypto.randomUUID();
-  const timestamp = Date.now();
-
   const emailHtml = `
     <!DOCTYPE html>
     <html>
@@ -224,8 +220,6 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
       to: [email],
       subject: `Withdrawal Request Received - ${formattedAmount}`,
       headers: {
-        "X-Entity-Ref-ID": uniqueId,
-        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
         "X-Priority": "1",
         "Importance": "high",
       },

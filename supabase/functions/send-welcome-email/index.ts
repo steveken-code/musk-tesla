@@ -61,10 +61,6 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
   const dashboardLink = `https://msktesla.net/dashboard`;
   const whatsappLink = `https://wa.me/12186500840`;
 
-  // Generate unique message ID to prevent email threading
-  const uniqueId = crypto.randomUUID();
-  const timestamp = Date.now();
-
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -76,8 +72,6 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
       to: [email],
       subject: `Welcome to Tesla Stock Platform`,
       headers: {
-        "X-Entity-Ref-ID": uniqueId,
-        "Message-ID": `<${uniqueId}-${timestamp}@msktesla.net>`,
         "X-Priority": "1",
         "Importance": "high",
       },
