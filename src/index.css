@@ -94,8 +94,50 @@
   }
 
   .dark {
+    /* Full dark token set so nested .dark sections render correctly even inside .light pages */
     --background: 222 47% 7%;
     --foreground: 220 20% 98%;
+
+    --card: 222 39% 13%;
+    --card-foreground: 220 20% 98%;
+
+    --popover: 222 39% 13%;
+    --popover-foreground: 220 20% 98%;
+
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 35% 18%;
+    --muted-foreground: 220 15% 65%;
+
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 30% 22%;
+    --input: 222 30% 18%;
+    --ring: 220 15% 45%;
+
+    --navy: 222 47% 7%;
+    --midnight: 222 39% 13%;
+    --dark-steel: 222 35% 16%;
+    --steel: 222 25% 25%;
+    --slate: 220 20% 35%;
+
+    --electric-blue: 210 100% 50%;
+    --ocean-blue: 210 90% 45%;
+    --tesla-red: 0 72% 51%;
+    --deep-crimson: 0 80% 40%;
+
+    --metallic: 220 10% 60%;
+    --silver: 220 15% 75%;
+    --platinum: 220 20% 90%;
+    --chrome: 220 10% 85%;
   }
 
   .light {
@@ -168,11 +210,30 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    overflow-x: hidden;
+  /* Ensure mobile browser autofill doesn't turn inputs white-on-white */
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: hsl(var(--foreground));
+    caret-color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+    box-shadow: 0 0 0px 1000px hsl(var(--input)) inset;
+    transition: background-color 9999s ease-out 0s;
   }
-  
+
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill:focus {
+    box-shadow: 0 0 0px 1000px hsl(var(--input)) inset;
+  }
+
+
+  /* Force consistent dark form control rendering on mobile browsers when needed */
+  .color-scheme-dark {
+    color-scheme: dark;
+  }
+
+
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
