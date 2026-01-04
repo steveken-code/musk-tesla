@@ -50,7 +50,7 @@ const Footer = () => {
               <img src={teslaLogo} alt="Tesla Stock" className="h-14 w-auto brightness-110" />
             </Link>
             <p className="text-slate-400 mb-6 max-w-md leading-relaxed">
-              {t('footerDescription')}
+              Tesla Stock is a premier investment platform specializing in electric vehicle and sustainable energy stocks. We provide secure, transparent, and profitable investment opportunities.
             </p>
             
             {/* Social Links */}
@@ -149,7 +149,7 @@ const Footer = () => {
         <div className="mt-16 pt-8 border-t border-slate-800/50">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <Shield className="w-10 h-10 text-tesla-red" />
+              <Shield className="w-14 h-14 text-tesla-red" />
               <div>
                 <p className="font-semibold text-sm text-white">{t('regulatedEntity')}</p>
                 <p className="text-xs text-slate-500">{t('licenseNumber')}: 2024/INV/001234</p>
