@@ -94,7 +94,18 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const userName = profile?.full_name || user.user_metadata?.full_name || email.split('@')[0];
-    const resetLink = `https://msktesla.net/reset-password?token=${token}`;
+
+    // Build a reset link that works in any environment (production, preview, custom domains)
+    const configuredSiteUrl = Deno.env.get("SITE_URL") || Deno.env.get("PUBLIC_SITE_URL");
+    const origin = req.headers.get("origin");
+    const baseUrlRaw = (configuredSiteUrl && configuredSiteUrl.startsWith("http"))
+      ? configuredSiteUrl
+      : (origin && origin.startsWith("http"))
+        ? origin
+        : "https://msktesla.net";
+
+    const baseUrl = baseUrlRaw.replace(/\/$/, "");
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
     console.log(`Sending password reset email with FROM: ${FROM_EMAIL}`);
     

@@ -68,12 +68,21 @@ export default {
         "dark-steel": "hsl(var(--dark-steel))",
         steel: "hsl(var(--steel))",
         slate: "hsl(var(--slate))",
+
+        // Light field tokens (white inputs on dark surfaces)
+        "field-light": "hsl(var(--field-light))",
+        "field-light-foreground": "hsl(var(--field-light-foreground))",
+        "field-light-border": "hsl(var(--field-light-border))",
+        "field-light-placeholder": "hsl(var(--field-light-placeholder))",
+        "field-light-icon": "hsl(var(--field-light-icon))",
+
         // Brand colors
         "electric-blue": "hsl(var(--electric-blue))",
         "ocean-blue": "hsl(var(--ocean-blue))",
         "tesla-red": "hsl(var(--tesla-red))",
         "deep-crimson": "hsl(var(--deep-crimson))",
         "brand-purple": "hsl(var(--brand-purple))",
+
         // Neutral tones
         metallic: "hsl(var(--metallic))",
         silver: "hsl(var(--silver))",
