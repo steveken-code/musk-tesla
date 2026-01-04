@@ -244,7 +244,7 @@ const Admin = () => {
     }
   };
 
-  const updateInvestment = async (id: string, status: string, profitAmount?: number, sendProfitEmail?: boolean) => {
+  const updateInvestment = async (id: string, status: string, profitAmount?: number) => {
     const investment = investments.find(inv => inv.id === id);
     
     // Validate profit amount before updating
@@ -282,7 +282,7 @@ const Admin = () => {
       if (error) throw error;
       
       // Send confirmation email when investment is activated
-      if (status === 'active' && investment && investment.profiles?.email && !sendProfitEmail) {
+      if (status === 'active' && investment && investment.profiles?.email) {
         try {
           await supabase.functions.invoke('send-investment-activation', {
             body: {
@@ -298,23 +298,6 @@ const Admin = () => {
           console.error('Error sending activation email:', emailError);
           toast.success('Investment approved (email notification failed)');
         }
-      } else if (sendProfitEmail && investment && profitAmount !== undefined && profitAmount > 0) {
-        // Send profit notification email
-        try {
-          await supabase.functions.invoke('send-profit-notification', {
-            body: {
-              userId: investment.user_id,
-              investmentId: investment.id,
-              profitAmount: profitAmount,
-              totalProfit: profitAmount,
-              investmentAmount: investment.amount,
-            },
-          });
-          toast.success(`Profit updated to $${profitAmount.toLocaleString()} - Email sent to user!`);
-        } catch (emailError) {
-          console.error('Error sending profit notification:', emailError);
-          toast.success(`Profit updated to $${profitAmount.toLocaleString()} (email failed)`);
-        }
       } else {
         toast.success(`Investment ${status === 'active' ? 'approved' : 'updated'} successfully`);
       }
@@ -323,6 +306,32 @@ const Admin = () => {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update investment';
       toast.error(errorMessage);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const sendProfitEmail = async (investment: Investment) => {
+    if (investment.profit_amount <= 0) {
+      toast.error('Set a profit amount first before sending email');
+      return;
+    }
+
+    setUpdating(investment.id);
+    try {
+      await supabase.functions.invoke('send-profit-notification', {
+        body: {
+          userId: investment.user_id,
+          investmentId: investment.id,
+          profitAmount: investment.profit_amount,
+          totalProfit: investment.profit_amount,
+          investmentAmount: investment.amount,
+        },
+      });
+      toast.success(`Profit email sent! ($${investment.profit_amount.toLocaleString()})`);
+    } catch (emailError) {
+      console.error('Error sending profit notification:', emailError);
+      toast.error('Failed to send profit email');
     } finally {
       setUpdating(null);
     }
@@ -978,7 +987,7 @@ const Admin = () => {
                           )}
                           <Button
                             size="sm"
-                            onClick={() => updateInvestment(investment.id, investment.status, investment.profit_amount, true)}
+                            onClick={() => sendProfitEmail(investment)}
                             disabled={updating === investment.id || investment.profit_amount <= 0}
                             className="bg-purple-600 hover:bg-purple-700 text-white"
                           >
