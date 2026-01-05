@@ -6,7 +6,7 @@ declare const EdgeRuntime: {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
+const FROM_EMAIL = "Tesla Stock Platform <notifications@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -71,15 +71,9 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      reply_to: "noreply@msktesla.net",
-      subject: `You just earned $${profitAmount.toLocaleString()} profit!`,
+      subject: `You earned $${profitAmount.toLocaleString()} profit`,
       headers: {
-        "X-Priority": "1",
-        "X-MSMail-Priority": "High",
-        "Importance": "high",
         "X-Mailer": "Tesla Stock Platform",
-        "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
-        "Precedence": "bulk",
       },
       html: `
         <!DOCTYPE html>

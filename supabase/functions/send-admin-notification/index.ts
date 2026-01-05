@@ -6,7 +6,7 @@ declare const EdgeRuntime: {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
+const FROM_EMAIL = "Tesla Stock Platform <notifications@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -240,12 +240,8 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: adminEmails,
-      reply_to: "noreply@msktesla.net",
-      subject: `${emoji} Admin Alert: ${typeLabel} - ${formattedAmount} from ${userName || userEmail}`,
+      subject: `Admin Alert: ${typeLabel} - ${formattedAmount} from ${userName || userEmail}`,
       headers: {
-        "X-Priority": "1",
-        "X-MSMail-Priority": "High",
-        "Importance": "high",
         "X-Mailer": "Tesla Stock Platform",
       },
       html: emailHtml,
