@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIP, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 declare const EdgeRuntime: {
   waitUntil: (promise: Promise<any>) => void;
@@ -17,6 +18,12 @@ const PRODUCTION_URL = "https://msktesla.net";
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
+
+// Rate limit configuration
+const RATE_LIMIT_IP_MAX = 5;       // 5 requests per IP
+const RATE_LIMIT_IP_WINDOW = 900;  // 15 minutes
+const RATE_LIMIT_EMAIL_MAX = 3;    // 3 requests per email
+const RATE_LIMIT_EMAIL_WINDOW = 3600; // 1 hour
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -46,12 +53,32 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Rate limit by IP first
+    const clientIP = getClientIP(req);
+    const ipLimit = checkRateLimit(`reset:ip:${clientIP}`, RATE_LIMIT_IP_MAX, RATE_LIMIT_IP_WINDOW);
+    
+    if (!ipLimit.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      return rateLimitResponse(ipLimit.retryAfter, corsHeaders);
+    }
+
     const { email }: PasswordResetRequest = await req.json();
     
     if (!email) {
       return new Response(
         JSON.stringify({ error: "Email is required" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Rate limit by email (return success to prevent enumeration)
+    const emailLimit = checkRateLimit(`reset:email:${email.toLowerCase()}`, RATE_LIMIT_EMAIL_MAX, RATE_LIMIT_EMAIL_WINDOW);
+    
+    if (!emailLimit.allowed) {
+      console.log(`Rate limit exceeded for email: ${email}, returning success to prevent enumeration`);
+      return new Response(
+        JSON.stringify({ success: true, message: "If an account exists, a reset link has been sent" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 

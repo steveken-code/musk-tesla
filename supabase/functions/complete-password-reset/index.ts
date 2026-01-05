@@ -1,11 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIP, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
+
+// Rate limit configuration
+const RATE_LIMIT_IP_MAX = 5;       // 5 requests per IP
+const RATE_LIMIT_IP_WINDOW = 900;  // 15 minutes
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -30,6 +35,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Rate limit by IP
+    const clientIP = getClientIP(req);
+    const ipLimit = checkRateLimit(`complete-reset:ip:${clientIP}`, RATE_LIMIT_IP_MAX, RATE_LIMIT_IP_WINDOW);
+    
+    if (!ipLimit.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP} on complete-password-reset`);
+      return rateLimitResponse(ipLimit.retryAfter, corsHeaders);
+    }
+
     const { token, newPassword }: CompleteResetRequest = await req.json();
     
     if (!token || !newPassword) {
