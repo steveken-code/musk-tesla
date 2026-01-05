@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.create-withdrawal]
 verify_jwt = true
+
+[functions.request-admin-password-reset]
+verify_jwt = false
