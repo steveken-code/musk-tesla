@@ -208,8 +208,10 @@
   input[type="search"],
   select,
   textarea {
-    color: #222 !important;
-    -webkit-text-fill-color: #222 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+    font-weight: 500 !important;
   }
 
   /* Global placeholder visibility - stronger contrast for mobile */
@@ -221,8 +223,8 @@
   input[type="number"]::placeholder,
   input[type="search"]::placeholder,
   textarea::placeholder {
-    color: #666 !important;
-    -webkit-text-fill-color: #666 !important;
+    color: #888 !important;
+    -webkit-text-fill-color: #888 !important;
     opacity: 1 !important;
   }
 }
