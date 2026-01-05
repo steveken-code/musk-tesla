@@ -84,7 +84,7 @@ const FAQ = () => {
               <motion.div key={index} variants={itemVariants}>
                 <AccordionItem
                   value={`item-${index}`}
-                  className="bg-navy-light border border-white/10 rounded-xl px-6 data-[state=open]:border-tesla-red/50 transition-colors"
+                  className="bg-navy-light border border-white/10 rounded-xl px-6 transition-all duration-300 ease-in-out data-[state=open]:border-[#ff4d4d]/60 data-[state=open]:shadow-[0_0_12px_rgba(255,77,77,0.15)] hover:border-[#ff4d4d]/40 hover:bg-navy-light/80"
                 >
                   <AccordionTrigger className="text-left text-white hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
                     {t(faq.questionKey)}

@@ -956,7 +956,7 @@ const Dashboard = () => {
                 {investments.map((inv) => (
                   <div
                     key={inv.id}
-                    className="flex items-center justify-between p-2.5 sm:p-3 md:p-4 bg-background/50 rounded-lg border border-border hover:border-tesla-red/30 transition-colors"
+                    className="flex items-center justify-between p-2.5 sm:p-3 md:p-4 bg-background/50 rounded-lg border border-border hover:border-[#ff4d4d]/40 hover:shadow-[0_0_8px_rgba(255,77,77,0.1)] transition-all duration-300 ease-in-out"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-xs sm:text-sm md:text-base">${Number(inv.amount).toLocaleString()}</p>

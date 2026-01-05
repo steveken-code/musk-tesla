@@ -71,9 +71,9 @@ const Navbar = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-3 group pt-1"
           >
-            <img src={teslaLogo} alt="Tesla" className="h-20 md:h-24 w-auto brightness-150 drop-shadow-lg" />
+            <img src={teslaLogo} alt="Tesla" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
             <span className="hidden lg:block text-xs text-slate-500 border-l border-slate-600 pl-3">
               Trusted Tesla Stock Gateway
             </span>
