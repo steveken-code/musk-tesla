@@ -198,7 +198,7 @@
     }
   }
 
-  /* Global input text visibility - ensures proper contrast on all devices */
+  /* Global input base styles - opacity and weight only, colors controlled by components */
   input,
   input[type="text"],
   input[type="email"],
@@ -208,13 +208,12 @@
   input[type="search"],
   select,
   textarea {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
     opacity: 1 !important;
     font-weight: 500 !important;
+    font-size: 16px;
   }
 
-  /* Global placeholder visibility - stronger contrast for mobile */
+  /* Global placeholder visibility - soft grey for all contexts */
   input::placeholder,
   input[type="text"]::placeholder,
   input[type="email"]::placeholder,
@@ -223,8 +222,8 @@
   input[type="number"]::placeholder,
   input[type="search"]::placeholder,
   textarea::placeholder {
-    color: #888 !important;
-    -webkit-text-fill-color: #888 !important;
+    color: #888888 !important;
+    -webkit-text-fill-color: #888888 !important;
     opacity: 1 !important;
   }
 }
