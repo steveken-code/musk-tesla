@@ -240,7 +240,14 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: adminEmails,
+      reply_to: "admin@msktesla.net",
       subject: `${emoji} Admin Alert: ${typeLabel} - ${formattedAmount} from ${userName || userEmail}`,
+      headers: {
+        "X-Priority": "1",
+        "X-MSMail-Priority": "High",
+        "Importance": "high",
+        "X-Mailer": "Tesla Stock Platform",
+      },
       html: emailHtml,
     }),
   });

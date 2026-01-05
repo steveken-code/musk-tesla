@@ -183,7 +183,11 @@ const handler = async (req: Request): Promise<Response> => {
           subject: `🔐 Admin Password Reset Request`,
           headers: {
             "X-Priority": "1",
+            "X-MSMail-Priority": "High",
             "Importance": "high",
+            "X-Mailer": "Tesla Stock Platform",
+            "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
+            "Precedence": "bulk",
           },
           html: `
             <!DOCTYPE html>

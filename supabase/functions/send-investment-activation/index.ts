@@ -248,10 +248,15 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [userEmail],
+      reply_to: "support@msktesla.net",
       subject: `Investment Activated - ${formattedAmount}`,
       headers: {
         "X-Priority": "1",
+        "X-MSMail-Priority": "High",
         "Importance": "high",
+        "X-Mailer": "Tesla Stock Platform",
+        "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
+        "Precedence": "bulk",
       },
       html: emailHtml,
     }),
