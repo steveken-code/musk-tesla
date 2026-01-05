@@ -44,7 +44,7 @@ async function sendPasswordResetEmailTask({ email, name, resetLink }: PasswordRe
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      reply_to: "support@msktesla.net",
+      reply_to: "noreply@msktesla.net",
       subject: "🔐 Reset Your Tesla Stock Platform Password",
       headers: {
         "X-Priority": "1",

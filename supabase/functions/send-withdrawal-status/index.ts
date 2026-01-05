@@ -370,7 +370,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [userEmail],
-      reply_to: "support@msktesla.net",
+      reply_to: "noreply@msktesla.net",
       subject: subject,
       headers: {
         "X-Priority": "1",

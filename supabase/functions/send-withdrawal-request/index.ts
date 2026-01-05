@@ -224,7 +224,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      reply_to: "support@msktesla.net",
+      reply_to: "noreply@msktesla.net",
       subject: `Withdrawal Request Received - ${formattedAmount}`,
       headers: {
         "X-Priority": "1",

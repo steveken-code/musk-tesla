@@ -76,7 +76,7 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      reply_to: "support@msktesla.net",
+      reply_to: "noreply@msktesla.net",
       subject: `Welcome to Tesla Stock Platform`,
       headers: {
         "X-Priority": "1",
