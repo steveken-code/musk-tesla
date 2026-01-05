@@ -69,14 +69,14 @@ const ForgotPassword = () => {
   // Success state - email sent
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-green-500/5 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-green-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
 
         <Link 
           to="/auth" 
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
+          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Login
@@ -171,14 +171,14 @@ const ForgotPassword = () => {
 
   // Main form
   return (
-    <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
       <Link 
         to="/auth" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Login
@@ -202,7 +202,7 @@ const ForgotPassword = () => {
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-input-icon opacity-100" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5" style={{ color: '#1a1a1a', opacity: 0.9 }} />
                 <Input
                   id="email"
                   type="email"
@@ -213,7 +213,7 @@ const ForgotPassword = () => {
                     if (validationError) validateEmail(e.target.value);
                   }}
                   onBlur={() => email && validateEmail(email)}
-                  className={`pl-12 h-12 bg-field-light border-field-light-border text-field-light-foreground placeholder:text-field-light-placeholder rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary autofill:shadow-[inset_0_0_0px_1000px_hsl(var(--field-light))] [&:-webkit-autofill]:[-webkit-text-fill-color:hsl(var(--field-light-foreground))] ${
+                  className={`pl-12 h-12 bg-white border-slate-300 rounded-xl hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:border-slate-400 transition-[border] duration-300 ease-in-out [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] ${
                     validationError ? 'border-red-500 focus-visible:border-red-500' : ''
                   }`}
                   required
