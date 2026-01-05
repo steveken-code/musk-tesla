@@ -110,11 +110,11 @@ const ResetPassword = () => {
   // Loading state
   if (verifying) {
     return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-tesla-red mx-auto mb-4" />
-          <p className="text-slate-600">Verifying your reset link...</p>
+          <p className="text-slate-400">Verifying your reset link...</p>
         </div>
       </div>
     );
@@ -123,13 +123,13 @@ const ResetPassword = () => {
   // Invalid or expired token
   if (!tokenValid && !resetComplete) {
     return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
         
         <Link 
           to="/auth" 
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
+          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Login
@@ -159,7 +159,7 @@ const ResetPassword = () => {
   // Reset complete
   if (resetComplete) {
     return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-green-500/5 rounded-full blur-3xl" />
 
@@ -186,50 +186,50 @@ const ResetPassword = () => {
 
   // Reset password form
   return (
-    <div className="min-h-screen bg-slate-200 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[hsl(222,47%,7%)] flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tesla-red/5 via-transparent to-transparent" />
       <div className="absolute top-20 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-tesla-red/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       
       <Link 
         to="/auth" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors z-20"
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Login
       </Link>
 
       <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-white backdrop-blur-2xl border border-slate-300 rounded-3xl p-10 shadow-2xl shadow-black/20">
+        <div className="bg-slate-900/90 backdrop-blur-2xl border border-slate-800 rounded-3xl p-10 shadow-2xl shadow-black/50">
           <div className="flex flex-col items-center justify-center mb-10">
             <img src={teslaLogo} alt="Tesla Stock" className="h-20 w-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-900">Create New Password</h2>
+            <h2 className="text-xl font-semibold text-white">Create New Password</h2>
             {email && (
-              <p className="text-slate-600 text-sm mt-2 font-medium">for {email}</p>
+              <p className="text-slate-400 text-sm mt-2 font-medium">for {email}</p>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-900 text-sm font-medium">
+              <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
                 New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-input-icon opacity-100" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-slate-500 opacity-100 z-10" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-100 border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
+                  className="pl-12 pr-12 h-12 bg-white border-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                   minLength={8}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-input-icon opacity-100 hover:text-input-icon-hover transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 opacity-100 hover:text-slate-700 transition-colors z-10"
                 >
                   {showPassword ? <EyeOff className="w-[18px] h-[18px] sm:w-5 sm:h-5" /> : <Eye className="w-[18px] h-[18px] sm:w-5 sm:h-5" />}
                 </button>
@@ -252,7 +252,7 @@ const ResetPassword = () => {
                         <div
                           key={level}
                           className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                            isActive ? colors[strength.level as keyof typeof colors] : 'bg-slate-700'
+                            isActive ? colors[strength.level as keyof typeof colors] : 'bg-slate-600'
                           }`}
                         />
                       );
@@ -271,25 +271,25 @@ const ResetPassword = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-slate-900 text-sm font-medium">
+              <Label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">
                 Confirm New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-input-icon opacity-100" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-slate-500 opacity-100 z-10" />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-12 pr-12 h-12 bg-slate-100 border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
+                  className="pl-12 pr-12 h-12 bg-white border-slate-300 rounded-xl focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                   minLength={8}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-input-icon opacity-100 hover:text-input-icon-hover transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 opacity-100 hover:text-slate-700 transition-colors z-10"
                 >
                   {showConfirmPassword ? <EyeOff className="w-[18px] h-[18px] sm:w-5 sm:h-5" /> : <Eye className="w-[18px] h-[18px] sm:w-5 sm:h-5" />}
                 </button>
