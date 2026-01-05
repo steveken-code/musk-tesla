@@ -17,7 +17,7 @@ const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
 const PRODUCTION_URL = "https://msktesla.net";
 
 // Allowed origins for CORS
-const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
+const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net", "http://localhost:5173", "http://localhost:3000"];
 
 // Rate limit configuration - stricter for admin
 const RATE_LIMIT_IP_MAX = 3;       // 3 requests per IP
@@ -26,7 +26,7 @@ const RATE_LIMIT_EMAIL_MAX = 2;    // 2 requests per email
 const RATE_LIMIT_EMAIL_WINDOW = 3600; // 1 hour
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowedOrigin = origin && (ALLOWED_ORIGINS.includes(origin) || origin.includes('lovableproject.com') || origin.includes('lovable.app')) ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
