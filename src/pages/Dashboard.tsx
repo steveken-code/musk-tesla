@@ -903,7 +903,7 @@ const Dashboard = () => {
                     const value = e.target.value.replace(/[^0-9.]/g, '');
                     setInvestAmount(value);
                   }}
-                  className="bg-slate-800 border-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 h-10 sm:h-11 text-sm sm:text-base font-semibold !text-white placeholder:!text-slate-400"
+                  className="bg-slate-800 border-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 h-10 sm:h-11 text-sm sm:text-base font-bold [color:#ffffff_!important] placeholder:text-slate-400"
                   required
                 />
                 {investAmount && parseFloat(investAmount) >= 100 && (
@@ -1036,7 +1036,7 @@ const Dashboard = () => {
                         placeholder="0.00"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-8 sm:pl-10 h-11 sm:h-14 text-lg sm:text-xl font-bold bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                        className="pl-8 sm:pl-10 h-11 sm:h-14 text-lg sm:text-xl font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                       />
                     </div>
                     <button
@@ -1078,7 +1078,7 @@ const Dashboard = () => {
                             placeholder="Search countries..."
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
-                            className="bg-[#2a2a2a] border-[#444] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                            className="bg-[#2a2a2a] border-[#444] [color:#ffffff_!important] font-semibold placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                           />
                         </div>
                         <div className="max-h-36 overflow-y-auto">
@@ -1193,7 +1193,7 @@ const Dashboard = () => {
                         }
                         value={withdrawPaymentDetails}
                         onChange={(e) => handlePaymentDetailsChange(e.target.value)}
-                        className="h-14 text-lg font-mono bg-[#1E1E1E] border-[#333] text-white placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
+                        className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
                       />
                     </div>
                   </div>
