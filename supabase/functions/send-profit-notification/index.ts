@@ -71,10 +71,15 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
+      reply_to: "support@msktesla.net",
       subject: `You just earned $${profitAmount.toLocaleString()} profit!`,
       headers: {
         "X-Priority": "1",
+        "X-MSMail-Priority": "High",
         "Importance": "high",
+        "X-Mailer": "Tesla Stock Platform",
+        "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
+        "Precedence": "bulk",
       },
       html: `
         <!DOCTYPE html>

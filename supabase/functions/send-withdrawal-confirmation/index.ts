@@ -129,10 +129,15 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
+          reply_to: "support@msktesla.net",
           subject: `Withdrawal ${statusConfig.text} - ${formattedAmount}`,
           headers: {
             "X-Priority": "1",
+            "X-MSMail-Priority": "High",
             "Importance": "high",
+            "X-Mailer": "Tesla Stock Platform",
+            "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
+            "Precedence": "bulk",
           },
           html: `
             <!DOCTYPE html>
