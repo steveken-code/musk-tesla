@@ -116,7 +116,7 @@ const ForgotPassword = () => {
                   <div className="w-6 h-6 bg-tesla-red/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs font-bold text-tesla-red">1</span>
                   </div>
-                  <p className="text-slate-400 text-sm">Open your email inbox and look for a message from Msk Tesla</p>
+                  <p className="text-slate-400 text-sm">Open your email inbox and look for a message from Tesla Stock Platform</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-tesla-red/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
