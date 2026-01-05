@@ -76,6 +76,10 @@ export default {
         "field-light-placeholder": "hsl(var(--field-light-placeholder))",
         "field-light-icon": "hsl(var(--field-light-icon))",
 
+        // Input icon color (target ~#999)
+        "input-icon": "hsl(var(--input-icon))",
+        "input-icon-hover": "hsl(var(--input-icon-hover))",
+
         // Brand colors
         "electric-blue": "hsl(var(--electric-blue))",
         "ocean-blue": "hsl(var(--ocean-blue))",
