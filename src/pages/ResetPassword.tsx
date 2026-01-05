@@ -215,7 +215,7 @@ const ResetPassword = () => {
                 New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-field-light-placeholder" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-input-icon opacity-100" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -229,9 +229,9 @@ const ResetPassword = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-field-light-placeholder hover:text-field-light-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-input-icon opacity-100 hover:text-input-icon-hover transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-[18px] h-[18px] sm:w-5 sm:h-5" /> : <Eye className="w-[18px] h-[18px] sm:w-5 sm:h-5" />}
                 </button>
               </div>
               
@@ -275,7 +275,7 @@ const ResetPassword = () => {
                 Confirm New Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-field-light-placeholder" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 text-input-icon opacity-100" />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -289,9 +289,9 @@ const ResetPassword = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-field-light-placeholder hover:text-field-light-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-input-icon opacity-100 hover:text-input-icon-hover transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? <EyeOff className="w-[18px] h-[18px] sm:w-5 sm:h-5" /> : <Eye className="w-[18px] h-[18px] sm:w-5 sm:h-5" />}
                 </button>
               </div>
               

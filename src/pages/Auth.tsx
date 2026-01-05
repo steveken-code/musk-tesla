@@ -120,7 +120,7 @@ const Auth = () => {
                   {t('fullName')}
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
+                  <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 text-input-icon opacity-100" />
                   <Input
                     id="fullName"
                     type="text"
@@ -139,7 +139,7 @@ const Auth = () => {
                 {t('email')}
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
+                <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 text-input-icon opacity-100" />
                 <Input
                   id="email"
                   type="email"
@@ -157,7 +157,7 @@ const Auth = () => {
                 {t('password')}
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
+                <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 text-input-icon opacity-100" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -171,9 +171,9 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors p-1 rounded-md hover:bg-slate-100"
+                  className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-input-icon opacity-100 hover:text-input-icon-hover transition-colors p-1 rounded-md hover:bg-slate-100"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  {showPassword ? <EyeOff className="w-[18px] h-[18px] sm:w-5 sm:h-5" /> : <Eye className="w-[18px] h-[18px] sm:w-5 sm:h-5" />}
                 </button>
               </div>
               

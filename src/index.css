@@ -67,6 +67,9 @@
     --field-light-placeholder: 220 9% 46%;
     --field-light-icon: 222 47% 11%;
 
+    /* Input icons (target ~#999) */
+    --input-icon: 0 0% 60%;
+    --input-icon-hover: 0 0% 45%;
     /* Section backgrounds */
     --section-dark: 222 50% 5%;
     --section-mid: 222 39% 13%;
