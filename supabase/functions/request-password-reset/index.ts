@@ -11,7 +11,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Sender with proper display name
-const FROM_EMAIL = "Tesla Stock Platform <notifications@msktesla.net>";
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 
 // Always use production URL for reset links
 const PRODUCTION_URL = "https://msktesla.net";
@@ -26,7 +26,8 @@ const RATE_LIMIT_EMAIL_MAX = 3;    // 3 requests per email
 const RATE_LIMIT_EMAIL_WINDOW = 3600; // 1 hour
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || origin.includes('lovableproject.com') || origin.includes('lovable.app'));
+  const allowedOrigin = isAllowed ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
