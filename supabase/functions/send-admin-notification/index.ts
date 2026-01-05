@@ -240,7 +240,7 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: adminEmails,
-      reply_to: "admin@msktesla.net",
+      reply_to: "noreply@msktesla.net",
       subject: `${emoji} Admin Alert: ${typeLabel} - ${formattedAmount} from ${userName || userEmail}`,
       headers: {
         "X-Priority": "1",

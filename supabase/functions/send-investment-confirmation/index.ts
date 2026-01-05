@@ -119,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
-          reply_to: "support@msktesla.net",
+          reply_to: "noreply@msktesla.net",
           subject: `Investment Confirmed - ${formattedAmount}`,
           headers: {
             "X-Priority": "1",
