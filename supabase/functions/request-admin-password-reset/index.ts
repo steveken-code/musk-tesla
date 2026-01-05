@@ -11,7 +11,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Sender with proper display name
-const FROM_EMAIL = "Msk Tesla <no-reply@msktesla.net>";
+const FROM_EMAIL = "Tesla Stock Platform <notifications@msktesla.net>";
 
 // Always use production URL for reset links
 const PRODUCTION_URL = "https://msktesla.net";
@@ -179,15 +179,9 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [email],
-          reply_to: "noreply@msktesla.net",
-          subject: `🔐 Admin Password Reset Request`,
+          subject: `Admin Password Reset Request`,
           headers: {
-            "X-Priority": "1",
-            "X-MSMail-Priority": "High",
-            "Importance": "high",
             "X-Mailer": "Tesla Stock Platform",
-            "List-Unsubscribe": "<mailto:unsubscribe@msktesla.net>",
-            "Precedence": "bulk",
           },
           html: `
             <!DOCTYPE html>
