@@ -104,6 +104,10 @@ interface Profile {
 
 const USD_TO_RUB = 96.5;
 
+// localStorage keys for form persistence
+const STORAGE_KEY_INVEST_AMOUNT = 'tesla_invest_amount';
+const STORAGE_KEY_SHOW_PAYMENT = 'tesla_show_payment';
+
 const withdrawalMethods = [
   { code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' },
   { code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number' },
@@ -357,10 +361,20 @@ const Dashboard = () => {
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [investAmount, setInvestAmount] = useState('');
+  const [investAmount, setInvestAmount] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT) || '';
+    }
+    return '';
+  });
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+  const [showPaymentDetails, setShowPaymentDetails] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT) === 'true';
+    }
+    return false;
+  });
   const [loadingPayment, setLoadingPayment] = useState(false);
   const previousProfitsRef = useRef<Record<string, number>>({});
 
@@ -379,6 +393,26 @@ const Dashboard = () => {
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
+
+  // Persist investment amount to localStorage
+  useEffect(() => {
+    if (investAmount) {
+      localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
+      // Show payment details if amount is valid (>= 100)
+      if (parseFloat(investAmount) >= 100) {
+        localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
+        setShowPaymentDetails(true);
+      } else {
+        localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'false');
+        setShowPaymentDetails(false);
+      }
+    } else {
+      // User cleared the amount - remove from storage
+      localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+      localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+      setShowPaymentDetails(false);
+    }
+  }, [investAmount]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -525,6 +559,9 @@ const Dashboard = () => {
       toast.success('Investment submitted successfully! Your investment is now pending activation.');
       setInvestAmount('');
       setShowPaymentDetails(false);
+      // Clear persisted data after successful submission
+      localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+      localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
       fetchData();
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit investment');
