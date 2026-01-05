@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIP, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://msktesla.net',
@@ -20,6 +21,12 @@ const VALID_COUNTRIES = [
 const MAX_WITHDRAWAL_AMOUNT = 1000000;
 const MAX_PAYMENT_DETAILS_LENGTH = 500;
 
+// Rate limit configuration
+const RATE_LIMIT_IP_MAX = 10;        // 10 requests per IP
+const RATE_LIMIT_IP_WINDOW = 3600;   // 1 hour
+const RATE_LIMIT_USER_MAX = 10;      // 10 requests per user
+const RATE_LIMIT_USER_WINDOW = 86400; // 24 hours (1 day)
+
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -27,6 +34,15 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Rate limit by IP first
+    const clientIP = getClientIP(req);
+    const ipLimit = checkRateLimit(`withdrawal:ip:${clientIP}`, RATE_LIMIT_IP_MAX, RATE_LIMIT_IP_WINDOW);
+    
+    if (!ipLimit.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP} on create-withdrawal`);
+      return rateLimitResponse(ipLimit.retryAfter, corsHeaders);
+    }
+
     // Only allow POST
     if (req.method !== 'POST') {
       console.error('Invalid method:', req.method);
@@ -63,6 +79,14 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Rate limit by user ID
+    const userLimit = checkRateLimit(`withdrawal:user:${user.id}`, RATE_LIMIT_USER_MAX, RATE_LIMIT_USER_WINDOW);
+    
+    if (!userLimit.allowed) {
+      console.log(`Rate limit exceeded for user: ${user.id} on create-withdrawal`);
+      return rateLimitResponse(userLimit.retryAfter, corsHeaders);
     }
 
     console.log('Authenticated user:', user.id);
