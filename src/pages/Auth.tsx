@@ -127,7 +127,7 @@ const Auth = () => {
                     placeholder={t('enterFullName')}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                     required={!isLogin}
                   />
                 </div>
@@ -146,7 +146,7 @@ const Auth = () => {
                   placeholder={t('enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                  className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                 />
               </div>
@@ -164,7 +164,7 @@ const Auth = () => {
                   placeholder={t('enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-11 sm:pl-14 pr-11 sm:pr-14 h-12 sm:h-14 bg-white border-slate-300 text-slate-900 font-medium placeholder:text-slate-400 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 text-sm sm:text-base"
+                  className="pl-11 sm:pl-14 pr-11 sm:pr-14 h-12 sm:h-14 bg-white border-slate-300 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                   minLength={6}
                 />
