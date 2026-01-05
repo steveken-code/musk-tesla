@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -106,7 +106,18 @@ const Admin = () => {
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails'>('investments');
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
+  
+  // Security logs state
+  const [loginAttempts, setLoginAttempts] = useState<Array<{
+    id: string;
+    email: string;
+    ip_address: string;
+    success: boolean;
+    user_agent: string | null;
+    created_at: string;
+  }>>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
   
   // Status modal state
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -156,10 +167,29 @@ const Admin = () => {
     if (isAdmin) {
       loadSettings();
       fetchData();
+      fetchLoginAttempts();
     } else {
       setLoading(false);
     }
   }, [isAdmin]);
+
+  const fetchLoginAttempts = async () => {
+    setLoadingLogs(true);
+    try {
+      const { data, error } = await supabase
+        .from('admin_login_attempts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setLoginAttempts(data || []);
+    } catch (error) {
+      console.error('Error fetching login attempts:', error);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -918,7 +948,102 @@ const Admin = () => {
             <Mail className="w-4 h-4 mr-2" />
             Email Monitor
           </Button>
+          <Button
+            variant={activeTab === 'security' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('security')}
+            className={activeTab === 'security' ? 'bg-orange-600' : 'border-slate-600 text-slate-300'}
+          >
+            <ShieldAlert className="w-4 h-4 mr-2" />
+            Security Logs
+          </Button>
         </div>
+
+        {/* Security Logs Tab */}
+        {activeTab === 'security' && (
+          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold flex items-center gap-2 text-white">
+                <ShieldAlert className="w-5 h-5 text-orange-500" />
+                Admin Login Security Logs
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchLoginAttempts}
+                disabled={loadingLogs}
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                {loadingLogs ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                <span className="ml-2">Refresh</span>
+              </Button>
+            </div>
+
+            {loadingLogs ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              </div>
+            ) : loginAttempts.length === 0 ? (
+              <div className="text-center py-8">
+                <ShieldAlert className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No login attempts recorded</h3>
+                <p className="text-slate-400">Login attempts will appear here once the new 2FA system is used.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Status</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Email</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">IP Address</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Time</th>
+                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm hidden lg:table-cell">User Agent</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loginAttempts.map((attempt) => (
+                      <tr key={attempt.id} className="border-b border-slate-700/50 hover:bg-slate-700/30">
+                        <td className="py-3 px-4">
+                          {attempt.success ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                              <CheckCircle className="w-3 h-3" />
+                              Success
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
+                              <XCircle className="w-3 h-3" />
+                              Failed
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-white text-sm">{attempt.email}</td>
+                        <td className="py-3 px-4 text-slate-400 text-sm font-mono">{attempt.ip_address}</td>
+                        <td className="py-3 px-4 text-slate-400 text-sm">
+                          {new Date(attempt.created_at).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-4 text-slate-500 text-xs hidden lg:table-cell max-w-xs truncate">
+                          {attempt.user_agent || 'Unknown'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+              <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-yellow-500" />
+                Security Information
+              </h4>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li>• After 5 failed login attempts, the account is locked for 15 minutes</li>
+                <li>• All admin logins require two-factor authentication via email</li>
+                <li>• 2FA codes expire after 5 minutes</li>
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* Email Monitoring Tab */}
         {activeTab === 'emails' && (
