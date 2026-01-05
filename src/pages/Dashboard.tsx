@@ -903,7 +903,7 @@ const Dashboard = () => {
                     const value = e.target.value.replace(/[^0-9.]/g, '');
                     setInvestAmount(value);
                   }}
-                  className="bg-[#1a1a2e] border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 h-10 sm:h-11 text-sm sm:text-base font-semibold text-foreground"
+                  className="bg-slate-800 border-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 h-10 sm:h-11 text-sm sm:text-base font-semibold !text-white placeholder:!text-slate-400"
                   required
                 />
                 {investAmount && parseFloat(investAmount) >= 100 && (
