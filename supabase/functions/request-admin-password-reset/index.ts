@@ -11,7 +11,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Sender with proper display name
-const FROM_EMAIL = "Tesla Stock Platform <notifications@msktesla.net>";
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 
 // Always use production URL for reset links
 const PRODUCTION_URL = "https://msktesla.net";
