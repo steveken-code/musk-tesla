@@ -807,33 +807,33 @@ const Admin = () => {
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
             <CreditCard className="w-5 h-5 text-tesla-red" />
-            Payment Settings
+            {t('paymentSettings')}
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label className="text-slate-300">Card Number</Label>
+              <Label className="text-slate-300">{t('cardNumber')}</Label>
               <Input
                 value={paymentSettings.cardNumber}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, cardNumber: e.target.value }))}
-                className="bg-slate-900/50 border-slate-600 text-white"
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                 maxLength={50}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">Bank Name</Label>
+              <Label className="text-slate-300">{t('bankName')}</Label>
               <Input
                 value={paymentSettings.bankName}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, bankName: e.target.value }))}
-                className="bg-slate-900/50 border-slate-600 text-white"
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                 maxLength={100}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">Account Holder</Label>
+              <Label className="text-slate-300">{t('accountHolder')}</Label>
               <Input
                 value={paymentSettings.accountHolder}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, accountHolder: e.target.value }))}
-                className="bg-slate-900/50 border-slate-600 text-white"
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                 maxLength={100}
               />
             </div>
@@ -844,7 +844,7 @@ const Admin = () => {
             disabled={savingPayment}
           >
             {savingPayment ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Payment Settings
+            {t('savePaymentSettings')}
           </Button>
         </div>
 
@@ -852,14 +852,14 @@ const Admin = () => {
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
             <Wallet className="w-5 h-5 text-green-500" />
-            Withdrawal Settings
+            {t('withdrawalSettings')}
           </h2>
           <div className="space-y-2">
-            <Label className="text-slate-300">Default Hold Message</Label>
+            <Label className="text-slate-300">{t('defaultHoldMessage')}</Label>
             <Input
               value={withdrawalSettings.defaultHoldMessage}
               onChange={(e) => setWithdrawalSettings(prev => ({ ...prev, defaultHoldMessage: e.target.value }))}
-              className="bg-slate-900/50 border-slate-600 text-white"
+              className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
               placeholder="Enter default message for withdrawals on hold..."
               maxLength={500}
             />
@@ -870,7 +870,7 @@ const Admin = () => {
             disabled={savingWithdrawal}
           >
             {savingWithdrawal ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Withdrawal Settings
+            {t('saveWithdrawalSettings')}
           </Button>
         </div>
 
@@ -878,11 +878,11 @@ const Admin = () => {
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
             <MessageSquare className="w-5 h-5 text-electric-blue" />
-            Customer Support Settings
+            {t('supportSettings')}
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-slate-300">Support Type</Label>
+              <Label className="text-slate-300">{t('supportType')}</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -903,11 +903,11 @@ const Admin = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">Support Phone/Username</Label>
+              <Label className="text-slate-300">{t('supportPhone')}</Label>
               <Input
                 value={supportSettings.phone}
                 onChange={(e) => setSupportSettings(prev => ({ ...prev, phone: e.target.value }))}
-                className="bg-slate-900/50 border-slate-600 text-white"
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
                 placeholder={supportSettings.type === 'telegram' ? '@username or phone' : '+12186500840'}
               />
             </div>
@@ -918,7 +918,7 @@ const Admin = () => {
             disabled={savingSupport}
           >
             {savingSupport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Support Settings
+            {t('saveSupportSettings')}
           </Button>
         </div>
 
@@ -930,7 +930,7 @@ const Admin = () => {
             className={activeTab === 'investments' ? 'bg-tesla-red' : 'border-slate-600 text-slate-300'}
           >
             <DollarSign className="w-4 h-4 mr-2" />
-            Investments ({investments.length})
+            {t('investments')} ({investments.length})
           </Button>
           <Button
             variant={activeTab === 'withdrawals' ? 'default' : 'outline'}
@@ -938,7 +938,7 @@ const Admin = () => {
             className={activeTab === 'withdrawals' ? 'bg-green-600' : 'border-slate-600 text-slate-300'}
           >
             <Wallet className="w-4 h-4 mr-2" />
-            Withdrawals ({withdrawals.length})
+            {t('featureWithdrawals').split(' ')[0]} ({withdrawals.length})
           </Button>
           <Button
             variant={activeTab === 'emails' ? 'default' : 'outline'}
@@ -946,7 +946,7 @@ const Admin = () => {
             className={activeTab === 'emails' ? 'bg-electric-blue' : 'border-slate-600 text-slate-300'}
           >
             <Mail className="w-4 h-4 mr-2" />
-            Email Monitor
+            {t('emailMonitoring')}
           </Button>
           <Button
             variant={activeTab === 'security' ? 'default' : 'outline'}
@@ -954,7 +954,7 @@ const Admin = () => {
             className={activeTab === 'security' ? 'bg-orange-600' : 'border-slate-600 text-slate-300'}
           >
             <ShieldAlert className="w-4 h-4 mr-2" />
-            Security Logs
+            {t('securityLogs')}
           </Button>
         </div>
 
@@ -964,7 +964,7 @@ const Admin = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold flex items-center gap-2 text-white">
                 <ShieldAlert className="w-5 h-5 text-orange-500" />
-                Admin Login Security Logs
+                {t('securityLogs')}
               </h2>
               <Button
                 variant="outline"
@@ -974,7 +974,7 @@ const Admin = () => {
                 className="border-slate-600 text-slate-300 hover:bg-slate-700"
               >
                 {loadingLogs ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                <span className="ml-2">Refresh</span>
+                <span className="ml-2">{t('refreshLogs')}</span>
               </Button>
             </div>
 
@@ -1103,7 +1103,7 @@ const Admin = () => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
                               }}
-                              className="w-28 bg-slate-900/50 border-slate-600 text-white text-right font-semibold"
+                              className="w-28 bg-white border-slate-300 text-slate-900 text-right font-semibold"
                             />
                           </div>
                         </div>
@@ -1329,7 +1329,7 @@ const Admin = () => {
                     <textarea
                       value={statusModalMessage}
                       onChange={(e) => setStatusModalMessage(e.target.value)}
-                      className="w-full h-24 bg-slate-900/50 border border-slate-600 rounded-lg p-3 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full h-24 bg-white border border-slate-300 rounded-lg p-3 text-slate-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-slate-500"
                       placeholder="Enter the billing fee or hold message..."
                     />
                   </div>
