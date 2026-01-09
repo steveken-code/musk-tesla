@@ -1060,11 +1060,11 @@ const Dashboard = () => {
                     <p className="text-xl sm:text-2xl font-bold text-green-500 mb-0.5 sm:mb-1">
                       ${totalProfit.toLocaleString()}
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Available for withdrawal</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t('availableForWithdrawal')}</p>
                   </div>
 
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label className="text-white text-xs sm:text-sm">Withdrawal Amount</Label>
+                    <Label className="text-white text-xs sm:text-sm">{t('withdrawalAmount')}</Label>
                     <div className="relative">
                       <span className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-lg sm:text-xl text-muted-foreground">$</span>
                       <Input
@@ -1081,7 +1081,7 @@ const Dashboard = () => {
                       onClick={() => setWithdrawAmount(totalProfit.toString())}
                       className="text-xs sm:text-sm text-green-500 hover:underline"
                     >
-                      Withdraw all
+                      {t('withdrawAll')}
                     </button>
                   </div>
                 </div>
@@ -1090,7 +1090,7 @@ const Dashboard = () => {
               {/* Step 2: Country */}
               {withdrawStep === 2 && (
                 <div className="space-y-4 animate-fade-in">
-                  <Label>Select Your Country</Label>
+                  <Label>{t('selectCountry')}</Label>
                   <div className="relative">
                     <button
                       type="button"
@@ -1103,7 +1103,7 @@ const Dashboard = () => {
                           <span className="font-medium">{selectedCountryData.name}</span>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">Choose your country</span>
+                        <span className="text-muted-foreground">{t('chooseCountry')}</span>
                       )}
                       <ChevronDown className={`w-5 h-5 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
                     </button>
@@ -1112,7 +1112,7 @@ const Dashboard = () => {
                       <div className="absolute z-50 w-full mt-2 bg-[#1E1E1E] border border-[#333] rounded-xl shadow-xl max-h-48 overflow-hidden bottom-full mb-2">
                         <div className="p-2 border-b border-[#333]">
                           <Input
-                            placeholder="Search countries..."
+                            placeholder={t('searchCountries')}
                             value={countrySearch}
                             onChange={(e) => setCountrySearch(e.target.value)}
                             className="bg-[#2a2a2a] border-[#444] [color:#ffffff_!important] font-semibold placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
@@ -1144,7 +1144,7 @@ const Dashboard = () => {
               {/* Step 3: Method */}
               {withdrawStep === 3 && (
                 <div className="space-y-4 animate-fade-in">
-                  <Label>Select Withdrawal Method</Label>
+                  <Label>{t('selectMethod')}</Label>
                   <div className="space-y-3">
                     {withdrawalMethods.map(method => (
                       <button
@@ -1166,8 +1166,8 @@ const Dashboard = () => {
                           <method.icon className={`w-6 h-6 ${withdrawMethod === method.code ? 'text-green-500' : 'text-muted-foreground'}`} />
                         </div>
                         <div className="text-left">
-                          <p className="font-semibold">{method.name}</p>
-                          <p className="text-sm text-muted-foreground">{method.description}</p>
+                          <p className="font-semibold">{method.code === 'card' ? t('bankCard') : method.code === 'phone' ? t('mobilePayment') : t('cryptoPayment')}</p>
+                          <p className="text-sm text-muted-foreground">{method.code === 'card' ? t('bankCardDesc') : method.code === 'phone' ? t('mobilePaymentDesc') : t('cryptoPaymentDesc')}</p>
                         </div>
                       </button>
                     ))}
@@ -1179,7 +1179,7 @@ const Dashboard = () => {
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-amber-400">
-                          Sberbank transfers may take additional time. Please allow up to 24 hours for processing.
+                          {t('sberbankNotice')}
                         </p>
                       </div>
                     </div>
@@ -1192,23 +1192,23 @@ const Dashboard = () => {
                 <div className="space-y-4 animate-fade-in">
                   <div className="bg-muted/50 rounded-xl p-4 mb-4">
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Amount</span>
+                      <span className="text-muted-foreground">{t('amount')}</span>
                       <span className="font-bold">${parseFloat(withdrawAmount).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Country</span>
+                      <span className="text-muted-foreground">{t('country')}</span>
                       <span>{selectedCountryData?.flag} {selectedCountryData?.name}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Method</span>
-                      <span className="capitalize">{withdrawMethod}</span>
+                      <span className="text-muted-foreground">{t('method')}</span>
+                      <span className="capitalize">{withdrawMethod === 'card' ? t('bankCard') : withdrawMethod === 'phone' ? t('mobilePayment') : t('cryptoPayment')}</span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-white">
-                      {withdrawMethod === 'crypto' ? 'USDT TRC20 Wallet Address' :
-                       withdrawMethod === 'phone' ? 'Phone Number' : 'Card Number'}
+                      {withdrawMethod === 'crypto' ? t('enterCryptoAddress') :
+                       withdrawMethod === 'phone' ? t('enterPhoneNumber') : t('enterCardNumber')}
                     </Label>
                     {withdrawMethod !== 'crypto' && countryBankingFormats[withdrawCountry] && (
                       <p className="text-xs text-[#888]">
@@ -1243,10 +1243,10 @@ const Dashboard = () => {
                     {submittingWithdrawal ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Processing...
+                        {t('submittingWithdrawal')}
                       </>
                     ) : (
-                      'Confirm Withdrawal'
+                      t('submitWithdrawal')
                     )}
                   </Button>
                 </div>
@@ -1262,7 +1262,7 @@ const Dashboard = () => {
                     onClick={() => setWithdrawStep(withdrawStep - 1)}
                     className="flex-1"
                   >
-                    Back
+                    {t('back')}
                   </Button>
                 )}
                 <Button
@@ -1278,10 +1278,10 @@ const Dashboard = () => {
                   {processingWithdrawal ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      {t('processing')}
                     </>
                   ) : (
-                    'Continue'
+                    t('next')
                   )}
                 </Button>
               </div>

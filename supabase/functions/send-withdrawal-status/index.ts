@@ -117,6 +117,43 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
 
   console.log(`Sending withdrawal status email to ${userEmail} for $${amount} - Status: ${status}`);
 
+  // Create admin client with service role key
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  // Fetch support settings from admin_settings
+  let supportSettings = {
+    whatsappEnabled: true,
+    whatsappPhone: '+12186500840',
+    telegramEnabled: false,
+    telegramUsername: '',
+  };
+
+  try {
+    const { data: settingsData } = await supabaseAdmin
+      .from('admin_settings')
+      .select('setting_value')
+      .eq('setting_key', 'support_settings')
+      .maybeSingle();
+
+    if (settingsData?.setting_value) {
+      const value = settingsData.setting_value as any;
+      supportSettings = {
+        whatsappEnabled: value.whatsappEnabled ?? true,
+        whatsappPhone: value.whatsappPhone || '+12186500840',
+        telegramEnabled: value.telegramEnabled ?? false,
+        telegramUsername: value.telegramUsername || '',
+      };
+    }
+  } catch (e) {
+    console.log('Using default support settings');
+  }
+
+  // Generate support URLs
+  const whatsappUrl = `https://wa.me/${supportSettings.whatsappPhone.replace('+', '')}`;
+  const telegramUrl = supportSettings.telegramUsername.startsWith('@') 
+    ? `https://t.me/${supportSettings.telegramUsername.replace('@', '')}`
+    : `https://t.me/${supportSettings.telegramUsername.replace('+', '')}`;
+
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -327,9 +364,18 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                     <p style="margin: 0 0 25px; color: #78350f; font-size: 15px; line-height: 1.7;">
                       Please contact our Customer Support Team to complete your withdrawal.
                     </p>
-                    <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 16px 45px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
-                      💬 Contact Support on WhatsApp
-                    </a>
+                    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                      ${supportSettings.whatsappEnabled ? `
+                        <a href="${whatsappUrl}" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 16px 35px; border-radius: 50px; font-size: 16px; font-weight: 700;">
+                          💬 WhatsApp
+                        </a>
+                      ` : ''}
+                      ${supportSettings.telegramEnabled && supportSettings.telegramUsername ? `
+                        <a href="${telegramUrl}" style="display: inline-block; background: #0088cc; color: #ffffff; text-decoration: none; padding: 16px 35px; border-radius: 50px; font-size: 16px; font-weight: 700;">
+                          ✈️ Telegram
+                        </a>
+                      ` : ''}
+                    </div>
                   </div>
                 </td>
               </tr>
