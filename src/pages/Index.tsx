@@ -4,7 +4,7 @@ import Metrics from "@/components/Metrics";
 import Vision from "@/components/Vision";
 import Innovations from "@/components/Innovations";
 import Investment from "@/components/Investment";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import SupportButtons from "@/components/SupportButtons";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Testimonials from "@/components/Testimonials";
@@ -35,7 +35,7 @@ const Index = () => {
       <FAQ />
       <Investment />
       <Footer />
-      <WhatsAppButton />
+      <SupportButtons />
     </div>
   );
 };
