@@ -13,7 +13,7 @@ import {
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
   CreditCard, Phone, Bitcoin, ChevronDown, X, History
 } from 'lucide-react';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import SupportButtons from '@/components/SupportButtons';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
@@ -1290,7 +1290,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      <WhatsAppButton />
+      <SupportButtons />
     </div>
   );
 };

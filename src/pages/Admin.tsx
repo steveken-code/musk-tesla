@@ -49,8 +49,10 @@ interface WithdrawalSettings {
 }
 
 interface SupportSettings {
-  type: 'whatsapp' | 'telegram';
-  phone: string;
+  whatsappEnabled: boolean;
+  whatsappPhone: string;
+  telegramEnabled: boolean;
+  telegramUsername: string;
 }
 
 const languages = [
@@ -77,8 +79,10 @@ const DEFAULT_WITHDRAWAL_SETTINGS: WithdrawalSettings = {
 };
 
 const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
-  type: 'whatsapp',
-  phone: '+12186500840',
+  whatsappEnabled: true,
+  whatsappPhone: '+12186500840',
+  telegramEnabled: false,
+  telegramUsername: '',
 };
 
 const BILLING_FEE_TEMPLATES = [
@@ -219,8 +223,10 @@ const Admin = () => {
           } else if (setting.setting_key === 'support_settings' && setting.setting_value) {
             const value = setting.setting_value as unknown as SupportSettings;
             setSupportSettings({
-              type: value.type || DEFAULT_SUPPORT_SETTINGS.type,
-              phone: value.phone || DEFAULT_SUPPORT_SETTINGS.phone,
+              whatsappEnabled: value.whatsappEnabled ?? DEFAULT_SUPPORT_SETTINGS.whatsappEnabled,
+              whatsappPhone: value.whatsappPhone || DEFAULT_SUPPORT_SETTINGS.whatsappPhone,
+              telegramEnabled: value.telegramEnabled ?? DEFAULT_SUPPORT_SETTINGS.telegramEnabled,
+              telegramUsername: value.telegramUsername || DEFAULT_SUPPORT_SETTINGS.telegramUsername,
             });
           }
         });
@@ -573,8 +579,16 @@ const Admin = () => {
   };
 
   const handleSaveSupportSettings = async () => {
-    if (!supportSettings.phone.trim()) {
-      toast.error('Support phone is required');
+    if (!supportSettings.whatsappEnabled && !supportSettings.telegramEnabled) {
+      toast.error('Enable at least one support channel');
+      return;
+    }
+    if (supportSettings.whatsappEnabled && !supportSettings.whatsappPhone.trim()) {
+      toast.error('WhatsApp phone is required when enabled');
+      return;
+    }
+    if (supportSettings.telegramEnabled && !supportSettings.telegramUsername.trim()) {
+      toast.error('Telegram username is required when enabled');
       return;
     }
 
@@ -880,36 +894,63 @@ const Admin = () => {
             <MessageSquare className="w-5 h-5 text-electric-blue" />
             {t('supportSettings')}
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-slate-300">{t('supportType')}</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={supportSettings.type === 'whatsapp' ? 'default' : 'outline'}
-                  onClick={() => setSupportSettings(prev => ({ ...prev, type: 'whatsapp' }))}
-                  className={supportSettings.type === 'whatsapp' ? 'bg-green-600 hover:bg-green-700' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-                >
+          <div className="grid gap-4">
+            {/* WhatsApp Settings */}
+            <div className="p-4 rounded-lg border border-slate-600 bg-slate-900/50">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-slate-300 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                    <Phone className="w-3 h-3 text-white" />
+                  </span>
                   WhatsApp
-                </Button>
+                </Label>
                 <Button
                   type="button"
-                  variant={supportSettings.type === 'telegram' ? 'default' : 'outline'}
-                  onClick={() => setSupportSettings(prev => ({ ...prev, type: 'telegram' }))}
-                  className={supportSettings.type === 'telegram' ? 'bg-blue-600 hover:bg-blue-700' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
+                  size="sm"
+                  variant={supportSettings.whatsappEnabled ? 'default' : 'outline'}
+                  onClick={() => setSupportSettings(prev => ({ ...prev, whatsappEnabled: !prev.whatsappEnabled }))}
+                  className={supportSettings.whatsappEnabled ? 'bg-green-600 hover:bg-green-700' : 'border-slate-600 text-slate-300'}
                 >
-                  Telegram
+                  {supportSettings.whatsappEnabled ? 'Enabled' : 'Disabled'}
                 </Button>
               </div>
+              {supportSettings.whatsappEnabled && (
+                <Input
+                  value={supportSettings.whatsappPhone}
+                  onChange={(e) => setSupportSettings(prev => ({ ...prev, whatsappPhone: e.target.value }))}
+                  className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                  placeholder="+12186500840"
+                />
+              )}
             </div>
-            <div className="space-y-2">
-              <Label className="text-slate-300">{t('supportPhone')}</Label>
-              <Input
-                value={supportSettings.phone}
-                onChange={(e) => setSupportSettings(prev => ({ ...prev, phone: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
-                placeholder={supportSettings.type === 'telegram' ? '@username or phone' : '+12186500840'}
-              />
+
+            {/* Telegram Settings */}
+            <div className="p-4 rounded-lg border border-slate-600 bg-slate-900/50">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-slate-300 flex items-center gap-2">
+                  <span className="w-6 h-6 bg-[#0088cc] rounded-full flex items-center justify-center">
+                    <Send className="w-3 h-3 text-white" />
+                  </span>
+                  Telegram
+                </Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={supportSettings.telegramEnabled ? 'default' : 'outline'}
+                  onClick={() => setSupportSettings(prev => ({ ...prev, telegramEnabled: !prev.telegramEnabled }))}
+                  className={supportSettings.telegramEnabled ? 'bg-[#0088cc] hover:bg-[#0077b5]' : 'border-slate-600 text-slate-300'}
+                >
+                  {supportSettings.telegramEnabled ? 'Enabled' : 'Disabled'}
+                </Button>
+              </div>
+              {supportSettings.telegramEnabled && (
+                <Input
+                  value={supportSettings.telegramUsername}
+                  onChange={(e) => setSupportSettings(prev => ({ ...prev, telegramUsername: e.target.value }))}
+                  className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                  placeholder="@username or phone number"
+                />
+              )}
             </div>
           </div>
           <Button
