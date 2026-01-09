@@ -51,6 +51,34 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     return { success: false, error: "User profile not found" };
   }
 
+  // Fetch support settings from admin_settings
+  let supportSettings = {
+    whatsappEnabled: true,
+    whatsappPhone: '+12186500840',
+    telegramEnabled: false,
+    telegramUsername: '',
+  };
+
+  try {
+    const { data: settingsData } = await supabaseAdmin
+      .from('admin_settings')
+      .select('setting_value')
+      .eq('setting_key', 'support_settings')
+      .maybeSingle();
+
+    if (settingsData?.setting_value) {
+      const value = settingsData.setting_value as any;
+      supportSettings = {
+        whatsappEnabled: value.whatsappEnabled ?? true,
+        whatsappPhone: value.whatsappPhone || '+12186500840',
+        telegramEnabled: value.telegramEnabled ?? false,
+        telegramUsername: value.telegramUsername || '',
+      };
+    }
+  } catch (e) {
+    console.log('Using default support settings');
+  }
+
   const { email, full_name: name } = profile;
   const displayName = name || email.split('@')[0];
   const dashboardLink = `https://msktesla.net/dashboard`;
@@ -62,6 +90,39 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     month: 'long',
     day: 'numeric',
   });
+
+  // Generate support buttons HTML
+  const whatsappUrl = `https://wa.me/${supportSettings.whatsappPhone.replace('+', '')}`;
+  const telegramUrl = supportSettings.telegramUsername.startsWith('@') 
+    ? `https://t.me/${supportSettings.telegramUsername.replace('@', '')}`
+    : `https://t.me/${supportSettings.telegramUsername.replace('+', '')}`;
+
+  let supportButtonsHtml = '';
+  if (supportSettings.whatsappEnabled || supportSettings.telegramEnabled) {
+    supportButtonsHtml = `
+      <tr>
+        <td style="padding: 0 50px 35px;">
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
+            <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
+              Questions about your profits?
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+              ${supportSettings.whatsappEnabled ? `
+                <a href="${whatsappUrl}" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-size: 15px; font-weight: 700;">
+                  💬 WhatsApp
+                </a>
+              ` : ''}
+              ${supportSettings.telegramEnabled && supportSettings.telegramUsername ? `
+                <a href="${telegramUrl}" style="display: inline-block; background: #0088cc; color: #ffffff; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-size: 15px; font-weight: 700;">
+                  ✈️ Telegram
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -250,18 +311,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   </tr>
                   
                   <!-- Support -->
-                  <tr>
-                    <td style="padding: 0 50px 35px;">
-                      <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
-                        <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
-                          Questions about your profits?
-                        </p>
-                        <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 15px; font-weight: 700;">
-                          💬 Contact Support on WhatsApp
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
+                  ${supportButtonsHtml}
                   
                   <!-- Footer -->
                   <tr>
