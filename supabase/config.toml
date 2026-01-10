@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.verify-admin-2fa]
 verify_jwt = false
+
+[functions.send-referral-notification]
+verify_jwt = false

