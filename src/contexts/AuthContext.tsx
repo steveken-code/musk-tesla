@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -53,14 +53,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { full_name: fullName }
+        data: { full_name: fullName, referral_code: referralCode || null }
       }
     });
     
@@ -69,6 +69,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setTimeout(() => {
         sendWelcomeEmail(data.user!.id, email, fullName);
       }, 0);
+
+      // If referral code is provided, save to profile and send notification
+      if (referralCode && referralCode.trim()) {
+        setTimeout(async () => {
+          try {
+            // Update profile with referral code
+            await supabase
+              .from('profiles')
+              .update({ referral_code: referralCode.trim().toUpperCase() })
+              .eq('user_id', data.user!.id);
+
+            // Get referral settings to find the notification email
+            const { data: settingsData } = await supabase
+              .from('admin_settings')
+              .select('setting_value')
+              .eq('setting_key', 'referral_settings')
+              .maybeSingle();
+
+            if (settingsData?.setting_value) {
+              const referralSettings = settingsData.setting_value as { referralCode: string; referralEmail: string };
+              // Check if the entered code matches the configured code
+              if (referralCode.trim().toUpperCase() === referralSettings.referralCode?.toUpperCase()) {
+                // Send notification email
+                await supabase.functions.invoke('send-referral-notification', {
+                  body: {
+                    referralEmail: referralSettings.referralEmail,
+                    referredUserName: fullName,
+                    referredUserEmail: email,
+                    type: 'signup'
+                  }
+                });
+              }
+            }
+          } catch (err) {
+            console.error('Error processing referral:', err);
+          }
+        }, 500);
+      }
     }
     
     return { error };
