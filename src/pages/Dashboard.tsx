@@ -754,6 +754,9 @@ const Dashboard = () => {
     .reduce((sum, i) => sum + Number(i.amount), 0);
 
   const totalProfit = investments.reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
+  
+  // Portfolio balance = Total Investment + Total Profit
+  const portfolioBalance = totalInvested + totalProfit;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -810,7 +813,7 @@ const Dashboard = () => {
           <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
             {t('welcomeBack')}, <span className="text-brand-purple drop-shadow-[0_0_20px_hsl(270_70%_60%/0.5)]">{displayName}</span>!
           </h1>
-          <p className="text-muted-foreground mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm">{t('dashboardSubtitle') || 'Manage your investments and track your profits'}</p>
+          <p className="text-muted-foreground mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm">{t('dashboardSubtitle')}</p>
         </div>
 
         {/* Email verification is now automatic - banner removed */}
@@ -851,20 +854,23 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Withdraw Card */}
+          {/* Portfolio Balance Card */}
           <div 
-            onClick={totalProfit > 0 ? handleWithdrawStart : undefined}
+            onClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
             className={`bg-gradient-to-br from-green-600/20 to-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 transition-all col-span-2 md:col-span-1 ${
-              totalProfit > 0 ? 'cursor-pointer hover:border-green-500/60 hover:scale-[1.02]' : 'opacity-60'
+              portfolioBalance > 0 ? 'cursor-pointer hover:border-green-500/60 hover:scale-[1.02]' : 'opacity-60'
             }`}
           >
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-              <span className="text-green-400 text-[10px] sm:text-xs md:text-sm font-medium">Withdraw</span>
+              <span className="text-green-400 text-[10px] sm:text-xs md:text-sm font-medium">{t('portfolioBalance') || 'Portfolio Balance'}</span>
             </div>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-green-400">
-              {totalProfit > 0 ? 'Click to Withdraw' : 'No Profit Yet'}
+            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-green-400">
+              {portfolioBalance > 0 ? `$${portfolioBalance.toLocaleString()}` : t('noBalanceYet') || 'No Balance Yet'}
             </p>
+            {portfolioBalance > 0 && (
+              <p className="text-[10px] sm:text-xs text-green-500/70 mt-1">{t('clickToWithdraw') || 'Click to Withdraw'}</p>
+            )}
           </div>
         </div>
 
@@ -1058,9 +1064,12 @@ const Dashboard = () => {
                 <div className="space-y-3 sm:space-y-4 animate-fade-in">
                   <div className="text-center mb-4 sm:mb-6">
                     <p className="text-xl sm:text-2xl font-bold text-green-500 mb-0.5 sm:mb-1">
-                      ${totalProfit.toLocaleString()}
+                      ${portfolioBalance.toLocaleString()}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground">{t('availableForWithdrawal')}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                      ({t('investment') || 'Investment'}: ${totalInvested.toLocaleString()} + {t('profit')}: ${totalProfit.toLocaleString()})
+                    </p>
                   </div>
 
                   <div className="space-y-1.5 sm:space-y-2">
@@ -1078,7 +1087,7 @@ const Dashboard = () => {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setWithdrawAmount(totalProfit.toString())}
+                      onClick={() => setWithdrawAmount(portfolioBalance.toString())}
                       className="text-xs sm:text-sm text-green-500 hover:underline"
                     >
                       {t('withdrawAll')}

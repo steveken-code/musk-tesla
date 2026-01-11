@@ -215,16 +215,16 @@ const Auth = () => {
 
             {/* Referral Code Field - Only show on signup */}
             {!isLogin && (
-              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+              <div className="space-y-1.5 sm:space-y-2 mt-2 animate-fade-in">
                 <Label htmlFor="referralCode" className="text-slate-300 text-xs sm:text-sm font-medium">
-                  {t('referralCode') || 'Referral Code'} <span className="text-slate-500">(optional)</span>
+                  {t('referralCode') || 'Referral Code'} <span className="text-slate-500">({t('optional') || 'optional'})</span>
                 </Label>
                 <div className="relative">
                   <Gift className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 text-input-icon opacity-100" />
                   <Input
                     id="referralCode"
                     type="text"
-                    placeholder={t('enterReferralCode') || 'Enter referral code (optional)'}
+                    placeholder={t('enterReferralCode') || 'Enter Referral Code'}
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                     className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
