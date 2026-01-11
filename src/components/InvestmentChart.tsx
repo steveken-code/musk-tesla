@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Bar, ComposedChart, Line, ReferenceLine } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { TrendingUp, Activity, BarChart2, Zap, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Activity, BarChart2, Zap, ArrowUpRight, ArrowDownRight, CheckCircle } from 'lucide-react';
 
 interface Investment {
   id: string;
@@ -20,17 +20,29 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [displayValue, setDisplayValue] = useState(0);
   const [displayProfit, setDisplayProfit] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Check if all investments are completed (no animations needed)
+  const isCompleted = investments.every(i => i.status === 'completed' || i.status === 'pending');
+  const hasCompletedInvestments = investments.some(i => i.status === 'completed');
+  
+  // Calculate actual totals from database
+  const actualTotals = useMemo(() => {
+    const activeOrCompleted = investments.filter(i => i.status === 'active' || i.status === 'completed');
+    const totalInvested = activeOrCompleted.reduce((sum, i) => sum + Number(i.amount), 0);
+    const totalProfit = activeOrCompleted.reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
+    const portfolioValue = totalInvested + totalProfit;
+    return { totalInvested, totalProfit, portfolioValue };
+  }, [investments]);
 
   const chartData = useMemo(() => {
     const activeInvestments = investments.filter(i => i.status === 'active' || i.status === 'completed');
     
     if (activeInvestments.length === 0) return [];
 
-    // Generate chart data based on investments
-    const totalInvested = activeInvestments.reduce((sum, i) => sum + Number(i.amount), 0);
-    const totalProfit = activeInvestments.reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
+    const { totalInvested, totalProfit, portfolioValue } = actualTotals;
     
-    // Create 30-day performance data with more realistic patterns
+    // For completed investments, show stable values - no fluctuations
     const data = [];
     const now = new Date();
     
@@ -38,70 +50,92 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       
-      // Simulate gradual profit accumulation with market-like fluctuations
+      // Gradual progression to final value (no random fluctuations for completed)
       const dayProgress = (30 - i) / 30;
-      const trendBias = Math.sin((30 - i) / 6) * (totalProfit * 0.08);
-      const volatility = (Math.random() - 0.5) * (totalProfit * 0.04);
-      const currentProfit = totalProfit * dayProgress + trendBias + volatility;
-      const dailyReturn = i < 30 ? (Math.random() - 0.4) * 2 : 0;
+      
+      // For completed investments: smooth progression to final value, no volatility
+      // For active investments: slight visual progression
+      const currentProfit = hasCompletedInvestments 
+        ? totalProfit * dayProgress // Smooth progression, no volatility
+        : totalProfit * dayProgress; // Same for active, just gradual increase
+      
+      const currentValue = totalInvested + currentProfit;
       
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        value: Math.max(totalInvested, Math.round((totalInvested + currentProfit) * 100) / 100),
-        profit: Math.max(0, Math.round(currentProfit * 100) / 100),
+        value: Math.round(currentValue * 100) / 100,
+        profit: Math.round(currentProfit * 100) / 100,
         invested: totalInvested,
-        dailyReturn: Math.round(dailyReturn * 100) / 100,
-        volume: Math.floor(Math.random() * 10000 + 5000),
+        dailyReturn: 0, // No daily returns shown for simplicity
+        volume: 0,
       });
     }
     
+    // Ensure the last data point has the EXACT values from database
+    if (data.length > 0) {
+      data[data.length - 1] = {
+        ...data[data.length - 1],
+        value: portfolioValue,
+        profit: totalProfit,
+        invested: totalInvested,
+      };
+    }
+    
     return data;
-  }, [investments]);
+  }, [investments, actualTotals, hasCompletedInvestments]);
 
-  const totalValue = chartData.length > 0 ? chartData[chartData.length - 1].value : 0;
-  const totalProfit = chartData.length > 0 ? chartData[chartData.length - 1].profit : 0;
-  const totalInvested = chartData.length > 0 ? chartData[chartData.length - 1].invested : 0;
+  // Use actual values directly
+  const { totalInvested, totalProfit, portfolioValue } = actualTotals;
   const percentGain = totalInvested > 0 ? ((totalProfit / totalInvested) * 100) : 0;
-  const yesterdayValue = chartData.length > 1 ? chartData[chartData.length - 2].value : totalValue;
-  const dailyChange = totalValue - yesterdayValue;
-  const dailyPercent = yesterdayValue > 0 ? ((dailyChange / yesterdayValue) * 100) : 0;
 
-  // Animate values on mount and updates
+  // Animate values ONCE on mount, then use exact values
   useEffect(() => {
-    if (totalValue > 0) {
+    if (portfolioValue > 0 && !hasAnimated) {
       setIsAnimating(true);
       const duration = 1000;
       const startTime = performance.now();
-      const startValue = displayValue;
-      const startProfit = displayProfit;
       
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
         
-        setDisplayValue(startValue + (totalValue - startValue) * easeOut);
-        setDisplayProfit(startProfit + (totalProfit - startProfit) * easeOut);
+        setDisplayValue(portfolioValue * easeOut);
+        setDisplayProfit(totalProfit * easeOut);
         
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
+          // Animation complete - set exact values
+          setDisplayValue(portfolioValue);
+          setDisplayProfit(totalProfit);
           setIsAnimating(false);
+          setHasAnimated(true);
         }
       };
       
       requestAnimationFrame(animate);
+    } else if (hasAnimated) {
+      // After initial animation, always show exact values
+      setDisplayValue(portfolioValue);
+      setDisplayProfit(totalProfit);
     }
-  }, [totalValue, totalProfit]);
+  }, [portfolioValue, totalProfit, hasAnimated]);
 
-  // Simulate live updates
+  // No live updates for completed investments - values stay stable
   useEffect(() => {
+    if (hasCompletedInvestments) {
+      // Don't animate for completed investments
+      return;
+    }
+    
+    // Only animate pulse for active investments
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 300);
-    }, 3000);
+    }, 5000); // Slower interval
     return () => clearInterval(interval);
-  }, []);
+  }, [hasCompletedInvestments]);
 
   if (chartData.length === 0) {
     return null;
@@ -162,11 +196,8 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
           <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">+{percentGain.toFixed(2)}%</p>
         </div>
         <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Today</p>
-          <div className={`text-[10px] sm:text-xs md:text-sm font-bold flex items-center justify-center gap-0.5 ${dailyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            {dailyChange >= 0 ? <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
-            {dailyPercent >= 0 ? '+' : ''}{dailyPercent.toFixed(2)}%
-          </div>
+          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">{t('profit')}</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">${totalProfit.toLocaleString()}</p>
         </div>
         <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
           <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Invested</p>
@@ -175,8 +206,17 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
           <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Status</p>
           <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-            <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />
-            <p className="text-[10px] sm:text-xs md:text-sm font-bold text-yellow-500">Active</p>
+            {hasCompletedInvestments ? (
+              <>
+                <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-500" />
+                <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">Completed</p>
+              </>
+            ) : (
+              <>
+                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />
+                <p className="text-[10px] sm:text-xs md:text-sm font-bold text-yellow-500">Active</p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -301,16 +341,16 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         <div className="flex items-center gap-2 sm:gap-4 text-[8px] sm:text-[10px]">
           <div className="flex items-center gap-1 sm:gap-1.5">
             <div className="w-2 sm:w-3 h-0.5 bg-green-500 rounded-full" />
-            <span className="text-muted-foreground">Portfolio Value</span>
+            <span className="text-muted-foreground">Portfolio: ${portfolioValue.toLocaleString()}</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-1.5">
             <div className="w-2 sm:w-3 h-0.5 bg-emerald-500 rounded-full" />
-            <span className="text-muted-foreground">Profit Trend</span>
+            <span className="text-muted-foreground">{t('profit')}: ${totalProfit.toLocaleString()}</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] text-muted-foreground">
           <BarChart2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          <span>Last 30 days • Live</span>
+          <span>{hasCompletedInvestments ? 'Completed' : 'Active'}</span>
         </div>
       </div>
     </div>
