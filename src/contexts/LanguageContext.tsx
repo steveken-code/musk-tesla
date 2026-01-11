@@ -215,6 +215,19 @@ const translations: Record<Language, Record<string, string>> = {
     'paymentDetailsLabel': 'Payment Details',
     'holdMessage': 'Hold Message',
     
+    // Referral
+    'referralCode': 'Referral Code',
+    'enterReferralCode': 'Enter Referral Code',
+    'optional': 'optional',
+    'invalidReferralCode': 'Invalid referral code. Please check and try again.',
+    'referralSettings': 'Referral Settings',
+    'referralEmail': 'Notification Email',
+    'saveReferralSettings': 'Save Referral Settings',
+    
+    // Portfolio
+    'portfolioBalance': 'Portfolio Balance',
+    'noBalanceYet': 'No Balance Yet',
+    'investment': 'Investment',
     // Investment Steps
     'investmentSteps': 'Steps to Complete Investment:',
     'step1': 'Make payment to the account details above',
@@ -544,6 +557,19 @@ const translations: Record<Language, Record<string, string>> = {
     'paymentDetailsLabel': 'Платежные реквизиты',
     'holdMessage': 'Сообщение удержания',
     
+    // Referral
+    'referralCode': 'Реферальный код',
+    'enterReferralCode': 'Введите реферальный код',
+    'optional': 'необязательно',
+    'invalidReferralCode': 'Неверный реферальный код. Проверьте и попробуйте снова.',
+    'referralSettings': 'Настройки рефералов',
+    'referralEmail': 'Email для уведомлений',
+    'saveReferralSettings': 'Сохранить настройки рефералов',
+    
+    // Portfolio
+    'portfolioBalance': 'Баланс портфеля',
+    'noBalanceYet': 'Нет баланса',
+    'investment': 'Инвестиция',
     // Investment Steps
     'investmentSteps': 'Шаги для завершения инвестиции:',
     'step1': 'Сделайте платеж по указанным реквизитам',

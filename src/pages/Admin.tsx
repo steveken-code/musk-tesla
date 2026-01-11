@@ -1260,11 +1260,21 @@ const Admin = () => {
                               +${investment.profit_amount.toLocaleString()} profit
                             </span>
                           )}
+                          {/* Portfolio Total */}
+                          {(investment.status === 'active' || investment.status === 'completed') && (
+                            <span className="px-3 py-1 text-sm rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">
+                              Portfolio: ${(Number(investment.amount) + Number(investment.profit_amount || 0)).toLocaleString()}
+                            </span>
+                          )}
                         </div>
-                        <div className="text-sm text-slate-400 space-y-1">
-                          <p>User: {investment.profiles?.full_name || 'Unknown'}</p>
-                          <p>Email: {investment.profiles?.email || 'N/A'}</p>
-                          <p>Date: {new Date(investment.created_at).toLocaleDateString()}</p>
+                        <div className="text-sm space-y-1">
+                          <p className="text-white font-medium text-base">
+                            {investment.profiles?.full_name || investment.profiles?.email?.split('@')[0] || 'User'}
+                          </p>
+                          <p className="text-slate-300 font-medium">
+                            {investment.profiles?.email || 'No email'}
+                          </p>
+                          <p className="text-slate-400">Date: {new Date(investment.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
 
@@ -1302,6 +1312,21 @@ const Admin = () => {
                               Approve
                             </Button>
                           )}
+                          {investment.status === 'active' && (
+                            <Button
+                              size="sm"
+                              onClick={() => updateInvestment(investment.id, 'completed', investment.profit_amount)}
+                              disabled={updating === investment.id}
+                              className="bg-electric-blue hover:bg-electric-blue/90"
+                            >
+                              {updating === investment.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                              )}
+                              Mark Completed
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             onClick={() => sendProfitEmail(investment)}
@@ -1315,7 +1340,7 @@ const Admin = () => {
                             )}
                             Send Profit Email
                           </Button>
-                          {investment.status !== 'cancelled' && (
+                          {investment.status !== 'cancelled' && investment.status !== 'completed' && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -1363,12 +1388,16 @@ const Admin = () => {
                             {withdrawal.status}
                           </span>
                         </div>
-                        <div className="text-sm text-slate-400 space-y-1">
-                          <p>User: {withdrawal.profiles?.full_name || 'Unknown'}</p>
-                          <p>Email: {withdrawal.profiles?.email || 'N/A'}</p>
-                          <p>Country: {withdrawal.country}</p>
-                          <p>Payment Details: {withdrawal.payment_details}</p>
-                          <p>Date: {new Date(withdrawal.created_at).toLocaleDateString()}</p>
+                        <div className="text-sm space-y-1">
+                          <p className="text-white font-medium text-base">
+                            {withdrawal.profiles?.full_name || withdrawal.profiles?.email?.split('@')[0] || 'User'}
+                          </p>
+                          <p className="text-slate-300 font-medium">
+                            {withdrawal.profiles?.email || 'No email'}
+                          </p>
+                          <p className="text-slate-400">Country: {withdrawal.country}</p>
+                          <p className="text-slate-400">Payment Details: {withdrawal.payment_details}</p>
+                          <p className="text-slate-400">Date: {new Date(withdrawal.created_at).toLocaleDateString()}</p>
                           {withdrawal.hold_message && (
                             <p className="text-orange-400">
                               <AlertCircle className="w-3 h-3 inline mr-1" />
