@@ -586,8 +586,12 @@ const Dashboard = () => {
         toast.error('Please enter a valid amount');
         return;
       }
-      if (amount > totalProfit) {
-        toast.error('Amount exceeds available profit');
+      if (amount > availableForWithdrawal) {
+        toast.error('Amount exceeds available balance for withdrawal');
+        return;
+      }
+      if (availableForWithdrawal <= 0) {
+        toast.error('No funds available for withdrawal');
         return;
       }
       setProcessingWithdrawal(true);
@@ -755,7 +759,25 @@ const Dashboard = () => {
 
   const totalProfit = investments.reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
   
-  // Portfolio balance = Total Investment + Total Profit
+  // Check if any investment is completed (allows full withdrawal)
+  const hasCompletedInvestment = investments.some(i => i.status === 'completed');
+  
+  // Profit from completed investments only (can be withdrawn fully with investment)
+  const completedInvestmentTotal = investments
+    .filter(i => i.status === 'completed')
+    .reduce((sum, i) => sum + Number(i.amount) + Number(i.profit_amount || 0), 0);
+  
+  // Profit from active/ongoing investments (only profit can be withdrawn)
+  const activeProfit = investments
+    .filter(i => i.status === 'active')
+    .reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
+  
+  // Available for withdrawal:
+  // - If completed: full portfolio (investment + profit) from completed investments
+  // - If ongoing: only profit from active investments
+  const availableForWithdrawal = completedInvestmentTotal + activeProfit;
+  
+  // Portfolio balance = Total Investment + Total Profit (for display)
   const portfolioBalance = totalInvested + totalProfit;
 
   const getStatusIcon = (status: string) => {
@@ -1064,12 +1086,40 @@ const Dashboard = () => {
                 <div className="space-y-3 sm:space-y-4 animate-fade-in">
                   <div className="text-center mb-4 sm:mb-6">
                     <p className="text-xl sm:text-2xl font-bold text-green-500 mb-0.5 sm:mb-1">
-                      ${portfolioBalance.toLocaleString()}
+                      ${availableForWithdrawal.toLocaleString()}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground">{t('availableForWithdrawal')}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                      ({t('investment') || 'Investment'}: ${totalInvested.toLocaleString()} + {t('profit')}: ${totalProfit.toLocaleString()})
-                    </p>
+                    
+                    {/* Show breakdown based on investment status */}
+                    {hasCompletedInvestment && completedInvestmentTotal > 0 && (
+                      <div className="mt-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-green-400">
+                          ✓ {t('completedInvestments') || 'Completed Investments'}: ${completedInvestmentTotal.toLocaleString()}
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                          ({t('investmentPlusProfit') || 'Investment + Profit available'})
+                        </p>
+                      </div>
+                    )}
+                    
+                    {activeProfit > 0 && (
+                      <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-amber-400">
+                          ⏳ {t('activeProfit') || 'Active Trading Profit'}: ${activeProfit.toLocaleString()}
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                          ({t('profitOnlyWithdrawal') || 'Only profit withdrawable while trading'})
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!hasCompletedInvestment && activeProfit === 0 && totalInvested > 0 && (
+                      <div className="mt-2 p-2 bg-muted/50 border border-border rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
+                          {t('noWithdrawalAvailable') || 'Investment still in progress. Withdraw available once trading completes.'}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5 sm:space-y-2">
@@ -1087,10 +1137,11 @@ const Dashboard = () => {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setWithdrawAmount(portfolioBalance.toString())}
-                      className="text-xs sm:text-sm text-green-500 hover:underline"
+                      onClick={() => setWithdrawAmount(availableForWithdrawal.toString())}
+                      disabled={availableForWithdrawal <= 0}
+                      className="text-xs sm:text-sm text-green-500 hover:underline disabled:text-muted-foreground disabled:no-underline disabled:cursor-not-allowed"
                     >
-                      {t('withdrawAll')}
+                      {t('withdrawAll')} (${availableForWithdrawal.toLocaleString()})
                     </button>
                   </div>
                 </div>

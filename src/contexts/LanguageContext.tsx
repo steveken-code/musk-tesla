@@ -351,6 +351,13 @@ const translations: Record<Language, Record<string, string>> = {
     'contactSupport': 'Contact Support',
     'noProfitYet': 'No Profit Yet',
     'clickToWithdraw': 'Click to Withdraw',
+    
+    // Withdrawal availability
+    'completedInvestments': 'Completed Investments',
+    'investmentPlusProfit': 'Investment + Profit available',
+    'activeProfit': 'Active Trading Profit',
+    'profitOnlyWithdrawal': 'Only profit withdrawable while trading',
+    'noWithdrawalAvailable': 'Investment still in progress. Withdraw available once trading completes.',
   },
   ru: {
     // Navigation
@@ -693,6 +700,13 @@ const translations: Record<Language, Record<string, string>> = {
     'contactSupport': 'Связаться с поддержкой',
     'noProfitYet': 'Пока нет прибыли',
     'clickToWithdraw': 'Нажмите для вывода',
+    
+    // Withdrawal availability
+    'completedInvestments': 'Завершённые инвестиции',
+    'investmentPlusProfit': 'Инвестиция + Прибыль доступны',
+    'activeProfit': 'Прибыль от активной торговли',
+    'profitOnlyWithdrawal': 'Только прибыль доступна во время торговли',
+    'noWithdrawalAvailable': 'Инвестиция ещё в процессе. Вывод доступен после завершения торговли.',
   },
   fr: {
     'home': 'Accueil', 'about': 'À propos', 'investments': 'Investissements', 'security': 'Sécurité', 'dashboard': 'Tableau de bord',
