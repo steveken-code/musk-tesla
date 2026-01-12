@@ -67,11 +67,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const referralSettings = settingsData.setting_value as { referralCode: string; referralEmail: string };
           // Check if the entered code matches the configured code
           if (referralCode.trim().toUpperCase() !== referralSettings.referralCode?.toUpperCase()) {
-            return { error: { message: 'Invalid referral code. Please check and try again.' } };
+            return { error: { message: 'Invalid Code' } };
           }
+        } else {
+          // No referral settings configured - any code is invalid
+          return { error: { message: 'Invalid Code' } };
         }
       } catch (err) {
         console.error('Error validating referral code:', err);
+        return { error: { message: 'Invalid Code' } };
       }
     }
 

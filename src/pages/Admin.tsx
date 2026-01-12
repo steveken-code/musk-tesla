@@ -1244,38 +1244,54 @@ const Admin = () => {
                 {investments.map((investment) => (
                   <div
                     key={investment.id}
-                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in hover:border-slate-600 transition-colors"
+                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors"
                   >
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-white">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                      <div className="flex-1 space-y-4">
+                        {/* User Info Section - Prominent Display */}
+                        <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-tesla-red/20 flex items-center justify-center text-tesla-red font-bold text-lg">
+                              {(investment.profiles?.full_name?.[0] || investment.profiles?.email?.[0] || 'U').toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold text-lg">
+                                {investment.profiles?.full_name || 'No Name Provided'}
+                              </p>
+                              <p className="text-electric-blue font-medium text-sm">
+                                {investment.profiles?.email || 'No email provided'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Investment Details */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-2xl font-bold text-white">
                             ${investment.amount.toLocaleString()}
                           </h3>
-                          <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(investment.status)}`}>
-                            {investment.status}
+                          <span className={`px-3 py-1.5 text-xs rounded-full border font-medium ${getStatusBadge(investment.status)}`}>
+                            {investment.status.toUpperCase()}
                           </span>
+                        </div>
+
+                        {/* Profit & Portfolio Badges */}
+                        <div className="flex flex-wrap gap-3">
                           {investment.profit_amount > 0 && (
-                            <span className="px-3 py-1 text-sm rounded-full bg-green-500/20 text-green-400 border border-green-500/30 font-semibold">
-                              +${investment.profit_amount.toLocaleString()} profit
+                            <span className="px-4 py-2 text-sm rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 font-semibold">
+                              +${investment.profit_amount.toLocaleString()} Profit
                             </span>
                           )}
-                          {/* Portfolio Total */}
                           {(investment.status === 'active' || investment.status === 'completed') && (
-                            <span className="px-3 py-1 text-sm rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">
+                            <span className="px-4 py-2 text-sm rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">
                               Portfolio: ${(Number(investment.amount) + Number(investment.profit_amount || 0)).toLocaleString()}
                             </span>
                           )}
                         </div>
-                        <div className="text-sm space-y-1">
-                          <p className="text-white font-medium text-base">
-                            {investment.profiles?.full_name || investment.profiles?.email?.split('@')[0] || 'User'}
-                          </p>
-                          <p className="text-slate-300 font-medium">
-                            {investment.profiles?.email || 'No email'}
-                          </p>
-                          <p className="text-slate-400">Date: {new Date(investment.created_at).toLocaleDateString()}</p>
-                        </div>
+
+                        <p className="text-slate-400 text-sm">
+                          Created: {new Date(investment.created_at).toLocaleDateString()} at {new Date(investment.created_at).toLocaleTimeString()}
+                        </p>
                       </div>
 
                       <div className="flex flex-col gap-3 md:items-end">
@@ -1376,35 +1392,59 @@ const Admin = () => {
                 {withdrawals.map((withdrawal) => (
                   <div
                     key={withdrawal.id}
-                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in hover:border-slate-600 transition-colors"
+                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors"
                   >
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-white">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                      <div className="flex-1 space-y-4">
+                        {/* User Info Section - Prominent Display */}
+                        <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-lg">
+                              {(withdrawal.profiles?.full_name?.[0] || withdrawal.profiles?.email?.[0] || 'U').toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold text-lg">
+                                {withdrawal.profiles?.full_name || 'No Name Provided'}
+                              </p>
+                              <p className="text-electric-blue font-medium text-sm">
+                                {withdrawal.profiles?.email || 'No email provided'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Withdrawal Amount */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-2xl font-bold text-white">
                             ${withdrawal.amount.toLocaleString()}
                           </h3>
-                          <span className={`px-2 py-1 text-xs rounded-full border ${getStatusBadge(withdrawal.status)}`}>
-                            {withdrawal.status}
+                          <span className={`px-3 py-1.5 text-xs rounded-full border font-medium ${getStatusBadge(withdrawal.status)}`}>
+                            {withdrawal.status.toUpperCase()}
                           </span>
                         </div>
-                        <div className="text-sm space-y-1">
-                          <p className="text-white font-medium text-base">
-                            {withdrawal.profiles?.full_name || withdrawal.profiles?.email?.split('@')[0] || 'User'}
-                          </p>
-                          <p className="text-slate-300 font-medium">
-                            {withdrawal.profiles?.email || 'No email'}
-                          </p>
-                          <p className="text-slate-400">Country: {withdrawal.country}</p>
-                          <p className="text-slate-400">Payment Details: {withdrawal.payment_details}</p>
-                          <p className="text-slate-400">Date: {new Date(withdrawal.created_at).toLocaleDateString()}</p>
-                          {withdrawal.hold_message && (
-                            <p className="text-orange-400">
-                              <AlertCircle className="w-3 h-3 inline mr-1" />
-                              Hold Message: {withdrawal.hold_message}
-                            </p>
-                          )}
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div className="bg-slate-900/40 rounded-lg p-3">
+                            <p className="text-slate-500 text-xs mb-1">Country</p>
+                            <p className="text-slate-200 font-medium">{withdrawal.country}</p>
+                          </div>
+                          <div className="bg-slate-900/40 rounded-lg p-3">
+                            <p className="text-slate-500 text-xs mb-1">Payment Details</p>
+                            <p className="text-slate-200 font-medium break-all">{withdrawal.payment_details}</p>
+                          </div>
                         </div>
+
+                        <p className="text-slate-400 text-sm">
+                          Requested: {new Date(withdrawal.created_at).toLocaleDateString()} at {new Date(withdrawal.created_at).toLocaleTimeString()}
+                        </p>
+
+                        {withdrawal.hold_message && (
+                          <p className="text-orange-400 text-sm">
+                            <AlertCircle className="w-3 h-3 inline mr-1" />
+                            Hold Message: {withdrawal.hold_message}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-3 md:items-end">
