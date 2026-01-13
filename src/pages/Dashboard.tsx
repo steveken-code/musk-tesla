@@ -108,11 +108,20 @@ const USD_TO_RUB = 96.5;
 const STORAGE_KEY_INVEST_AMOUNT = 'tesla_invest_amount';
 const STORAGE_KEY_SHOW_PAYMENT = 'tesla_show_payment';
 
-const withdrawalMethods = [
-  { code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' },
-  { code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number' },
-  { code: 'crypto', name: 'Crypto', icon: Bitcoin, description: 'USDT TRC20' },
-];
+// Base withdrawal methods - phone (SBP) only available for Russia
+const getWithdrawalMethods = (country: string) => {
+  const methods = [
+    { code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' },
+    { code: 'crypto', name: 'Crypto', icon: Bitcoin, description: 'USDT TRC20' },
+  ];
+  
+  // Only add SBP/Phone option for Russia
+  if (country === 'RU') {
+    methods.splice(1, 0, { code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number' });
+  }
+  
+  return methods;
+};
 
 const allCountries = [
   { code: 'RU', name: 'Russia', flag: '🇷🇺' },
@@ -571,6 +580,16 @@ const Dashboard = () => {
   };
 
   const handleWithdrawStart = () => {
+    // Check if there's already a pending or on_hold withdrawal
+    const hasPendingWithdrawal = withdrawals.some(
+      w => w.status === 'pending' || w.status === 'on_hold'
+    );
+    
+    if (hasPendingWithdrawal) {
+      toast.error(t('pendingWithdrawalExists') || 'You already have a pending withdrawal request. Please wait for it to be processed.');
+      return;
+    }
+    
     setShowWithdrawalModal(true);
     setWithdrawStep(1);
     setWithdrawAmount('');
@@ -897,7 +916,7 @@ const Dashboard = () => {
         </div>
 
         {/* Active Withdrawal Status */}
-        {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && (
+        {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && withdrawals[0].status !== 'approved' && (
           <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg sm:rounded-xl border animate-fade-in ${
             withdrawals[0].status === 'on_hold' 
               ? 'bg-orange-500/10 border-orange-500/30' 
@@ -910,7 +929,11 @@ const Dashboard = () => {
                 {getStatusIcon(withdrawals[0].status)}
                 <div>
                   <span className="font-semibold capitalize block text-sm sm:text-base">
-                    Withdrawal {withdrawals[0].status === 'on_hold' ? 'On Hold' : withdrawals[0].status}
+                    {withdrawals[0].status === 'on_hold' 
+                      ? t('withdrawalOnHold') 
+                      : withdrawals[0].status === 'pending'
+                      ? t('withdrawalPending')
+                      : t('withdrawalCompleted')}
                   </span>
                   <span className="text-xs sm:text-sm text-muted-foreground">
                     ${Number(withdrawals[0].amount).toLocaleString()}
@@ -927,7 +950,7 @@ const Dashboard = () => {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  Contact Support
+                  {t('contactSupport')}
                 </a>
               )}
             </div>
@@ -938,7 +961,7 @@ const Dashboard = () => {
         <div className="mb-4 sm:mb-6">
           <Link to="/transactions" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
             <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            View Full Transaction History →
+            {t('viewTransactionHistory') || 'View Full Transaction History'} →
           </Link>
         </div>
 
@@ -1206,7 +1229,7 @@ const Dashboard = () => {
                 <div className="space-y-4 animate-fade-in">
                   <Label>{t('selectMethod')}</Label>
                   <div className="space-y-3">
-                    {withdrawalMethods.map(method => (
+                    {getWithdrawalMethods(withdrawCountry).map(method => (
                       <button
                         key={method.code}
                         type="button"

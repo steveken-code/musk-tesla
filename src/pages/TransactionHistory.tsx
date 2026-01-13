@@ -221,7 +221,7 @@ const TransactionHistory = () => {
             </Link>
             <img src={teslaLogo} alt="Tesla" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
           </div>
-          <h1 className="text-lg font-bold text-foreground">Transaction History</h1>
+          <h1 className="text-lg font-bold text-foreground">{t('viewTransactionHistory') || 'Transaction History'}</h1>
         </div>
       </header>
 
@@ -231,7 +231,7 @@ const TransactionHistory = () => {
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-tesla-red/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
-              <span className="text-muted-foreground text-xs">Total Invested</span>
+              <span className="text-muted-foreground text-xs">{t('totalInvested')}</span>
             </div>
             <p className="text-xl font-bold">${totalInvested.toLocaleString()}</p>
           </div>
@@ -239,7 +239,7 @@ const TransactionHistory = () => {
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-green-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-              <span className="text-muted-foreground text-xs">Total Profit</span>
+              <span className="text-muted-foreground text-xs">{t('totalProfit')}</span>
             </div>
             <p className="text-xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
           </div>
@@ -247,7 +247,7 @@ const TransactionHistory = () => {
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-electric-blue/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
-              <span className="text-muted-foreground text-xs">Withdrawn</span>
+              <span className="text-muted-foreground text-xs">{t('withdrawn') || 'Withdrawn'}</span>
             </div>
             <p className="text-xl font-bold text-electric-blue">${totalWithdrawn.toLocaleString()}</p>
           </div>
@@ -255,7 +255,7 @@ const TransactionHistory = () => {
           <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-4 hover:border-yellow-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-              <span className="text-muted-foreground text-xs">Pending</span>
+              <span className="text-muted-foreground text-xs">{t('pending')}</span>
             </div>
             <p className="text-xl font-bold text-yellow-500">${pendingWithdrawals.toLocaleString()}</p>
           </div>

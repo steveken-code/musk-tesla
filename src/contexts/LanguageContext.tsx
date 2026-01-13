@@ -358,6 +358,9 @@ const translations: Record<Language, Record<string, string>> = {
     'activeProfit': 'Active Trading Profit',
     'profitOnlyWithdrawal': 'Only profit withdrawable while trading',
     'noWithdrawalAvailable': 'Investment still in progress. Withdraw available once trading completes.',
+    'viewTransactionHistory': 'View Full Transaction History',
+    'pendingWithdrawalExists': 'You already have a pending withdrawal request. Please wait for it to be processed.',
+    'withdrawn': 'Withdrawn',
   },
   ru: {
     // Navigation
@@ -707,6 +710,9 @@ const translations: Record<Language, Record<string, string>> = {
     'activeProfit': 'Прибыль от активной торговли',
     'profitOnlyWithdrawal': 'Только прибыль доступна во время торговли',
     'noWithdrawalAvailable': 'Инвестиция ещё в процессе. Вывод доступен после завершения торговли.',
+    'viewTransactionHistory': 'Посмотреть полную историю транзакций',
+    'pendingWithdrawalExists': 'У вас уже есть ожидающая заявка на вывод. Пожалуйста, дождитесь её обработки.',
+    'withdrawn': 'Выведено',
   },
   fr: {
     'home': 'Accueil', 'about': 'À propos', 'investments': 'Investissements', 'security': 'Sécurité', 'dashboard': 'Tableau de bord',
