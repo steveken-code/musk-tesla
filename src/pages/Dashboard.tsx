@@ -1233,17 +1233,17 @@ const Dashboard = () => {
                     ))}
                   </div>
 
-                  {/* Sberbank Notice */}
-                  {(withdrawMethod === 'card' || withdrawMethod === 'phone') && (
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 animate-fade-in">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-amber-400">
-                          {t('sberbankNotice')}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                   {/* Sberbank Notice - Only for Russia */}
+                   {(withdrawMethod === 'card' || withdrawMethod === 'phone') && withdrawCountry === 'RU' && (
+                     <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 animate-fade-in">
+                       <div className="flex items-start gap-3">
+                         <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                         <p className="text-sm text-amber-400">
+                           {t('sberbankNotice')}
+                         </p>
+                       </div>
+                     </div>
+                   )}
                 </div>
               )}
 

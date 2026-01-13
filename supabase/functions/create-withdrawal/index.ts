@@ -182,12 +182,12 @@ Deno.serve(async (req: Request) => {
     // Use service role client for database operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user's available balance (profit from active investments)
+    // Get user's investments (both active and completed)
     const { data: investments, error: investmentsError } = await supabaseAdmin
       .from('investments')
       .select('amount, profit_amount, status')
       .eq('user_id', user.id)
-      .eq('status', 'active');
+      .in('status', ['active', 'completed']);
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -197,10 +197,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const availableBalance = investments?.reduce(
-      (sum, inv) => sum + (inv.profit_amount || 0), 
-      0
-    ) || 0;
+    // Calculate available balance:
+    // - Completed investments: full amount + profit available
+    // - Active investments: only profit available
+    let availableBalance = 0;
+    investments?.forEach(inv => {
+      if (inv.status === 'completed') {
+        // Full investment + profit available for completed
+        availableBalance += (inv.amount || 0) + (inv.profit_amount || 0);
+      } else if (inv.status === 'active') {
+        // Only profit available for active
+        availableBalance += (inv.profit_amount || 0);
+      }
+    });
 
     console.log('Available balance:', availableBalance, 'Requested amount:', numericAmount);
 
