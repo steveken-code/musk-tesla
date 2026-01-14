@@ -17,6 +17,8 @@ import SupportButtons from '@/components/SupportButtons';
 import TeslaChart from '@/components/TeslaChart';
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
+import CryptoPaymentDetails from '@/components/CryptoPaymentDetails';
+import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 
@@ -387,6 +389,14 @@ const Dashboard = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const previousProfitsRef = useRef<Record<string, number>>({});
 
+  // Investment country state
+  const [investCountry, setInvestCountry] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('tesla_invest_country') || '';
+    }
+    return '';
+  });
+
   // Withdrawal state
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
@@ -403,11 +413,20 @@ const Dashboard = () => {
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
 
+  // Persist investment country to localStorage
+  useEffect(() => {
+    if (investCountry) {
+      localStorage.setItem('tesla_invest_country', investCountry);
+    } else {
+      localStorage.removeItem('tesla_invest_country');
+    }
+  }, [investCountry]);
+
   // Persist investment amount to localStorage
   useEffect(() => {
-    if (investAmount) {
+    if (investAmount && investCountry) {
       localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
-      // Show payment details if amount is valid (>= 100)
+      // Show payment details if amount is valid (>= 100) and country is selected
       if (parseFloat(investAmount) >= 100) {
         localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
         setShowPaymentDetails(true);
@@ -415,13 +434,8 @@ const Dashboard = () => {
         localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'false');
         setShowPaymentDetails(false);
       }
-    } else {
-      // User cleared the amount - remove from storage
-      localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-      localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-      setShowPaymentDetails(false);
     }
-  }, [investAmount]);
+  }, [investAmount, investCountry]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -978,47 +992,67 @@ const Dashboard = () => {
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
               {t('makeNewInvestment')}
             </h2>
-            <form onSubmit={handleInvest} className="space-y-3 sm:space-y-4">
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
-                <Input
-                  id="amount"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={t('enterAmount')}
-                  value={investAmount}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, '');
-                    setInvestAmount(value);
-                  }}
-                  className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
-                  required
+            <form onSubmit={handleInvest} className="space-y-4 sm:space-y-5">
+              {/* Step 1: Country Selection */}
+              <div className="relative">
+                <InvestmentCountrySelector
+                  selectedCountry={investCountry}
+                  onCountrySelect={setInvestCountry}
+                  countries={allCountries}
                 />
-                {investAmount && parseFloat(investAmount) >= 100 && (
-                  <div className="text-xs sm:text-sm text-muted-foreground">
-                    {t('exchangeRate')} {USD_TO_RUB} ₽
-                  </div>
-                )}
               </div>
+
+              {/* Step 2: Amount Input - Only show after country is selected */}
+              {investCountry && (
+                <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                  <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
+                  <Input
+                    id="amount"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder={t('enterAmount')}
+                    value={investAmount}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setInvestAmount(value);
+                    }}
+                    className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
+                    required
+                  />
+                  {/* Only show RUB conversion for Russia */}
+                  {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      {t('exchangeRate')} {USD_TO_RUB} ₽
+                    </div>
+                  )}
+                </div>
+              )}
               
-              {loadingPayment && (
+              {loadingPayment && investCountry && (
                 <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
                   <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-tesla-red mr-2" />
                   <span className="text-muted-foreground text-xs sm:text-sm">{t('loadingPayment')}</span>
                 </div>
               )}
               
-              {showPaymentDetails && !loadingPayment && (
-                <PaymentDetails 
-                  amount={parseFloat(investAmount)} 
-                  rubAmount={rubAmount} 
-                />
+              {/* Show payment details based on country */}
+              {showPaymentDetails && !loadingPayment && investCountry && (
+                investCountry === 'RU' ? (
+                  <PaymentDetails 
+                    amount={parseFloat(investAmount)} 
+                    rubAmount={rubAmount} 
+                  />
+                ) : (
+                  <CryptoPaymentDetails 
+                    amount={parseFloat(investAmount)} 
+                  />
+                )
               )}
               
               <Button
                 type="submit"
                 className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                disabled={submitting || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
+                disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
               >
                 {submitting ? (
                   <>
