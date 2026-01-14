@@ -125,12 +125,10 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
 
       {/* Important Notice */}
       <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/30">
-        <p className="text-xs text-red-400 font-medium mb-1">⚠️ {t('important') || 'Important'}</p>
-        <ul className="text-xs text-muted-foreground space-y-1">
-          <li>• {t('cryptoNote1') || 'Only send USDT on the specified network'}</li>
-          <li>• {t('cryptoNote2') || 'Sending other tokens may result in permanent loss'}</li>
-          <li>• {t('cryptoNote3') || 'Double-check the wallet address before sending'}</li>
-        </ul>
+        <p className="text-xs text-red-400 font-medium mb-2">⚠️ {t('important') || 'Important'}</p>
+        <p className="text-sm text-red-400 font-semibold leading-relaxed">
+          {t('cryptoWarning') || 'Please make sure that only USDT deposit is made via this address. Otherwise, your investment will not be activated.'}
+        </p>
       </div>
       
       {/* Investment Guidelines */}

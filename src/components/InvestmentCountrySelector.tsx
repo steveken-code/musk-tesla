@@ -90,7 +90,7 @@ const InvestmentCountrySelector = ({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 type="text"
-                placeholder={t('searchCountry') || 'Search countries...'}
+                placeholder={t('searchCountry') || 'Search Country'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-8 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 h-10"
