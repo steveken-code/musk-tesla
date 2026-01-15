@@ -9,22 +9,26 @@ import {
 import { Globe } from 'lucide-react';
 
 const languages = [
-  { code: 'en', label: '🇺🇸 English', name: 'english' },
-  { code: 'ru', label: '🇷🇺 Русский', name: 'russian' },
-  { code: 'fr', label: '🇫🇷 Français', name: 'french' },
-  { code: 'de', label: '🇩🇪 Deutsch', name: 'german' },
-  { code: 'es', label: '🇪🇸 Español', name: 'spanish' },
-  { code: 'zh', label: '🇨🇳 中文', name: 'chinese' },
   { code: 'ar', label: '🇸🇦 العربية', name: 'arabic' },
-  { code: 'pt', label: '🇧🇷 Português', name: 'portuguese' },
+  { code: 'cs', label: '🇨🇿 Čeština', name: 'czech' },
+  { code: 'de', label: '🇩🇪 Deutsch', name: 'german' },
+  { code: 'el', label: '🇬🇷 Ελληνικά', name: 'greek' },
+  { code: 'en', label: '🇺🇸 English', name: 'english' },
+  { code: 'es', label: '🇪🇸 Español', name: 'spanish' },
+  { code: 'fr', label: '🇫🇷 Français', name: 'french' },
+  { code: 'hi', label: '🇮🇳 हिंदी', name: 'hindi' },
+  { code: 'hu', label: '🇭🇺 Magyar', name: 'hungarian' },
+  { code: 'it', label: '🇮🇹 Italiano', name: 'italian' },
   { code: 'ja', label: '🇯🇵 日本語', name: 'japanese' },
   { code: 'ko', label: '🇰🇷 한국어', name: 'korean' },
-  { code: 'hi', label: '🇮🇳 हिंदी', name: 'hindi' },
-  { code: 'it', label: '🇮🇹 Italiano', name: 'italian' },
+  { code: 'pl', label: '🇵🇱 Polski', name: 'polish' },
+  { code: 'pt', label: '🇧🇷 Português', name: 'portuguese' },
+  { code: 'ro', label: '🇷🇴 Română', name: 'romanian' },
+  { code: 'ru', label: '🇷🇺 Русский', name: 'russian' },
+  { code: 'th', label: '🇹🇭 ไทย', name: 'thai' },
   { code: 'tr', label: '🇹🇷 Türkçe', name: 'turkish' },
   { code: 'vi', label: '🇻🇳 Tiếng Việt', name: 'vietnamese' },
-  { code: 'th', label: '🇹🇭 ไทย', name: 'thai' },
-  { code: 'hu', label: '🇭🇺 Magyar', name: 'hungarian' },
+  { code: 'zh', label: '🇨🇳 中文', name: 'chinese' },
 ];
 
 const LanguageSelector = () => {
