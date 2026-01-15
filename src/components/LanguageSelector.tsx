@@ -24,6 +24,7 @@ const languages = [
   { code: 'tr', label: '🇹🇷 Türkçe', name: 'turkish' },
   { code: 'vi', label: '🇻🇳 Tiếng Việt', name: 'vietnamese' },
   { code: 'th', label: '🇹🇭 ไทย', name: 'thai' },
+  { code: 'hu', label: '🇭🇺 Magyar', name: 'hungarian' },
 ];
 
 const LanguageSelector = () => {

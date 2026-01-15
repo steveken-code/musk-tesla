@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th';
+type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th' | 'hu';
 
 interface LanguageContextType {
   language: Language;
@@ -124,6 +124,7 @@ const translations: Record<Language, Record<string, string>> = {
     'turkish': 'Türkçe',
     'vietnamese': 'Tiếng Việt',
     'thai': 'ไทย',
+    'hungarian': 'Magyar',
     
     // Footer
     'footerDescription': 'Tesla Stock is a premier investment platform specializing in electric vehicle and sustainable energy stocks. We provide secure, transparent, and profitable investment opportunities.',
@@ -1504,6 +1505,194 @@ const translations: Record<Language, Record<string, string>> = {
     'testimonialTitle': 'นักลงทุนพูดอะไร', 'testimonialSubtitle': 'เข้าร่วมกับนักลงทุนที่พอใจหลายพันคน',
     'investor': 'นักลงทุน', 'marketLeader': 'ผู้นำตลาด', 'stockGrowthTitle': 'หุ้น Tesla:', 'exponentialGrowth': 'การเติบโตแบบเอ็กซ์โพเนนเชียล',
     'stockGrowthDesc': 'Tesla มีประสิทธิภาพเหนือตลาดอย่างสม่ำเสมอ', 'fiveYear': 'ผลตอบแทน 5 ปี', 'sinceIPO': 'ตั้งแต่ IPO',
+  },
+  hu: {
+    // Navigation
+    'home': 'Főoldal', 'about': 'Rólunk', 'investments': 'Befektetések', 'security': 'Biztonság', 'dashboard': 'Irányítópult',
+    'invest': 'Befektetés', 'signOut': 'Kijelentkezés', 'admin': 'Admin', 'totalInvested': 'Összes befektetés', 'totalProfit': 'Összes profit',
+    'pending': 'Függőben', 'active': 'Aktív', 'marketCap': 'Piaci kapitalizáció', 'stockPrice': 'Részvényárfolyam', 'globalDeliveries': 'Globális szállítások', 'superchargers': 'Szupersarzsölők',
+    'makeNewInvestment': 'Új befektetés', 'investmentAmount': 'Befektetés összege (USD)', 'enterAmount': 'Adja meg az összeget (min $100)',
+    'submitInvestment': 'Befektetési kérelem beküldése', 'processingText': 'Feldolgozás...', 'loadingPayment': 'Fizetési adatok betöltése...',
+    'contactViaWhatsapp': 'Csapatunk WhatsApp-on keresztül fog kapcsolatba lépni Önnel a befektetés befejezéséhez',
+    'minInvestment': 'A minimális befektetés $100', 'investmentSubmitted': 'Befektetési kérelem elküldve! Csapatunk hamarosan jelentkezik.',
+    'paymentDetails': 'Fizetési adatok', 'investmentDetails': 'Befektetés részletei', 'bankName': 'Bank neve', 'accountHolder': 'Számlatulajdonos',
+    'cardNumber': 'Kártyaszám', 'copied': 'Kártyaszám másolva!', 'sendReceiptVia': 'Küldje el a fizetési bizonylatot WhatsApp-on átutalás után',
+    'dashboardSubtitle': 'Kezelje befektetéseit és kövesse nyereségét',
+    'investmentHistory': 'Befektetési előzmények', 'noInvestments': 'Még nincs befektetése. Kezdje el utazását még ma!', 'profit': 'profit',
+    'performanceChart': 'Befektetési teljesítmény', 'teslaStock': 'Tesla részvény teljesítménye',
+    'profitNotification': 'Új profit érkezett!', 'profitMessage': 'Befektetése keresett',
+    'usdToRub': 'RUB-ra átszámítva', 'exchangeRate': 'Árfolyam: 1 USD = ',
+    
+    // Auth
+    'signIn': 'Bejelentkezés', 'signUp': 'Regisztráció', 'email': 'E-mail', 'password': 'Jelszó', 'fullName': 'Teljes név',
+    'welcomeBack': 'Üdvözöljük újra', 'createAccount': 'Fiók létrehozása', 'forgotPassword': 'Elfelejtette jelszavát?',
+    'resetPassword': 'Jelszó visszaállítása', 'enterPhone': 'Adja meg regisztrált telefonszámát', 'phoneNumber': 'Telefonszám',
+    'newPassword': 'Új jelszó', 'confirmPassword': 'Jelszó megerősítése', 'passwordChanged': 'Jelszó sikeresen megváltoztatva!',
+    'invalidPhone': 'Érvénytelen telefonszám', 'backToLogin': 'Vissza a bejelentkezéshez',
+    'signInSubtitle': 'Jelentkezzen be fiókjába', 'createAccountSubtitle': 'Hozzon létre fiókot a kezdéshez',
+    'continueWithGoogle': 'Folytatás Google-lal', 'connecting': 'Kapcsolódás...', 'or': 'vagy',
+    'enterFullName': 'Adja meg teljes nevét', 'enterEmail': 'Adja meg e-mail címét', 'enterPassword': 'Adja meg jelszavát',
+    'noAccount': 'Nincs fiókja? ', 'alreadyHaveAccount': 'Van már fiókja? ',
+    'termsAgreement': 'A folytatással elfogadja a Szolgáltatási feltételeket és az Adatvédelmi szabályzatot',
+    
+    // Hero
+    'heroTitle': 'Fektessen be a', 'heroTitleHighlight': 'Elektromos mobilitás jövőjébe',
+    'heroSubtitle': 'Kereskedjen és kövesse a Tesla részvényeket valós időben. Csatlakozzon több ezer befektetőhöz, akik a Tesla forradalmi növekedéséből profitálnak.',
+    'getStarted': 'Kezdje el', 'learnMore': 'Tudjon meg többet',
+    
+    // Language
+    'language': 'Nyelv', 'english': 'English', 'russian': 'Русский', 'french': 'Français', 'german': 'Deutsch',
+    'spanish': 'Español', 'chinese': '中文', 'arabic': 'العربية', 'portuguese': 'Português', 'japanese': '日本語',
+    'korean': '한국어', 'hindi': 'हिंदी', 'italian': 'Italiano', 'turkish': 'Türkçe', 'vietnamese': 'Tiếng Việt',
+    'thai': 'ไทย', 'hungarian': 'Magyar',
+    
+    // Footer
+    'footerDescription': 'A Tesla Stock egy prémium befektetési platform, amely elektromos járművek és fenntartható energia részvényekre specializálódott.',
+    'company': 'Vállalat', 'aboutUs': 'Rólunk', 'ourTeam': 'Csapatunk', 'careers': 'Karrier', 'contact': 'Kapcsolat',
+    'legal': 'Jogi', 'termsOfService': 'Szolgáltatási feltételek', 'privacyPolicy': 'Adatvédelmi szabályzat',
+    'riskDisclosure': 'Kockázati nyilatkozat', 'cookiePolicy': 'Cookie szabályzat',
+    'regulatory': 'Szabályozás', 'license': 'Licenc', 'compliance': 'Megfelelőség', 'amlPolicy': 'AML szabályzat',
+    'investorProtection': 'Befektetővédelem', 'regulatedEntity': 'Szabályozott befektetési platform',
+    'licenseNumber': 'Licencszám', 'allRightsReserved': 'Minden jog fenntartva.',
+    'registrationInfo': 'Bejegyezve Kaliforniában, USA. Nyilvántartási szám: 2024-INV-001234',
+    
+    // Testimonials
+    'testimonialTitle': 'Befektetőink véleménye', 'testimonialSubtitle': 'Csatlakozzon világszerte több ezer elégedett befektetőhöz',
+    'investor': 'Befektető',
+    'testimonial1': 'A Tesla Stock teljesen átalakította befektetési portfóliómat.',
+    'testimonial2': 'Eleinte szkeptikus voltam, de 6 hónap állandó nyereség után már hiszek benne.',
+    'testimonial3': 'A Tesla Stock átláthatósága és professzionalizmusa páratlan.',
+    'testimonial4': 'Kis befektetéssel kezdtem és jelentősen növeltem.',
+    'testimonial5': 'A legjobb befektetési döntés, amit valaha hoztam.',
+    'testimonial6': 'A platform felülmúlta elvárásaimat.',
+    'ceoQuote': 'Fektessen be a jövőbe, ahol az innováció fenntartható hozamokkal találkozik.',
+    
+    // Stock Growth
+    'marketLeader': 'Piacvezető', 'stockGrowthTitle': 'Tesla részvény:', 'exponentialGrowth': 'Exponenciális növekedés',
+    'stockGrowthDesc': 'A Tesla következetesen felülmúlja a piacot.', 'yearToDate': 'Évtől kezdve', 'fiveYear': '5 éves hozam', 'sinceIPO': 'IPO óta',
+    
+    // Admin
+    'adminPasscode': 'Admin jelszó megadása', 'accessDenied': 'Hozzáférés megtagadva', 'enterPasscode': 'Adja meg a jelszót az admin panelhez',
+    'defaultLanguage': 'Alapértelmezett nyelv', 'setDefaultLanguage': 'Alapértelmezett nyelv beállítása',
+    'adminPanel': 'Admin panel', 'paymentSettings': 'Fizetési beállítások', 'withdrawalSettings': 'Kifizetési beállítások',
+    'supportSettings': 'Ügyfélszolgálat beállításai', 'defaultHoldMessage': 'Alapértelmezett visszatartási üzenet',
+    'supportType': 'Támogatás típusa', 'supportPhone': 'Támogatás telefon/felhasználónév',
+    'savePaymentSettings': 'Fizetési beállítások mentése', 'saveWithdrawalSettings': 'Kifizetési beállítások mentése',
+    'saveSupportSettings': 'Támogatási beállítások mentése',
+    'noInvestmentsYet': 'Még nincs befektetés', 'noWithdrawalsYet': 'Még nincs kifizetés',
+    'setProfit': 'Profit beállítása', 'sendProfitEmail': 'Profit e-mail küldése',
+    'approve': 'Jóváhagyás', 'cancel': 'Mégse', 'complete': 'Befejezés', 'processing': 'Feldolgozás', 'hold': 'Visszatartás',
+    'editMessage': 'Üzenet szerkesztése', 'setPending': 'Függőre állítás', 'putOnHold': 'Visszatartásra állítás', 'setProcessing': 'Feldolgozásra állítás',
+    'holdBillingMessage': 'Visszatartási/számlázási üzenet', 'autoGenerateFee': 'Díj automatikus generálása',
+    'quickTemplates': 'Gyors sablonok', 'saveAndNotify': 'Mentés és értesítés',
+    'securityLogs': 'Biztonsági naplók', 'loginAttempts': 'Bejelentkezési kísérletek', 'refreshLogs': 'Frissítés',
+    'success': 'Sikeres', 'failed': 'Sikertelen', 'userAgent': 'User Agent', 'securityInfo': 'Biztonsági információk',
+    'emailMonitoring': 'E-mail figyelés', 'user': 'Felhasználó', 'date': 'Dátum', 'country': 'Ország',
+    'paymentDetailsLabel': 'Fizetési adatok', 'holdMessage': 'Visszatartási üzenet',
+    
+    // Referral
+    'referralCode': 'Ajánlói kód', 'enterReferralCode': 'Adja meg az ajánlói kódot', 'optional': 'opcionális',
+    'invalidReferralCode': 'Érvénytelen ajánlói kód. Kérjük, ellenőrizze és próbálja újra.',
+    'referralSettings': 'Ajánlói beállítások', 'referralEmail': 'Értesítési e-mail', 'saveReferralSettings': 'Ajánlói beállítások mentése',
+    
+    // Portfolio
+    'portfolioBalance': 'Portfólió egyenleg', 'noBalanceYet': 'Még nincs egyenleg', 'investment': 'Befektetés',
+    'investmentSteps': 'A befektetés befejezésének lépései:',
+    'step1': 'Fizessen a fenti számlainformációkra', 'step2': 'Küldje el a fizetési bizonylatot WhatsApp-on', 'step3': 'Kattintson a "Befektetési kérelem beküldése" gombra',
+    
+    // Vision Section
+    'visionTitle': 'A befektetési lehetőség', 'visionSubtitle': 'Miért választják az okos befektetők a Teslát az exponenciális portfólió növekedésért',
+    'sustainableEnergy': 'Fenntartható energia', 'sustainableEnergyDesc': 'A világ megújuló energiára való átállásának felgyorsítása',
+    'autonomousFuture': 'Autonóm jövő', 'autonomousFutureDesc': 'A teljes önvezető technológia megváltoztatja a közlekedést',
+    'globalScale': 'Globális lépték', 'globalScaleDesc': 'Gyártási kiválóság világszerte Gigafactory-kkal',
+    
+    // Investment Reasons
+    'whyInvest': 'Miért fektessen a Teslába?', 'sixReasons': 'Hat meggyőző ok, hogy fontolóra vegye a Teslát portfóliójában',
+    'reason1': 'Piacvezető az EV iparágban 20%+ piaci részesedéssel',
+    'reason2': 'Vertikálisan integrált gyártás, ami csökkenti a költségeket',
+    'reason3': 'Növekvő energiatárolási és napelem üzletág',
+    'reason4': 'Bővülő AI és önvezető képességek',
+    'reason5': 'Erős márkahűség és ügyfélelégedettség',
+    'reason6': 'Globális terjeszkedés új Gigafactory-kkal',
+    'getStartedToday': 'Kezdje el még ma', 'downloadProspectus': 'Tájékoztató letöltése',
+    
+    // Features Section
+    'whyChooseUs': 'Miért válasszon minket', 'featuresTitle': 'Minden, ami a befektetéshez kell',
+    'featuresSubtitle': 'Komplett platform kezdőknek és tapasztalt befektetőknek egyaránt.',
+    'featureSecurity': 'Banki szintű biztonság', 'featureSecurityDesc': 'Befektetéseit 256-bites titkosítás és többlépcsős hitelesítés védi.',
+    'featureInstant': 'Azonnali tranzakciók', 'featureInstantDesc': 'Kereskedjen milliszekundumok alatt nagy teljesítményű infrastruktúránkon.',
+    'featureMobile': 'Mobilra optimalizált', 'featureMobileDesc': 'Teljes körű kereskedési élmény bármilyen eszközön, bárhol a világon.',
+    'featureAnalytics': 'Valós idejű elemzések', 'featureAnalyticsDesc': 'Kövesse portfóliója teljesítményét élő grafikonokkal és részletes elemzésekkel.',
+    'featureWithdrawals': 'Gyors kifizetések', 'featureWithdrawalsDesc': 'Hozzáférés pénzéhez 24 órán belül banki átutalással vagy kriptovalutával.',
+    'featureSupport': '24/7 Támogatás', 'featureSupportDesc': 'Dedikált támogató csapat éjjel-nappal rendelkezésére áll.',
+    
+    // How It Works
+    'gettingStarted': 'Első lépések', 'howItWorks': 'Hogyan működik', 'howItWorksSubtitle': 'Kezdje befektetési útját négy egyszerű lépésben.',
+    'step': 'Lépés',
+    'howStep1Title': 'Hozza létre fiókját', 'howStep1Desc': 'Regisztráljon 2 perc alatt e-mail címével. A hitelesítés gyors és biztonságos.',
+    'howStep2Title': 'Töltse fel tárcáját', 'howStep2Desc': 'Utaljon pénzt banki átutalással, bankkártyával vagy kriptovalutával.',
+    'howStep3Title': 'Fektessen a Teslába', 'howStep3Desc': 'Vásároljon Tesla részvényeket már $100-tól azonnali visszaigazolással.',
+    'howStep4Title': 'Növelje és vegye ki', 'howStep4Desc': 'Figyelje befektetése növekedését és bármikor vegye ki nyereségét.',
+    
+    // Innovations
+    'innovationsTitle': 'Vezető innováció', 'innovationsSubtitle': 'A Tesla technológiai áttörései teljes iparágakat formálnak át',
+    'innovationBattery': 'Akkumulátor technológia', 'innovationBatteryDesc': 'Forradalmi 4680 cellák hosszabb hatótávval, gyorsabb töltéssel és alacsonyabb költségekkel',
+    'innovationBatteryStat': '500+ mérföld hatótáv',
+    'innovationAI': 'AI és teljes önvezetés', 'innovationAIDesc': 'Neurális hálózatok valós világ adatait dolgozzák fel az autonóm vezetés eléréséhez',
+    'innovationAIStat': '150M+ megtett mérföld',
+    'innovationSupercharger': 'Globális Supercharger hálózat', 'innovationSuperchargerDesc': 'A világ leggyorsabb EV töltőhálózata stratégiai globális lefedettséggel',
+    'innovationSuperchargerStat': '50K+ állomás',
+    'innovationSpaceX': 'SpaceX szinergia', 'innovationSpaceXDesc': 'Keresztinnováció a Tesla és SpaceX között áttörő technológiákat hajt',
+    'innovationSpaceXStat': 'Többbolygós jövőkép',
+    
+    // FAQ
+    'support': 'Támogatás', 'faqTitle': 'Gyakran ismételt', 'faqTitleHighlight': 'Kérdések',
+    'faqSubtitle': 'Van kérdése? Mi válaszolunk. Tudjon meg mindent a befektetésről nálunk.',
+    'faqQuestion1': 'Ez valódi Tesla részvény?',
+    'faqAnswer1': 'Igen, valódi Tesla (TSLA) részvénybefektetésekhez biztosítunk hozzáférést szabályozott és engedélyezett pénzügyi partnereken keresztül.',
+    'faqQuestion2': 'Mennyire biztonságosak a befektetéseim?',
+    'faqAnswer2': 'Befektetéseit banki szintű SSL titkosítás védi és biztonságos, szabályozott számlákon tároljuk.',
+    'faqQuestion3': 'Hogyan veszem ki a nyereségemet?',
+    'faqAnswer3': 'A kifizetés egyszerű! Menjen az Irányítópultra, kattintson a "Pénz kivétele" gombra, adja meg a kívánt összeget.',
+    'faqQuestion4': 'Mennyi a minimális befektetési összeg?',
+    'faqAnswer4': 'Már $100-tól elkezdhet befektetni. Ez az alacsony belépési küszöb mindenki számára elérhetővé teszi a Tesla részvényeket.',
+    
+    // Withdrawal Form
+    'withdraw': 'Kivét', 'withdrawProfit': 'Profit kivétele', 'withdrawalAmount': 'Kivét összege',
+    'availableForWithdrawal': 'Kivehető összeg', 'withdrawAll': 'Összes kivétele',
+    'selectCountry': 'Válassza ki országát', 'chooseCountry': 'Válasszon országot', 'searchCountries': 'Országok keresése...',
+    'selectMethod': 'Válasszon kifizetési módot',
+    'bankCard': 'Bankkártya', 'bankCardDesc': 'Kivét bankkártyára',
+    'mobilePayment': 'Mobil fizetés', 'mobilePaymentDesc': 'SBP vagy telefonszám átutalás',
+    'cryptoPayment': 'Kriptovaluta', 'cryptoPaymentDesc': 'Kivét kriptotárcába',
+    'enterPaymentDetails': 'Adja meg a fizetési adatokat',
+    'enterCardNumber': 'Adja meg kártyaszámát', 'enterPhoneNumber': 'Adja meg telefonszámát',
+    'enterCryptoAddress': 'Adja meg tárcacímét (USDT TRC-20)',
+    'amount': 'Összeg', 'method': 'Módszer', 'reviewWithdrawal': 'Áttekintés és beküldés',
+    'submitWithdrawal': 'Kifizetési kérelem beküldése', 'submittingWithdrawal': 'Beküldés...',
+    'next': 'Következő', 'back': 'Vissza',
+    'sberbankNotice': 'Sberbank átutalások további időt vehetnek igénybe. Kérjük, számítson 24 óra feldolgozási időre.',
+    'withdrawalOnHold': 'Kifizetés visszatartva', 'withdrawalPending': 'Kifizetés függőben', 'withdrawalCompleted': 'Kifizetés teljesítve',
+    'contactSupport': 'Kapcsolat az ügyfélszolgálattal', 'noProfitYet': 'Még nincs profit', 'clickToWithdraw': 'Kattintson a kivételhez',
+    
+    // Withdrawal availability
+    'completedInvestments': 'Befejezett befektetések', 'investmentPlusProfit': 'Befektetés + profit elérhető',
+    'activeProfit': 'Aktív kereskedési profit', 'profitOnlyWithdrawal': 'Csak profit vonható ki kereskedés közben',
+    'noWithdrawalAvailable': 'Befektetés még folyamatban. Kivét elérhető a kereskedés befejezése után.',
+    'viewTransactionHistory': 'Teljes tranzakciós előzmények megtekintése',
+    'pendingWithdrawalExists': 'Már van függőben lévő kifizetési kérelme. Kérjük, várja meg a feldolgozását.',
+    'withdrawn': 'Kivéve',
+    
+    // Crypto Payment
+    'cryptoWarning': 'Kérjük, győződjön meg arról, hogy csak USDT befizetést végez erre a címre. Ellenkező esetben befektetése nem lesz aktiválva.',
+    'howToPayCrypto': 'Hogyan fizessen USDT-vel:',
+    'cryptoStep1': 'Másolja ki a fenti USDT tárcacímet',
+    'cryptoStep2': 'Nyissa meg kriptotárcáját és küldje el a pontos USDT összeget TRON (TRC20) hálózaton',
+    'cryptoStep3': 'Készítsen képernyőképet a tranzakcióról és küldje el megerősítésként WhatsApp-on',
+    'cryptoStep4': 'Nyomja meg az alábbi "Befektetési kérelem beküldése" gombot',
+    'searchCountry': 'Ország keresése',
+    'noCountriesFound': 'Nem található ország',
+    'countryRequired': 'Válasszon országot a fizetési lehetőségek megtekintéséhez',
   },
 };
 
