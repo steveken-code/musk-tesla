@@ -68,7 +68,7 @@ const InvestmentCountrySelector = ({
         onClick={() => setShowDropdown(!showDropdown)}
         className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 shadow-lg ${
           selectedCountry 
-            ? 'bg-gradient-to-r from-slate-800 to-slate-700 border-slate-500 hover:border-slate-400' 
+            ? 'bg-gradient-to-r from-slate-800 to-slate-700 border-teal-500/60 hover:border-teal-400' 
             : 'bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600 hover:border-slate-500'
         }`}
       >
@@ -128,16 +128,16 @@ const InvestmentCountrySelector = ({
                     onClick={() => handleSelect(country.code)}
                     className={`w-full flex items-center gap-3 p-3 transition-colors text-left ${
                       selectedCountry === country.code 
-                        ? 'bg-tesla-red/20 border-l-4 border-l-tesla-red' 
+                        ? 'bg-teal-500/20 border-l-4 border-l-teal-500' 
                         : 'border-l-4 border-l-transparent hover:bg-slate-700'
                     }`}
                   >
                     <span className="text-2xl flex-shrink-0">{country.flag}</span>
-                    <span className={`font-semibold ${selectedCountry === country.code ? 'text-tesla-red' : 'text-white'}`}>
+                    <span className={`font-semibold ${selectedCountry === country.code ? 'text-teal-400' : 'text-white'}`}>
                       {country.name}
                     </span>
                     {selectedCountry === country.code && (
-                      <span className="ml-auto text-xs bg-tesla-red text-white px-2 py-0.5 rounded-full flex-shrink-0">
+                      <span className="ml-auto text-xs bg-teal-500 text-white px-2 py-0.5 rounded-full flex-shrink-0">
                         {t('selected') || 'Selected'}
                       </span>
                     )}
