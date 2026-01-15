@@ -59,7 +59,7 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
     try {
       await navigator.clipboard.writeText(cryptoSettings.walletAddress);
       setCopied(true);
-      toast.success(t('copied') || 'Wallet address copied!');
+      toast.success(t('walletCopied') || 'Wallet address copied!');
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast.error('Failed to copy');
