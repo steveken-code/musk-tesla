@@ -101,7 +101,7 @@ const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
 };
 
 const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
-  walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA',
+  walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLkrjsKA',
   network: 'TRON (TRC20)',
 };
 
