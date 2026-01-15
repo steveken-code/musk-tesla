@@ -14,7 +14,7 @@ interface CryptoSettings {
 }
 
 const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
-  walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA',
+  walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLkrjsKA',
   network: 'TRON (TRC20)',
 };
 
@@ -96,21 +96,21 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
 
         {/* Wallet Address */}
         <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600">
-          <p className="text-xs text-slate-400 mb-1">{t('walletAddress') || 'USDT Wallet Address'}</p>
+          <p className="text-xs text-slate-500 mb-2">{t('walletAddress') || 'USDT Wallet Address'}</p>
           <div className="flex items-center gap-2">
-            <p className="font-mono text-xs sm:text-sm text-white break-all flex-1">
+            <p className="font-mono text-sm sm:text-base text-white font-bold break-all flex-1 tracking-wide leading-relaxed">
               {cryptoSettings.walletAddress}
             </p>
             <button
               type="button"
               onClick={handleCopy}
-              className="p-2 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 transition-colors flex-shrink-0"
+              className="p-2.5 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 transition-colors flex-shrink-0"
               aria-label="Copy wallet address"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-400" />
+                <Check className="w-5 h-5 text-green-400" />
               ) : (
-                <Copy className="w-4 h-4 text-teal-400" />
+                <Copy className="w-5 h-5 text-teal-400" />
               )}
             </button>
           </div>
