@@ -186,40 +186,39 @@ const InvestmentCountrySelector = ({
     </div>
   );
 
-  // Desktop dropdown content
+  // Desktop dropdown content - unified soft white design matching mobile
   const DesktopDropdown = () => (
     <div 
-      className="absolute left-0 right-0 mt-2 bg-slate-900 border-2 border-slate-600 rounded-xl shadow-2xl overflow-hidden z-50"
-      style={{ maxHeight: '400px' }}
+      className="absolute left-0 right-0 mt-2 bg-slate-200 border-2 border-slate-300 rounded-xl shadow-2xl overflow-hidden z-50"
     >
-      {/* Search Input */}
-      <div className="p-3 border-b border-slate-700 bg-slate-900">
+      {/* Search Input - high contrast */}
+      <div className="p-3 border-b border-slate-300 bg-slate-200">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
           <Input
             ref={searchInputRef}
             type="text"
             placeholder={t('searchCountry') || 'Search country...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-8 h-10 bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500/20"
+            className="pl-11 pr-10 h-11 bg-white border-2 border-slate-300 text-slate-900 placeholder:text-slate-500 font-medium rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-700 rounded-full transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-200 hover:bg-slate-300 rounded-full transition-colors"
             >
-              <X className="w-4 h-4 text-slate-300" />
+              <X className="w-4 h-4 text-slate-600" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Country List */}
-      <div className="overflow-y-auto" style={{ maxHeight: '320px' }}>
+      {/* Country List - ~3 rows visible, scrollable */}
+      <div className="overflow-y-auto bg-white" style={{ maxHeight: '180px' }}>
         {filteredCountries.length === 0 ? (
-          <div className="p-4 text-center text-slate-400 text-sm">
+          <div className="p-4 text-center text-slate-500 font-medium">
             {t('noCountriesFound') || 'No countries found'}
           </div>
         ) : (
@@ -228,20 +227,20 @@ const InvestmentCountrySelector = ({
               key={country.code}
               type="button"
               onClick={() => handleSelect(country.code)}
-              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-b border-slate-200 last:border-b-0 ${
                 selectedCountry === country.code 
-                  ? 'bg-teal-900/50 border-l-4 border-l-teal-500' 
-                  : 'bg-slate-900 border-l-4 border-l-transparent hover:bg-slate-800'
+                  ? 'bg-teal-100 border-l-4 border-l-teal-500' 
+                  : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100'
               }`}
             >
               <span className="text-2xl flex-shrink-0">{country.flag}</span>
-              <span className={`font-medium ${
-                selectedCountry === country.code ? 'text-teal-400' : 'text-white'
+              <span className={`font-semibold ${
+                selectedCountry === country.code ? 'text-teal-700' : 'text-slate-900'
               }`}>
                 {country.name}
               </span>
               {selectedCountry === country.code && (
-                <Check className="w-4 h-4 text-teal-500 ml-auto flex-shrink-0" />
+                <Check className="w-5 h-5 text-teal-600 ml-auto flex-shrink-0" />
               )}
             </button>
           ))
