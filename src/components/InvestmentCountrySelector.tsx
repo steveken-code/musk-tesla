@@ -342,7 +342,7 @@ const InvestmentCountrySelector = ({
             </button>
           </div>
 
-          {/* Search Input - FIXED: keyboard stays open, no autocomplete */}
+          {/* Search Input - FIXED: keyboard stays open, autocomplete enabled for quick search */}
           <div className="p-3 bg-slate-100 border-b-2 border-slate-300">
             <div className="relative">
               <Search 
@@ -352,14 +352,11 @@ const InvestmentCountrySelector = ({
               <input
                 ref={searchInputRef}
                 type="text"
-                inputMode="text"
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
+                inputMode="search"
+                autoComplete="on"
+                autoCorrect="on"
+                autoCapitalize="words"
                 spellCheck={false}
-                data-form-type="other"
-                data-lpignore="true"
-                data-1p-ignore="true"
                 placeholder={t('searchCountry') || 'Type country name...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
