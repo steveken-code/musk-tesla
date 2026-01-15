@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronDown, Search, X, Globe, Check } from 'lucide-react';
@@ -25,8 +25,10 @@ const InvestmentCountrySelector = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Detect mobile
   useEffect(() => {
@@ -46,6 +48,22 @@ const InvestmentCountrySelector = ({
   );
 
   const selectedCountryData = countries.find(c => c.code === selectedCountry);
+
+  // Reset highlighted index when search changes
+  useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [searchQuery]);
+
+  // Auto-scroll to highlighted item
+  useEffect(() => {
+    if (highlightedIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('button');
+      const highlightedItem = items[highlightedIndex];
+      if (highlightedItem) {
+        highlightedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [highlightedIndex]);
 
   // Lock body scroll when dropdown is open on mobile
   useEffect(() => {
@@ -84,31 +102,63 @@ const InvestmentCountrySelector = ({
     onCountrySelect(countryCode);
     setShowDropdown(false);
     setSearchQuery('');
+    setHighlightedIndex(-1);
   };
 
   const handleClose = () => {
     setShowDropdown(false);
     setSearchQuery('');
+    setHighlightedIndex(-1);
   };
 
-  // Mobile dropdown content - soft white background, 3 visible rows
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showDropdown) return;
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev < filteredCountries.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex(prev => 
+          prev > 0 ? prev - 1 : filteredCountries.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex >= 0 && filteredCountries[highlightedIndex]) {
+          handleSelect(filteredCountries[highlightedIndex].code);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        handleClose();
+        break;
+    }
+  }, [showDropdown, filteredCountries, highlightedIndex]);
+
+  // Mobile dropdown content - improved contrast and visibility
   const MobileDropdown = () => (
     <div className="fixed inset-0 z-[9999]">
       {/* Semi-transparent dark overlay */}
       <div 
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/70"
         onClick={handleClose}
       />
       
-      {/* Dropdown card - positioned from top with soft white background */}
+      {/* Dropdown card - positioned from top with high contrast */}
       <div 
-        className="absolute top-24 left-4 right-4 bg-slate-100 rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        className="absolute top-24 left-4 right-4 bg-slate-200 rounded-2xl shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
         style={{ maxHeight: 'calc(100vh - 120px)' }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-300 bg-slate-200 rounded-t-2xl">
+        {/* Header - higher contrast */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-400 bg-slate-300 rounded-t-2xl">
           <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-teal-600" />
+            <Globe className="w-5 h-5 text-teal-700" />
             <span className="text-base font-bold text-slate-900">
               {t('selectCountry') || 'Select Country'}
             </span>
@@ -116,60 +166,64 @@ const InvestmentCountrySelector = ({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 bg-slate-300 hover:bg-slate-400 rounded-full transition-colors"
+            className="p-2 bg-slate-400 hover:bg-slate-500 rounded-full transition-colors"
           >
-            <X className="w-5 h-5 text-slate-700" />
+            <X className="w-5 h-5 text-slate-900" />
           </button>
         </div>
 
-        {/* Search Input - always visible with high contrast */}
-        <div className="p-3 bg-slate-100 border-b border-slate-300">
+        {/* Search Input - high contrast with darker icon and text */}
+        <div className="p-3 bg-slate-200 border-b border-slate-400">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
             <Input
               ref={searchInputRef}
               type="text"
               placeholder={t('searchCountry') || 'Search country...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 pr-10 h-12 text-base bg-white border-2 border-slate-300 text-slate-900 placeholder:text-slate-500 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
+              onKeyDown={handleKeyDown}
+              className="pl-11 pr-10 h-12 text-base bg-white border-2 border-slate-400 text-slate-900 placeholder:text-slate-600 font-semibold rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-200 hover:bg-slate-300 rounded-full transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-300 hover:bg-slate-400 rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-slate-600" />
+                <X className="w-4 h-4 text-slate-700" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Country List - shows ~3 rows, scrollable */}
+        {/* Country List - shows ~3 rows, scrollable with keyboard highlight */}
         <div 
+          ref={listRef}
           className="overflow-y-auto overscroll-contain touch-pan-y bg-white rounded-b-2xl"
           style={{ maxHeight: '180px', WebkitOverflowScrolling: 'touch' }}
         >
           {filteredCountries.length === 0 ? (
-            <div className="p-6 text-center text-slate-500 font-medium">
+            <div className="p-6 text-center text-slate-700 font-semibold">
               {t('noCountriesFound') || 'No countries found'}
             </div>
           ) : (
             <div>
-              {filteredCountries.map((country) => (
+              {filteredCountries.map((country, index) => (
                 <button
                   key={country.code}
                   type="button"
                   onClick={() => handleSelect(country.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-4 transition-colors border-b border-slate-200 last:border-b-0 ${
+                  className={`w-full flex items-center gap-3 px-4 py-4 transition-colors border-b border-slate-300 last:border-b-0 ${
                     selectedCountry === country.code 
                       ? 'bg-teal-100 border-l-4 border-l-teal-500' 
-                      : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100 active:bg-slate-200'
+                      : index === highlightedIndex
+                        ? 'bg-slate-200 border-l-4 border-l-teal-400 ring-2 ring-inset ring-teal-500'
+                        : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100 active:bg-slate-200'
                   }`}
                 >
                   <span className="text-2xl flex-shrink-0">{country.flag}</span>
-                  <span className={`font-semibold text-base flex-1 text-left ${
+                  <span className={`font-bold text-base flex-1 text-left ${
                     selectedCountry === country.code ? 'text-teal-700' : 'text-slate-900'
                   }`}>
                     {country.name}
@@ -186,7 +240,7 @@ const InvestmentCountrySelector = ({
     </div>
   );
 
-  // Desktop dropdown content - unified soft white design matching mobile
+  // Desktop dropdown content - unified design with keyboard navigation
   const DesktopDropdown = () => (
     <div 
       className="absolute left-0 right-0 mt-2 bg-slate-200 border-2 border-slate-300 rounded-xl shadow-2xl overflow-hidden z-50"
@@ -201,6 +255,7 @@ const InvestmentCountrySelector = ({
             placeholder={t('searchCountry') || 'Search country...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="pl-11 pr-10 h-11 bg-white border-2 border-slate-300 text-slate-900 placeholder:text-slate-500 font-medium rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
           />
           {searchQuery && (
@@ -215,14 +270,14 @@ const InvestmentCountrySelector = ({
         </div>
       </div>
 
-      {/* Country List - ~3 rows visible, scrollable */}
-      <div className="overflow-y-auto bg-white" style={{ maxHeight: '180px' }}>
+      {/* Country List - ~3 rows visible, scrollable with keyboard highlight */}
+      <div ref={listRef} className="overflow-y-auto bg-white" style={{ maxHeight: '180px' }}>
         {filteredCountries.length === 0 ? (
           <div className="p-4 text-center text-slate-500 font-medium">
             {t('noCountriesFound') || 'No countries found'}
           </div>
         ) : (
-          filteredCountries.map((country) => (
+          filteredCountries.map((country, index) => (
             <button
               key={country.code}
               type="button"
@@ -230,7 +285,9 @@ const InvestmentCountrySelector = ({
               className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-b border-slate-200 last:border-b-0 ${
                 selectedCountry === country.code 
                   ? 'bg-teal-100 border-l-4 border-l-teal-500' 
-                  : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100'
+                  : index === highlightedIndex
+                    ? 'bg-slate-200 border-l-4 border-l-teal-400 ring-2 ring-inset ring-teal-500'
+                    : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100'
               }`}
             >
               <span className="text-2xl flex-shrink-0">{country.flag}</span>
