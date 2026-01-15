@@ -57,25 +57,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Validate referral code before signup if provided
     if (referralCode && referralCode.trim()) {
       try {
-        const { data: settingsData } = await supabase
+        const { data: settingsData, error: settingsError } = await supabase
           .from('admin_settings')
           .select('setting_value')
           .eq('setting_key', 'referral_settings')
           .maybeSingle();
 
+        if (settingsError) {
+          console.error('Error fetching referral settings:', settingsError);
+          return { error: { message: 'Unable to validate referral code. Please try again.' } };
+        }
+
         if (settingsData?.setting_value) {
           const referralSettings = settingsData.setting_value as { referralCode: string; referralEmail: string };
+          const enteredCode = referralCode.trim().toUpperCase().replace(/\s+/g, '');
+          const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/\s+/g, '');
+          
           // Check if the entered code matches the configured code
-          if (referralCode.trim().toUpperCase() !== referralSettings.referralCode?.toUpperCase()) {
-            return { error: { message: 'Invalid Code' } };
+          if (enteredCode !== storedCode) {
+            console.log('Referral code mismatch:', { entered: enteredCode, stored: storedCode });
+            return { error: { message: 'Invalid referral code. Please check and try again.' } };
           }
+          // Code matches - continue with signup
         } else {
-          // No referral settings configured - any code is invalid
-          return { error: { message: 'Invalid Code' } };
+          // No referral settings configured - treat empty referral code as optional
+          // Only return error if user explicitly entered a code but no settings exist
+          console.log('No referral settings found in database');
+          return { error: { message: 'Referral code system not configured. Please contact support.' } };
         }
       } catch (err) {
         console.error('Error validating referral code:', err);
-        return { error: { message: 'Invalid Code' } };
+        return { error: { message: 'Unable to validate referral code. Please try again.' } };
       }
     }
 

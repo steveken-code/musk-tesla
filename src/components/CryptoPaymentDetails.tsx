@@ -76,50 +76,50 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
   }
 
   return (
-    <div className="mt-4 p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/30 space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-          <Wallet className="w-5 h-5 text-amber-500" />
+    <div className="mt-4 p-4 bg-gradient-to-br from-slate-800/80 to-slate-700/80 rounded-xl border border-slate-600 space-y-4 animate-fade-in">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center">
+          <Wallet className="w-5 h-5 text-teal-400" />
         </div>
         <div>
-          <h3 className="font-semibold text-amber-400">USDT Deposit</h3>
-          <p className="text-xs text-muted-foreground">{t('cryptoPayment') || 'Cryptocurrency Payment'}</p>
+          <h3 className="font-semibold text-teal-400">USDT Deposit</h3>
+          <p className="text-xs text-slate-400">{t('cryptoPayment') || 'Cryptocurrency Payment'}</p>
         </div>
       </div>
       
       <div className="space-y-3">
         {/* Network */}
-        <div className="p-3 bg-background/50 rounded-lg border border-border">
-          <p className="text-xs text-muted-foreground mb-1">{t('network') || 'Network'}</p>
-          <p className="font-semibold text-amber-400 text-sm">USDT ({cryptoSettings.network})</p>
+        <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+          <p className="text-xs text-slate-400 mb-1">{t('network') || 'Network'}</p>
+          <p className="font-semibold text-teal-400 text-sm">USDT ({cryptoSettings.network})</p>
         </div>
 
         {/* Wallet Address */}
-        <div className="p-3 bg-background/50 rounded-lg border border-border">
-          <p className="text-xs text-muted-foreground mb-1">{t('walletAddress') || 'USDT Wallet Address'}</p>
+        <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+          <p className="text-xs text-slate-400 mb-1">{t('walletAddress') || 'USDT Wallet Address'}</p>
           <div className="flex items-center gap-2">
-            <p className="font-mono text-xs sm:text-sm text-foreground break-all flex-1">
+            <p className="font-mono text-xs sm:text-sm text-white break-all flex-1">
               {cryptoSettings.walletAddress}
             </p>
             <button
               type="button"
               onClick={handleCopy}
-              className="p-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 transition-colors flex-shrink-0"
+              className="p-2 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 transition-colors flex-shrink-0"
               aria-label="Copy wallet address"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
+                <Check className="w-4 h-4 text-green-400" />
               ) : (
-                <Copy className="w-4 h-4 text-amber-400" />
+                <Copy className="w-4 h-4 text-teal-400" />
               )}
             </button>
           </div>
         </div>
 
         {/* Amount to send */}
-        <div className="p-3 bg-amber-500/20 rounded-lg border border-amber-500/30">
-          <p className="text-xs text-muted-foreground mb-1">{t('amountToSend') || 'Amount to Send'}</p>
-          <p className="text-xl font-bold text-amber-400">${amount.toLocaleString()} USDT</p>
+        <div className="p-3 bg-teal-500/15 rounded-lg border border-teal-500/30">
+          <p className="text-xs text-slate-400 mb-1">{t('amountToSend') || 'Amount to Send'}</p>
+          <p className="text-xl font-bold text-teal-400">${amount.toLocaleString()} USDT</p>
         </div>
       </div>
 
