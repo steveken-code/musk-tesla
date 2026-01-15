@@ -11,7 +11,7 @@ import {
   LogOut, TrendingUp, DollarSign, Clock, 
   CheckCircle, XCircle, Loader2, ArrowLeft,
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
-  CreditCard, Phone, Bitcoin, ChevronDown, X, History
+  CreditCard, Phone, Bitcoin, ChevronDown, X, History, Search
 } from 'lucide-react';
 import SupportButtons from '@/components/SupportButtons';
 import TeslaChart from '@/components/TeslaChart';
@@ -1365,45 +1365,75 @@ const Dashboard = () => {
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="w-full flex items-center justify-between p-4 bg-background/50 border border-border rounded-xl hover:border-green-500/50 transition-colors"
+                      className="w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 border-[#444] rounded-xl hover:border-green-500/50 transition-colors"
                     >
                       {selectedCountryData ? (
                         <span className="flex items-center gap-3">
                           <span className="text-2xl">{selectedCountryData.flag}</span>
-                          <span className="font-medium">{selectedCountryData.name}</span>
+                          <span className="font-medium text-white">{selectedCountryData.name}</span>
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">{t('chooseCountry')}</span>
+                        <span className="text-[#888]">{t('chooseCountry')}</span>
                       )}
-                      <ChevronDown className={`w-5 h-5 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-50 w-full mt-2 bg-[#1E1E1E] border border-[#333] rounded-xl shadow-xl max-h-48 overflow-hidden bottom-full mb-2">
-                        <div className="p-2 border-b border-[#333]">
-                          <Input
-                            placeholder={t('searchCountries')}
-                            value={countrySearch}
-                            onChange={(e) => setCountrySearch(e.target.value)}
-                            className="bg-[#2a2a2a] border-[#444] [color:#ffffff_!important] font-semibold placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
-                          />
+                      <div className="absolute z-[100] w-full mt-2 bg-[#1a1a1a] border-2 border-[#444] rounded-xl shadow-2xl overflow-hidden">
+                        <div className="p-3 border-b-2 border-[#333] bg-[#222]">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
+                            <Input
+                              placeholder={t('searchCountries') || 'Type country name...'}
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                              className="pl-10 bg-[#2a2a2a] border-2 border-[#555] h-12 text-base [color:#ffffff_!important] [-webkit-text-fill-color:#ffffff_!important] font-semibold placeholder:text-[#777] focus:border-green-500 focus:ring-green-500/20 focus:ring-2 rounded-lg"
+                            />
+                            {countrySearch && (
+                              <button
+                                type="button"
+                                onClick={() => setCountrySearch('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-[#444] hover:bg-[#555] rounded-full transition-colors"
+                              >
+                                <X className="w-3 h-3 text-white" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="max-h-36 overflow-y-auto">
-                          {filteredCountries.map(country => (
-                            <button
-                              key={country.code}
-                              type="button"
-                              onClick={() => {
-                                setWithdrawCountry(country.code);
-                                setShowCountryDropdown(false);
-                                setCountrySearch('');
-                              }}
-                              className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors"
-                            >
-                              <span className="text-xl">{country.flag}</span>
-                              <span className="font-medium">{country.name}</span>
-                            </button>
-                          ))}
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {filteredCountries.length === 0 ? (
+                            <div className="p-4 text-center text-[#888] font-medium">
+                              {t('noCountriesFound') || 'No countries found'}
+                            </div>
+                          ) : (
+                            filteredCountries.map(country => (
+                              <button
+                                key={country.code}
+                                type="button"
+                                onClick={() => {
+                                  setWithdrawCountry(country.code);
+                                  setShowCountryDropdown(false);
+                                  setCountrySearch('');
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
+                                  withdrawCountry === country.code
+                                    ? 'bg-green-500/20 border-l-4 border-l-green-500'
+                                    : 'hover:bg-[#2a2a2a] border-l-4 border-l-transparent'
+                                }`}
+                              >
+                                <span className="text-xl">{country.flag}</span>
+                                <span 
+                                  className="font-semibold text-left flex-1"
+                                  style={{ color: withdrawCountry === country.code ? '#4ade80' : '#ffffff' }}
+                                >
+                                  {country.name}
+                                </span>
+                                {withdrawCountry === country.code && (
+                                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                )}
+                              </button>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
