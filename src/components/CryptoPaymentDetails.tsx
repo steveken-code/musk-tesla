@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Copy, Check, Loader2, Wallet } from 'lucide-react';
+import { Copy, Check, Loader2, Wallet, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface CryptoPaymentDetailsProps {
@@ -83,7 +83,7 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
         </div>
         <div>
           <h3 className="font-semibold text-amber-400">USDT Deposit</h3>
-          <p className="text-xs text-muted-foreground">Cryptocurrency Payment</p>
+          <p className="text-xs text-muted-foreground">{t('cryptoPayment') || 'Cryptocurrency Payment'}</p>
         </div>
       </div>
       
@@ -91,7 +91,7 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
         {/* Network */}
         <div className="p-3 bg-background/50 rounded-lg border border-border">
           <p className="text-xs text-muted-foreground mb-1">{t('network') || 'Network'}</p>
-          <p className="font-semibold text-amber-400 text-sm">{cryptoSettings.network}</p>
+          <p className="font-semibold text-amber-400 text-sm">USDT ({cryptoSettings.network})</p>
         </div>
 
         {/* Wallet Address */}
@@ -124,21 +124,39 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
       </div>
 
       {/* Important Notice */}
-      <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/30">
+      <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
         <p className="text-xs text-red-400 font-medium mb-2">⚠️ {t('important') || 'Important'}</p>
         <p className="text-sm text-red-400 font-semibold leading-relaxed">
           {t('cryptoWarning') || 'Please make sure that only USDT deposit is made via this address. Otherwise, your investment will not be activated.'}
         </p>
       </div>
       
-      {/* Investment Guidelines */}
-      <div className="pt-3 border-t border-border">
-        <p className="text-sm font-semibold text-foreground mb-2">{t('investmentSteps') || 'Steps to Complete Investment:'}</p>
-        <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
-          <li>{t('cryptoStep1') || 'Send the exact USDT amount to the wallet address above'}</li>
-          <li>{t('cryptoStep2') || 'Take a screenshot of the transaction'}</li>
-          <li>{t('cryptoStep3') || 'Send transaction proof via WhatsApp'}</li>
-          <li>{t('cryptoStep4') || 'Click "Submit Investment Request"'}</li>
+      {/* How to Make Payment - Steps */}
+      <div className="p-4 bg-gradient-to-br from-tesla-red/5 to-tesla-red/10 rounded-lg border border-tesla-red/20">
+        <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-tesla-red" />
+          {t('howToPayCrypto') || 'How to Make USDT Payment:'}
+        </p>
+        <ol className="text-sm text-muted-foreground space-y-3">
+          <li className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-tesla-red/20 text-tesla-red text-xs font-bold flex items-center justify-center">1</span>
+            <span>{t('cryptoStep1') || 'Copy the USDT wallet address above'}</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-tesla-red/20 text-tesla-red text-xs font-bold flex items-center justify-center">2</span>
+            <span>{t('cryptoStep2') || 'Open your crypto wallet and send the exact USDT amount using TRON (TRC20) network'}</span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-tesla-red/20 text-tesla-red text-xs font-bold flex items-center justify-center">3</span>
+            <span className="flex items-center gap-1">
+              <MessageCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              {t('cryptoStep3') || 'Take a screenshot of the transaction and send confirmation via WhatsApp'}
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-tesla-red/20 text-tesla-red text-xs font-bold flex items-center justify-center">4</span>
+            <span>{t('cryptoStep4') || 'Press "Submit Investment Request" button below'}</span>
+          </li>
         </ol>
       </div>
     </div>
