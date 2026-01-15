@@ -77,6 +77,7 @@ const InvestmentCountrySelector = ({
   const [expandedContinents, setExpandedContinents] = useState<Set<string>>(
     new Set(continentOrder)
   );
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -265,17 +266,29 @@ const InvestmentCountrySelector = ({
     </button>
   );
 
-  // Continent header component
+  // Continent header component - SOLID background, no transparency
   const ContinentHeader = ({ continent, count }: { continent: string; count: number }) => (
     <button
       type="button"
       onClick={() => toggleContinent(continent)}
-      className="w-full flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300 hover:from-slate-200 hover:to-slate-100 transition-colors sticky top-0 z-10"
+      onMouseDown={(e) => {
+        // Prevent stealing focus from search input
+        if (isInputFocused) {
+          e.preventDefault();
+        }
+      }}
+      className="w-full flex items-center gap-2 px-4 py-3 border-b-2 border-slate-400 hover:bg-slate-300 transition-colors sticky top-0 z-20 shadow-md"
+      style={{
+        backgroundColor: '#e2e8f0',
+        opacity: 1,
+        backdropFilter: 'none',
+        WebkitBackdropFilter: 'none',
+      }}
     >
       {expandedContinents.has(continent) ? (
-        <ChevronDown className="w-4 h-4 text-teal-600" />
+        <ChevronDown className="w-4 h-4 text-teal-600" style={{ opacity: 1 }} />
       ) : (
-        <ChevronRight className="w-4 h-4 text-slate-500" />
+        <ChevronRight className="w-4 h-4 text-slate-600" style={{ opacity: 1 }} />
       )}
       <span 
         className="font-bold text-sm"
@@ -284,7 +297,7 @@ const InvestmentCountrySelector = ({
         {continent}
       </span>
       <span 
-        className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 font-semibold"
+        className="text-xs px-2 py-0.5 rounded-full bg-teal-600 text-white font-semibold"
         style={{ opacity: 1 }}
       >
         {count}
@@ -329,8 +342,8 @@ const InvestmentCountrySelector = ({
             </button>
           </div>
 
-          {/* Search Input - FIXED: forced dark text color for visibility */}
-          <div className="p-3 bg-slate-50 border-b-2 border-slate-300">
+          {/* Search Input - FIXED: keyboard stays open, no autocomplete */}
+          <div className="p-3 bg-slate-100 border-b-2 border-slate-300">
             <div className="relative">
               <Search 
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none"
@@ -339,14 +352,20 @@ const InvestmentCountrySelector = ({
               <input
                 ref={searchInputRef}
                 type="text"
-                inputMode="search"
+                inputMode="text"
                 autoComplete="off"
                 autoCorrect="off"
+                autoCapitalize="off"
                 spellCheck={false}
+                data-form-type="other"
+                data-lpignore="true"
+                data-1p-ignore="true"
                 placeholder={t('searchCountry') || 'Type country name...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
                 className="w-full pl-11 pr-12 h-14 text-[17px] leading-6 font-semibold bg-white border-2 border-slate-400 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 focus:outline-none transition-colors"
                 style={{
                   color: '#111111',
@@ -359,6 +378,7 @@ const InvestmentCountrySelector = ({
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
+                  onMouseDown={(e) => e.preventDefault()}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-300 hover:bg-slate-400 active:bg-slate-500 rounded-full transition-colors"
                 >
                   <X className="w-4 h-4 text-slate-800" />
@@ -367,11 +387,27 @@ const InvestmentCountrySelector = ({
             </div>
           </div>
 
-          {/* Country List - scrollable with keyboard highlight */}
+          {/* Country List - scrollable, keyboard stays open */}
           <div 
             ref={listRef}
-            className="overflow-y-auto overscroll-contain touch-pan-y bg-white rounded-b-2xl"
-            style={{ maxHeight: '400px', WebkitOverflowScrolling: 'touch' }}
+            className="overflow-y-auto overscroll-contain bg-white rounded-b-2xl"
+            style={{ 
+              maxHeight: '400px', 
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-y',
+            }}
+            onMouseDown={(e) => {
+              // Prevent scroll area from stealing focus, unless clicking a country button
+              if (isInputFocused && !(e.target as HTMLElement).closest('[data-country-btn]')) {
+                e.preventDefault();
+              }
+            }}
+            onTouchStart={(e) => {
+              // Keep keyboard open on touch scroll
+              if (isInputFocused && !(e.target as HTMLElement).closest('[data-country-btn]')) {
+                e.stopPropagation();
+              }
+            }}
           >
             {filteredCountries.length === 0 ? (
               <div 
@@ -424,23 +460,34 @@ const InvestmentCountrySelector = ({
       <div 
         className="absolute left-0 right-0 mt-2 bg-slate-200 border-2 border-slate-300 rounded-xl shadow-2xl overflow-hidden z-50"
       >
-        {/* Search Input - high contrast */}
+        {/* Search Input - high contrast, no autocomplete */}
         <div className="p-3 border-b border-slate-300 bg-slate-200">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700" />
             <Input
               ref={searchInputRef}
               type="text"
+              inputMode="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              data-form-type="other"
+              data-lpignore="true"
+              data-1p-ignore="true"
               placeholder={t('searchCountry') || 'Type country name...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               className="pl-11 pr-10 h-11 bg-white border-2 border-slate-300 text-slate-900 placeholder:text-slate-500 font-medium rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
+                onMouseDown={(e) => e.preventDefault()}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-200 hover:bg-slate-300 rounded-full transition-colors"
               >
                 <X className="w-4 h-4 text-slate-600" />
@@ -450,7 +497,16 @@ const InvestmentCountrySelector = ({
         </div>
 
         {/* Country List */}
-        <div ref={listRef} className="overflow-y-auto bg-white" style={{ maxHeight: '300px' }}>
+        <div 
+          ref={listRef} 
+          className="overflow-y-auto bg-white" 
+          style={{ maxHeight: '300px' }}
+          onMouseDown={(e) => {
+            if (isInputFocused && !(e.target as HTMLElement).closest('[data-country-btn]')) {
+              e.preventDefault();
+            }
+          }}
+        >
           {filteredCountries.length === 0 ? (
             <div className="p-4 text-center text-slate-500 font-medium">
               {t('noCountriesFound') || 'No countries found'}
@@ -493,7 +549,16 @@ const InvestmentCountrySelector = ({
                   <button
                     type="button"
                     onClick={() => toggleContinent(continent)}
-                    className="w-full flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-300 hover:from-slate-200 hover:to-slate-100 transition-colors sticky top-0 z-10"
+                    onMouseDown={(e) => {
+                      if (isInputFocused) e.preventDefault();
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 border-b-2 border-slate-400 hover:bg-slate-300 transition-colors sticky top-0 z-20 shadow-md"
+                    style={{
+                      backgroundColor: '#e2e8f0',
+                      opacity: 1,
+                      backdropFilter: 'none',
+                      WebkitBackdropFilter: 'none',
+                    }}
                   >
                     {expandedContinents.has(continent) ? (
                       <ChevronDown className="w-4 h-4 text-teal-600" />
@@ -501,7 +566,7 @@ const InvestmentCountrySelector = ({
                       <ChevronRight className="w-4 h-4 text-slate-500" />
                     )}
                     <span className="font-bold text-sm text-slate-900">{continent}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 font-semibold">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-teal-600 text-white font-semibold">
                       {continentCountries.length}
                     </span>
                   </button>
