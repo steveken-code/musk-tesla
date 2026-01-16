@@ -342,7 +342,7 @@ const InvestmentCountrySelector = ({
             </button>
           </div>
 
-          {/* Search Input - FIXED: keyboard stays open, autocomplete enabled for quick search */}
+          {/* Search Input - FIXED: keyboard stays open for continuous typing */}
           <div className="p-3 bg-slate-100 border-b-2 border-slate-300">
             <div className="relative">
               <Search 
@@ -352,31 +352,49 @@ const InvestmentCountrySelector = ({
               <input
                 ref={searchInputRef}
                 type="text"
-                inputMode="search"
-                autoComplete="on"
-                autoCorrect="on"
-                autoCapitalize="words"
+                inputMode="text"
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
                 spellCheck={false}
                 placeholder={t('searchCountry') || 'Type country name...'}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Keep input focused during typing
+                  setIsInputFocused(true);
+                }}
                 onKeyDown={handleKeyDown}
-                onFocus={() => setIsInputFocused(true)}
+                onFocus={() => {
+                  setIsInputFocused(true);
+                }}
                 onBlur={(e) => {
-                  // Only blur if clicking outside the modal entirely
-                  // Keep focus if user is interacting with the country list
+                  // CRITICAL: Prevent blur completely when modal is open
+                  // Only allow blur when selecting a country (clicking a button)
                   const relatedTarget = e.relatedTarget as HTMLElement;
-                  if (relatedTarget && listRef.current?.contains(relatedTarget)) {
+                  const isCountryButton = relatedTarget?.hasAttribute('data-country-btn');
+                  
+                  if (showDropdown && !isCountryButton) {
+                    // Prevent the blur and immediately refocus
                     e.preventDefault();
-                    searchInputRef.current?.focus();
+                    e.stopPropagation();
+                    // Use requestAnimationFrame to ensure refocus happens after any browser blur handling
+                    requestAnimationFrame(() => {
+                      if (searchInputRef.current && showDropdown) {
+                        searchInputRef.current.focus({ preventScroll: true });
+                      }
+                    });
                     return;
                   }
-                  // Delay blur to allow country selection
-                  setTimeout(() => {
-                    if (showDropdown) {
-                      setIsInputFocused(false);
-                    }
-                  }, 150);
+                  
+                  setIsInputFocused(false);
+                }}
+                onTouchEnd={(e) => {
+                  // Ensure keyboard stays open on touch
+                  if (showDropdown) {
+                    e.currentTarget.focus({ preventScroll: true });
+                  }
                 }}
                 className="w-full pl-11 pr-12 h-14 text-[17px] leading-6 font-semibold bg-white border-2 border-slate-400 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 focus:outline-none transition-colors"
                 style={{
@@ -393,10 +411,18 @@ const InvestmentCountrySelector = ({
                   onClick={() => {
                     setSearchQuery('');
                     // Refocus the input after clearing
-                    searchInputRef.current?.focus();
+                    requestAnimationFrame(() => {
+                      searchInputRef.current?.focus({ preventScroll: true });
+                    });
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onTouchStart={(e) => e.preventDefault()}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-300 hover:bg-slate-400 active:bg-slate-500 rounded-full transition-colors"
                 >
                   <X className="w-4 h-4 text-slate-800" />
@@ -405,7 +431,7 @@ const InvestmentCountrySelector = ({
             </div>
           </div>
 
-          {/* Country List - scrollable, keyboard stays open */}
+          {/* Country List - scrollable, keyboard stays open during scroll */}
           <div 
             ref={listRef}
             className="overflow-y-auto overscroll-contain bg-white rounded-b-2xl"
@@ -420,28 +446,41 @@ const InvestmentCountrySelector = ({
               const isCountryButton = target.closest('[data-country-btn]');
               if (!isCountryButton) {
                 e.preventDefault();
+                e.stopPropagation();
                 // Keep input focused
-                searchInputRef.current?.focus();
+                requestAnimationFrame(() => {
+                  searchInputRef.current?.focus({ preventScroll: true });
+                });
               }
             }}
             onTouchStart={(e) => {
-              // Allow scrolling but prevent input blur
+              // Prevent input blur during touch/scroll
               const target = e.target as HTMLElement;
               const isCountryButton = target.closest('[data-country-btn]');
-              if (!isCountryButton && isInputFocused) {
+              if (!isCountryButton) {
                 // Don't prevent default - allow scrolling
-                // But refocus the input after a tiny delay
-                setTimeout(() => {
+                // But immediately ensure input stays focused
+                requestAnimationFrame(() => {
                   if (showDropdown && searchInputRef.current) {
-                    searchInputRef.current.focus();
+                    searchInputRef.current.focus({ preventScroll: true });
                   }
-                }, 10);
+                });
               }
             }}
             onTouchMove={() => {
-              // During scroll, keep input focused
-              if (isInputFocused && searchInputRef.current) {
-                searchInputRef.current.focus();
+              // During scroll, continuously ensure input stays focused
+              if (showDropdown && searchInputRef.current) {
+                requestAnimationFrame(() => {
+                  searchInputRef.current?.focus({ preventScroll: true });
+                });
+              }
+            }}
+            onTouchEnd={() => {
+              // After scroll ends, refocus input
+              if (showDropdown && searchInputRef.current) {
+                requestAnimationFrame(() => {
+                  searchInputRef.current?.focus({ preventScroll: true });
+                });
               }
             }}
           >
