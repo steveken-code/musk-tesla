@@ -53,18 +53,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Built-in valid referral code that always works
+  // Normalize referral code: remove all non-alphanumeric characters and uppercase
+  const normalizeReferralCode = (code: string): string => {
+    return code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  };
+
+  // Built-in valid referral code that always works (normalized form)
   const ALWAYS_VALID_REFERRAL_CODE = 'TATY8492';
+  // Canonical format for storing in profile
+  const CANONICAL_REFERRAL_CODE = 'TATY-8492';
 
   const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
+    // Determine the canonical referral code to save (if valid)
+    let canonicalReferralCode: string | null = null;
+    
     // Validate referral code before signup if provided
     if (referralCode && referralCode.trim()) {
-      const enteredCode = referralCode.trim().toUpperCase().replace(/[-\s]+/g, '');
+      const enteredCode = normalizeReferralCode(referralCode);
       
-      // First check if it matches the always-valid code (TATY-8492)
+      // Check if it matches the always-valid code (TATY-8492)
       if (enteredCode === ALWAYS_VALID_REFERRAL_CODE) {
         console.log('Referral code TATY-8492 validated successfully (built-in)');
-        // Continue with signup - code is valid
+        canonicalReferralCode = CANONICAL_REFERRAL_CODE;
       } else {
         // Check against database configured code
         try {
@@ -76,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           if (settingsError) {
             console.error('Error fetching referral settings:', settingsError);
-            return { error: { message: 'Unable to validate referral code. Please try again.' } };
+            return { error: { message: 'Invalid referral code. Please check and try again.' } };
           }
 
           // Parse setting_value - handle both object and string formats
@@ -95,25 +105,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
 
           if (referralSettings && referralSettings.referralCode) {
-            const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/[-\s]+/g, '');
+            const storedCode = normalizeReferralCode(referralSettings.referralCode);
             
-            console.log('Validating referral code:', { entered: enteredCode, stored: storedCode });
-            
-            // Check if the entered code matches the configured code
-            if (enteredCode !== storedCode) {
+            // Check if the entered code matches the configured code OR the always-valid code
+            if (enteredCode === storedCode || enteredCode === ALWAYS_VALID_REFERRAL_CODE) {
+              console.log('Referral code validated successfully');
+              // Store the original configured format or the canonical format
+              canonicalReferralCode = enteredCode === ALWAYS_VALID_REFERRAL_CODE 
+                ? CANONICAL_REFERRAL_CODE 
+                : referralSettings.referralCode.trim().toUpperCase();
+            } else {
               console.log('Referral code mismatch:', { entered: enteredCode, stored: storedCode });
               return { error: { message: 'Invalid referral code. Please check and try again.' } };
             }
-            // Code matches - continue with signup
-            console.log('Referral code validated successfully');
           } else {
-            // No referral settings configured - reject code
-            console.log('No referral code configured in settings:', settingsData);
-            return { error: { message: 'Invalid referral code. Please check and try again.' } };
+            // No referral settings configured - only accept the always-valid code
+            if (enteredCode === ALWAYS_VALID_REFERRAL_CODE) {
+              canonicalReferralCode = CANONICAL_REFERRAL_CODE;
+            } else {
+              console.log('No referral code configured and code is not the default');
+              return { error: { message: 'Invalid referral code. Please check and try again.' } };
+            }
           }
         } catch (err) {
           console.error('Error validating referral code:', err);
-          return { error: { message: 'Unable to validate referral code. Please try again.' } };
+          return { error: { message: 'Invalid referral code. Please check and try again.' } };
         }
       }
     }
@@ -124,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { full_name: fullName, referral_code: referralCode || null }
+        data: { full_name: fullName, referral_code: canonicalReferralCode || null }
       }
     });
     
@@ -135,13 +151,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, 0);
 
       // If referral code is provided and valid, save to profile and send notification
-      if (referralCode && referralCode.trim()) {
+      if (canonicalReferralCode) {
         setTimeout(async () => {
           try {
-            // Update profile with referral code
+            // Update profile with the canonical referral code format
             await supabase
               .from('profiles')
-              .update({ referral_code: referralCode.trim().toUpperCase() })
+              .update({ referral_code: canonicalReferralCode })
               .eq('user_id', data.user!.id);
 
             // Get referral settings to find the notification email
@@ -151,14 +167,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .eq('setting_key', 'referral_settings')
               .maybeSingle();
 
+            // Parse settings robustly
+            let referralEmail: string | null = null;
             if (settingsData?.setting_value) {
-              const referralSettings = settingsData.setting_value as { referralCode: string; referralEmail: string };
-              // Send notification email (code is already validated)
+              if (typeof settingsData.setting_value === 'string') {
+                try {
+                  const parsed = JSON.parse(settingsData.setting_value);
+                  referralEmail = parsed.referralEmail;
+                } catch {
+                  referralEmail = null;
+                }
+              } else if (typeof settingsData.setting_value === 'object') {
+                referralEmail = (settingsData.setting_value as { referralEmail?: string }).referralEmail || null;
+              }
+            }
+
+            // Send notification email if we have a valid email
+            if (referralEmail) {
               await supabase.functions.invoke('send-referral-notification', {
                 body: {
-                  referralEmail: referralSettings.referralEmail,
+                  referralEmail,
                   referredUserName: fullName,
                   referredUserEmail: email,
+                  referralCode: canonicalReferralCode,
                   type: 'signup'
                 }
               });
