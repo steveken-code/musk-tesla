@@ -362,20 +362,41 @@ const InvestmentCountrySelector = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
+                onBlur={(e) => {
+                  // Only blur if clicking outside the modal entirely
+                  // Keep focus if user is interacting with the country list
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (relatedTarget && listRef.current?.contains(relatedTarget)) {
+                    e.preventDefault();
+                    searchInputRef.current?.focus();
+                    return;
+                  }
+                  // Delay blur to allow country selection
+                  setTimeout(() => {
+                    if (showDropdown) {
+                      setIsInputFocused(false);
+                    }
+                  }, 150);
+                }}
                 className="w-full pl-11 pr-12 h-14 text-[17px] leading-6 font-semibold bg-white border-2 border-slate-400 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 focus:outline-none transition-colors"
                 style={{
                   color: '#111111',
                   WebkitTextFillColor: '#111111',
                   caretColor: '#111111',
                   opacity: 1,
+                  fontSize: '16px', // Prevents iOS zoom on focus
                 }}
               />
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('');
+                    // Refocus the input after clearing
+                    searchInputRef.current?.focus();
+                  }}
                   onMouseDown={(e) => e.preventDefault()}
+                  onTouchStart={(e) => e.preventDefault()}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-300 hover:bg-slate-400 active:bg-slate-500 rounded-full transition-colors"
                 >
                   <X className="w-4 h-4 text-slate-800" />
@@ -394,15 +415,33 @@ const InvestmentCountrySelector = ({
               touchAction: 'pan-y',
             }}
             onMouseDown={(e) => {
-              // Prevent scroll area from stealing focus, unless clicking a country button
-              if (isInputFocused && !(e.target as HTMLElement).closest('[data-country-btn]')) {
+              // Prevent scroll area from stealing focus from input
+              const target = e.target as HTMLElement;
+              const isCountryButton = target.closest('[data-country-btn]');
+              if (!isCountryButton) {
                 e.preventDefault();
+                // Keep input focused
+                searchInputRef.current?.focus();
               }
             }}
             onTouchStart={(e) => {
-              // Keep keyboard open on touch scroll
-              if (isInputFocused && !(e.target as HTMLElement).closest('[data-country-btn]')) {
-                e.stopPropagation();
+              // Allow scrolling but prevent input blur
+              const target = e.target as HTMLElement;
+              const isCountryButton = target.closest('[data-country-btn]');
+              if (!isCountryButton && isInputFocused) {
+                // Don't prevent default - allow scrolling
+                // But refocus the input after a tiny delay
+                setTimeout(() => {
+                  if (showDropdown && searchInputRef.current) {
+                    searchInputRef.current.focus();
+                  }
+                }, 10);
+              }
+            }}
+            onTouchMove={() => {
+              // During scroll, keep input focused
+              if (isInputFocused && searchInputRef.current) {
+                searchInputRef.current.focus();
               }
             }}
           >
