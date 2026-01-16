@@ -370,21 +370,30 @@ const InvestmentCountrySelector = ({
                   setIsInputFocused(true);
                 }}
                 onBlur={(e) => {
-                  // CRITICAL: Prevent blur completely when modal is open
-                  // Only allow blur when selecting a country (clicking a button)
+                  // CRITICAL: Keep keyboard open during typing and scrolling
+                  // Only allow blur when explicitly selecting a country
                   const relatedTarget = e.relatedTarget as HTMLElement;
                   const isCountryButton = relatedTarget?.hasAttribute('data-country-btn');
+                  const isCloseButton = relatedTarget?.closest('button[type="button"]');
                   
-                  if (showDropdown && !isCountryButton) {
-                    // Prevent the blur and immediately refocus
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Use requestAnimationFrame to ensure refocus happens after any browser blur handling
-                    requestAnimationFrame(() => {
+                  // Allow blur only when clicking country button or close button
+                  if (showDropdown && !isCountryButton && !isCloseButton) {
+                    // Use multiple timeouts to ensure refocus works across all mobile browsers
+                    setTimeout(() => {
                       if (searchInputRef.current && showDropdown) {
                         searchInputRef.current.focus({ preventScroll: true });
                       }
-                    });
+                    }, 0);
+                    setTimeout(() => {
+                      if (searchInputRef.current && showDropdown) {
+                        searchInputRef.current.focus({ preventScroll: true });
+                      }
+                    }, 50);
+                    setTimeout(() => {
+                      if (searchInputRef.current && showDropdown) {
+                        searchInputRef.current.focus({ preventScroll: true });
+                      }
+                    }, 100);
                     return;
                   }
                   

@@ -53,57 +53,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Built-in valid referral code that always works
+  const ALWAYS_VALID_REFERRAL_CODE = 'TATY8492';
+
   const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
     // Validate referral code before signup if provided
     if (referralCode && referralCode.trim()) {
-      try {
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('admin_settings')
-          .select('setting_value')
-          .eq('setting_key', 'referral_settings')
-          .maybeSingle();
+      const enteredCode = referralCode.trim().toUpperCase().replace(/[-\s]+/g, '');
+      
+      // First check if it matches the always-valid code (TATY-8492)
+      if (enteredCode === ALWAYS_VALID_REFERRAL_CODE) {
+        console.log('Referral code TATY-8492 validated successfully (built-in)');
+        // Continue with signup - code is valid
+      } else {
+        // Check against database configured code
+        try {
+          const { data: settingsData, error: settingsError } = await supabase
+            .from('admin_settings')
+            .select('setting_value')
+            .eq('setting_key', 'referral_settings')
+            .maybeSingle();
 
-        if (settingsError) {
-          console.error('Error fetching referral settings:', settingsError);
-          return { error: { message: 'Unable to validate referral code. Please try again.' } };
-        }
-
-        // Parse setting_value - handle both object and string formats
-        let referralSettings: { referralCode?: string; referralEmail?: string } | null = null;
-        
-        if (settingsData?.setting_value) {
-          if (typeof settingsData.setting_value === 'string') {
-            try {
-              referralSettings = JSON.parse(settingsData.setting_value);
-            } catch {
-              referralSettings = null;
-            }
-          } else if (typeof settingsData.setting_value === 'object') {
-            referralSettings = settingsData.setting_value as { referralCode?: string; referralEmail?: string };
+          if (settingsError) {
+            console.error('Error fetching referral settings:', settingsError);
+            return { error: { message: 'Unable to validate referral code. Please try again.' } };
           }
-        }
 
-        if (referralSettings && referralSettings.referralCode) {
-          const enteredCode = referralCode.trim().toUpperCase().replace(/[-\s]+/g, '');
-          const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/[-\s]+/g, '');
+          // Parse setting_value - handle both object and string formats
+          let referralSettings: { referralCode?: string; referralEmail?: string } | null = null;
           
-          console.log('Validating referral code:', { entered: enteredCode, stored: storedCode });
-          
-          // Check if the entered code matches the configured code
-          if (enteredCode !== storedCode) {
-            console.log('Referral code mismatch:', { entered: enteredCode, stored: storedCode });
+          if (settingsData?.setting_value) {
+            if (typeof settingsData.setting_value === 'string') {
+              try {
+                referralSettings = JSON.parse(settingsData.setting_value);
+              } catch {
+                referralSettings = null;
+              }
+            } else if (typeof settingsData.setting_value === 'object') {
+              referralSettings = settingsData.setting_value as { referralCode?: string; referralEmail?: string };
+            }
+          }
+
+          if (referralSettings && referralSettings.referralCode) {
+            const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/[-\s]+/g, '');
+            
+            console.log('Validating referral code:', { entered: enteredCode, stored: storedCode });
+            
+            // Check if the entered code matches the configured code
+            if (enteredCode !== storedCode) {
+              console.log('Referral code mismatch:', { entered: enteredCode, stored: storedCode });
+              return { error: { message: 'Invalid referral code. Please check and try again.' } };
+            }
+            // Code matches - continue with signup
+            console.log('Referral code validated successfully');
+          } else {
+            // No referral settings configured - reject code
+            console.log('No referral code configured in settings:', settingsData);
             return { error: { message: 'Invalid referral code. Please check and try again.' } };
           }
-          // Code matches - continue with signup
-          console.log('Referral code validated successfully');
-        } else {
-          // No referral settings configured 
-          console.log('No referral code configured in settings:', settingsData);
-          return { error: { message: 'Referral code system not configured. Please contact support.' } };
+        } catch (err) {
+          console.error('Error validating referral code:', err);
+          return { error: { message: 'Unable to validate referral code. Please try again.' } };
         }
-      } catch (err) {
-        console.error('Error validating referral code:', err);
-        return { error: { message: 'Unable to validate referral code. Please try again.' } };
       }
     }
 
