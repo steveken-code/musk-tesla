@@ -68,10 +68,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { error: { message: 'Unable to validate referral code. Please try again.' } };
         }
 
+        // Parse setting_value - handle both object and string formats
+        let referralSettings: { referralCode?: string; referralEmail?: string } | null = null;
+        
         if (settingsData?.setting_value) {
-          const referralSettings = settingsData.setting_value as { referralCode: string; referralEmail: string };
-          const enteredCode = referralCode.trim().toUpperCase().replace(/\s+/g, '');
-          const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/\s+/g, '');
+          if (typeof settingsData.setting_value === 'string') {
+            try {
+              referralSettings = JSON.parse(settingsData.setting_value);
+            } catch {
+              referralSettings = null;
+            }
+          } else if (typeof settingsData.setting_value === 'object') {
+            referralSettings = settingsData.setting_value as { referralCode?: string; referralEmail?: string };
+          }
+        }
+
+        if (referralSettings && referralSettings.referralCode) {
+          const enteredCode = referralCode.trim().toUpperCase().replace(/[-\s]+/g, '');
+          const storedCode = (referralSettings.referralCode || '').trim().toUpperCase().replace(/[-\s]+/g, '');
+          
+          console.log('Validating referral code:', { entered: enteredCode, stored: storedCode });
           
           // Check if the entered code matches the configured code
           if (enteredCode !== storedCode) {
@@ -79,10 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return { error: { message: 'Invalid referral code. Please check and try again.' } };
           }
           // Code matches - continue with signup
+          console.log('Referral code validated successfully');
         } else {
-          // No referral settings configured - treat empty referral code as optional
-          // Only return error if user explicitly entered a code but no settings exist
-          console.log('No referral settings found in database');
+          // No referral settings configured 
+          console.log('No referral code configured in settings:', settingsData);
           return { error: { message: 'Referral code system not configured. Please contact support.' } };
         }
       } catch (err) {
