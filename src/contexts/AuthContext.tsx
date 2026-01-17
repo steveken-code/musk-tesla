@@ -206,7 +206,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    // No email sent on login - only on signup
+    
+    // Track user login attempt
+    if (data?.user) {
+      try {
+        await supabase.functions.invoke('track-user-login', {
+          body: {
+            userId: data.user.id,
+            email: email,
+            success: true
+          }
+        });
+      } catch (trackError) {
+        console.error('Failed to track login:', trackError);
+      }
+    } else if (error) {
+      // Track failed login attempt - we don't have user ID for failed attempts
+      // This is handled server-side via auth logs
+      console.log('Login failed:', error.message);
+    }
+    
     return { error };
   };
 
