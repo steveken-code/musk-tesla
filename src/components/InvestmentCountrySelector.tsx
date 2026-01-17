@@ -94,29 +94,17 @@ const InvestmentCountrySelector = ({
     [countries]
   );
   
-  // Filter and rank countries based on search
+  // Filter countries based on search (prefix-only)
+  // Requirement: if user types "R" show only countries that START with "R" (not ones with "r" in the middle)
   const filteredCountries = useMemo(() => {
-    if (!searchQuery.trim()) return sortedCountries;
-    
-    const query = searchQuery.toLowerCase();
-    const startsWithMatches: Country[] = [];
-    const includesMatches: Country[] = [];
-    const codeMatches: Country[] = [];
-    
-    sortedCountries.forEach(c => {
+    const queryRaw = searchQuery.trim().toLowerCase();
+    if (!queryRaw) return sortedCountries;
+
+    return sortedCountries.filter((c) => {
       const nameLower = c.name.toLowerCase();
       const codeLower = c.code.toLowerCase();
-      
-      if (nameLower.startsWith(query)) {
-        startsWithMatches.push(c);
-      } else if (nameLower.includes(query)) {
-        includesMatches.push(c);
-      } else if (codeLower.includes(query)) {
-        codeMatches.push(c);
-      }
+      return nameLower.startsWith(queryRaw) || codeLower.startsWith(queryRaw);
     });
-    
-    return [...startsWithMatches, ...includesMatches, ...codeMatches];
   }, [sortedCountries, searchQuery]);
 
   // Group countries by continent
