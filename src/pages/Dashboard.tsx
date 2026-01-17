@@ -745,7 +745,7 @@ const Dashboard = () => {
           body: {
             type: 'investment',
             userEmail: profile?.email || user?.email || '',
-            userName: profile?.full_name || 'Unknown User',
+            userName: profile?.full_name || user?.user_metadata?.full_name || 'User',
             amount: amount,
           },
         });
@@ -902,7 +902,7 @@ const Dashboard = () => {
           body: {
             type: 'withdrawal',
             userEmail: profile?.email || user?.email || '',
-            userName: profile?.full_name || 'Unknown User',
+            userName: profile?.full_name || user?.user_metadata?.full_name || 'User',
             amount: parseFloat(withdrawAmount),
             details: `Country: ${selectedCountryData?.name || withdrawCountry}, Method: ${withdrawMethod}, Details: ${withdrawPaymentDetails}`,
           },
