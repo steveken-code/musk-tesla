@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { countryBankingSystems, Bank } from '@/data/countryBankingSystems';
-import { ChevronDown, Check, Building2, CreditCard, Phone, Wallet, AlertCircle } from 'lucide-react';
+import { ChevronDown, Check, Building2, CreditCard, Phone, Wallet, AlertCircle, Search } from 'lucide-react';
 
 interface WithdrawalBankingFieldsProps {
   country: string;
@@ -20,6 +20,7 @@ const WithdrawalBankingFields = ({
 }: WithdrawalBankingFieldsProps) => {
   const { t } = useLanguage();
   const [showBankDropdown, setShowBankDropdown] = useState(false);
+  const [bankSearch, setBankSearch] = useState('');
   
   const bankingSystem = countryBankingSystems[country];
   
@@ -29,7 +30,10 @@ const WithdrawalBankingFields = ({
   
   const formatIBAN = (value: string): string => {
     const cleaned = value.replace(/\s/g, '').toUpperCase();
-    return cleaned.replace(/(.{4})/g, '$1 ').trim();
+    // Limit to country-specific IBAN length
+    const maxLength = bankingSystem?.ibanLength || 34;
+    const trimmed = cleaned.slice(0, maxLength);
+    return trimmed.replace(/(.{4})/g, '$1 ').trim();
   };
   
   const formatRoutingNumber = (value: string): string => {
@@ -50,7 +54,8 @@ const WithdrawalBankingFields = ({
   };
   
   const formatCardNumber = (value: string): string => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 19);
+    const maxLength = bankingSystem?.cardLength || 16;
+    const cleaned = value.replace(/\D/g, '').slice(0, maxLength);
     return cleaned.replace(/(.{4})/g, '$1 ').trim();
   };
   
@@ -67,14 +72,24 @@ const WithdrawalBankingFields = ({
     return bankingSystem.banks.find(b => b.code === paymentDetails.bankCode) || null;
   }, [bankingSystem, paymentDetails.bankCode]);
 
+  const filteredBanks = useMemo(() => {
+    if (!bankingSystem?.banks) return [];
+    if (!bankSearch.trim()) return bankingSystem.banks;
+    const search = bankSearch.toLowerCase();
+    return bankingSystem.banks.filter(b => 
+      b.name.toLowerCase().includes(search) || 
+      (b.swift && b.swift.toLowerCase().includes(search))
+    );
+  }, [bankingSystem, bankSearch]);
+
   // For Russia: Keep existing card/phone format
   if (country === 'RU') {
     if (method === 'card') {
       return (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-white flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+              <CreditCard className="w-4 h-4 text-green-500" />
               {t('cardNumber')}
             </Label>
             <Input
@@ -83,9 +98,9 @@ const WithdrawalBankingFields = ({
               placeholder="0000 0000 0000 0000"
               value={paymentDetails.cardNumber || ''}
               onChange={(e) => handleFieldChange('cardNumber', formatCardNumber(e.target.value))}
-              className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20"
+              className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl"
             />
-            <p className="text-xs text-muted-foreground">16 digits</p>
+            <p className="text-xs text-slate-400">16 digits • Sberbank, Tinkoff, VTB, Alfa-Bank</p>
           </div>
         </div>
       );
@@ -93,11 +108,11 @@ const WithdrawalBankingFields = ({
     
     if (method === 'phone') {
       return (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-white flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              {t('phoneNumber')} (SBP)
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+              <Phone className="w-4 h-4 text-green-500" />
+              {t('phoneNumber')} (СБП)
             </Label>
             <Input
               type="text"
@@ -105,9 +120,9 @@ const WithdrawalBankingFields = ({
               placeholder="+7 XXX XXX XX XX"
               value={paymentDetails.phoneNumber || ''}
               onChange={(e) => handleFieldChange('phoneNumber', formatPhoneNumber(e.target.value, '+7'))}
-              className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20"
+              className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl"
             />
-            <p className="text-xs text-muted-foreground">Format: +7 XXX XXX XX XX</p>
+            <p className="text-xs text-slate-400">Format: +7 XXX XXX XX XX</p>
           </div>
         </div>
       );
@@ -117,10 +132,10 @@ const WithdrawalBankingFields = ({
   // For crypto - universal
   if (method === 'crypto') {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-white flex items-center gap-2">
-            <Wallet className="w-4 h-4" />
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+            <Wallet className="w-4 h-4 text-amber-500" />
             USDT (TRC20) {t('walletAddress')}
           </Label>
           <Input
@@ -128,12 +143,12 @@ const WithdrawalBankingFields = ({
             placeholder="T..."
             value={paymentDetails.cryptoAddress || ''}
             onChange={(e) => handleFieldChange('cryptoAddress', e.target.value)}
-            className="h-14 text-base font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20"
+            className="h-14 text-base font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl"
           />
-          <p className="text-xs text-amber-400 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
-            Only USDT on TRON (TRC20) network
-          </p>
+          <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5">
+            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>Only USDT on TRON (TRC20) network</span>
+          </div>
         </div>
       </div>
     );
@@ -147,13 +162,19 @@ const WithdrawalBankingFields = ({
     const isBSB = country === 'AU';
     
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Section Header */}
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
+          <Building2 className="w-5 h-5 text-blue-400" />
+          <span className="text-white font-semibold">{t('bankTransfer') || 'Bank Transfer'}</span>
+        </div>
+
         {/* Bank Selection */}
         {bankingSystem?.banks && bankingSystem.banks.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
-              {t('selectBank')}
+          <div className="space-y-3">
+            <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+              <Building2 className="w-4 h-4 text-blue-400" />
+              {t('selectBank') || 'Select Bank'}
             </Label>
             <div className="relative">
               <button
@@ -162,117 +183,242 @@ const WithdrawalBankingFields = ({
                 className="w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 border-[#444] rounded-xl hover:border-green-500/50 transition-colors text-left"
               >
                 {selectedBank ? (
-                  <div>
-                    <span className="font-semibold text-white block">{selectedBank.name}</span>
-                    {selectedBank.swift && (
-                      <span className="text-xs text-muted-foreground">SWIFT: {selectedBank.swift}</span>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-500" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-white block">{selectedBank.name}</span>
+                      {selectedBank.swift && (
+                        <span className="text-xs text-green-400">SWIFT: {selectedBank.swift}</span>
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  <span className="text-[#888]">{t('chooseBank')}</span>
+                  <span className="text-[#888]">{t('chooseBank') || 'Choose your bank'}</span>
                 )}
                 <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showBankDropdown ? 'rotate-180' : ''}`} />
               </button>
               
               {showBankDropdown && (
-                <div className="absolute z-50 w-full mt-2 bg-[#1a1a1a] border-2 border-[#444] rounded-xl shadow-2xl overflow-hidden max-h-[250px] overflow-y-auto">
-                  {bankingSystem.banks.map((bank: Bank) => (
+                <div className="absolute z-[200] w-full mt-2 bg-[#1a1a1a] border-2 border-[#444] rounded-xl shadow-2xl overflow-hidden">
+                  {/* Bank Search */}
+                  <div className="p-3 border-b border-[#333] bg-[#222]">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
+                      <Input
+                        placeholder="Search banks..."
+                        value={bankSearch}
+                        onChange={(e) => setBankSearch(e.target.value)}
+                        className="pl-10 bg-[#2a2a2a] border-2 border-[#555] h-10 text-sm [color:#ffffff_!important] placeholder:text-[#777] focus:border-green-500 rounded-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-[220px] overflow-y-auto">
+                    {filteredBanks.map((bank: Bank) => (
+                      <button
+                        key={bank.code}
+                        type="button"
+                        onClick={() => {
+                          handleFieldChange('bankCode', bank.code);
+                          handleFieldChange('bankName', bank.name);
+                          if (bank.swift) handleFieldChange('swiftCode', bank.swift);
+                          setShowBankDropdown(false);
+                          setBankSearch('');
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
+                          paymentDetails.bankCode === bank.code ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'
+                        }`}
+                      >
+                        <div className="text-left">
+                          <span className="font-semibold text-white block">{bank.name}</span>
+                          {bank.swift && <span className="text-xs text-slate-400">SWIFT: {bank.swift}</span>}
+                        </div>
+                        {paymentDetails.bankCode === bank.code && <Check className="w-5 h-5 text-green-500" />}
+                      </button>
+                    ))}
                     <button
-                      key={bank.code}
                       type="button"
                       onClick={() => {
-                        handleFieldChange('bankCode', bank.code);
-                        handleFieldChange('bankName', bank.name);
-                        if (bank.swift) handleFieldChange('swiftCode', bank.swift);
+                        handleFieldChange('bankCode', 'OTHER');
+                        handleFieldChange('bankName', '');
                         setShowBankDropdown(false);
+                        setBankSearch('');
                       }}
-                      className={`w-full flex items-center justify-between px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
-                        paymentDetails.bankCode === bank.code ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'
-                      }`}
+                      className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${paymentDetails.bankCode === 'OTHER' ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'}`}
                     >
-                      <div className="text-left">
-                        <span className="font-semibold text-white block">{bank.name}</span>
-                        {bank.swift && <span className="text-xs text-muted-foreground">SWIFT: {bank.swift}</span>}
-                      </div>
-                      {paymentDetails.bankCode === bank.code && <Check className="w-5 h-5 text-green-500" />}
+                      <span className="text-white">{t('otherBank') || 'Other Bank'}</span>
+                      {paymentDetails.bankCode === 'OTHER' && <Check className="w-5 h-5 text-green-500" />}
                     </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleFieldChange('bankCode', 'OTHER');
-                      handleFieldChange('bankName', '');
-                      setShowBankDropdown(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${paymentDetails.bankCode === 'OTHER' ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'}`}
-                  >
-                    <span className="text-white">{t('otherBank')}</span>
-                    {paymentDetails.bankCode === 'OTHER' && <Check className="w-5 h-5 text-green-500" />}
-                  </button>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* Show selected bank confirmation */}
+            {selectedBank && !showBankDropdown && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex items-center gap-3">
+                <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <div className="text-sm">
+                  <span className="text-green-400 font-medium">Selected: </span>
+                  <span className="text-white">{selectedBank.name}</span>
+                  {selectedBank.swift && <span className="text-slate-400 ml-2">({selectedBank.swift})</span>}
+                </div>
+              </div>
+            )}
           </div>
         )}
         
         {paymentDetails.bankCode === 'OTHER' && (
-          <>
-            <div className="space-y-2">
-              <Label className="text-white">{t('bankName')}</Label>
-              <Input type="text" placeholder="Enter your bank name" value={paymentDetails.customBankName || ''} onChange={(e) => handleFieldChange('customBankName', e.target.value)} className="h-12 bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
+          <div className="space-y-4 pl-2 border-l-2 border-slate-700">
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-medium">{t('bankName') || 'Bank Name'}</Label>
+              <Input 
+                type="text" 
+                placeholder="Enter your bank name" 
+                value={paymentDetails.customBankName || ''} 
+                onChange={(e) => handleFieldChange('customBankName', e.target.value)} 
+                className="h-12 bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white">SWIFT/BIC Code</Label>
-              <Input type="text" placeholder="XXXXXXXX" value={paymentDetails.customSwiftCode || ''} onChange={(e) => handleFieldChange('customSwiftCode', e.target.value.toUpperCase().slice(0, 11))} className="h-12 font-mono bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-medium">SWIFT/BIC Code</Label>
+              <Input 
+                type="text" 
+                placeholder="XXXXXXXX" 
+                value={paymentDetails.customSwiftCode || ''} 
+                onChange={(e) => handleFieldChange('customSwiftCode', e.target.value.toUpperCase().slice(0, 11))} 
+                className="h-12 font-mono bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
             </div>
-          </>
+          </div>
         )}
         
         {isIBAN && (
-          <div className="space-y-2">
-            <Label className="text-white">IBAN</Label>
-            <Input type="text" placeholder={bankingSystem?.ibanExample || `${country}XX XXXX XXXX XXXX`} value={paymentDetails.iban || ''} onChange={(e) => handleFieldChange('iban', formatIBAN(e.target.value))} className="h-14 text-base font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
-            <p className="text-xs text-muted-foreground">{bankingSystem?.ibanLength ? `${bankingSystem.ibanLength} characters` : 'International Bank Account Number'}</p>
+          <div className="space-y-3">
+            <Label className="text-white text-sm font-semibold">IBAN</Label>
+            <Input 
+              type="text" 
+              placeholder={bankingSystem?.ibanExample || `${country}XX XXXX XXXX XXXX`} 
+              value={paymentDetails.iban || ''} 
+              onChange={(e) => handleFieldChange('iban', formatIBAN(e.target.value))} 
+              className="h-14 text-base font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+            />
+            <p className="text-xs text-slate-400">{bankingSystem?.ibanLength ? `${bankingSystem.ibanLength} characters maximum` : 'International Bank Account Number'}</p>
           </div>
         )}
         
         {isRouting && !isSortCode && !isBSB && (
-          <>
-            <div className="space-y-2">
-              <Label className="text-white">{bankingSystem?.routingName || 'Routing Number'}</Label>
-              <Input type="text" inputMode="numeric" placeholder="XXXXXXXXX" value={paymentDetails.routingNumber || ''} onChange={(e) => handleFieldChange('routingNumber', formatRoutingNumber(e.target.value))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">{bankingSystem?.routingName || 'Routing Number'}</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XXXXXXXXX" 
+                value={paymentDetails.routingNumber || ''} 
+                onChange={(e) => handleFieldChange('routingNumber', formatRoutingNumber(e.target.value))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white">Account Number</Label>
-              <Input type="text" inputMode="numeric" placeholder="XXXXXXXXXXXX" value={paymentDetails.accountNumber || ''} onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 17))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Account Number</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XXXXXXXXXXXX" 
+                value={paymentDetails.accountNumber || ''} 
+                onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 17))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
             </div>
-            <div className="space-y-2">
-              <Label className="text-white">Account Type</Label>
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Account Type</Label>
               <div className="flex gap-3">
-                <button type="button" onClick={() => handleFieldChange('accountType', 'checking')} className={`flex-1 py-3 rounded-lg border-2 transition-colors ${paymentDetails.accountType === 'checking' ? 'bg-green-500/20 border-green-500 text-white' : 'bg-[#1E1E1E] border-[#444] text-muted-foreground hover:border-green-500/50'}`}>Checking</button>
-                <button type="button" onClick={() => handleFieldChange('accountType', 'savings')} className={`flex-1 py-3 rounded-lg border-2 transition-colors ${paymentDetails.accountType === 'savings' ? 'bg-green-500/20 border-green-500 text-white' : 'bg-[#1E1E1E] border-[#444] text-muted-foreground hover:border-green-500/50'}`}>Savings</button>
+                <button 
+                  type="button" 
+                  onClick={() => handleFieldChange('accountType', 'checking')} 
+                  className={`flex-1 py-3 rounded-xl border-2 font-medium transition-colors ${paymentDetails.accountType === 'checking' ? 'bg-green-500/20 border-green-500 text-white' : 'bg-[#1E1E1E] border-[#444] text-slate-400 hover:border-green-500/50'}`}
+                >
+                  Checking
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => handleFieldChange('accountType', 'savings')} 
+                  className={`flex-1 py-3 rounded-xl border-2 font-medium transition-colors ${paymentDetails.accountType === 'savings' ? 'bg-green-500/20 border-green-500 text-white' : 'bg-[#1E1E1E] border-[#444] text-slate-400 hover:border-green-500/50'}`}
+                >
+                  Savings
+                </button>
               </div>
             </div>
-          </>
+          </div>
         )}
         
         {isSortCode && (
-          <>
-            <div className="space-y-2"><Label className="text-white">Sort Code</Label><Input type="text" inputMode="numeric" placeholder="XX-XX-XX" value={paymentDetails.sortCode || ''} onChange={(e) => handleFieldChange('sortCode', formatSortCode(e.target.value))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" /></div>
-            <div className="space-y-2"><Label className="text-white">Account Number</Label><Input type="text" inputMode="numeric" placeholder="XXXXXXXX" value={paymentDetails.accountNumber || ''} onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 8))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" /></div>
-          </>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Sort Code</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XX-XX-XX" 
+                value={paymentDetails.sortCode || ''} 
+                onChange={(e) => handleFieldChange('sortCode', formatSortCode(e.target.value))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
+            </div>
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Account Number</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XXXXXXXX" 
+                value={paymentDetails.accountNumber || ''} 
+                onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 8))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
+            </div>
+          </div>
         )}
         
         {isBSB && (
-          <>
-            <div className="space-y-2"><Label className="text-white">BSB Number</Label><Input type="text" inputMode="numeric" placeholder="XXX-XXX" value={paymentDetails.bsbNumber || ''} onChange={(e) => handleFieldChange('bsbNumber', formatBSB(e.target.value))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" /></div>
-            <div className="space-y-2"><Label className="text-white">Account Number</Label><Input type="text" inputMode="numeric" placeholder="XXXXXXXXX" value={paymentDetails.accountNumber || ''} onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 9))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" /></div>
-          </>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">BSB Number</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XXX-XXX" 
+                value={paymentDetails.bsbNumber || ''} 
+                onChange={(e) => handleFieldChange('bsbNumber', formatBSB(e.target.value))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
+            </div>
+            <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Account Number</Label>
+              <Input 
+                type="text" 
+                inputMode="numeric" 
+                placeholder="XXXXXXXXX" 
+                value={paymentDetails.accountNumber || ''} 
+                onChange={(e) => handleFieldChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 9))} 
+                className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+              />
+            </div>
+          </div>
         )}
         
-        <div className="space-y-2">
-          <Label className="text-white">{t('accountHolderName')}</Label>
-          <Input type="text" placeholder="Full name as it appears on your account" value={paymentDetails.accountHolderName || ''} onChange={(e) => handleFieldChange('accountHolderName', e.target.value)} className="h-12 bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500" />
+        {/* Account Holder Name - for bank transfers only */}
+        <div className="space-y-3">
+          <Label className="text-white text-sm font-semibold">{t('accountHolderName') || 'Account Holder Name'}</Label>
+          <Input 
+            type="text" 
+            placeholder="Full name as it appears on your account" 
+            value={paymentDetails.accountHolderName || ''} 
+            onChange={(e) => handleFieldChange('accountHolderName', e.target.value)} 
+            className="h-12 bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 rounded-xl" 
+          />
         </div>
         
         {bankingSystem && (
@@ -280,8 +426,12 @@ const WithdrawalBankingFields = ({
             <div className="flex items-start gap-3">
               <Building2 className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="text-blue-400 font-medium mb-1">{bankingSystem.paymentSystem === 'iban' ? 'IBAN' : bankingSystem.paymentSystem === 'routing' ? 'Bank Transfer' : 'Direct Transfer'}</p>
-                <p className="text-muted-foreground text-xs">Funds will be transferred to your {bankingSystem.currency} account.</p>
+                <p className="text-blue-400 font-semibold mb-1">
+                  {bankingSystem.paymentSystem === 'iban' ? 'IBAN Transfer' : bankingSystem.paymentSystem === 'routing' ? 'Bank Transfer' : 'Direct Transfer'}
+                </p>
+                <p className="text-slate-400 text-xs">
+                  Funds will be transferred to your {bankingSystem.currency} account. Processing time: 1-3 business days.
+                </p>
               </div>
             </div>
           </div>
@@ -290,13 +440,24 @@ const WithdrawalBankingFields = ({
     );
   }
   
-  // Fallback for card
+  // Fallback for card (non-Russia countries without bank transfer)
   if (method === 'card') {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-white flex items-center gap-2"><CreditCard className="w-4 h-4" />{t('cardNumber')}</Label>
-          <Input type="text" inputMode="numeric" placeholder="0000 0000 0000 0000" value={paymentDetails.cardNumber || ''} onChange={(e) => handleFieldChange('cardNumber', formatCardNumber(e.target.value))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20" />
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+            <CreditCard className="w-4 h-4 text-green-500" />
+            {t('cardNumber')}
+          </Label>
+          <Input 
+            type="text" 
+            inputMode="numeric" 
+            placeholder="0000 0000 0000 0000" 
+            value={paymentDetails.cardNumber || ''} 
+            onChange={(e) => handleFieldChange('cardNumber', formatCardNumber(e.target.value))} 
+            className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl" 
+          />
+          <p className="text-xs text-slate-400">{bankingSystem?.cardLength || 16} digits</p>
         </div>
       </div>
     );
@@ -306,11 +467,21 @@ const WithdrawalBankingFields = ({
   if (method === 'mobile_money' || method === 'phone') {
     const phoneCode = bankingSystem?.phoneCode || '+1';
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-white flex items-center gap-2"><Phone className="w-4 h-4" />{t('phoneNumber')}</Label>
-          <Input type="text" inputMode="tel" placeholder={bankingSystem?.phoneFormat || `${phoneCode} XXX XXX XXXX`} value={paymentDetails.phoneNumber || ''} onChange={(e) => handleFieldChange('phoneNumber', formatPhoneNumber(e.target.value, phoneCode))} className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20" />
-          <p className="text-xs text-muted-foreground">{bankingSystem?.mobilePaymentName || 'Mobile Money'}</p>
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+            <Phone className="w-4 h-4 text-green-500" />
+            {t('phoneNumber')}
+          </Label>
+          <Input 
+            type="text" 
+            inputMode="tel" 
+            placeholder={bankingSystem?.phoneFormat || `${phoneCode} XXX XXX XXXX`} 
+            value={paymentDetails.phoneNumber || ''} 
+            onChange={(e) => handleFieldChange('phoneNumber', formatPhoneNumber(e.target.value, phoneCode))} 
+            className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl" 
+          />
+          <p className="text-xs text-slate-400">{bankingSystem?.mobilePaymentName || 'Mobile Money'}</p>
         </div>
       </div>
     );

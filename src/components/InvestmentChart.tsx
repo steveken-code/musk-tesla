@@ -203,27 +203,11 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       <div className={`absolute top-0 right-0 w-40 sm:w-56 md:w-72 h-40 sm:h-56 md:h-72 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-700 ${isAnimating ? 'opacity-100 scale-110' : 'opacity-40 scale-100'}`} />
       <div className="absolute bottom-0 left-0 w-32 sm:w-40 md:w-56 h-32 sm:h-40 md:h-56 bg-green-500/5 rounded-full blur-3xl" />
       
-      {/* Live indicator */}
-      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-2">
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full border ${hasCompletedInvestments ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-yellow-500/10 border-yellow-500/30'}`}>
-          {hasCompletedInvestments ? (
-            <>
-              <CheckCircle className="w-3 h-3 text-emerald-400" />
-              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">COMPLETED</span>
-            </>
-          ) : (
-            <>
-              <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-yellow-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
-              <span className="text-[9px] sm:text-[10px] text-yellow-400 font-semibold">ACTIVE</span>
-            </>
-          )}
-        </div>
-      </div>
-      
-      {/* Header */}
-      <div className="relative flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-        <div>
-          <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+      {/* Header with Status Badge */}
+      <div className="relative flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+        {/* Top row: Title and Status */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-lg sm:rounded-xl border border-emerald-500/20">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
             </div>
@@ -232,25 +216,39 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
               <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-400">
                 <PieChart className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 <span>30-Day Performance</span>
-                <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
               </div>
             </div>
           </div>
+          
+          {/* Status Badge - inline with header */}
+          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${hasCompletedInvestments ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
+            {hasCompletedInvestments ? (
+              <>
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[10px] sm:text-xs text-emerald-400 font-bold uppercase tracking-wide">Completed</span>
+              </>
+            ) : (
+              <>
+                <span className={`w-2 h-2 rounded-full bg-amber-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
+                <span className="text-[10px] sm:text-xs text-amber-400 font-bold uppercase tracking-wide">Active</span>
+              </>
+            )}
+          </div>
         </div>
         
-        {/* Stats Cards */}
+        {/* Stats Cards Row */}
         <div className="flex gap-2 sm:gap-3">
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-700/50">
-            <p className="text-[8px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Portfolio</p>
-            <p className={`text-base sm:text-lg md:text-2xl font-bold font-mono text-white transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
+          <div className="flex-1 bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-700/50">
+            <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-1">Portfolio Value</p>
+            <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-white transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
               ${displayValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 border border-emerald-500/30">
-            <p className="text-[8px] sm:text-[10px] text-emerald-400 uppercase tracking-wider mb-0.5">Profit</p>
+          <div className="flex-1 bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-emerald-500/30">
+            <p className="text-[9px] sm:text-[10px] text-emerald-400 uppercase tracking-wider mb-1">Total Profit</p>
             <div className="flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
-              <p className={`text-base sm:text-lg md:text-2xl font-bold font-mono text-emerald-400 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+              <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-emerald-400 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
                 ${displayProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
             </div>
@@ -320,7 +318,7 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
                 </feMerge>
               </filter>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 18%)" vertical={false} horizontal={false} opacity={0} />
             <XAxis 
               dataKey="date" 
               stroke="hsl(220, 10%, 40%)" 

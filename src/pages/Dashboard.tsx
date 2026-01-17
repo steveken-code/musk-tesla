@@ -1556,10 +1556,14 @@ const Dashboard = () => {
                       withdrawMethod === 'crypto' ? !bankingPaymentDetails.cryptoAddress :
                       withdrawMethod === 'phone' && withdrawCountry === 'RU' ? !bankingPaymentDetails.phoneNumber :
                       withdrawMethod === 'card' && withdrawCountry === 'RU' ? !bankingPaymentDetails.cardNumber :
-                      withdrawMethod === 'bank_transfer' ? !(bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber) :
-                      !bankingPaymentDetails.cardNumber && !bankingPaymentDetails.iban
+                      withdrawMethod === 'card' ? !bankingPaymentDetails.cardNumber :
+                      withdrawMethod === 'bank_transfer' ? !(
+                        (bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber) &&
+                        bankingPaymentDetails.accountHolderName
+                      ) :
+                      false
                     )}
-                    className="w-full h-12 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 font-semibold text-base"
+                    className="w-full h-14 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-600 disabled:to-slate-500 disabled:cursor-not-allowed font-semibold text-base transition-all duration-200 rounded-xl shadow-lg hover:shadow-green-500/25"
                   >
                     {submittingWithdrawal ? (
                       <>

@@ -987,29 +987,29 @@ const Admin = () => {
           </h2>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('cardNumber')}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('cardNumber')}</Label>
               <Input
                 value={paymentSettings.cardNumber}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, cardNumber: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                className="bg-slate-900 border-2 border-slate-600 text-white font-mono text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 maxLength={50}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('bankName')}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('bankName')}</Label>
               <Input
                 value={paymentSettings.bankName}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, bankName: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                className="bg-slate-900 border-2 border-slate-600 text-white text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 maxLength={100}
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('accountHolder')}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('accountHolder')}</Label>
               <Input
                 value={paymentSettings.accountHolder}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, accountHolder: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                className="bg-slate-900 border-2 border-slate-600 text-white text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 maxLength={100}
               />
             </div>
@@ -1031,11 +1031,12 @@ const Admin = () => {
             {t('withdrawalSettings')}
           </h2>
           <div className="space-y-2">
-            <Label className="text-slate-300">{t('defaultHoldMessage')}</Label>
+            <Label className="text-slate-300 text-sm font-semibold">{t('defaultHoldMessage')}</Label>
             <Input
               value={withdrawalSettings.defaultHoldMessage}
               onChange={(e) => setWithdrawalSettings(prev => ({ ...prev, defaultHoldMessage: e.target.value }))}
-              className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+              className="bg-slate-900 border-2 border-slate-600 text-white text-base [font-weight:500] placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12"
+              style={{ color: '#ffffff', opacity: 1 }}
               placeholder="Enter default message for withdrawals on hold..."
               maxLength={500}
             />
@@ -1080,7 +1081,8 @@ const Admin = () => {
                 <Input
                   value={supportSettings.whatsappPhone}
                   onChange={(e) => setSupportSettings(prev => ({ ...prev, whatsappPhone: e.target.value }))}
-                  className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                  className="bg-slate-900 border-2 border-slate-600 text-white text-base [font-weight:600] font-mono placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12"
+                  style={{ color: '#ffffff', opacity: 1 }}
                   placeholder="+12186500840"
                 />
               )}
@@ -1109,7 +1111,8 @@ const Admin = () => {
                 <Input
                   value={supportSettings.telegramUsername}
                   onChange={(e) => setSupportSettings(prev => ({ ...prev, telegramUsername: e.target.value }))}
-                  className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                  className="bg-slate-900 border-2 border-slate-600 text-white text-base [font-weight:600] placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20 h-12"
+                  style={{ color: '#ffffff', opacity: 1 }}
                   placeholder="@username or phone number"
                 />
               )}
@@ -1133,21 +1136,21 @@ const Admin = () => {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('referralCode') || 'Referral Code'}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('referralCode') || 'Referral Code'}</Label>
               <Input
                 value={referralSettings.referralCode}
                 onChange={(e) => setReferralSettings(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px] [font-weight:600]"
+                className="bg-slate-900 border-2 border-slate-600 text-white font-mono text-base placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 placeholder="TATY-8492"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('referralEmail') || 'Notification Email'}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('referralEmail') || 'Notification Email'}</Label>
               <Input
                 type="email"
                 value={referralSettings.referralEmail}
                 onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px]"
+                className="bg-slate-900 border-2 border-slate-600 text-white text-base placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 placeholder="email@example.com"
               />
             </div>
@@ -1173,20 +1176,20 @@ const Admin = () => {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('walletAddress') || 'USDT Wallet Address'}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('walletAddress') || 'USDT Wallet Address'}</Label>
               <Input
                 value={cryptoSettings.walletAddress}
                 onChange={(e) => setCryptoSettings(prev => ({ ...prev, walletAddress: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 font-mono [font-size:14px]"
+                className="bg-slate-900 border-2 border-slate-600 text-white font-mono text-sm placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 placeholder="TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">{t('network') || 'Network'}</Label>
+              <Label className="text-slate-300 text-sm font-semibold">{t('network') || 'Network'}</Label>
               <Input
                 value={cryptoSettings.network}
                 onChange={(e) => setCryptoSettings(prev => ({ ...prev, network: e.target.value }))}
-                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 [font-size:16px]"
+                className="bg-slate-900 border-2 border-slate-600 text-white text-base placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12 [color:#ffffff_!important] [opacity:1_!important] [-webkit-text-fill-color:#ffffff_!important]"
                 placeholder="TRON (TRC20)"
               />
             </div>
