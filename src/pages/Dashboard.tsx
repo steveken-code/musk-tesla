@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,6 +21,7 @@ import CryptoPaymentDetails from '@/components/CryptoPaymentDetails';
 import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
 import WithdrawalBankingFields from '@/components/WithdrawalBankingFields';
+import PriceAlertsSystem from '@/components/PriceAlertsSystem';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
 
@@ -580,6 +581,11 @@ const Dashboard = () => {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
+  const [currentStockPrice, setCurrentStockPrice] = useState(248);
+
+  const handlePriceChange = useCallback((price: number) => {
+    setCurrentStockPrice(price);
+  }, []);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
@@ -1149,16 +1155,17 @@ const Dashboard = () => {
         )}
 
         {/* Transaction History Link */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-4 sm:mb-6 flex items-center justify-between">
           <Link to="/transactions" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
             <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {t('viewTransactionHistory') || 'View Full Transaction History'} →
           </Link>
+          <PriceAlertsSystem currentPrice={currentStockPrice} />
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 md:mb-10">
-          <TeslaChart />
+          <TeslaChart onPriceChange={handlePriceChange} />
           <InvestmentChart investments={investments} />
         </div>
 
