@@ -633,7 +633,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   <stop offset="100%" stopColor={isPositive ? 'hsl(142, 76%, 60%)' : 'hsl(0, 72%, 65%)'} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 18%)" vertical={false} horizontal={false} opacity={0} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
                 stroke="hsl(220, 10%, 40%)" 
@@ -735,7 +735,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   </feMerge>
                 </filter>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 18%)" vertical={false} horizontal={false} opacity={0} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
                 stroke="hsl(220, 10%, 40%)" 
