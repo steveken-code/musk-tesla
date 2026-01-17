@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Bar, ComposedChart, Line, Brush } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Bar, ComposedChart, Line, Brush, ReferenceLine } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { TrendingUp, Activity, BarChart3, LineChart, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, LineChart, ZoomIn, ZoomOut, RotateCcw, Radio, Wifi, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DataPoint {
@@ -151,7 +151,7 @@ interface TeslaChartProps {
   isTradeActive?: boolean;
 }
 
-// Custom Candlestick component
+// Enhanced Candlestick component with glow effect
 const CandlestickBar = (props: any) => {
   const { x, y, width, height, payload } = props;
   if (!payload) return null;
@@ -159,6 +159,7 @@ const CandlestickBar = (props: any) => {
   const { open, close, high, low } = payload;
   const isUp = close >= open;
   const color = isUp ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
+  const glowColor = isUp ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
   const bodyHeight = Math.abs(close - open);
   const scale = height / (high - low || 1);
   const bodyY = y + (high - Math.max(open, close)) * scale;
@@ -166,22 +167,37 @@ const CandlestickBar = (props: any) => {
   
   return (
     <g>
-      <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke={color} strokeWidth={1} />
-      <rect x={x + 2} y={bodyY} width={width - 4} height={bodyH} fill={color} stroke={color} strokeWidth={1} rx={1} />
+      {/* Glow effect */}
+      <rect x={x} y={bodyY - 2} width={width} height={bodyH + 4} fill={glowColor} rx={2} filter="url(#candleGlow)" />
+      {/* Wick */}
+      <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke={color} strokeWidth={1.5} />
+      {/* Body */}
+      <rect x={x + 2} y={bodyY} width={width - 4} height={bodyH} fill={color} stroke={color} strokeWidth={1} rx={2} />
     </g>
   );
 };
 
-// Volume bar component
+// Enhanced Volume bar with gradient
 const VolumeBar = (props: any) => {
-  const { x, y, width, height, payload } = props;
+  const { x, y, width, height, payload, index } = props;
   if (!payload) return null;
   
   const { open, close } = payload;
   const isUp = close >= open;
-  const color = isUp ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)';
+  const gradientId = isUp ? 'volumeGradientUp' : 'volumeGradientDown';
   
-  return <rect x={x} y={y} width={width} height={height} fill={color} opacity={0.5} rx={1} />;
+  return (
+    <rect 
+      x={x} 
+      y={y} 
+      width={width} 
+      height={height} 
+      fill={`url(#${gradientId})`}
+      rx={2} 
+      className="transition-opacity duration-200 hover:opacity-100"
+      style={{ opacity: 0.7 }}
+    />
+  );
 };
 
 const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
@@ -360,6 +376,8 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const minPrice = Math.min(...visibleData.map(d => Math.min(d.low, d.bollingerLower || d.low)));
   const maxPrice = Math.max(...visibleData.map(d => Math.max(d.high, d.bollingerUpper || d.high)));
   const maxVolume = Math.max(...visibleData.map(d => d.volume));
+  const avgPrice = visibleData.reduce((sum, d) => sum + d.price, 0) / visibleData.length;
+  const totalVolume = visibleData.reduce((sum, d) => sum + d.volume, 0);
 
   const formatVolume = (vol: number) => {
     if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
@@ -367,50 +385,148 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
     return vol.toString();
   };
 
+  // Professional custom tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const d = payload[0].payload;
+    const isUp = d.close >= d.open;
+    
+    return (
+      <div className="bg-slate-900/98 border border-slate-700/80 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl min-w-[180px]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
+          <span className="text-xs text-slate-400 font-medium">{d.time || d.date}</span>
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isUp ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+            {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{((d.close - d.open) / d.open * 100).toFixed(2)}%
+          </div>
+        </div>
+        
+        {/* OHLC Grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <div className="flex justify-between">
+            <span className="text-slate-500">Open</span>
+            <span className="font-mono text-slate-200">${d.open.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-green-500">High</span>
+            <span className="font-mono text-green-400">${d.high.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-red-500">Low</span>
+            <span className="font-mono text-red-400">${d.low.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500">Close</span>
+            <span className={`font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>${d.close.toFixed(2)}</span>
+          </div>
+        </div>
+        
+        {/* Volume */}
+        <div className="mt-3 pt-2 border-t border-slate-700/50 flex justify-between items-center">
+          <span className="text-xs text-slate-500 flex items-center gap-1">
+            <BarChart3 className="w-3 h-3" /> Volume
+          </span>
+          <span className="font-mono text-xs text-slate-300">{formatVolume(d.volume)}</span>
+        </div>
+        
+        {/* Indicators */}
+        {(showSMA || showEMA || showBollinger) && (
+          <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-1">
+            {showSMA && d.sma20 && (
+              <div className="flex justify-between text-[10px]">
+                <span className="text-orange-400">SMA(20)</span>
+                <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
+              </div>
+            )}
+            {showEMA && d.ema12 && (
+              <div className="flex justify-between text-[10px]">
+                <span className="text-cyan-400">EMA(12)</span>
+                <span className="font-mono text-cyan-400">${d.ema12.toFixed(2)}</span>
+              </div>
+            )}
+            {showBollinger && d.bollingerUpper && (
+              <div className="flex justify-between text-[10px]">
+                <span className="text-yellow-400">BB Range</span>
+                <span className="font-mono text-yellow-400">${d.bollingerLower?.toFixed(2)} - ${d.bollingerUpper.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-card/80 backdrop-blur-xl border border-border rounded-xl p-3 sm:p-4 md:p-6 relative overflow-hidden">
-      {/* Live indicator */}
-      {isTradeActive && (
-        <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-1.5 sm:gap-2">
-          <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-green-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
-          <span className="text-[10px] sm:text-xs text-green-500 font-medium">LIVE</span>
-        </div>
-      )}
+    <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-slate-800/85 backdrop-blur-xl border border-slate-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 relative overflow-hidden shadow-2xl">
+      {/* Professional background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className={`absolute top-0 right-0 w-40 sm:w-56 md:w-72 h-40 sm:h-56 md:h-72 rounded-full blur-3xl transition-all duration-700 ${isPositive ? 'bg-green-500/10' : 'bg-red-500/10'} ${isAnimating ? 'opacity-100 scale-110' : 'opacity-40 scale-100'}`} />
+      <div className="absolute bottom-0 left-0 w-32 sm:w-40 md:w-56 h-32 sm:h-40 md:h-56 bg-blue-500/5 rounded-full blur-3xl" />
       
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
-        <div>
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
-            <h2 className="text-base sm:text-lg md:text-xl font-bold">{t('teslaStock')}</h2>
+      {/* Live indicator with market status */}
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-800/80 rounded-full border border-slate-700/50">
+          <Clock className="w-3 h-3 text-slate-400" />
+          <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">Market Open</span>
+        </div>
+        {isTradeActive && (
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/10 rounded-full border border-green-500/30">
+            <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-green-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
+            <span className="text-[9px] sm:text-[10px] text-green-400 font-semibold">LIVE</span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-            <span className="font-mono">NASDAQ: TSLA</span>
-            <span>•</span>
-            <Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            <span>Real-time</span>
+        )}
+      </div>
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-5 gap-3">
+        <div>
+          <div className="flex items-center gap-2 sm:gap-3 mb-1">
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-lg sm:rounded-xl border border-red-500/20">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">{t('teslaStock')}</h2>
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs text-slate-400">
+                <span className="font-mono bg-slate-800/80 px-1.5 py-0.5 rounded">NASDAQ: TSLA</span>
+                <span className="flex items-center gap-1">
+                  <Wifi className="w-3 h-3" />
+                  <span>Real-time</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
+        
+        {/* Price Display */}
         <div className="text-left sm:text-right">
-          <p className={`text-xl sm:text-2xl font-bold font-mono transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
-            ${currentPrice.toFixed(2)}
-          </p>
-          <p className={`text-xs sm:text-sm font-medium flex items-center sm:justify-end gap-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-            <span className={`transition-transform duration-300 ${isAnimating ? (isPositive ? '-translate-y-0.5' : 'translate-y-0.5') : ''}`}>
-              {isPositive ? '▲' : '▼'}
+          <div className="flex items-baseline gap-2 sm:justify-end">
+            <p className={`text-2xl sm:text-3xl md:text-4xl font-bold font-mono transition-all duration-300 ${isAnimating ? 'scale-105' : ''} ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              ${currentPrice.toFixed(2)}
+            </p>
+            <span className="text-xs text-slate-500">USD</span>
+          </div>
+          <div className={`flex items-center gap-2 sm:justify-end mt-1 px-2 py-0.5 rounded-lg inline-flex ${isPositive ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+            <span className={`text-sm font-bold flex items-center gap-1 ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`transition-transform duration-300 ${isAnimating ? (isPositive ? '-translate-y-1' : 'translate-y-1') : ''}`}>
+                {isPositive ? '▲' : '▼'}
+              </span>
+              {isPositive ? '+' : ''}{priceChange.toFixed(2)}
             </span>
-            {isPositive ? '+' : ''}{priceChange.toFixed(2)} ({isPositive ? '+' : ''}{percentChange.toFixed(2)}%)
-          </p>
+            <span className={`text-sm font-medium ${isPositive ? 'text-green-400/80' : 'text-red-400/80'}`}>
+              ({isPositive ? '+' : ''}{percentChange.toFixed(2)}%)
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Toggle Controls */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4 gap-1.5 sm:gap-2 flex-wrap">
+      {/* Control Bar */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         {/* Time Range Toggle */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-background/50 rounded-lg p-0.5 sm:p-1">
+        <div className="flex items-center gap-1 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
           <Button
             variant={timeRange === 'intraday' ? 'default' : 'ghost'}
             size="sm"
-            className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs ${timeRange === 'intraday' ? 'bg-tesla-red hover:bg-tesla-red/90' : ''}`}
+            className={`h-7 sm:h-8 px-3 sm:px-4 text-xs font-medium transition-all ${timeRange === 'intraday' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/25' : 'text-slate-400 hover:text-white'}`}
             onClick={() => setTimeRange('intraday')}
           >
             1D
@@ -418,7 +534,7 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
           <Button
             variant={timeRange === '30d' ? 'default' : 'ghost'}
             size="sm"
-            className={`h-6 sm:h-7 px-2 sm:px-3 text-[10px] sm:text-xs ${timeRange === '30d' ? 'bg-tesla-red hover:bg-tesla-red/90' : ''}`}
+            className={`h-7 sm:h-8 px-3 sm:px-4 text-xs font-medium transition-all ${timeRange === '30d' ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/25' : 'text-slate-400 hover:text-white'}`}
             onClick={() => setTimeRange('30d')}
           >
             30D
@@ -426,75 +542,77 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </div>
 
         {/* Zoom Controls */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-background/50 rounded-lg p-0.5 sm:p-1">
-          <Button variant="ghost" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2" onClick={handleZoomIn} title="Zoom In">
-            <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        <div className="flex items-center gap-1 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
+          <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 text-slate-400 hover:text-white hover:bg-slate-700/50" onClick={handleZoomIn}>
+            <ZoomIn className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2" onClick={handleZoomOut} title="Zoom Out">
-            <ZoomOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 text-slate-400 hover:text-white hover:bg-slate-700/50" onClick={handleZoomOut}>
+            <ZoomOut className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2" onClick={handleResetZoom} title="Reset Zoom">
-            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 text-slate-400 hover:text-white hover:bg-slate-700/50" onClick={handleResetZoom}>
+            <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Chart Type Toggle */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-background/50 rounded-lg p-0.5 sm:p-1">
+        <div className="flex items-center gap-1 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
           <Button
             variant={chartType === 'area' ? 'default' : 'ghost'}
             size="sm"
-            className={`h-6 sm:h-7 px-1.5 sm:px-2 ${chartType === 'area' ? 'bg-muted' : ''}`}
+            className={`h-7 sm:h-8 px-2 ${chartType === 'area' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
             onClick={() => setChartType('area')}
           >
-            <LineChart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <LineChart className="w-4 h-4" />
           </Button>
           <Button
             variant={chartType === 'candlestick' ? 'default' : 'ghost'}
             size="sm"
-            className={`h-6 sm:h-7 px-1.5 sm:px-2 ${chartType === 'candlestick' ? 'bg-muted' : ''}`}
+            className={`h-7 sm:h-8 px-2 ${chartType === 'candlestick' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
             onClick={() => setChartType('candlestick')}
           >
-            <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <BarChart3 className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Indicator Toggles */}
+        <div className="flex items-center gap-1 bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
+          <Button
+            variant={showSMA ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 sm:h-8 px-2 text-[10px] sm:text-xs font-medium ${showSMA ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'text-slate-400 hover:text-orange-400'}`}
+            onClick={() => setShowSMA(!showSMA)}
+          >
+            SMA
+          </Button>
+          <Button
+            variant={showEMA ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 sm:h-8 px-2 text-[10px] sm:text-xs font-medium ${showEMA ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-400 hover:text-cyan-400'}`}
+            onClick={() => setShowEMA(!showEMA)}
+          >
+            EMA
+          </Button>
+          <Button
+            variant={showBollinger ? 'default' : 'ghost'}
+            size="sm"
+            className={`h-7 sm:h-8 px-2 text-[10px] sm:text-xs font-medium ${showBollinger ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-slate-400 hover:text-yellow-400'}`}
+            onClick={() => setShowBollinger(!showBollinger)}
+          >
+            BB
           </Button>
         </div>
       </div>
-
-      {/* Indicator Toggles */}
-      <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 flex-wrap">
-        <Button
-          variant={showSMA ? 'default' : 'outline'}
-          size="sm"
-          className={`h-5 sm:h-6 px-1.5 sm:px-2 text-[10px] sm:text-xs ${showSMA ? 'bg-orange-500/80 hover:bg-orange-500' : 'border-orange-500/50 text-orange-400'}`}
-          onClick={() => setShowSMA(!showSMA)}
-        >
-          SMA
-        </Button>
-        <Button
-          variant={showEMA ? 'default' : 'outline'}
-          size="sm"
-          className={`h-5 sm:h-6 px-1.5 sm:px-2 text-[10px] sm:text-xs ${showEMA ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'border-cyan-500/50 text-cyan-400'}`}
-          onClick={() => setShowEMA(!showEMA)}
-        >
-          EMA
-        </Button>
-        <Button
-          variant={showBollinger ? 'default' : 'outline'}
-          size="sm"
-          className={`h-5 sm:h-6 px-1.5 sm:px-2 text-[10px] sm:text-xs ${showBollinger ? 'bg-yellow-500/80 hover:bg-yellow-500' : 'border-yellow-500/50 text-yellow-400'}`}
-          onClick={() => setShowBollinger(!showBollinger)}
-        >
-          BB
-        </Button>
-      </div>
       
-      {/* Price Chart */}
-      <div className="h-[120px] sm:h-[140px] md:h-[160px] w-full">
+      {/* Main Chart */}
+      <div className="h-[180px] sm:h-[220px] md:h-[280px] w-full relative">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <ComposedChart data={visibleData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ComposedChart data={visibleData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
               <defs>
+                {/* Enhanced gradient for area */}
                 <linearGradient id="colorPriceTesla" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.4}/>
+                  <stop offset="0%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.5}/>
+                  <stop offset="25%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.3}/>
                   <stop offset="50%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0.15}/>
                   <stop offset="100%" stopColor={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'} stopOpacity={0}/>
                 </linearGradient>
@@ -503,76 +621,40 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
                   <stop offset="100%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.02}/>
                 </linearGradient>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
                   </feMerge>
                 </filter>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={isPositive ? 'hsl(142, 76%, 35%)' : 'hsl(0, 72%, 45%)'} />
+                  <stop offset="50%" stopColor={isPositive ? 'hsl(142, 76%, 50%)' : 'hsl(0, 72%, 55%)'} />
+                  <stop offset="100%" stopColor={isPositive ? 'hsl(142, 76%, 60%)' : 'hsl(0, 72%, 65%)'} />
+                </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 20%)" vertical={false} opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
+                stroke="hsl(220, 10%, 40%)" 
+                fontSize={9}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+                tick={{ fill: 'hsl(220, 10%, 50%)' }}
               />
               <YAxis 
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
+                stroke="hsl(220, 10%, 40%)" 
+                fontSize={9}
                 tickLine={false}
                 axisLine={false}
                 domain={[minPrice - 2, maxPrice + 2]}
                 tickFormatter={(value) => `$${value.toFixed(0)}`}
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+                tick={{ fill: 'hsl(220, 10%, 50%)' }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(0, 0%, 8%)', 
-                  border: '1px solid hsl(0, 0%, 25%)',
-                  borderRadius: '8px',
-                  padding: '8px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0) {
-                    const d = payload[0].payload;
-                    return (
-                      <div className="bg-background/95 border border-border rounded-lg p-2 sm:p-3 shadow-xl text-[10px] sm:text-xs">
-                        <p className="text-muted-foreground mb-1 sm:mb-2">{d.time || d.date}</p>
-                        <div className="space-y-0.5 sm:space-y-1">
-                          <div className="flex justify-between gap-3 sm:gap-4">
-                            <span className="text-muted-foreground">Price:</span>
-                            <span className="font-mono font-bold">${d.price.toFixed(2)}</span>
-                          </div>
-                          {showBollinger && d.bollingerUpper && (
-                            <>
-                              <div className="flex justify-between gap-3 sm:gap-4">
-                                <span className="text-yellow-400">BB Upper:</span>
-                                <span className="font-mono text-yellow-400">${d.bollingerUpper.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between gap-3 sm:gap-4">
-                                <span className="text-yellow-400">BB Lower:</span>
-                                <span className="font-mono text-yellow-400">${d.bollingerLower?.toFixed(2)}</span>
-                              </div>
-                            </>
-                          )}
-                          {showSMA && d.sma20 && (
-                            <div className="flex justify-between gap-3 sm:gap-4">
-                              <span className="text-orange-400">SMA(20):</span>
-                              <span className="font-mono text-orange-400">${d.sma20.toFixed(2)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={avgPrice} stroke="hsl(220, 10%, 35%)" strokeDasharray="4 4" strokeOpacity={0.6} />
+              
               {/* Bollinger Bands */}
               {showBollinger && (
                 <>
@@ -609,8 +691,8 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
               <Area 
                 type="monotone" 
                 dataKey="price" 
-                stroke={isPositive ? 'hsl(142, 76%, 45%)' : 'hsl(0, 72%, 51%)'}
-                strokeWidth={2}
+                stroke="url(#lineGradient)"
+                strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorPriceTesla)"
                 filter="url(#glow)"
@@ -639,73 +721,42 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
               )}
             </ComposedChart>
           ) : (
-            <ComposedChart data={visibleData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <ComposedChart data={visibleData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
               <defs>
                 <linearGradient id="bollingerFillCandle" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.1}/>
                   <stop offset="100%" stopColor="hsl(45, 93%, 47%)" stopOpacity={0.02}/>
                 </linearGradient>
+                <filter id="candleGlow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 20%)" vertical={false} opacity={0.5} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
               <XAxis 
                 dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
+                stroke="hsl(220, 10%, 40%)" 
+                fontSize={9}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+                tick={{ fill: 'hsl(220, 10%, 50%)' }}
               />
               <YAxis 
-                stroke="hsl(0, 0%, 50%)" 
-                fontSize={8}
+                stroke="hsl(220, 10%, 40%)" 
+                fontSize={9}
                 tickLine={false}
                 axisLine={false}
                 domain={[minPrice - 2, maxPrice + 2]}
                 tickFormatter={(value) => `$${value.toFixed(0)}`}
-                tick={{ fill: 'hsl(0, 0%, 50%)' }}
+                tick={{ fill: 'hsl(220, 10%, 50%)' }}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(0, 0%, 8%)', 
-                  border: '1px solid hsl(0, 0%, 25%)',
-                  borderRadius: '8px',
-                  padding: '8px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                }}
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0) {
-                    const d = payload[0].payload;
-                    const isUp = d.close >= d.open;
-                    return (
-                      <div className="bg-background/95 border border-border rounded-lg p-2 sm:p-3 shadow-xl">
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2">{d.time || d.date}</p>
-                        <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 text-[10px] sm:text-xs">
-                          <span className="text-muted-foreground">Open:</span>
-                          <span className="font-mono">${d.open.toFixed(2)}</span>
-                          <span className="text-muted-foreground">High:</span>
-                          <span className="font-mono text-green-400">${d.high.toFixed(2)}</span>
-                          <span className="text-muted-foreground">Low:</span>
-                          <span className="font-mono text-red-400">${d.low.toFixed(2)}</span>
-                          <span className="text-muted-foreground">Close:</span>
-                          <span className={`font-mono font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                            ${d.close.toFixed(2)}
-                          </span>
-                          {showBollinger && d.bollingerUpper && (
-                            <>
-                              <span className="text-yellow-400">BB Upper:</span>
-                              <span className="font-mono text-yellow-400">${d.bollingerUpper.toFixed(2)}</span>
-                              <span className="text-yellow-400">BB Lower:</span>
-                              <span className="font-mono text-yellow-400">${d.bollingerLower?.toFixed(2)}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={avgPrice} stroke="hsl(220, 10%, 35%)" strokeDasharray="4 4" strokeOpacity={0.6} />
+              
               {/* Bollinger Bands */}
               {showBollinger && (
                 <>
@@ -742,26 +793,48 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Volume Chart */}
-      <div className="h-[35px] sm:h-[40px] md:h-[50px] w-full mt-1.5 sm:mt-2">
+      {/* Volume Chart - Enhanced */}
+      <div className="h-[45px] sm:h-[55px] md:h-[65px] w-full mt-2 sm:mt-3">
+        <div className="flex items-center justify-between mb-1 px-1">
+          <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium flex items-center gap-1">
+            <BarChart3 className="w-3 h-3" /> Volume
+          </span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono">{formatVolume(totalVolume)} total</span>
+        </div>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={visibleData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
-            <XAxis dataKey={timeRange === 'intraday' ? 'time' : 'date'} stroke="hsl(0, 0%, 50%)" fontSize={7} tickLine={false} axisLine={false} interval="preserveStartEnd" tick={{ fill: 'hsl(0, 0%, 40%)' }} />
-            <YAxis stroke="hsl(0, 0%, 50%)" fontSize={7} tickLine={false} axisLine={false} domain={[0, maxVolume * 1.1]} tickFormatter={formatVolume} tick={{ fill: 'hsl(0, 0%, 40%)' }} width={35} />
+          <ComposedChart data={visibleData} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
+            <defs>
+              <linearGradient id="volumeGradientUp" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(142, 76%, 50%)" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="hsl(142, 76%, 35%)" stopOpacity={0.4}/>
+              </linearGradient>
+              <linearGradient id="volumeGradientDown" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(0, 72%, 55%)" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="hsl(0, 72%, 40%)" stopOpacity={0.4}/>
+              </linearGradient>
+            </defs>
+            <XAxis dataKey={timeRange === 'intraday' ? 'time' : 'date'} stroke="hsl(220, 10%, 35%)" fontSize={8} tickLine={false} axisLine={false} interval="preserveStartEnd" tick={{ fill: 'hsl(220, 10%, 40%)' }} />
+            <YAxis stroke="hsl(220, 10%, 35%)" fontSize={8} tickLine={false} axisLine={false} domain={[0, maxVolume * 1.1]} tickFormatter={formatVolume} tick={{ fill: 'hsl(220, 10%, 40%)' }} width={40} />
             <Bar dataKey="volume" shape={(props: any) => <VolumeBar {...props} />} animationDuration={300} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
       {/* Brush for zoom selection */}
-      <div className="h-[22px] sm:h-[25px] md:h-[30px] w-full mt-1.5 sm:mt-2">
+      <div className="h-[25px] sm:h-[30px] md:h-[35px] w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
+            <defs>
+              <linearGradient id="brushGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(220, 15%, 25%)" stopOpacity={1}/>
+                <stop offset="100%" stopColor="hsl(220, 15%, 15%)" stopOpacity={1}/>
+              </linearGradient>
+            </defs>
             <Brush 
               dataKey={timeRange === 'intraday' ? 'time' : 'date'}
-              height={20}
-              stroke="hsl(0, 0%, 30%)"
-              fill="hsl(0, 0%, 10%)"
+              height={22}
+              stroke="hsl(220, 15%, 35%)"
+              fill="url(#brushGradient)"
               startIndex={zoomStart}
               endIndex={zoomEnd}
               onChange={handleBrushChange}
@@ -770,37 +843,26 @@ const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
         </ResponsiveContainer>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-2 sm:gap-3 mt-1.5 sm:mt-2 text-[9px] sm:text-xs flex-wrap">
-        {showSMA && (
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 sm:w-3 h-0.5 bg-orange-500" style={{ borderStyle: 'dashed', borderWidth: '1px 0 0 0', borderColor: 'hsl(30, 100%, 50%)' }} />
-            <span className="text-orange-400 text-[9px] sm:text-[10px]">SMA</span>
+      {/* Bottom Stats Bar */}
+      <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 border-t border-slate-700/50">
+        <div className="flex items-center gap-3 sm:gap-5 text-[10px] sm:text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500">Low:</span>
+            <span className="text-red-400 font-mono font-medium">${minPrice.toFixed(2)}</span>
           </div>
-        )}
-        {showEMA && (
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 sm:w-3 h-0.5 bg-cyan-500" />
-            <span className="text-cyan-400 text-[9px] sm:text-[10px]">EMA</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500">Avg:</span>
+            <span className="text-slate-300 font-mono">${avgPrice.toFixed(2)}</span>
           </div>
-        )}
-        {showBollinger && (
-          <div className="flex items-center gap-1">
-            <div className="w-2.5 sm:w-3 h-0.5 bg-yellow-500" style={{ borderStyle: 'dashed' }} />
-            <span className="text-yellow-400 text-[9px] sm:text-[10px]">BB</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500">High:</span>
+            <span className="text-green-400 font-mono font-medium">${maxPrice.toFixed(2)}</span>
           </div>
-        )}
-      </div>
-      
-      {/* Bottom stats */}
-      <div className="flex items-center justify-between mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-border/50 text-[9px] sm:text-xs text-muted-foreground">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <span>Low: <span className="text-red-400 font-mono">${minPrice.toFixed(2)}</span></span>
-          <span>High: <span className="text-green-400 font-mono">${maxPrice.toFixed(2)}</span></span>
         </div>
-        <span className="text-muted-foreground/60 text-[8px] sm:text-[10px]">
-          {timeRange === 'intraday' ? 'Intraday' : '30 Day'} • Auto-refresh
-        </span>
+        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-slate-500">
+          <Radio className="w-3 h-3 text-green-500" />
+          <span>{timeRange === 'intraday' ? 'Intraday' : '30 Day'} • Auto-refresh</span>
+        </div>
       </div>
     </div>
   );
