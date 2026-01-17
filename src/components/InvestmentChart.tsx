@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Bar, ComposedChart, Line, ReferenceLine } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { TrendingUp, Activity, BarChart2, Zap, ArrowUpRight, ArrowDownRight, CheckCircle } from 'lucide-react';
+import { TrendingUp, Activity, BarChart2, Zap, ArrowUpRight, ArrowDownRight, CheckCircle, PieChart, Target, DollarSign, Radio } from 'lucide-react';
 
 interface Investment {
   id: string;
@@ -66,8 +66,8 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         value: Math.round(currentValue * 100) / 100,
         profit: Math.round(currentProfit * 100) / 100,
         invested: totalInvested,
-        dailyReturn: 0, // No daily returns shown for simplicity
-        volume: 0,
+        dailyReturn: i > 0 ? (currentProfit / totalInvested * 100 / (31 - i)).toFixed(3) : 0,
+        volume: Math.floor(Math.random() * 50000 + 10000),
       });
     }
     
@@ -87,6 +87,7 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
   // Use actual values directly
   const { totalInvested, totalProfit, portfolioValue } = actualTotals;
   const percentGain = totalInvested > 0 ? ((totalProfit / totalInvested) * 100) : 0;
+  const dailyReturn = percentGain / 30;
 
   // Animate values ONCE on mount, then use exact values
   useEffect(() => {
@@ -145,25 +146,93 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
   const maxValue = Math.max(...chartData.map(d => d.value)) * 1.02;
   const avgValue = chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length;
 
+  // Professional custom tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const d = payload[0].payload;
+    const isProfit = d.profit > 0;
+    
+    return (
+      <div className="bg-slate-900/98 border border-slate-700/80 rounded-xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl min-w-[200px]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
+          <span className="text-xs text-slate-400 font-medium">{d.date}</span>
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isProfit ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+            {isProfit ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+            {isProfit ? '+' : ''}{((d.profit / d.invested) * 100).toFixed(2)}%
+          </div>
+        </div>
+        
+        {/* Values */}
+        <div className="space-y-2.5 text-xs">
+          <div className="flex justify-between items-center">
+            <span className="text-slate-400 flex items-center gap-1.5">
+              <DollarSign className="w-3 h-3" /> Portfolio Value
+            </span>
+            <span className="font-mono font-bold text-white text-sm">${d.value.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-emerald-400 flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3" /> Total Profit
+            </span>
+            <span className="font-mono font-bold text-emerald-400">+${d.profit.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500 flex items-center gap-1.5">
+              <Target className="w-3 h-3" /> Invested
+            </span>
+            <span className="font-mono text-slate-400">${d.invested.toLocaleString()}</span>
+          </div>
+        </div>
+        
+        {/* Performance indicator */}
+        <div className="mt-3 pt-2 border-t border-slate-700/50">
+          <div className="flex items-center justify-between text-[10px]">
+            <span className="text-slate-500">Daily Avg Return</span>
+            <span className="text-emerald-400 font-mono">+{dailyReturn.toFixed(3)}%</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-gradient-to-br from-card/90 via-card/80 to-card/70 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 relative overflow-hidden shadow-2xl">
-      {/* Animated background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-500/5 pointer-events-none" />
-      <div className={`absolute top-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-green-500/10 rounded-full blur-3xl transition-opacity duration-500 ${isAnimating ? 'opacity-100' : 'opacity-50'}`} />
+    <div className="bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-emerald-950/30 backdrop-blur-xl border border-slate-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 relative overflow-hidden shadow-2xl">
+      {/* Professional background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-green-500/5 pointer-events-none" />
+      <div className={`absolute top-0 right-0 w-40 sm:w-56 md:w-72 h-40 sm:h-56 md:h-72 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-700 ${isAnimating ? 'opacity-100 scale-110' : 'opacity-40 scale-100'}`} />
+      <div className="absolute bottom-0 left-0 w-32 sm:w-40 md:w-56 h-32 sm:h-40 md:h-56 bg-green-500/5 rounded-full blur-3xl" />
+      
+      {/* Live indicator */}
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-2">
+        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full border ${hasCompletedInvestments ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-yellow-500/10 border-yellow-500/30'}`}>
+          {hasCompletedInvestments ? (
+            <>
+              <CheckCircle className="w-3 h-3 text-emerald-400" />
+              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">COMPLETED</span>
+            </>
+          ) : (
+            <>
+              <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-yellow-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
+              <span className="text-[9px] sm:text-[10px] text-yellow-400 font-semibold">ACTIVE</span>
+            </>
+          )}
+        </div>
+      </div>
       
       {/* Header */}
       <div className="relative flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div>
           <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg sm:rounded-xl">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-lg sm:rounded-xl border border-emerald-500/20">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base md:text-lg font-bold text-foreground">{t('performanceChart')}</h2>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
-                <Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <h2 className="text-sm sm:text-base md:text-lg font-bold text-white">{t('performanceChart')}</h2>
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-400">
+                <PieChart className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 <span>30-Day Performance</span>
-                <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
+                <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 ${isAnimating ? 'animate-ping' : 'animate-pulse'}`} />
               </div>
             </div>
           </div>
@@ -171,17 +240,17 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         
         {/* Stats Cards */}
         <div className="flex gap-2 sm:gap-3">
-          <div className="bg-background/50 backdrop-blur-sm rounded-lg sm:rounded-xl px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 border border-border/50">
-            <p className="text-[8px] sm:text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Portfolio</p>
-            <p className={`text-sm sm:text-base md:text-xl font-bold font-mono transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
+          <div className="bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-700/50">
+            <p className="text-[8px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Portfolio</p>
+            <p className={`text-base sm:text-lg md:text-2xl font-bold font-mono text-white transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
               ${displayValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="bg-green-500/10 backdrop-blur-sm rounded-lg sm:rounded-xl px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 border border-green-500/30">
-            <p className="text-[8px] sm:text-[10px] text-green-400 uppercase tracking-wider mb-0.5">Profit</p>
-            <div className="flex items-center gap-0.5 sm:gap-1">
-              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
-              <p className={`text-sm sm:text-base md:text-xl font-bold font-mono text-green-500 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
+          <div className="bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 border border-emerald-500/30">
+            <p className="text-[8px] sm:text-[10px] text-emerald-400 uppercase tracking-wider mb-0.5">Profit</p>
+            <div className="flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
+              <p className={`text-base sm:text-lg md:text-2xl font-bold font-mono text-emerald-400 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
                 ${displayProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
             </div>
@@ -190,31 +259,31 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       </div>
 
       {/* Performance Metrics Bar */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-        <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Total Return</p>
-          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">+{percentGain.toFixed(2)}%</p>
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-4 sm:mb-5">
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
+          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Total Return</p>
+          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">+{percentGain.toFixed(2)}%</p>
         </div>
-        <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">{t('profit')}</p>
-          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
+          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">{t('profit')}</p>
+          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">${totalProfit.toLocaleString()}</p>
         </div>
-        <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Invested</p>
-          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-foreground">${totalInvested.toLocaleString()}</p>
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
+          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Invested</p>
+          <p className="text-sm sm:text-base md:text-lg font-bold text-white">${totalInvested.toLocaleString()}</p>
         </div>
-        <div className="bg-background/30 rounded-md sm:rounded-lg p-1.5 sm:p-2 text-center">
-          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-0.5">Status</p>
-          <div className="flex items-center justify-center gap-0.5 sm:gap-1">
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
+          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Status</p>
+          <div className="flex items-center justify-center gap-1">
             {hasCompletedInvestments ? (
               <>
-                <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-500" />
-                <p className="text-[10px] sm:text-xs md:text-sm font-bold text-green-500">Completed</p>
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
+                <p className="text-sm sm:text-base font-bold text-emerald-400">Done</p>
               </>
             ) : (
               <>
-                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />
-                <p className="text-[10px] sm:text-xs md:text-sm font-bold text-yellow-500">Active</p>
+                <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
+                <p className="text-sm sm:text-base font-bold text-yellow-400">Active</p>
               </>
             )}
           </div>
@@ -222,95 +291,71 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       </div>
       
       {/* Main Chart */}
-      <div className="h-[100px] sm:h-[130px] md:h-[160px] w-full">
+      <div className="h-[120px] sm:h-[150px] md:h-[180px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
             <defs>
+              {/* Enhanced multi-stop gradient */}
               <linearGradient id="colorValueInv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(142, 76%, 45%)" stopOpacity={0.4}/>
-                <stop offset="50%" stopColor="hsl(142, 76%, 45%)" stopOpacity={0.15}/>
-                <stop offset="100%" stopColor="hsl(142, 76%, 45%)" stopOpacity={0}/>
+                <stop offset="0%" stopColor="hsl(155, 80%, 45%)" stopOpacity={0.6}/>
+                <stop offset="25%" stopColor="hsl(155, 80%, 45%)" stopOpacity={0.4}/>
+                <stop offset="50%" stopColor="hsl(160, 75%, 40%)" stopOpacity={0.2}/>
+                <stop offset="100%" stopColor="hsl(160, 75%, 35%)" stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorProfitInv" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.3}/>
+                <stop offset="0%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.5}/>
+                <stop offset="50%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.2}/>
                 <stop offset="100%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0}/>
               </linearGradient>
+              <linearGradient id="lineGradientInv" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(155, 75%, 35%)" />
+                <stop offset="50%" stopColor="hsl(155, 80%, 50%)" />
+                <stop offset="100%" stopColor="hsl(160, 85%, 55%)" />
+              </linearGradient>
               <filter id="glowInv">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                 <feMerge>
                   <feMergeNode in="coloredBlur"/>
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 18%)" vertical={false} opacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 20%)" vertical={false} opacity={0.5} />
             <XAxis 
               dataKey="date" 
-              stroke="hsl(0, 0%, 45%)" 
-              fontSize={8}
+              stroke="hsl(220, 10%, 40%)" 
+              fontSize={9}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
-              tick={{ fill: 'hsl(0, 0%, 45%)' }}
+              tick={{ fill: 'hsl(220, 10%, 50%)' }}
             />
             <YAxis 
-              stroke="hsl(0, 0%, 45%)" 
-              fontSize={8}
+              stroke="hsl(220, 10%, 40%)" 
+              fontSize={9}
               tickLine={false}
               axisLine={false}
               domain={[minValue, maxValue]}
               tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-              tick={{ fill: 'hsl(0, 0%, 45%)' }}
+              tick={{ fill: 'hsl(220, 10%, 50%)' }}
             />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'hsl(0, 0%, 8%)', 
-                border: '1px solid hsl(0, 0%, 25%)',
-                borderRadius: '12px',
-                padding: '8px',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-              }}
-              content={({ active, payload }) => {
-                if (active && payload && payload.length > 0) {
-                  const d = payload[0].payload;
-                  return (
-                    <div className="bg-background/95 border border-border rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-xl text-[10px] sm:text-xs">
-                      <p className="text-muted-foreground mb-1 sm:mb-2 font-medium">{d.date}</p>
-                      <div className="space-y-0.5 sm:space-y-1.5">
-                        <div className="flex justify-between gap-4 sm:gap-6">
-                          <span className="text-muted-foreground">Portfolio:</span>
-                          <span className="font-mono font-bold text-foreground">${d.value.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between gap-4 sm:gap-6">
-                          <span className="text-green-400">Profit:</span>
-                          <span className="font-mono font-bold text-green-400">+${d.profit.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between gap-4 sm:gap-6">
-                          <span className="text-muted-foreground">Invested:</span>
-                          <span className="font-mono text-muted-foreground">${d.invested.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <ReferenceLine 
               y={avgValue} 
-              stroke="hsl(0, 0%, 40%)" 
+              stroke="hsl(220, 10%, 35%)" 
               strokeDasharray="4 4" 
-              strokeOpacity={0.5}
+              strokeOpacity={0.6}
+              label={{ value: 'Avg', position: 'right', fill: 'hsl(220, 10%, 50%)', fontSize: 10 }}
             />
             <Area 
               type="monotone" 
               dataKey="value" 
-              stroke="hsl(142, 76%, 45%)" 
-              strokeWidth={2.5}
+              stroke="url(#lineGradientInv)" 
+              strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorValueInv)"
               filter="url(#glowInv)"
-              animationDuration={500}
+              animationDuration={800}
               animationEasing="ease-out"
             />
           </AreaChart>
@@ -318,18 +363,35 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       </div>
 
       {/* Profit Trend Mini Chart */}
-      <div className="h-[25px] sm:h-[30px] md:h-[40px] w-full mt-1.5 sm:mt-2">
+      <div className="h-[35px] sm:h-[45px] md:h-[55px] w-full mt-2 sm:mt-3">
+        <div className="flex items-center justify-between mb-1 px-1">
+          <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium flex items-center gap-1">
+            <TrendingUp className="w-3 h-3 text-emerald-500" /> Profit Growth
+          </span>
+          <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono">+${totalProfit.toLocaleString()}</span>
+        </div>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
+            <defs>
+              <linearGradient id="profitBarGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(160, 84%, 45%)" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="hsl(160, 84%, 35%)" stopOpacity={0.4}/>
+              </linearGradient>
+            </defs>
             <XAxis hide />
             <YAxis hide domain={[0, 'auto']} />
-            <Area 
+            <Bar 
+              dataKey="profit" 
+              fill="url(#profitBarGradient)"
+              radius={[2, 2, 0, 0]}
+              animationDuration={500}
+            />
+            <Line 
               type="monotone" 
               dataKey="profit" 
-              stroke="hsl(160, 84%, 39%)" 
-              strokeWidth={1.5}
-              fillOpacity={1}
-              fill="url(#colorProfitInv)"
+              stroke="hsl(160, 84%, 50%)" 
+              strokeWidth={2}
+              dot={false}
               animationDuration={500}
             />
           </ComposedChart>
@@ -337,20 +399,20 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       </div>
 
       {/* Legend & Stats */}
-      <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/30">
-        <div className="flex items-center gap-2 sm:gap-4 text-[8px] sm:text-[10px]">
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            <div className="w-2 sm:w-3 h-0.5 bg-green-500 rounded-full" />
-            <span className="text-muted-foreground">Portfolio: ${portfolioValue.toLocaleString()}</span>
+      <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 border-t border-slate-700/50">
+        <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px]">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-1 rounded-full bg-gradient-to-r from-emerald-400 to-green-500" />
+            <span className="text-slate-400">Portfolio: <span className="text-white font-mono">${portfolioValue.toLocaleString()}</span></span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            <div className="w-2 sm:w-3 h-0.5 bg-emerald-500 rounded-full" />
-            <span className="text-muted-foreground">{t('profit')}: ${totalProfit.toLocaleString()}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-1 rounded-full bg-emerald-500/60" />
+            <span className="text-slate-400">{t('profit')}: <span className="text-emerald-400 font-mono">+${totalProfit.toLocaleString()}</span></span>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] text-muted-foreground">
-          <BarChart2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          <span>{hasCompletedInvestments ? 'Completed' : 'Active'}</span>
+        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-slate-500">
+          <Radio className="w-3 h-3 text-emerald-500" />
+          <span>{hasCompletedInvestments ? 'Investment Complete' : 'Tracking Active'}</span>
         </div>
       </div>
     </div>
