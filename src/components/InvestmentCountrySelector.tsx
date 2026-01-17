@@ -259,20 +259,21 @@ const InvestmentCountrySelector = ({
     </button>
   );
 
-  // Continent header component
+  // Continent header component - HIGH CONTRAST, FULLY OPAQUE
   const ContinentHeader = ({ continent, count }: { continent: string; count: number }) => (
     <button
       type="button"
       onClick={() => toggleContinent(continent)}
-      className="w-full flex items-center gap-2 px-4 py-3 border-b-2 border-slate-400 hover:bg-slate-300 transition-colors sticky top-0 z-20 shadow-md bg-slate-200"
+      className="w-full flex items-center gap-2 px-4 py-3 border-b-2 border-slate-500 hover:bg-slate-300 transition-colors sticky top-0 z-20 shadow-md"
+      style={{ backgroundColor: '#e2e8f0' }} // Solid slate-200, no transparency
     >
       {expandedContinents.has(continent) ? (
-        <ChevronDown className="w-4 h-4 text-teal-600" />
+        <ChevronDown className="w-4 h-4 text-teal-700" />
       ) : (
-        <ChevronRight className="w-4 h-4 text-slate-600" />
+        <ChevronRight className="w-4 h-4 text-slate-700" />
       )}
-      <span className="font-bold text-sm text-slate-900">{continent}</span>
-      <span className="text-xs px-2 py-0.5 rounded-full bg-teal-600 text-white font-semibold">
+      <span className="font-extrabold text-[15px] text-black">{continent}</span>
+      <span className="text-xs px-2 py-0.5 rounded-full bg-teal-700 text-white font-bold">
         {count}
       </span>
     </button>
@@ -315,10 +316,10 @@ const InvestmentCountrySelector = ({
             </button>
           </div>
 
-          {/* Search Input - stable focus with Drawer */}
-          <div className="p-3 bg-slate-100 border-b-2 border-slate-300">
+          {/* Search Input - HIGH CONTRAST, DARK TEXT, keyboard stays open */}
+          <div className="p-3 border-b-2 border-slate-400" style={{ backgroundColor: '#f1f5f9' }}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-700 pointer-events-none" />
               <input
                 ref={mobileInputRef}
                 type="text"
@@ -332,8 +333,14 @@ const InvestmentCountrySelector = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-11 pr-12 h-14 text-[16px] font-semibold bg-white border-2 border-slate-400 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 focus:outline-none transition-colors text-slate-900 placeholder:text-slate-500"
-                style={{ fontSize: '16px' }} // Prevents iOS zoom
+                className="w-full pl-11 pr-12 h-14 rounded-xl border-2 border-slate-500 focus:border-teal-600 focus:ring-2 focus:ring-teal-500/40 focus:outline-none transition-colors"
+                style={{ 
+                  fontSize: '16px', // Prevents iOS zoom
+                  color: '#000000', // Pure black text
+                  fontWeight: 600,
+                  backgroundColor: '#ffffff',
+                  caretColor: '#000000',
+                }}
               />
               {searchQuery && (
                 <button
@@ -342,22 +349,22 @@ const InvestmentCountrySelector = ({
                     setSearchQuery('');
                     mobileInputRef.current?.focus();
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-300 hover:bg-slate-400 active:bg-slate-500 rounded-full transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-slate-400 hover:bg-slate-500 active:bg-slate-600 rounded-full transition-colors"
                 >
-                  <X className="w-4 h-4 text-slate-800" />
+                  <X className="w-4 h-4 text-white" />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Country List */}
+          {/* Country List - solid background, no transparency when scrolling */}
           <div 
             ref={listRef}
-            className="overflow-y-auto overscroll-contain bg-white flex-1"
-            style={{ maxHeight: 'calc(85vh - 140px)' }}
+            className="overflow-y-auto overscroll-contain flex-1"
+            style={{ maxHeight: 'calc(85vh - 160px)', backgroundColor: '#ffffff' }}
           >
             {filteredCountries.length === 0 ? (
-              <div className="p-6 text-center text-[16px] font-semibold text-slate-600">
+              <div className="p-6 text-center text-[16px] font-bold text-slate-700">
                 {t('noCountriesFound') || 'No countries found'}
               </div>
             ) : isSearching ? (
