@@ -174,7 +174,7 @@ const MarketStatusWidget = () => {
   };
 
   return (
-    <div className={`bg-gradient-to-br ${styles.gradient} backdrop-blur-xl border ${styles.border} rounded-xl p-4`}>
+    <div className={`bg-gradient-to-br ${styles.gradient} backdrop-blur-xl border ${styles.border} rounded-xl p-4 h-full flex flex-col`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className={`p-1.5 rounded-lg ${styles.gradient} border ${styles.border}`}>
@@ -199,7 +199,7 @@ const MarketStatusWidget = () => {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="flex-1 flex flex-col justify-center space-y-2">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">{marketInfo.nextEvent}</span>
           <span className={`font-medium ${styles.text}`}>{marketInfo.timeRemaining}</span>
@@ -219,10 +219,10 @@ const MarketStatusWidget = () => {
       </div>
 
       {/* Trading status message */}
-      <div className="mt-3 pt-3 border-t border-border/30">
+      <div className="mt-auto pt-3 border-t border-border/30">
         <p className="text-xs text-muted-foreground">
           {marketInfo.isActive 
-            ? '✓ Your investments are being actively managed' 
+            ? '✓ Investments being actively managed' 
             : '• Trading resumes when market opens'}
         </p>
       </div>

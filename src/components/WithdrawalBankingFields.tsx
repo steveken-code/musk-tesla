@@ -164,14 +164,14 @@ const WithdrawalBankingFields = ({
     return (
       <div className="space-y-5">
         {/* Section Header */}
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
+        <div className="flex items-center gap-3 pb-3 border-b border-slate-700">
           <Building2 className="w-5 h-5 text-blue-400" />
-          <span className="text-white font-semibold">{t('bankTransfer') || 'Bank Transfer'}</span>
+          <span className="text-white font-semibold text-base">{t('bankTransfer') || 'Bank Transfer'}</span>
         </div>
 
         {/* Bank Selection */}
         {bankingSystem?.banks && bankingSystem.banks.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label className="text-white flex items-center gap-2 text-sm font-semibold">
               <Building2 className="w-4 h-4 text-blue-400" />
               {t('selectBank') || 'Select Bank'}
@@ -195,7 +195,7 @@ const WithdrawalBankingFields = ({
                     </div>
                   </div>
                 ) : (
-                  <span className="text-[#888]">{t('chooseBank') || 'Choose your bank'}</span>
+                  <span className="text-[#888]">{t('chooseBank') || 'Choose Your Bank'}</span>
                 )}
                 <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showBankDropdown ? 'rotate-180' : ''}`} />
               </button>
@@ -410,7 +410,7 @@ const WithdrawalBankingFields = ({
         )}
         
         {/* Account Holder Name - for bank transfers only */}
-        <div className="space-y-3">
+        <div className="space-y-4 mt-2">
           <Label className="text-white text-sm font-semibold">{t('accountHolderName') || 'Account Holder Name'}</Label>
           <Input 
             type="text" 

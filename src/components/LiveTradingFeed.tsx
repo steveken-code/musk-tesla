@@ -76,10 +76,12 @@ const getActivityColor = (type: string) => {
 
 const formatTimeAgo = (date: Date) => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  if (seconds < 60) return 'Just now';
-  if (seconds < 120) return '1m ago';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 30) return 'Just now';
+  if (seconds < 60) return '30s ago';
+  if (seconds < 90) return '1 min ago';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 7200) return '1 hour ago';
+  return `${Math.floor(seconds / 3600)} hours ago`;
 };
 
 const generateActivity = (): TradingActivity => {
@@ -149,7 +151,7 @@ const LiveTradingFeed = () => {
   }, []);
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full">
+    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -169,7 +171,7 @@ const LiveTradingFeed = () => {
       </div>
 
       {/* Activity Feed */}
-      <div className="space-y-2 max-h-[280px] overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+      <div className="flex-1 space-y-2 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-border/70">
         <AnimatePresence mode="popLayout">
           {activities.map((activity) => {
             const Icon = getActivityIcon(activity.type);

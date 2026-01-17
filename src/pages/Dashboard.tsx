@@ -1160,10 +1160,16 @@ const Dashboard = () => {
         </div>
 
         {/* Market Status & Live Trading Feed */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
-          <MarketStatusWidget />
-          <LiveTradingFeed />
-          <InvestmentProgressTracker investments={investments} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
+          <div className="h-[320px] sm:h-[340px]">
+            <MarketStatusWidget />
+          </div>
+          <div className="h-[320px] sm:h-[340px]">
+            <LiveTradingFeed />
+          </div>
+          <div className="h-[320px] sm:h-[340px] md:col-span-2 lg:col-span-1">
+            <InvestmentProgressTracker investments={investments} />
+          </div>
         </div>
 
         {/* Charts Section */}
