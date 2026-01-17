@@ -22,7 +22,7 @@ import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
 import WithdrawalBankingFields from '@/components/WithdrawalBankingFields';
 import LiveTradingFeed from '@/components/LiveTradingFeed';
-import MarketStatusWidget from '@/components/MarketStatusWidget';
+
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
@@ -1159,15 +1159,12 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Market Status & Live Trading Feed */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
-          <div className="h-[320px] sm:h-[340px]">
-            <MarketStatusWidget />
-          </div>
+        {/* Live Trading Feed & Investment Progress */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
           <div className="h-[320px] sm:h-[340px]">
             <LiveTradingFeed />
           </div>
-          <div className="h-[320px] sm:h-[340px] md:col-span-2 lg:col-span-1">
+          <div className="h-[320px] sm:h-[340px]">
             <InvestmentProgressTracker investments={investments} />
           </div>
         </div>
