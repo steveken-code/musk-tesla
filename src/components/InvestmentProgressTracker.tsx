@@ -55,7 +55,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         id: 3,
         label: 'Trading in Progress',
         description: hasActiveInvestment 
-          ? 'Experts managing your portfolio' 
+          ? 'Experts managing portfolio' 
           : 'Will start upon activation',
         icon: TrendingUp,
         status: hasActiveInvestment ? 'current' : 'upcoming',
@@ -95,11 +95,11 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         };
       case 'current':
         return {
-          circle: 'bg-primary/20 border-primary animate-pulse',
-          icon: 'text-primary',
+          circle: 'bg-amber-500/20 border-amber-500 animate-pulse',
+          icon: 'text-amber-400',
           line: 'bg-gradient-to-b from-green-500 to-border',
           label: 'text-foreground font-semibold',
-          description: 'text-primary',
+          description: 'text-amber-400',
         };
       case 'upcoming':
       default:
@@ -114,7 +114,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
   };
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full">
+    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
       </div>
 
       {/* Progress Steps */}
-      <div className="space-y-0">
+      <div className="flex-1 space-y-0 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full">
         {progressData.steps.map((step, index) => {
           const styles = getStepStyles(step.status);
           const Icon = step.icon;
