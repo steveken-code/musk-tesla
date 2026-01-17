@@ -149,7 +149,6 @@ const generate30DayData = (): DataPoint[] => {
 
 interface TeslaChartProps {
   isTradeActive?: boolean;
-  onPriceChange?: (price: number) => void;
 }
 
 // Enhanced Candlestick component with glow effect
@@ -201,7 +200,7 @@ const VolumeBar = (props: any) => {
   );
 };
 
-const TeslaChart = ({ isTradeActive = true, onPriceChange }: TeslaChartProps) => {
+const TeslaChart = ({ isTradeActive = true }: TeslaChartProps) => {
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState<TimeRange>('intraday');
   const [chartType, setChartType] = useState<ChartType>('area');
@@ -218,10 +217,6 @@ const TeslaChart = ({ isTradeActive = true, onPriceChange }: TeslaChartProps) =>
   const animationRef = useRef<number | null>(null);
   const wavePhase = useRef(0);
 
-  // Notify parent of price changes
-  useEffect(() => {
-    onPriceChange?.(currentPrice);
-  }, [currentPrice, onPriceChange]);
 
   // Switch data based on time range
   useEffect(() => {
