@@ -200,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
         const result = await resend.emails.send({
           from: `Tesla Stock Platform <${fromEmail}>`,
           to: [email],
-          subject: "Tesla Stock Platform Admin Verification Code",
+          subject: "Tesla Stock Platform - Admin Verification Code",
           html: `
             <!DOCTYPE html>
             <html>
@@ -215,7 +215,8 @@ const handler = async (req: Request): Promise<Response> => {
                     <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
                       <tr>
                         <td style="padding: 40px 40px 20px; text-align: center; border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
-                          <h1 style="margin: 0; color: #ef4444; font-size: 28px; font-weight: 700;">🔐 Tesla Stock Platform Admin Verification</h1>
+                          <h1 style="margin: 0; color: #ef4444; font-size: 28px; font-weight: 700;">🔐 Admin Verification Code</h1>
+                          <p style="margin: 10px 0 0; color: #94a3b8; font-size: 14px;">Tesla Stock Platform</p>
                         </td>
                       </tr>
                       <tr>
