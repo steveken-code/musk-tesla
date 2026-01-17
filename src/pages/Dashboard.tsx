@@ -21,7 +21,9 @@ import CryptoPaymentDetails from '@/components/CryptoPaymentDetails';
 import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
 import WithdrawalBankingFields from '@/components/WithdrawalBankingFields';
-import PriceAlertsSystem from '@/components/PriceAlertsSystem';
+import LiveTradingFeed from '@/components/LiveTradingFeed';
+import MarketStatusWidget from '@/components/MarketStatusWidget';
+import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
 
@@ -581,11 +583,6 @@ const Dashboard = () => {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  const [currentStockPrice, setCurrentStockPrice] = useState(248);
-
-  const handlePriceChange = useCallback((price: number) => {
-    setCurrentStockPrice(price);
-  }, []);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
@@ -1160,12 +1157,18 @@ const Dashboard = () => {
             <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {t('viewTransactionHistory') || 'View Full Transaction History'} →
           </Link>
-          <PriceAlertsSystem currentPrice={currentStockPrice} />
+        </div>
+
+        {/* Market Status & Live Trading Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
+          <MarketStatusWidget />
+          <LiveTradingFeed />
+          <InvestmentProgressTracker investments={investments} />
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 md:mb-10">
-          <TeslaChart onPriceChange={handlePriceChange} />
+          <TeslaChart />
           <InvestmentChart investments={investments} />
         </div>
 
