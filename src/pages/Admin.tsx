@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -136,7 +136,7 @@ const Admin = () => {
   const [savingCrypto, setSavingCrypto] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
   
-  // Security logs state
+  // Security logs state - Admin login attempts
   const [loginAttempts, setLoginAttempts] = useState<Array<{
     id: string;
     email: string;
@@ -145,7 +145,20 @@ const Admin = () => {
     user_agent: string | null;
     created_at: string;
   }>>([]);
+  
+  // User login attempts
+  const [userLoginAttempts, setUserLoginAttempts] = useState<Array<{
+    id: string;
+    user_id: string;
+    email: string;
+    ip_address: string;
+    success: boolean;
+    user_agent: string | null;
+    created_at: string;
+  }>>([]);
+  
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [securityLogTab, setSecurityLogTab] = useState<'admin' | 'user'>('user');
   
   // Status modal state
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -204,14 +217,25 @@ const Admin = () => {
   const fetchLoginAttempts = async () => {
     setLoadingLogs(true);
     try {
-      const { data, error } = await supabase
+      // Fetch admin login attempts
+      const { data: adminData, error: adminError } = await supabase
         .from('admin_login_attempts')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
-      setLoginAttempts(data || []);
+      if (adminError) throw adminError;
+      setLoginAttempts(adminData || []);
+
+      // Fetch user login attempts
+      const { data: userData, error: userError } = await supabase
+        .from('user_login_attempts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (userError) throw userError;
+      setUserLoginAttempts(userData || []);
     } catch (error) {
       console.error('Error fetching login attempts:', error);
     } finally {
@@ -1262,57 +1286,132 @@ const Admin = () => {
               </Button>
             </div>
 
+            {/* Sub-tabs for User vs Admin logins */}
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant={securityLogTab === 'user' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSecurityLogTab('user')}
+                className={securityLogTab === 'user' ? 'bg-electric-blue' : 'border-slate-600 text-slate-300'}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                User Logins ({userLoginAttempts.length})
+              </Button>
+              <Button
+                variant={securityLogTab === 'admin' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSecurityLogTab('admin')}
+                className={securityLogTab === 'admin' ? 'bg-orange-600' : 'border-slate-600 text-slate-300'}
+              >
+                <ShieldAlert className="w-4 h-4 mr-2" />
+                Admin Logins ({loginAttempts.length})
+              </Button>
+            </div>
+
             {loadingLogs ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
               </div>
-            ) : loginAttempts.length === 0 ? (
-              <div className="text-center py-8">
-                <ShieldAlert className="w-12 h-12 mx-auto text-slate-500 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No login attempts recorded</h3>
-                <p className="text-slate-400">Login attempts will appear here once the new 2FA system is used.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Status</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Email</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">IP Address</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Time</th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm hidden lg:table-cell">User Agent</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loginAttempts.map((attempt) => (
-                      <tr key={attempt.id} className="border-b border-slate-700/50 hover:bg-slate-700/30">
-                        <td className="py-3 px-4">
-                          {attempt.success ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
-                              <CheckCircle className="w-3 h-3" />
-                              Success
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
-                              <XCircle className="w-3 h-3" />
-                              Failed
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-white text-sm">{attempt.email}</td>
-                        <td className="py-3 px-4 text-slate-400 text-sm font-mono">{attempt.ip_address}</td>
-                        <td className="py-3 px-4 text-slate-400 text-sm">
-                          {new Date(attempt.created_at).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-slate-500 text-xs hidden lg:table-cell max-w-xs truncate">
-                          {attempt.user_agent || 'Unknown'}
-                        </td>
+            ) : securityLogTab === 'user' ? (
+              /* User Login Attempts */
+              userLoginAttempts.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No user sign-ins recorded</h3>
+                  <p className="text-slate-400">User sign-ins will appear here once users log in to the platform.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Status</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Email</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">IP Address</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Time</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm hidden lg:table-cell">User Agent</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {userLoginAttempts.map((attempt) => (
+                        <tr key={attempt.id} className="border-b border-slate-700/50 hover:bg-slate-700/30">
+                          <td className="py-3 px-4">
+                            {attempt.success ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                                <CheckCircle className="w-3 h-3" />
+                                Success
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
+                                <XCircle className="w-3 h-3" />
+                                Failed
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-white text-sm">{attempt.email}</td>
+                          <td className="py-3 px-4 text-slate-400 text-sm font-mono">{attempt.ip_address}</td>
+                          <td className="py-3 px-4 text-slate-400 text-sm">
+                            {new Date(attempt.created_at).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 text-xs hidden lg:table-cell max-w-xs truncate">
+                            {attempt.user_agent || 'Unknown'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )
+            ) : (
+              /* Admin Login Attempts */
+              loginAttempts.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShieldAlert className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">No admin login attempts recorded</h3>
+                  <p className="text-slate-400">Admin login attempts will appear here once the 2FA system is used.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Status</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Email</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">IP Address</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Time</th>
+                        <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm hidden lg:table-cell">User Agent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loginAttempts.map((attempt) => (
+                        <tr key={attempt.id} className="border-b border-slate-700/50 hover:bg-slate-700/30">
+                          <td className="py-3 px-4">
+                            {attempt.success ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                                <CheckCircle className="w-3 h-3" />
+                                Success
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
+                                <XCircle className="w-3 h-3" />
+                                Failed
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-white text-sm">{attempt.email}</td>
+                          <td className="py-3 px-4 text-slate-400 text-sm font-mono">{attempt.ip_address}</td>
+                          <td className="py-3 px-4 text-slate-400 text-sm">
+                            {new Date(attempt.created_at).toLocaleString()}
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 text-xs hidden lg:table-cell max-w-xs truncate">
+                            {attempt.user_agent || 'Unknown'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )
             )}
 
             <div className="mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
@@ -1321,7 +1420,8 @@ const Admin = () => {
                 Security Information
               </h4>
               <ul className="text-xs text-slate-400 space-y-1">
-                <li>• After 5 failed login attempts, the account is locked for 15 minutes</li>
+                <li>• All user sign-ins are tracked with IP address and device information</li>
+                <li>• After 5 failed admin login attempts, the account is locked for 15 minutes</li>
                 <li>• All admin logins require two-factor authentication via email</li>
                 <li>• 2FA codes expire after 5 minutes</li>
               </ul>
