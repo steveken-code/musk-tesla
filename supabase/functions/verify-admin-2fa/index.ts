@@ -85,11 +85,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Mark code as used
-    await supabaseAdmin
+    // Mark code as used with atomic single-use enforcement
+    const { data: updateResult, error: updateError } = await supabaseAdmin
       .from("admin_2fa_codes")
       .update({ used: true })
-      .eq("id", codeData.id);
+      .eq("id", codeData.id)
+      .eq("used", false) // CRITICAL: Atomic single-use enforcement prevents race conditions
+      .select();
+
+    if (updateError || !updateResult || updateResult.length === 0) {
+      console.log(`2FA code already used or race condition detected for ${email}`);
+      
+      // Log failed attempt due to already used code
+      await supabaseAdmin.from("admin_login_attempts").insert({
+        email: email.toLowerCase(),
+        ip_address: ipAddress,
+        success: false,
+        user_agent: userAgent + " [2FA Already Used]"
+      });
+
+      return new Response(
+        JSON.stringify({ error: "Verification code has already been used" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Sign in the user again to get a fresh session
     const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
