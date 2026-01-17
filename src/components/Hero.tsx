@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap, Activity, BarChart3, Globe, ChevronUp, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import heroImage from "@/assets/tesla-hero.jpg";
@@ -12,9 +12,48 @@ const slides = [
   { image: elonHero, alt: "Elon Musk presenting Tesla" },
 ];
 
+// Simulated live price data
+const useLivePrice = () => {
+  const [price, setPrice] = useState(421.83);
+  const [change, setChange] = useState(12.47);
+  const [changePercent, setChangePercent] = useState(3.05);
+  const [isUp, setIsUp] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const fluctuation = (Math.random() - 0.5) * 2;
+      const newPrice = price + fluctuation;
+      const newChange = newPrice - 409.36; // Base price
+      setPrice(newPrice);
+      setChange(newChange);
+      setChangePercent((newChange / 409.36) * 100);
+      setIsUp(newChange >= 0);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [price]);
+
+  return { price, change, changePercent, isUp };
+};
+
+// Animated counter component
+const AnimatedCounter = ({ value, prefix = "", suffix = "" }: { value: string; prefix?: string; suffix?: string }) => {
+  return (
+    <motion.span
+      key={value}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="tabular-nums"
+    >
+      {prefix}{value}{suffix}
+    </motion.span>
+  );
+};
+
 const Hero = () => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { price, change, changePercent, isUp } = useLivePrice();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,18 +63,16 @@ const Hero = () => {
   }, []);
 
   const goToSlide = (index: number) => setCurrentSlide(index);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
 
   const stats = [
-    { value: "$850B+", label: "Market Cap" },
-    { value: "2.5M+", label: "Active Investors" },
-    { value: "18,000%", label: "Since IPO" },
+    { value: "$1.2T", label: "Market Cap", icon: BarChart3, color: "text-tesla-red" },
+    { value: "2.8M+", label: "Active Investors", icon: Globe, color: "text-electric-blue" },
+    { value: "18,500%", label: "Since IPO", icon: TrendingUp, color: "text-green-500" },
   ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Slider */}
+      {/* Background Slider with enhanced overlay */}
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -48,62 +85,138 @@ const Hero = () => {
             alt={slide.alt}
             className="w-full h-full object-cover scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80"></div>
+          {/* Multi-layer gradient for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/75 to-background"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-background/90"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_70%)]"></div>
         </div>
       ))}
 
-      {/* Animated Background Grid */}
-      <div className="absolute inset-0 z-[1] opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), 
-                           linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
-        }} />
+      {/* Professional Trading Grid Background */}
+      <div className="absolute inset-0 z-[1]">
+        <div 
+          className="absolute inset-0 opacity-[0.03]" 
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
+              linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px'
+          }} 
+        />
+        {/* Animated scan line */}
+        <motion.div
+          className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-tesla-red/30 to-transparent"
+          initial={{ top: "0%" }}
+          animate={{ top: "100%" }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
       </div>
 
+      {/* Live Trading Ticker Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-auto max-w-[95vw]"
+      >
+        <div className="flex items-center gap-3 sm:gap-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-card/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl">
+          {/* Live indicator */}
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-semibold text-green-500 hidden sm:inline">LIVE</span>
+          </div>
+          
+          {/* Stock symbol */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm sm:text-base font-bold text-foreground">TSLA</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">NASDAQ</span>
+          </div>
+          
+          {/* Price display */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={price.toFixed(2)}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="text-lg sm:text-xl font-bold text-foreground tabular-nums"
+              >
+                ${price.toFixed(2)}
+              </motion.span>
+            </AnimatePresence>
+            
+            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md ${
+              isUp ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+            }`}>
+              {isUp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              <span className="text-xs sm:text-sm font-semibold tabular-nums">
+                {isUp ? '+' : ''}{change.toFixed(2)} ({changePercent.toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+          
+          {/* Activity indicator */}
+          <Activity className="w-4 h-4 text-muted-foreground hidden sm:block" />
+        </div>
+      </motion.div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`h-2 rounded-full transition-all ${
+            className={`h-1.5 rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? "bg-tesla-red w-8"
-                : "bg-muted-foreground/40 w-2 hover:bg-muted-foreground"
+                ? "bg-tesla-red w-8 shadow-[0_0_10px_hsl(var(--tesla-red))]"
+                : "bg-muted-foreground/30 w-1.5 hover:bg-muted-foreground/50"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20">
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 py-20 pt-28 sm:pt-24">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
+          {/* Premium Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 mb-8 bg-gradient-to-r from-tesla-red/20 to-electric-blue/20 backdrop-blur-sm border border-tesla-red/30 rounded-full"
+            className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-2.5 mb-6 sm:mb-8 bg-gradient-to-r from-tesla-red/10 via-orange-500/10 to-electric-blue/10 backdrop-blur-md border border-tesla-red/20 rounded-full shadow-lg"
           >
-            <Sparkles className="w-4 h-4 text-tesla-red" />
-            <span className="text-sm font-medium text-foreground">TSLA +$247.03 (12.4%) {t('yearToDate')}</span>
-            <TrendingUp className="w-4 h-4 text-green-500" />
+            <Sparkles className="w-4 h-4 text-tesla-red animate-pulse" />
+            <span className="text-xs sm:text-sm font-semibold text-foreground tracking-wide">
+              TSLA +$247.03 (12.4%) {t('yearToDate')}
+            </span>
+            <div className="flex items-center gap-1 text-green-500">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="text-xs font-bold hidden sm:inline">OUTPERFORMING</span>
+            </div>
           </motion.div>
 
-          {/* Main Headline */}
+          {/* Main Headline with enhanced typography */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 tracking-tight font-display leading-[1.1]"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-6 tracking-tight font-display leading-[1.1]"
           >
             <span className="block text-foreground mb-2">{t('heroTitle')}</span>
-            <span className="block bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
-              {t('heroTitleHighlight')}
+            <span className="block relative">
+              <span className="bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent">
+                {t('heroTitleHighlight')}
+              </span>
+              {/* Glow effect under text */}
+              <span className="absolute inset-0 bg-gradient-to-r from-tesla-red via-orange-500 to-electric-blue bg-clip-text text-transparent blur-2xl opacity-30 -z-10">
+                {t('heroTitleHighlight')}
+              </span>
             </span>
           </motion.h1>
 
@@ -112,46 +225,68 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-4"
           >
             {t('heroSubtitle')}
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons with premium styling */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-12 sm:mb-16 px-4"
           >
-            <Link to="/auth">
-              <Button size="lg" className="group px-8 py-6 text-lg bg-gradient-to-r from-tesla-red to-red-600 hover:from-red-600 hover:to-tesla-red border-0 shadow-lg shadow-tesla-red/25">
+            <Link to="/auth" className="w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                className="group w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg bg-gradient-to-r from-tesla-red to-red-600 hover:from-red-600 hover:to-tesla-red border-0 shadow-xl shadow-tesla-red/20 hover:shadow-tesla-red/40 transition-all duration-300 hover:scale-105"
+              >
                 {t('getStarted')}
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-slate-300 bg-slate-200 text-slate-900 backdrop-blur-sm hover:bg-slate-300 hover:border-tesla-red/50 hover:shadow-md transition-all">
-                <User className="mr-2 w-5 h-5" />
+            <Link to="/auth" className="w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="group w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg border-2 border-foreground/20 bg-card/50 backdrop-blur-sm text-foreground hover:bg-card hover:border-tesla-red/50 hover:shadow-lg transition-all duration-300"
+              >
+                <User className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 {t('createAccount')}
               </Button>
             </Link>
           </motion.div>
 
-          {/* Stats */}
+          {/* Professional Stats Cards */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto"
+            className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 max-w-3xl mx-auto px-2"
           >
             {stats.map((stat, index) => (
-              <div key={index} className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/30">
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1">
+              <motion.div 
+                key={index} 
+                className="group relative text-center p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-card/40 backdrop-blur-md border border-border/30 hover:border-border/60 hover:bg-card/60 transition-all duration-300"
+                whileHover={{ y: -4, scale: 1.02 }}
+              >
+                {/* Icon */}
+                <div className={`inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-background to-card mb-2 sm:mb-3 ${stat.color}`}>
+                  <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                {/* Value */}
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-0.5 sm:mb-1 tracking-tight">
                   {stat.value}
                 </div>
-                <div className="text-xs md:text-sm text-muted-foreground">{stat.label}</div>
-              </div>
+                {/* Label */}
+                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
+                
+                {/* Subtle glow on hover */}
+                <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br ${
+                  index === 0 ? 'from-tesla-red/5' : index === 1 ? 'from-electric-blue/5' : 'from-green-500/5'
+                } to-transparent opacity-0 group-hover:opacity-100 transition-opacity -z-10`}></div>
+              </motion.div>
             ))}
           </motion.div>
 
@@ -160,27 +295,28 @@ const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-wrap justify-center gap-6 mt-12 text-muted-foreground text-sm"
+            className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 mt-10 sm:mt-12 text-muted-foreground text-xs sm:text-sm px-4"
           >
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-green-500" />
-              <span>SEC Regulated</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/5 border border-green-500/20">
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+              <span className="font-medium">SEC Regulated</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-electric-blue" />
-              <span>Instant Deposits</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-electric-blue/5 border border-electric-blue/20">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-electric-blue" />
+              <span className="font-medium">Instant Deposits</span>
             </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-tesla-red" />
-              <span>Real-time Trading</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-tesla-red/5 border border-tesla-red/20">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-tesla-red" />
+              <span className="font-medium">Real-time Trading</span>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-tesla-red/10 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute top-20 right-0 w-72 h-72 md:w-[500px] md:h-[500px] bg-electric-blue/10 rounded-full blur-[120px] animate-pulse"></div>
+      {/* Enhanced Decorative Elements */}
+      <div className="absolute bottom-0 left-0 w-72 h-72 md:w-[600px] md:h-[600px] bg-tesla-red/8 rounded-full blur-[150px] animate-pulse pointer-events-none"></div>
+      <div className="absolute top-20 right-0 w-72 h-72 md:w-[600px] md:h-[600px] bg-electric-blue/8 rounded-full blur-[150px] animate-pulse pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 md:w-[800px] md:h-[800px] bg-gradient-to-r from-tesla-red/3 via-transparent to-electric-blue/3 rounded-full blur-[200px] pointer-events-none"></div>
     </section>
   );
 };
