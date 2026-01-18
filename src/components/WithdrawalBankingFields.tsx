@@ -166,7 +166,7 @@ const WithdrawalBankingFields = ({
         {/* Section Header */}
         <div className="flex items-center gap-3 pb-3 border-b border-slate-700">
           <Building2 className="w-5 h-5 text-blue-400" />
-          <span className="text-white font-semibold text-base">{t('bankTransfer') || 'Bank Transfer'}</span>
+          <span className="text-white font-semibold text-base">Bank Transfer Details</span>
         </div>
 
         {/* Bank Selection */}
@@ -174,7 +174,7 @@ const WithdrawalBankingFields = ({
           <div className="space-y-4">
             <Label className="text-white flex items-center gap-2 text-sm font-semibold">
               <Building2 className="w-4 h-4 text-blue-400" />
-              {t('selectBank') || 'Select Bank'}
+              Select Your Bank
             </Label>
             <div className="relative">
               <button
@@ -195,7 +195,7 @@ const WithdrawalBankingFields = ({
                     </div>
                   </div>
                 ) : (
-                  <span className="text-[#888]">{t('chooseBank') || 'Choose Your Bank'}</span>
+                  <span className="text-[#888]">Tap to Select Bank</span>
                 )}
                 <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showBankDropdown ? 'rotate-180' : ''}`} />
               </button>
@@ -248,7 +248,7 @@ const WithdrawalBankingFields = ({
                       }}
                       className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${paymentDetails.bankCode === 'OTHER' ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'}`}
                     >
-                      <span className="text-white">{t('otherBank') || 'Other Bank'}</span>
+                      <span className="text-white">Other Bank (Not Listed)</span>
                       {paymentDetails.bankCode === 'OTHER' && <Check className="w-5 h-5 text-green-500" />}
                     </button>
                   </div>
@@ -273,7 +273,7 @@ const WithdrawalBankingFields = ({
         {paymentDetails.bankCode === 'OTHER' && (
           <div className="space-y-4 pl-2 border-l-2 border-slate-700">
             <div className="space-y-3">
-              <Label className="text-white text-sm font-medium">{t('bankName') || 'Bank Name'}</Label>
+              <Label className="text-white text-sm font-medium">Bank Name</Label>
               <Input 
                 type="text" 
                 placeholder="Enter your bank name" 
@@ -411,7 +411,7 @@ const WithdrawalBankingFields = ({
         
         {/* Account Holder Name - for bank transfers only */}
         <div className="space-y-4 mt-2">
-          <Label className="text-white text-sm font-semibold">{t('accountHolderName') || 'Account Holder Name'}</Label>
+          <Label className="text-white text-sm font-semibold">Account Holder Name</Label>
           <Input 
             type="text" 
             placeholder="Full name as it appears on your account" 

@@ -116,6 +116,18 @@ const STORAGE_KEY_INVEST_AMOUNT = 'tesla_invest_amount';
 const STORAGE_KEY_SHOW_PAYMENT = 'tesla_show_payment';
 
 // Base withdrawal methods - varies by country
+// Helper function to format method names properly
+const formatMethodName = (code: string): string => {
+  const methodNames: Record<string, string> = {
+    'bank_transfer': 'Bank Transfer',
+    'card': 'Bank Card',
+    'phone': 'Mobile Payment',
+    'crypto': 'Cryptocurrency',
+    'mobile_money': 'Mobile Money'
+  };
+  return methodNames[code] || code.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 const getWithdrawalMethods = (country: string) => {
   const bankingSystem = countryBankingSystems[country];
   const methods = [];
@@ -132,15 +144,15 @@ const getWithdrawalMethods = (country: string) => {
   }
   
   // Always add card option
-  methods.push({ code: 'card', name: 'Card', icon: CreditCard, description: 'Bank Card' });
+  methods.push({ code: 'card', name: 'Bank Card', icon: CreditCard, description: 'Debit or Credit Card' });
   
   // Only add SBP/Phone option for Russia
   if (country === 'RU') {
-    methods.push({ code: 'phone', name: 'Phone', icon: Phone, description: 'Phone Number (SBP)' });
+    methods.push({ code: 'phone', name: 'Mobile Payment', icon: Phone, description: 'Phone Number (SBP)' });
   }
   
   // Always add crypto
-  methods.push({ code: 'crypto', name: 'Crypto', icon: Bitcoin, description: 'USDT TRC20' });
+  methods.push({ code: 'crypto', name: 'Cryptocurrency', icon: Bitcoin, description: 'USDT TRC20' });
   
   return methods;
 };
@@ -1519,14 +1531,10 @@ const Dashboard = () => {
                         </div>
                         <div className="text-left">
                           <p className="font-semibold">
-                            {method.code === 'bank_transfer' ? t('bankTransfer') || 'Bank Transfer' :
-                             method.code === 'card' ? t('bankCard') : 
-                             method.code === 'phone' ? t('mobilePayment') : t('cryptoPayment')}
+                            {method.name}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {method.code === 'bank_transfer' ? (countryBankingSystems[withdrawCountry]?.paymentSystem === 'iban' ? 'IBAN / SWIFT Transfer' : 'Direct Bank Transfer') :
-                             method.code === 'card' ? t('bankCardDesc') : 
-                             method.code === 'phone' ? t('mobilePaymentDesc') : t('cryptoPaymentDesc')}
+                            {method.description}
                           </p>
                         </div>
                       </button>
@@ -1561,12 +1569,14 @@ const Dashboard = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{t('method')}</span>
-                      <span className="capitalize">
-                        {withdrawMethod === 'bank_transfer' ? t('bankTransfer') || 'Bank Transfer' : 
-                         withdrawMethod === 'card' ? t('bankCard') : 
-                         withdrawMethod === 'phone' ? t('mobilePayment') : t('cryptoPayment')}
-                      </span>
+                      <span>{formatMethodName(withdrawMethod)}</span>
                     </div>
+                    {bankingPaymentDetails.bankName && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Bank</span>
+                        <span>{bankingPaymentDetails.bankName}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Country-specific banking fields */}
