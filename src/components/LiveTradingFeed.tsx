@@ -108,8 +108,13 @@ const generateActivity = (): TradingActivity => {
   return activity;
 };
 
-const LiveTradingFeed = () => {
+interface LiveTradingFeedProps {
+  hasActiveInvestment?: boolean;
+}
+
+const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) => {
   const [activities, setActivities] = useState<TradingActivity[]>(() => {
+    if (!hasActiveInvestment) return [];
     // Generate initial activities with staggered timestamps
     const initial: TradingActivity[] = [];
     for (let i = 0; i < 5; i++) {
@@ -120,10 +125,26 @@ const LiveTradingFeed = () => {
     return initial.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   });
   
-  const [isLive, setIsLive] = useState(true);
+  const [isLive, setIsLive] = useState(hasActiveInvestment);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Reset activities when investment becomes active
   useEffect(() => {
+    if (hasActiveInvestment && activities.length === 0) {
+      const initial: TradingActivity[] = [];
+      for (let i = 0; i < 5; i++) {
+        const activity = generateActivity();
+        activity.timestamp = new Date(Date.now() - (i * 45000 + Math.random() * 30000));
+        initial.push(activity);
+      }
+      setActivities(initial.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()));
+    }
+    setIsLive(hasActiveInvestment);
+  }, [hasActiveInvestment]);
+
+  useEffect(() => {
+    if (!hasActiveInvestment) return;
+    
     // Add new activity every 8-15 seconds
     const addActivity = () => {
       if (!isLive) return;
@@ -140,7 +161,7 @@ const LiveTradingFeed = () => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isLive]);
+  }, [isLive, hasActiveInvestment]);
 
   // Update timestamps every 30 seconds
   useEffect(() => {
@@ -157,57 +178,71 @@ const LiveTradingFeed = () => {
         <div className="flex items-center gap-2">
           <div className="relative">
             <Activity className="w-5 h-5 text-primary" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            {hasActiveInvestment && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            )}
           </div>
           <h3 className="font-semibold text-sm sm:text-base">Expert Trading Activity</h3>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-          </span>
-          <span className="text-xs font-medium text-green-400">LIVE</span>
-        </div>
+        {hasActiveInvestment ? (
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            <span className="text-xs font-medium text-green-400">LIVE</span>
+          </div>
+        ) : (
+          <span className="text-xs font-medium text-muted-foreground">INACTIVE</span>
+        )}
       </div>
 
       {/* Activity Feed */}
       <div className="flex-1 space-y-2 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-border/70">
-        <AnimatePresence mode="popLayout">
-          {activities.map((activity) => {
-            const Icon = getActivityIcon(activity.type);
-            const colorClass = getActivityColor(activity.type);
-            
-            return (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20, height: 0 }}
-                animate={{ opacity: 1, x: 0, height: 'auto' }}
-                exit={{ opacity: 0, x: 20, height: 0 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="flex items-start gap-3 p-2.5 rounded-lg bg-background/40 border border-border/30 hover:border-border/50 transition-colors"
-              >
-                <div className={`p-1.5 rounded-lg shrink-0 ${colorClass}`}>
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground leading-tight truncate">
-                    {activity.message}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-muted-foreground">
-                      {formatTimeAgo(activity.timestamp)}
-                    </span>
-                    {activity.details && (
-                      <span className="text-xs font-semibold text-green-400">
-                        {activity.details}
-                      </span>
-                    )}
+        {!hasActiveInvestment ? (
+          <div className="flex flex-col items-center justify-center h-full text-center py-8">
+            <Activity className="w-10 h-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground">No active trading</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Trading activity will appear once your investment is activated</p>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {activities.map((activity) => {
+              const Icon = getActivityIcon(activity.type);
+              const colorClass = getActivityColor(activity.type);
+              
+              return (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, x: -20, height: 0 }}
+                  animate={{ opacity: 1, x: 0, height: 'auto' }}
+                  exit={{ opacity: 0, x: 20, height: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="flex items-start gap-3 p-2.5 rounded-lg bg-background/40 border border-border/30 hover:border-border/50 transition-colors"
+                >
+                  <div className={`p-1.5 rounded-lg shrink-0 ${colorClass}`}>
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground leading-tight truncate">
+                      {activity.message}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-muted-foreground">
+                        {formatTimeAgo(activity.timestamp)}
+                      </span>
+                      {activity.details && (
+                        <span className="text-xs font-semibold text-green-400">
+                          {activity.details}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Footer */}
