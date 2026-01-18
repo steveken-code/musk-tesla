@@ -34,12 +34,17 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
     const totalAmount = investments.reduce((sum, inv) => sum + inv.amount, 0);
     const canWithdraw = totalProfit >= 50; // Minimum withdrawal
 
+    // Determine current trading state - prioritize active over completed
+    const isCurrentlyTrading = hasActiveInvestment;
+    const hasEverCompleted = hasCompletedInvestment;
+    const completedCount = completedInvestments.length;
+
     const steps: ProgressStep[] = [
       {
         id: 1,
         label: 'Funds Deposited',
         description: hasInvestments 
-          ? `$${totalAmount.toLocaleString()} invested` 
+          ? `$${totalAmount.toLocaleString()} total invested` 
           : 'Awaiting deposit',
         icon: DollarSign,
         status: hasInvestments ? 'completed' : 'current',
@@ -47,33 +52,35 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
       {
         id: 2,
         label: 'Investment Active',
-        description: hasActiveInvestment 
+        description: isCurrentlyTrading 
           ? `${activeInvestments.length} active position${activeInvestments.length > 1 ? 's' : ''}` 
-          : hasCompletedInvestment 
-          ? 'Investment activated'
+          : hasEverCompleted 
+          ? `${completedCount} trade${completedCount > 1 ? 's' : ''} completed`
           : 'Pending activation',
         icon: Clock,
-        status: (hasActiveInvestment || hasCompletedInvestment) ? 'completed' : hasInvestments ? 'current' : 'upcoming',
+        status: (isCurrentlyTrading || hasEverCompleted) ? 'completed' : hasInvestments ? 'current' : 'upcoming',
       },
       {
         id: 3,
-        label: hasCompletedInvestment ? 'Trade Closed' : 'Trading in Progress',
-        description: hasCompletedInvestment 
-          ? 'Trade completed successfully'
-          : hasActiveInvestment 
+        label: isCurrentlyTrading ? 'Trading in Progress' : (hasEverCompleted ? 'Trade Closed' : 'Trading'),
+        description: isCurrentlyTrading 
           ? 'Experts managing portfolio' 
+          : hasEverCompleted 
+          ? `${completedCount} trade${completedCount > 1 ? 's' : ''} completed successfully`
           : 'Will start upon activation',
-        icon: hasCompletedInvestment ? Check : TrendingUp,
-        status: hasCompletedInvestment ? 'completed' : hasActiveInvestment ? 'current' : 'upcoming',
+        icon: isCurrentlyTrading ? TrendingUp : (hasEverCompleted ? Check : TrendingUp),
+        status: isCurrentlyTrading ? 'current' : (hasEverCompleted ? 'completed' : 'upcoming'),
       },
       {
         id: 4,
         label: 'Profits Generated',
         description: hasProfits 
-          ? `+$${totalProfit.toLocaleString()} earned` 
-          : 'Accumulating returns',
+          ? `+$${totalProfit.toLocaleString()} total earned` 
+          : isCurrentlyTrading 
+          ? 'Accumulating returns...'
+          : 'After trading completes',
         icon: DollarSign,
-        status: hasProfits ? 'completed' : 'upcoming',
+        status: hasProfits ? 'completed' : (isCurrentlyTrading ? 'current' : 'upcoming'),
       },
       {
         id: 5,
