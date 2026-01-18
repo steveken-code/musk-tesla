@@ -1162,7 +1162,7 @@ const Dashboard = () => {
         {/* Live Trading Feed & Investment Progress */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
           <div className="h-[320px] sm:h-[340px]">
-            <LiveTradingFeed />
+            <LiveTradingFeed hasActiveInvestment={investments.some(i => i.status === 'active')} />
           </div>
           <div className="h-[320px] sm:h-[340px]">
             <InvestmentProgressTracker investments={investments} />
@@ -1182,78 +1182,92 @@ const Dashboard = () => {
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
               {t('makeNewInvestment')}
             </h2>
-            <form onSubmit={handleInvest} className="space-y-4 sm:space-y-5">
-              {/* Step 1: Country Selection */}
-              <div className="relative">
-                <InvestmentCountrySelector
-                  selectedCountry={investCountry}
-                  onCountrySelect={setInvestCountry}
-                  countries={allCountries}
-                />
+            
+            {/* Show blocked message if active investment exists */}
+            {investments.some(i => i.status === 'active' || i.status === 'pending') ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+                  <Clock className="w-8 h-8 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Investment in Progress</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  You already have an active investment. Per platform rules, you can invest more after your current investment is completed.
+                </p>
               </div>
+            ) : (
+              <form onSubmit={handleInvest} className="space-y-4 sm:space-y-5">
+                {/* Step 1: Country Selection */}
+                <div className="relative">
+                  <InvestmentCountrySelector
+                    selectedCountry={investCountry}
+                    onCountrySelect={setInvestCountry}
+                    countries={allCountries}
+                  />
+                </div>
 
-              {/* Step 2: Amount Input - Only show after country is selected */}
-              {investCountry && (
-                <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
-                  <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
-                  <Input
-                    id="amount"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder={t('enterAmount')}
-                    value={investAmount}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9.]/g, '');
-                      setInvestAmount(value);
-                    }}
-                    className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
-                    required
-                  />
-                  {/* Only show RUB conversion for Russia */}
-                  {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      {t('exchangeRate')} {USD_TO_RUB} ₽
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {loadingPayment && investCountry && (
-                <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
-                  <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-tesla-red mr-2" />
-                  <span className="text-muted-foreground text-xs sm:text-sm">{t('loadingPayment')}</span>
-                </div>
-              )}
-              
-              {/* Show payment details based on country */}
-              {showPaymentDetails && !loadingPayment && investCountry && (
-                investCountry === 'RU' ? (
-                  <PaymentDetails 
-                    amount={parseFloat(investAmount)} 
-                    rubAmount={rubAmount} 
-                  />
-                ) : (
-                  <CryptoPaymentDetails 
-                    amount={parseFloat(investAmount)} 
-                  />
-                )
-              )}
-              
-              <Button
-                type="submit"
-                className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 animate-spin" />
-                    <span className="text-xs sm:text-sm">{t('processingText')}</span>
-                  </>
-                ) : (
-                  t('submitInvestment')
+                {/* Step 2: Amount Input - Only show after country is selected */}
+                {investCountry && (
+                  <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                    <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
+                    <Input
+                      id="amount"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder={t('enterAmount')}
+                      value={investAmount}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '');
+                        setInvestAmount(value);
+                      }}
+                      className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
+                      required
+                    />
+                    {/* Only show RUB conversion for Russia */}
+                    {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
+                      <div className="text-xs sm:text-sm text-muted-foreground">
+                        {t('exchangeRate')} {USD_TO_RUB} ₽
+                      </div>
+                    )}
+                  </div>
                 )}
-              </Button>
-            </form>
+                
+                {loadingPayment && investCountry && (
+                  <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
+                    <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-tesla-red mr-2" />
+                    <span className="text-muted-foreground text-xs sm:text-sm">{t('loadingPayment')}</span>
+                  </div>
+                )}
+                
+                {/* Show payment details based on country */}
+                {showPaymentDetails && !loadingPayment && investCountry && (
+                  investCountry === 'RU' ? (
+                    <PaymentDetails 
+                      amount={parseFloat(investAmount)} 
+                      rubAmount={rubAmount} 
+                    />
+                  ) : (
+                    <CryptoPaymentDetails 
+                      amount={parseFloat(investAmount)} 
+                    />
+                  )
+                )}
+                
+                <Button
+                  type="submit"
+                  className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
+                  disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 animate-spin" />
+                      <span className="text-xs sm:text-sm">{t('processingText')}</span>
+                    </>
+                  ) : (
+                    t('submitInvestment')
+                  )}
+                </Button>
+              </form>
+            )}
           </div>
 
           {/* Investment History - Added margin-top for spacing */}

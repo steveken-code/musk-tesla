@@ -26,7 +26,9 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
   const progressData = useMemo(() => {
     const hasInvestments = investments.length > 0;
     const activeInvestments = investments.filter(inv => inv.status === 'active');
+    const completedInvestments = investments.filter(inv => inv.status === 'completed');
     const hasActiveInvestment = activeInvestments.length > 0;
+    const hasCompletedInvestment = completedInvestments.length > 0;
     const totalProfit = investments.reduce((sum, inv) => sum + (inv.profit_amount || 0), 0);
     const hasProfits = totalProfit > 0;
     const totalAmount = investments.reduce((sum, inv) => sum + inv.amount, 0);
@@ -47,18 +49,22 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         label: 'Investment Active',
         description: hasActiveInvestment 
           ? `${activeInvestments.length} active position${activeInvestments.length > 1 ? 's' : ''}` 
+          : hasCompletedInvestment 
+          ? 'Investment activated'
           : 'Pending activation',
         icon: Clock,
-        status: hasActiveInvestment ? 'completed' : hasInvestments ? 'current' : 'upcoming',
+        status: (hasActiveInvestment || hasCompletedInvestment) ? 'completed' : hasInvestments ? 'current' : 'upcoming',
       },
       {
         id: 3,
-        label: 'Trading in Progress',
-        description: hasActiveInvestment 
+        label: hasCompletedInvestment ? 'Trade Closed' : 'Trading in Progress',
+        description: hasCompletedInvestment 
+          ? 'Trade completed successfully'
+          : hasActiveInvestment 
           ? 'Experts managing portfolio' 
           : 'Will start upon activation',
-        icon: TrendingUp,
-        status: hasActiveInvestment ? 'current' : 'upcoming',
+        icon: hasCompletedInvestment ? Check : TrendingUp,
+        status: hasCompletedInvestment ? 'completed' : hasActiveInvestment ? 'current' : 'upcoming',
       },
       {
         id: 4,
@@ -80,7 +86,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
       },
     ];
 
-    return { steps, totalProfit, hasActiveInvestment };
+    return { steps, totalProfit, hasActiveInvestment, hasCompletedInvestment };
   }, [investments]);
 
   const getStepStyles = (status: ProgressStep['status']) => {
