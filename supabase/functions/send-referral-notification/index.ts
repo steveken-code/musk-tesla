@@ -1,11 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 
 const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:8080",
-  "http://localhost:5173",
+  "https://msktesla.net",
+  "https://www.msktesla.net",
   "https://lovable.dev",
   "https://preview--ndvwqmoahasggeobwwld.lovable.app",
   "https://ndvwqmoahasggeobwwld.lovable.app"
@@ -162,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send email immediately using fetch
-    const sendTask = async () => {
+  const sendTask = async () => {
       try {
         const response = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -171,7 +171,7 @@ const handler = async (req: Request): Promise<Response> => {
             "Authorization": `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: "Tesla Investment <onboarding@resend.dev>",
+            from: FROM_EMAIL,
             to: [referralEmail],
             subject,
             html: htmlContent,
