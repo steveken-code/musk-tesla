@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { countryBankingSystems, Bank } from '@/data/countryBankingSystems';
 import { ChevronDown, Check, Building2, CreditCard, Phone, Wallet, AlertCircle, Search } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface WithdrawalBankingFieldsProps {
   country: string;
@@ -247,6 +248,10 @@ const WithdrawalBankingFields = ({
                           if (bank.swift) handleFieldChange('swiftCode', bank.swift);
                           setShowBankDropdown(false);
                           setBankSearch('');
+                          toast({
+                            title: "✓ Bank Selected",
+                            description: `${bank.name} has been selected successfully`,
+                          });
                         }}
                         className={`w-full flex items-center justify-between px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
                           paymentDetails.bankCode === bank.code ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'
@@ -266,6 +271,10 @@ const WithdrawalBankingFields = ({
                         handleFieldChange('bankName', '');
                         setShowBankDropdown(false);
                         setBankSearch('');
+                        toast({
+                          title: "✓ Other Bank Selected",
+                          description: "Please enter your bank details manually",
+                        });
                       }}
                       className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${paymentDetails.bankCode === 'OTHER' ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'}`}
                     >
