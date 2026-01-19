@@ -1,10 +1,28 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { countryBankingSystems, Bank } from '@/data/countryBankingSystems';
-import { ChevronDown, Check, Building2, CreditCard, Phone, Wallet, AlertCircle, Search } from 'lucide-react';
+import { ChevronDown, Check, Building2, CreditCard, Phone, Wallet, AlertCircle, Search, Star, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+
+// Crypto network definitions with detection patterns
+const CRYPTO_NETWORKS = [
+  { code: 'TRC20', name: 'TRON (TRC20)', pattern: /^T[A-Za-z1-9]{33}$/, fee: '~$1', recommended: true },
+  { code: 'BEP20', name: 'BNB Smart Chain (BEP20)', pattern: /^0x[a-fA-F0-9]{40}$/, fee: '~$0.20', recommended: true },
+  { code: 'ERC20', name: 'Ethereum (ERC20)', pattern: /^0x[a-fA-F0-9]{40}$/, fee: '~$5-20', recommended: false },
+  { code: 'Polygon', name: 'Polygon (MATIC)', pattern: /^0x[a-fA-F0-9]{40}$/, fee: '~$0.01', recommended: false },
+  { code: 'Arbitrum', name: 'Arbitrum One', pattern: /^0x[a-fA-F0-9]{40}$/, fee: '~$0.25', recommended: false },
+  { code: 'SOL', name: 'Solana (SPL)', pattern: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, fee: '~$0.01', recommended: false },
+];
+
+// Detect which networks match the wallet address
+const detectNetworks = (address: string) => {
+  if (!address || address.length < 20) return [];
+  const matched = CRYPTO_NETWORKS.filter(network => network.pattern.test(address));
+  // Sort by recommended first
+  return matched.sort((a, b) => (b.recommended ? 1 : 0) - (a.recommended ? 1 : 0));
+};
 
 interface WithdrawalBankingFieldsProps {
   country: string;
@@ -22,6 +40,24 @@ const WithdrawalBankingFields = ({
   const { t } = useLanguage();
   const [showBankDropdown, setShowBankDropdown] = useState(false);
   const [bankSearch, setBankSearch] = useState('');
+  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
+  
+  // Detect networks based on pasted crypto address
+  const detectedNetworks = useMemo(() => 
+    detectNetworks(paymentDetails.cryptoAddress || ''), 
+    [paymentDetails.cryptoAddress]
+  );
+  
+  // Auto-select network if only one is detected
+  useEffect(() => {
+    if (method === 'crypto' && detectedNetworks.length === 1 && !paymentDetails.cryptoNetwork) {
+      onPaymentDetailsChange({ ...paymentDetails, cryptoNetwork: detectedNetworks[0].code });
+      toast({
+        title: "✓ Network Detected",
+        description: `${detectedNetworks[0].name} network auto-selected`,
+      });
+    }
+  }, [detectedNetworks, method, paymentDetails, onPaymentDetailsChange]);
   
   const bankingSystem = countryBankingSystems[country];
   
@@ -130,26 +166,137 @@ const WithdrawalBankingFields = ({
     }
   }
   
-  // For crypto - universal
+  // For crypto - with network detection
   if (method === 'crypto') {
+    const selectedNetwork = CRYPTO_NETWORKS.find(n => n.code === paymentDetails.cryptoNetwork);
+    
     return (
       <div className="space-y-5">
+        {/* Wallet Address Input */}
         <div className="space-y-3">
           <Label className="text-white flex items-center gap-2 text-sm font-semibold">
             <Wallet className="w-4 h-4 text-amber-500" />
-            USDT (TRC20) {t('walletAddress')}
+            USDT {t('walletAddress')}
           </Label>
           <Input
             type="text"
-            placeholder="T..."
+            placeholder="Paste your USDT wallet address..."
             value={paymentDetails.cryptoAddress || ''}
-            onChange={(e) => handleFieldChange('cryptoAddress', e.target.value)}
+            onChange={(e) => {
+              handleFieldChange('cryptoAddress', e.target.value.trim());
+              // Reset network selection when address changes
+              if (paymentDetails.cryptoNetwork) {
+                handleFieldChange('cryptoNetwork', '');
+              }
+            }}
             className="h-14 text-base font-mono font-bold bg-[#1E1E1E] border-2 border-[#444] [color:#ffffff_!important] placeholder:text-[#666] focus:border-green-500 focus:ring-green-500/20 rounded-xl"
           />
-          <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5">
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Only USDT on TRON (TRC20) network</span>
+          <p className="text-xs text-slate-400">Supports TRC20, ERC20, BEP20, Polygon, Arbitrum, Solana</p>
+        </div>
+
+        {/* Network Detection & Selection */}
+        {paymentDetails.cryptoAddress && paymentDetails.cryptoAddress.length >= 20 && (
+          <div className="space-y-3 animate-fade-in">
+            {detectedNetworks.length > 0 ? (
+              <>
+                <Label className="text-white flex items-center gap-2 text-sm font-semibold">
+                  <Zap className="w-4 h-4 text-green-500" />
+                  Select Network
+                  <span className="text-xs text-green-400 font-normal ml-1">({detectedNetworks.length} detected)</span>
+                </Label>
+                
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
+                    className={`w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 rounded-xl transition-colors text-left ${
+                      selectedNetwork ? 'border-green-500' : 'border-[#444] hover:border-green-500/50'
+                    }`}
+                  >
+                    {selectedNetwork ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-green-500" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-white block">{selectedNetwork.name}</span>
+                          <span className="text-xs text-green-400">Fee: {selectedNetwork.fee}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-[#888]">Tap to Select Network</span>
+                    )}
+                    <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showNetworkDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {showNetworkDropdown && (
+                    <div className="absolute z-[200] w-full mt-2 bg-[#1a1a1a] border-2 border-[#444] rounded-xl shadow-2xl overflow-hidden">
+                      <div className="max-h-[280px] overflow-y-auto">
+                        {detectedNetworks.map((network) => (
+                          <button
+                            key={network.code}
+                            type="button"
+                            onClick={() => {
+                              handleFieldChange('cryptoNetwork', network.code);
+                              setShowNetworkDropdown(false);
+                              toast({
+                                title: "✓ Network Selected",
+                                description: `${network.name} has been selected`,
+                              });
+                            }}
+                            className={`w-full flex items-center justify-between px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
+                              paymentDetails.cryptoNetwork === network.code ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              {network.recommended && (
+                                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                              )}
+                              <div className="text-left">
+                                <span className="font-semibold text-white block">
+                                  {network.name}
+                                  {network.recommended && (
+                                    <span className="ml-2 text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">Recommended</span>
+                                  )}
+                                </span>
+                                <span className="text-xs text-slate-400">Network fee: {network.fee}</span>
+                              </div>
+                            </div>
+                            {paymentDetails.cryptoNetwork === network.code && <Check className="w-5 h-5 text-green-500" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected network confirmation */}
+                {selectedNetwork && !showNetworkDropdown && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <div className="text-sm">
+                      <span className="text-green-400 font-medium">Network: </span>
+                      <span className="text-white">{selectedNetwork.name}</span>
+                      <span className="text-slate-400 ml-2">(Fee: {selectedNetwork.fee})</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <div className="text-sm">
+                  <span className="text-red-400 font-medium">Invalid Address Format</span>
+                  <p className="text-slate-400 text-xs mt-1">Please check your wallet address and try again</p>
+                </div>
+              </div>
+            )}
           </div>
+        )}
+
+        <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>Make sure to select the correct network to avoid loss of funds</span>
         </div>
       </div>
     );

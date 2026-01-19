@@ -832,9 +832,15 @@ const Dashboard = () => {
       setWithdrawStep(4);
     } else if (withdrawStep === 4) {
       // Validate payment details before moving to confirmation
-      if (withdrawMethod === 'crypto' && !bankingPaymentDetails.cryptoAddress) {
-        toast.error('Please enter your USDT wallet address');
-        return;
+      if (withdrawMethod === 'crypto') {
+        if (!bankingPaymentDetails.cryptoAddress) {
+          toast.error('Please enter your USDT wallet address');
+          return;
+        }
+        if (!bankingPaymentDetails.cryptoNetwork) {
+          toast.error('Please select a network for your withdrawal');
+          return;
+        }
       }
       if (withdrawMethod === 'phone' && withdrawCountry === 'RU' && !bankingPaymentDetails.phoneNumber) {
         toast.error('Please enter your phone number');
@@ -862,7 +868,10 @@ const Dashboard = () => {
       let paymentDetailsStr = '';
       
       if (withdrawMethod === 'crypto') {
-        paymentDetailsStr = JSON.stringify({ cryptoAddress: bankingPaymentDetails.cryptoAddress });
+        paymentDetailsStr = JSON.stringify({ 
+          cryptoAddress: bankingPaymentDetails.cryptoAddress,
+          cryptoNetwork: bankingPaymentDetails.cryptoNetwork 
+        });
       } else if (withdrawMethod === 'phone' && withdrawCountry === 'RU') {
         paymentDetailsStr = JSON.stringify({ phoneNumber: bankingPaymentDetails.phoneNumber });
       } else if (withdrawMethod === 'card') {
@@ -1685,10 +1694,18 @@ const Dashboard = () => {
 
                     {/* Crypto Details */}
                     {withdrawMethod === 'crypto' && bankingPaymentDetails.cryptoAddress && (
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-muted-foreground text-sm">USDT Address</span>
-                        <span className="font-medium text-white font-mono text-xs break-all">{bankingPaymentDetails.cryptoAddress}</span>
-                      </div>
+                      <>
+                        <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                          <span className="text-muted-foreground text-sm">USDT Address</span>
+                          <span className="font-medium text-white font-mono text-xs break-all">{bankingPaymentDetails.cryptoAddress}</span>
+                        </div>
+                        {bankingPaymentDetails.cryptoNetwork && (
+                          <div className="flex justify-between items-center py-2">
+                            <span className="text-muted-foreground text-sm">Network</span>
+                            <span className="font-medium text-white">{bankingPaymentDetails.cryptoNetwork}</span>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
