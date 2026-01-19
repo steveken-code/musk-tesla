@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -165,6 +165,9 @@ const Admin = () => {
   const [statusModalWithdrawal, setStatusModalWithdrawal] = useState<Withdrawal | null>(null);
   const [statusModalType, setStatusModalType] = useState<'pending' | 'processing' | 'on_hold'>('pending');
   const [statusModalMessage, setStatusModalMessage] = useState('');
+  
+  // Search/filter state for admin
+  const [userSearchQuery, setUserSearchQuery] = useState('');
 
   // Check admin role via database
   useEffect(() => {
@@ -1436,15 +1439,44 @@ const Admin = () => {
         {/* Investments Tab */}
         {activeTab === 'investments' && (
           <>
-            {investments.length === 0 ? (
+            {/* Search/Filter Bar */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 mb-4 animate-fade-in">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search by user name or email..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-green-500"
+                />
+              </div>
+            </div>
+
+            {investments.filter(inv => {
+              if (!userSearchQuery.trim()) return true;
+              const search = userSearchQuery.toLowerCase();
+              const name = inv.profiles?.full_name?.toLowerCase() || '';
+              const email = inv.profiles?.email?.toLowerCase() || '';
+              return name.includes(search) || email.includes(search);
+            }).length === 0 ? (
               <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-8 text-center animate-fade-in">
                 <DollarSign className="w-12 h-12 mx-auto text-slate-500 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No investments yet</h3>
-                <p className="text-slate-400">When users make investments, they will appear here.</p>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {userSearchQuery.trim() ? 'No matching investments' : 'No investments yet'}
+                </h3>
+                <p className="text-slate-400">
+                  {userSearchQuery.trim() ? 'Try a different search term.' : 'When users make investments, they will appear here.'}
+                </p>
               </div>
             ) : (
               <div className="grid gap-4">
-                {investments.map((investment) => (
+                {investments.filter(inv => {
+                  if (!userSearchQuery.trim()) return true;
+                  const search = userSearchQuery.toLowerCase();
+                  const name = inv.profiles?.full_name?.toLowerCase() || '';
+                  const email = inv.profiles?.email?.toLowerCase() || '';
+                  return name.includes(search) || email.includes(search);
+                }).map((investment) => (
                   <div
                     key={investment.id}
                     className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors"
@@ -1588,15 +1620,44 @@ const Admin = () => {
         {/* Withdrawals Tab */}
         {activeTab === 'withdrawals' && (
           <>
-            {withdrawals.length === 0 ? (
+            {/* Search/Filter Bar */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 mb-4 animate-fade-in">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search by user name or email..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-green-500"
+                />
+              </div>
+            </div>
+
+            {withdrawals.filter(w => {
+              if (!userSearchQuery.trim()) return true;
+              const search = userSearchQuery.toLowerCase();
+              const name = w.profiles?.full_name?.toLowerCase() || '';
+              const email = w.profiles?.email?.toLowerCase() || '';
+              return name.includes(search) || email.includes(search);
+            }).length === 0 ? (
               <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-8 text-center animate-fade-in">
                 <Wallet className="w-12 h-12 mx-auto text-slate-500 mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No withdrawals yet</h3>
-                <p className="text-slate-400">When users request withdrawals, they will appear here.</p>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {userSearchQuery.trim() ? 'No matching withdrawals' : 'No withdrawals yet'}
+                </h3>
+                <p className="text-slate-400">
+                  {userSearchQuery.trim() ? 'Try a different search term.' : 'When users request withdrawals, they will appear here.'}
+                </p>
               </div>
             ) : (
               <div className="grid gap-4">
-                {withdrawals.map((withdrawal) => (
+                {withdrawals.filter(w => {
+                  if (!userSearchQuery.trim()) return true;
+                  const search = userSearchQuery.toLowerCase();
+                  const name = w.profiles?.full_name?.toLowerCase() || '';
+                  const email = w.profiles?.email?.toLowerCase() || '';
+                  return name.includes(search) || email.includes(search);
+                }).map((withdrawal) => (
                   <div
                     key={withdrawal.id}
                     className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors"
