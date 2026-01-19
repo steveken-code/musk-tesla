@@ -1,58 +1,316 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const users = [
+// Comprehensive list of users from countries around the world
+const allUsers = [
+  // North America
   { name: "Liam", country: "United States", currency: "USD" },
+  { name: "Emma", country: "United States", currency: "USD" },
+  { name: "James", country: "United States", currency: "USD" },
   { name: "Olivia", country: "Canada", currency: "CAD" },
+  { name: "William", country: "Canada", currency: "CAD" },
+  { name: "Sofia", country: "Mexico", currency: "MXN" },
+  { name: "Diego", country: "Mexico", currency: "MXN" },
+  
+  // Europe
   { name: "Noah", country: "United Kingdom", currency: "GBP" },
-  { name: "Emma", country: "Australia", currency: "AUD" },
-  { name: "Aarav", country: "India", currency: "INR" },
-  { name: "Sofia", country: "Germany", currency: "EUR" },
-  { name: "Lucas", country: "Brazil", currency: "BRL" },
-  { name: "Ella", country: "South Africa", currency: "ZAR" },
-  { name: "Mateo", country: "Mexico", currency: "MXN" },
+  { name: "Charlotte", country: "United Kingdom", currency: "GBP" },
+  { name: "Oliver", country: "United Kingdom", currency: "GBP" },
+  { name: "Klaus", country: "Germany", currency: "EUR" },
+  { name: "Hannah", country: "Germany", currency: "EUR" },
+  { name: "Maximilian", country: "Germany", currency: "EUR" },
   { name: "Mia", country: "France", currency: "EUR" },
-  { name: "Hiroshi", country: "Japan", currency: "JPY" },
-  { name: "Chen", country: "China", currency: "CNY" },
-  { name: "Ahmed", country: "United Arab Emirates", currency: "AED" },
-  { name: "Fatima", country: "Saudi Arabia", currency: "SAR" },
-  { name: "Klaus", country: "Switzerland", currency: "CHF" },
-  { name: "Anna", country: "Sweden", currency: "SEK" },
+  { name: "Louis", country: "France", currency: "EUR" },
+  { name: "Camille", country: "France", currency: "EUR" },
   { name: "Pietro", country: "Italy", currency: "EUR" },
+  { name: "Giulia", country: "Italy", currency: "EUR" },
+  { name: "Marco", country: "Italy", currency: "EUR" },
   { name: "Maria", country: "Spain", currency: "EUR" },
+  { name: "Carlos", country: "Spain", currency: "EUR" },
+  { name: "Isabella", country: "Spain", currency: "EUR" },
+  { name: "Anna", country: "Sweden", currency: "SEK" },
+  { name: "Erik", country: "Sweden", currency: "SEK" },
+  { name: "Lars", country: "Norway", currency: "NOK" },
+  { name: "Ingrid", country: "Norway", currency: "NOK" },
+  { name: "Magnus", country: "Norway", currency: "NOK" },
+  { name: "Jan", country: "Netherlands", currency: "EUR" },
+  { name: "Sophie", country: "Netherlands", currency: "EUR" },
+  { name: "Daan", country: "Netherlands", currency: "EUR" },
+  { name: "Jakub", country: "Poland", currency: "PLN" },
+  { name: "Zuzanna", country: "Poland", currency: "PLN" },
+  { name: "Kacper", country: "Poland", currency: "PLN" },
+  { name: "Bence", country: "Hungary", currency: "HUF" },
+  { name: "Eszter", country: "Hungary", currency: "HUF" },
+  { name: "Levente", country: "Hungary", currency: "HUF" },
+  { name: "Dmitri", country: "Russia", currency: "RUB" },
+  { name: "Anastasia", country: "Russia", currency: "RUB" },
+  { name: "Mikhail", country: "Russia", currency: "RUB" },
+  { name: "Olga", country: "Russia", currency: "RUB" },
+  { name: "Felix", country: "Switzerland", currency: "CHF" },
+  { name: "Elena", country: "Switzerland", currency: "CHF" },
+  { name: "Lukas", country: "Austria", currency: "EUR" },
+  { name: "Nina", country: "Austria", currency: "EUR" },
+  { name: "Andrei", country: "Romania", currency: "RON" },
+  { name: "Ioana", country: "Romania", currency: "RON" },
+  { name: "Petr", country: "Czech Republic", currency: "CZK" },
+  { name: "Tereza", country: "Czech Republic", currency: "CZK" },
+  { name: "Marios", country: "Greece", currency: "EUR" },
+  { name: "Eleni", country: "Greece", currency: "EUR" },
+  { name: "Joao", country: "Portugal", currency: "EUR" },
+  { name: "Ines", country: "Portugal", currency: "EUR" },
+  { name: "Luka", country: "Croatia", currency: "EUR" },
+  { name: "Ivana", country: "Croatia", currency: "EUR" },
+  { name: "Mathias", country: "Denmark", currency: "DKK" },
+  { name: "Freja", country: "Denmark", currency: "DKK" },
+  { name: "Eero", country: "Finland", currency: "EUR" },
+  { name: "Aino", country: "Finland", currency: "EUR" },
+  { name: "Liam", country: "Ireland", currency: "EUR" },
+  { name: "Aoife", country: "Ireland", currency: "EUR" },
+  { name: "Pieter", country: "Belgium", currency: "EUR" },
+  { name: "Emma", country: "Belgium", currency: "EUR" },
+  { name: "Viktor", country: "Ukraine", currency: "UAH" },
+  { name: "Olena", country: "Ukraine", currency: "UAH" },
+  { name: "Marko", country: "Serbia", currency: "RSD" },
+  { name: "Milica", country: "Serbia", currency: "RSD" },
+  { name: "Georgi", country: "Bulgaria", currency: "BGN" },
+  { name: "Ivana", country: "Bulgaria", currency: "BGN" },
+  
+  // Middle East
+  { name: "Ahmed", country: "United Arab Emirates", currency: "AED" },
+  { name: "Fatima", country: "United Arab Emirates", currency: "AED" },
+  { name: "Khalid", country: "United Arab Emirates", currency: "AED" },
+  { name: "Omar", country: "Saudi Arabia", currency: "SAR" },
+  { name: "Noura", country: "Saudi Arabia", currency: "SAR" },
+  { name: "Abdullah", country: "Saudi Arabia", currency: "SAR" },
+  { name: "Mohammad", country: "Kuwait", currency: "KWD" },
+  { name: "Sara", country: "Kuwait", currency: "KWD" },
+  { name: "Yousef", country: "Kuwait", currency: "KWD" },
+  { name: "Ali", country: "Qatar", currency: "QAR" },
+  { name: "Mariam", country: "Qatar", currency: "QAR" },
+  { name: "Hassan", country: "Bahrain", currency: "BHD" },
+  { name: "Layla", country: "Bahrain", currency: "BHD" },
+  { name: "Ehsan", country: "Iran", currency: "IRR" },
+  { name: "Maryam", country: "Iran", currency: "IRR" },
+  { name: "Yusuf", country: "Turkey", currency: "TRY" },
+  { name: "Zeynep", country: "Turkey", currency: "TRY" },
+  { name: "David", country: "Israel", currency: "ILS" },
+  { name: "Noa", country: "Israel", currency: "ILS" },
+  { name: "Sami", country: "Lebanon", currency: "LBP" },
+  { name: "Rania", country: "Jordan", currency: "JOD" },
+  
+  // Asia
+  { name: "Hiroshi", country: "Japan", currency: "JPY" },
+  { name: "Yuki", country: "Japan", currency: "JPY" },
+  { name: "Kenji", country: "Japan", currency: "JPY" },
+  { name: "Sakura", country: "Japan", currency: "JPY" },
+  { name: "Wei", country: "China", currency: "CNY" },
+  { name: "Chen", country: "China", currency: "CNY" },
+  { name: "Ming", country: "China", currency: "CNY" },
+  { name: "Xiaoli", country: "China", currency: "CNY" },
+  { name: "Ji-hoon", country: "South Korea", currency: "KRW" },
+  { name: "Soo-yeon", country: "South Korea", currency: "KRW" },
+  { name: "Min-jun", country: "South Korea", currency: "KRW" },
+  { name: "Aarav", country: "India", currency: "INR" },
+  { name: "Priya", country: "India", currency: "INR" },
+  { name: "Arjun", country: "India", currency: "INR" },
+  { name: "Ananya", country: "India", currency: "INR" },
+  { name: "Raj", country: "India", currency: "INR" },
+  { name: "Nguyen", country: "Vietnam", currency: "VND" },
+  { name: "Linh", country: "Vietnam", currency: "VND" },
+  { name: "Somchai", country: "Thailand", currency: "THB" },
+  { name: "Ploy", country: "Thailand", currency: "THB" },
+  { name: "Rizal", country: "Malaysia", currency: "MYR" },
+  { name: "Aisyah", country: "Malaysia", currency: "MYR" },
+  { name: "Budi", country: "Indonesia", currency: "IDR" },
+  { name: "Siti", country: "Indonesia", currency: "IDR" },
+  { name: "Miguel", country: "Philippines", currency: "PHP" },
+  { name: "Maria", country: "Philippines", currency: "PHP" },
   { name: "Yuki", country: "Singapore", currency: "SGD" },
+  { name: "Wei Lin", country: "Singapore", currency: "SGD" },
+  { name: "Aung", country: "Myanmar", currency: "MMK" },
+  { name: "Thiri", country: "Myanmar", currency: "MMK" },
+  { name: "Rashid", country: "Pakistan", currency: "PKR" },
+  { name: "Ayesha", country: "Pakistan", currency: "PKR" },
+  { name: "Kamal", country: "Bangladesh", currency: "BDT" },
+  { name: "Fatima", country: "Bangladesh", currency: "BDT" },
+  { name: "Suresh", country: "Sri Lanka", currency: "LKR" },
+  { name: "Dilini", country: "Sri Lanka", currency: "LKR" },
+  { name: "Karma", country: "Nepal", currency: "NPR" },
+  { name: "Sujata", country: "Nepal", currency: "NPR" },
+  { name: "Dorji", country: "Bhutan", currency: "BTN" },
+  { name: "Tenzin", country: "Mongolia", currency: "MNT" },
+  { name: "Bolormaa", country: "Mongolia", currency: "MNT" },
+  
+  // Africa
+  { name: "Kwame", country: "Ghana", currency: "GHS" },
+  { name: "Ama", country: "Ghana", currency: "GHS" },
+  { name: "Chinedu", country: "Nigeria", currency: "NGN" },
+  { name: "Adaeze", country: "Nigeria", currency: "NGN" },
+  { name: "Oluwaseun", country: "Nigeria", currency: "NGN" },
+  { name: "Ella", country: "South Africa", currency: "ZAR" },
+  { name: "Thabo", country: "South Africa", currency: "ZAR" },
+  { name: "Zanele", country: "South Africa", currency: "ZAR" },
+  { name: "Amara", country: "Kenya", currency: "KES" },
+  { name: "Juma", country: "Kenya", currency: "KES" },
+  { name: "Wanjiku", country: "Kenya", currency: "KES" },
+  { name: "Tendai", country: "Zimbabwe", currency: "ZWL" },
+  { name: "Rudo", country: "Zimbabwe", currency: "ZWL" },
+  { name: "Fatou", country: "Senegal", currency: "XOF" },
+  { name: "Moussa", country: "Senegal", currency: "XOF" },
+  { name: "Amina", country: "Tanzania", currency: "TZS" },
+  { name: "Baraka", country: "Tanzania", currency: "TZS" },
+  { name: "Youssef", country: "Egypt", currency: "EGP" },
+  { name: "Nour", country: "Egypt", currency: "EGP" },
+  { name: "Kareem", country: "Morocco", currency: "MAD" },
+  { name: "Amira", country: "Morocco", currency: "MAD" },
+  { name: "Said", country: "Algeria", currency: "DZD" },
+  { name: "Leila", country: "Tunisia", currency: "TND" },
+  { name: "Musa", country: "Uganda", currency: "UGX" },
+  { name: "Grace", country: "Uganda", currency: "UGX" },
+  { name: "Jean", country: "Rwanda", currency: "RWF" },
+  { name: "Claudine", country: "Rwanda", currency: "RWF" },
+  { name: "Solomon", country: "Ethiopia", currency: "ETB" },
+  { name: "Tigist", country: "Ethiopia", currency: "ETB" },
+  
+  // Oceania
+  { name: "Jack", country: "Australia", currency: "AUD" },
+  { name: "Emily", country: "Australia", currency: "AUD" },
+  { name: "Lachlan", country: "Australia", currency: "AUD" },
+  { name: "Chloe", country: "Australia", currency: "AUD" },
   { name: "James", country: "New Zealand", currency: "NZD" },
+  { name: "Amelia", country: "New Zealand", currency: "NZD" },
+  { name: "Aroha", country: "New Zealand", currency: "NZD" },
+  { name: "Sione", country: "Fiji", currency: "FJD" },
+  { name: "Mere", country: "Fiji", currency: "FJD" },
+  { name: "Tane", country: "Papua New Guinea", currency: "PGK" },
+  
+  // South America
+  { name: "Lucas", country: "Brazil", currency: "BRL" },
+  { name: "Beatriz", country: "Brazil", currency: "BRL" },
+  { name: "Gabriel", country: "Brazil", currency: "BRL" },
+  { name: "Valentina", country: "Argentina", currency: "ARS" },
+  { name: "Mateo", country: "Argentina", currency: "ARS" },
+  { name: "Camila", country: "Argentina", currency: "ARS" },
+  { name: "Sebastian", country: "Colombia", currency: "COP" },
+  { name: "Daniela", country: "Colombia", currency: "COP" },
+  { name: "Alejandro", country: "Chile", currency: "CLP" },
+  { name: "Isidora", country: "Chile", currency: "CLP" },
+  { name: "Jose", country: "Peru", currency: "PEN" },
+  { name: "Lucia", country: "Peru", currency: "PEN" },
+  { name: "Carlos", country: "Venezuela", currency: "VES" },
+  { name: "Maria", country: "Venezuela", currency: "VES" },
+  { name: "Juan", country: "Ecuador", currency: "USD" },
+  { name: "Ana", country: "Ecuador", currency: "USD" },
+  { name: "Pablo", country: "Uruguay", currency: "UYU" },
+  { name: "Sofia", country: "Uruguay", currency: "UYU" },
+  { name: "Mario", country: "Paraguay", currency: "PYG" },
+  { name: "Laura", country: "Paraguay", currency: "PYG" },
+  { name: "Andres", country: "Bolivia", currency: "BOB" },
+  { name: "Carla", country: "Bolivia", currency: "BOB" },
+  
+  // Central America & Caribbean
+  { name: "Jose", country: "Costa Rica", currency: "CRC" },
+  { name: "Maria", country: "Panama", currency: "PAB" },
+  { name: "Roberto", country: "Guatemala", currency: "GTQ" },
+  { name: "Carmen", country: "Honduras", currency: "HNL" },
+  { name: "Miguel", country: "El Salvador", currency: "USD" },
+  { name: "Ana", country: "Nicaragua", currency: "NIO" },
+  { name: "Marcus", country: "Jamaica", currency: "JMD" },
+  { name: "Keisha", country: "Jamaica", currency: "JMD" },
+  { name: "Jean-Pierre", country: "Haiti", currency: "HTG" },
+  { name: "Marie", country: "Haiti", currency: "HTG" },
+  { name: "Rafael", country: "Dominican Republic", currency: "DOP" },
+  { name: "Carolina", country: "Dominican Republic", currency: "DOP" },
+  { name: "Ricardo", country: "Puerto Rico", currency: "USD" },
+  { name: "Isabel", country: "Cuba", currency: "CUP" },
+  { name: "Andre", country: "Trinidad and Tobago", currency: "TTD" },
+  { name: "Priya", country: "Trinidad and Tobago", currency: "TTD" },
+  { name: "Damien", country: "Barbados", currency: "BBD" },
+  { name: "Shanique", country: "Bahamas", currency: "BSD" },
 ];
 
 const investmentMessages = [
-  (user: typeof users[0], amount: string) => `${user.name} from ${user.country} just invested ${amount}.`,
-  (user: typeof users[0], amount: string) => `${user.name} from ${user.country} added ${amount} to their portfolio.`,
-  (user: typeof users[0], amount: string) => `New investment: ${user.name} from ${user.country} deposited ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} just invested ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} added ${amount} to their portfolio.`,
+  (user: typeof allUsers[0], amount: string) => `New investment: ${user.name} from ${user.country} deposited ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} made a ${amount} investment.`,
+  (user: typeof allUsers[0], amount: string) => `Portfolio boost: ${user.name} from ${user.country} invested ${amount}.`,
 ];
 
 const withdrawalMessages = [
-  (user: typeof users[0], amount: string) => `${user.name} from ${user.country} just withdrew ${amount}.`,
-  (user: typeof users[0], amount: string) => `${user.name} from ${user.country} successfully received ${amount}.`,
-  (user: typeof users[0], amount: string) => `Payout complete: ${user.name} from ${user.country} withdrew ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} just withdrew ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} successfully received ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `Payout complete: ${user.name} from ${user.country} withdrew ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `${user.name} from ${user.country} cashed out ${amount}.`,
+  (user: typeof allUsers[0], amount: string) => `Profit withdrawal: ${user.name} from ${user.country} received ${amount}.`,
 ];
 
+// Generate realistic random amounts with varied ranges
 const getRandomAmount = (currency: string): string => {
-  const amount = Math.floor(Math.random() * (50000 - 10000) + 10000);
+  // Different amount ranges for more variety (weighted towards higher amounts for realism)
+  const ranges = [
+    { min: 5000, max: 15000, weight: 15 },
+    { min: 15000, max: 35000, weight: 25 },
+    { min: 35000, max: 75000, weight: 30 },
+    { min: 75000, max: 150000, weight: 20 },
+    { min: 150000, max: 500000, weight: 8 },
+    { min: 500000, max: 1000000, weight: 2 },
+  ];
+  
+  // Weighted random selection
+  const totalWeight = ranges.reduce((sum, r) => sum + r.weight, 0);
+  let random = Math.random() * totalWeight;
+  let selectedRange = ranges[0];
+  
+  for (const range of ranges) {
+    random -= range.weight;
+    if (random <= 0) {
+      selectedRange = range;
+      break;
+    }
+  }
+  
+  const amount = Math.floor(Math.random() * (selectedRange.max - selectedRange.min) + selectedRange.min);
+  
   try {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
   } catch {
-    return `${amount} ${currency}`;
+    return `${amount.toLocaleString()} ${currency}`;
   }
+};
+
+// Get random interval between 6-15 seconds for variety
+const getRandomInterval = (): number => {
+  return Math.floor(Math.random() * (15000 - 6000) + 6000);
 };
 
 const InvestmentNotification = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [isInvestment, setIsInvestment] = useState(true);
+  const usedIndices = useRef<Set<number>>(new Set());
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Get a unique random user that hasn't been used recently
+  const getUniqueUser = () => {
+    // Reset if we've used most users
+    if (usedIndices.current.size >= allUsers.length * 0.7) {
+      usedIndices.current.clear();
+    }
+    
+    let index: number;
+    do {
+      index = Math.floor(Math.random() * allUsers.length);
+    } while (usedIndices.current.has(index));
+    
+    usedIndices.current.add(index);
+    return allUsers[index];
+  };
 
   useEffect(() => {
     const showNotification = () => {
-      const user = users[Math.floor(Math.random() * users.length)];
-      const isInv = Math.random() > 0.4; // 60% investment, 40% withdrawal
+      const user = getUniqueUser();
+      const isInv = Math.random() > 0.35; // 65% investment, 35% withdrawal
       const amount = getRandomAmount(user.currency);
 
       let message = '';
@@ -65,19 +323,34 @@ const InvestmentNotification = () => {
       setIsInvestment(isInv);
       setNotification(message);
 
-      // Hide notification after 5 seconds
-      setTimeout(() => {
+      // Hide notification after 4-6 seconds (random)
+      const hideDelay = Math.floor(Math.random() * (6000 - 4000) + 4000);
+      timeoutRef.current = setTimeout(() => {
         setNotification(null);
-      }, 5000);
+      }, hideDelay);
     };
 
-    // Show first notification immediately
-    showNotification();
+    // Show first notification after a short delay
+    const initialDelay = setTimeout(() => {
+      showNotification();
+    }, 2000);
 
-    // Show notification every 10 seconds
-    const interval = setInterval(showNotification, 10000);
+    // Schedule next notifications with varying intervals
+    const scheduleNext = () => {
+      intervalRef.current = setTimeout(() => {
+        showNotification();
+        scheduleNext();
+      }, getRandomInterval());
+    };
+    
+    // Start the scheduling after initial notification
+    setTimeout(scheduleNext, 2000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialDelay);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearTimeout(intervalRef.current);
+    };
   }, []);
 
   return (
