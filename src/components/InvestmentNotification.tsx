@@ -547,8 +547,9 @@ const getRandomInterval = (): number => {
 };
 
 // Random display duration between 5-8 seconds
+// Reduced display time for smoother experience (3-4.5 seconds)
 const getRandomDisplayDuration = (): number => {
-  return Math.floor(Math.random() * (8000 - 5000) + 5000);
+  return Math.floor(Math.random() * (4500 - 3000) + 3000);
 };
 
 export const InvestmentNotification = () => {

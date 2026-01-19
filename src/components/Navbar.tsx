@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import teslaLogo from '@/assets/tesla-logo-new.png';
-import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info } from 'lucide-react';
+import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
@@ -25,6 +25,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t('home'), href: '/', icon: Zap, isAnchor: false },
     { name: t('about'), href: '/about', icon: Info, isAnchor: false },
+    { name: 'Live Activity', href: '/live-activity', icon: Activity, isAnchor: false },
     { name: 'Features', href: '#features', icon: TrendingUp, isAnchor: true },
     { name: 'How It Works', href: '#how-it-works', icon: Shield, isAnchor: true },
     { name: 'FAQ', href: '#faq', icon: HelpCircle, isAnchor: true },
