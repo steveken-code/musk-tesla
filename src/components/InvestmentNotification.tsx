@@ -541,15 +541,14 @@ const getRandomAmount = (currency: string): string => {
   return `$${Math.floor(Math.random() * 10000 + 1000).toLocaleString()} ${currency}`;
 };
 
-// Random interval between 20-60 seconds for realistic timing
+// Random interval between 8-15 seconds for natural real-life timing
 const getRandomInterval = (): number => {
-  return Math.floor(Math.random() * (60000 - 20000) + 20000);
+  return Math.floor(Math.random() * (15000 - 8000) + 8000);
 };
 
-// Random display duration between 5-8 seconds
-// Reduced display time for smoother experience (3-4.5 seconds)
+// Display duration 4-6 seconds - visible but not lingering
 const getRandomDisplayDuration = (): number => {
-  return Math.floor(Math.random() * (4500 - 3000) + 3000);
+  return Math.floor(Math.random() * (6000 - 4000) + 4000);
 };
 
 export const InvestmentNotification = () => {
