@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Activity, Globe, ArrowLeft, Users, DollarSign, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Globe, ArrowLeft, Users, DollarSign, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import WorldMapVisualization from '@/components/WorldMapVisualization';
 
 // User data from InvestmentNotification
 const allUsers = [
@@ -385,6 +386,17 @@ const LiveActivity = () => {
                 {stats.countries}+
               </p>
             </motion.div>
+          </div>
+
+          {/* World Map Visualization */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-purple-500/10">
+                <MapPin className="w-5 h-5 text-purple-500" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Global Activity Map</h2>
+            </div>
+            <WorldMapVisualization />
           </div>
 
           {/* Activity Feed */}
