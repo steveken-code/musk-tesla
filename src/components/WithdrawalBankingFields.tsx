@@ -180,7 +180,11 @@ const WithdrawalBankingFields = ({
               <button
                 type="button"
                 onClick={() => setShowBankDropdown(!showBankDropdown)}
-                className="w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 border-[#444] rounded-xl hover:border-green-500/50 transition-colors text-left"
+                className={`w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 rounded-xl transition-colors text-left ${
+                  selectedBank || paymentDetails.bankCode === 'OTHER' 
+                    ? 'border-green-500' 
+                    : 'border-[#444] hover:border-green-500/50'
+                }`}
               >
                 {selectedBank ? (
                   <div className="flex items-center gap-3">
@@ -193,6 +197,23 @@ const WithdrawalBankingFields = ({
                         <span className="text-xs text-green-400">SWIFT: {selectedBank.swift}</span>
                       )}
                     </div>
+                  </div>
+                ) : paymentDetails.bankCode === 'OTHER' ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <Building2 className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-white block">Other Bank</span>
+                      <span className="text-xs text-amber-400">Enter bank details manually</span>
+                    </div>
+                  </div>
+                ) : paymentDetails.bankName ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-500" />
+                    </div>
+                    <span className="font-semibold text-white">{paymentDetails.bankName}</span>
                   </div>
                 ) : (
                   <span className="text-[#888]">Tap to Select Bank</span>
