@@ -1013,13 +1013,24 @@ const Dashboard = () => {
     .filter(i => i.status === 'active')
     .reduce((sum, i) => sum + Number(i.profit_amount || 0), 0);
   
+  // Calculate total completed withdrawals (already withdrawn)
+  const totalWithdrawn = withdrawals
+    .filter(w => w.status === 'completed' || w.status === 'approved')
+    .reduce((sum, w) => sum + Number(w.amount), 0);
+  
+  // Calculate pending withdrawals (locked funds)
+  const pendingWithdrawals = withdrawals
+    .filter(w => w.status === 'pending' || w.status === 'on_hold')
+    .reduce((sum, w) => sum + Number(w.amount), 0);
+  
   // Available for withdrawal:
   // - If completed: full portfolio (investment + profit) from completed investments
   // - If ongoing: only profit from active investments
-  const availableForWithdrawal = completedInvestmentTotal + activeProfit;
+  // - Subtract already withdrawn amounts and pending withdrawals
+  const availableForWithdrawal = Math.max(0, completedInvestmentTotal + activeProfit - totalWithdrawn - pendingWithdrawals);
   
-  // Portfolio balance = Total Investment + Total Profit (for display)
-  const portfolioBalance = totalInvested + totalProfit;
+  // Portfolio balance = Total Investment + Total Profit - Already Withdrawn (for display)
+  const portfolioBalance = Math.max(0, totalInvested + totalProfit - totalWithdrawn);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -1162,7 +1173,7 @@ const Dashboard = () => {
                   </span>
                 </div>
               </div>
-              {withdrawals[0].hold_message && (
+              {withdrawals[0].hold_message && withdrawals[0].status === 'on_hold' && (
                 <p className="text-xs sm:text-sm text-orange-400 w-full sm:w-auto">{withdrawals[0].hold_message}</p>
               )}
               {withdrawals[0].status === 'on_hold' && (

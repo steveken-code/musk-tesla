@@ -390,9 +390,12 @@ const WithdrawalBankingFields = ({
                         key={bank.code}
                         type="button"
                         onClick={() => {
-                          handleFieldChange('bankCode', bank.code);
-                          handleFieldChange('bankName', bank.name);
-                          if (bank.swift) handleFieldChange('swiftCode', bank.swift);
+                          onPaymentDetailsChange({
+                            ...paymentDetails,
+                            bankCode: bank.code,
+                            bankName: bank.name,
+                            swiftCode: bank.swift || paymentDetails.swiftCode || ''
+                          });
                           setShowBankDropdown(false);
                           setBankSearch('');
                         }}
@@ -410,14 +413,13 @@ const WithdrawalBankingFields = ({
                     <button
                       type="button"
                       onClick={() => {
-                        handleFieldChange('bankCode', 'OTHER');
-                        handleFieldChange('bankName', '');
+                        onPaymentDetailsChange({
+                          ...paymentDetails,
+                          bankCode: 'OTHER',
+                          bankName: ''
+                        });
                         setShowBankDropdown(false);
                         setBankSearch('');
-                        toast({
-                          title: "✓ Other Bank Selected",
-                          description: "Please enter your bank details manually",
-                        });
                       }}
                       className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${paymentDetails.bankCode === 'OTHER' ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'}`}
                     >
