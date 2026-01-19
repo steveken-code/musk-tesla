@@ -105,6 +105,38 @@ const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
   network: 'TRON (TRC20)',
 };
 
+// Country code to full name mapping
+const countryNames: Record<string, string> = {
+  "AL": "Albania", "AD": "Andorra", "AT": "Austria", "BY": "Belarus", "BE": "Belgium",
+  "BA": "Bosnia and Herzegovina", "BG": "Bulgaria", "HR": "Croatia", "CY": "Cyprus",
+  "CZ": "Czech Republic", "DK": "Denmark", "EE": "Estonia", "FI": "Finland", "FR": "France",
+  "DE": "Germany", "GR": "Greece", "HU": "Hungary", "IS": "Iceland", "IE": "Ireland",
+  "IT": "Italy", "XK": "Kosovo", "LV": "Latvia", "LI": "Liechtenstein", "LT": "Lithuania",
+  "LU": "Luxembourg", "MT": "Malta", "MD": "Moldova", "MC": "Monaco", "ME": "Montenegro",
+  "NL": "Netherlands", "MK": "North Macedonia", "NO": "Norway", "PL": "Poland", "PT": "Portugal",
+  "RO": "Romania", "RU": "Russia", "SM": "San Marino", "RS": "Serbia", "SK": "Slovakia",
+  "SI": "Slovenia", "ES": "Spain", "SE": "Sweden", "CH": "Switzerland", "UA": "Ukraine",
+  "GB": "United Kingdom", "UK": "United Kingdom", "VA": "Vatican City",
+  "US": "United States", "CA": "Canada", "MX": "Mexico", "BR": "Brazil", "AR": "Argentina",
+  "CL": "Chile", "CO": "Colombia", "PE": "Peru", "VE": "Venezuela", "EC": "Ecuador",
+  "UY": "Uruguay", "PY": "Paraguay", "BO": "Bolivia",
+  "CN": "China", "JP": "Japan", "KR": "South Korea", "IN": "India", "ID": "Indonesia",
+  "TH": "Thailand", "VN": "Vietnam", "PH": "Philippines", "MY": "Malaysia", "SG": "Singapore",
+  "HK": "Hong Kong", "TW": "Taiwan", "BD": "Bangladesh", "PK": "Pakistan", "LK": "Sri Lanka",
+  "NP": "Nepal", "MM": "Myanmar", "KH": "Cambodia", "LA": "Laos",
+  "AU": "Australia", "NZ": "New Zealand", "FJ": "Fiji", "PG": "Papua New Guinea",
+  "NG": "Nigeria", "GH": "Ghana", "KE": "Kenya", "ZA": "South Africa", "EG": "Egypt",
+  "MA": "Morocco", "DZ": "Algeria", "TN": "Tunisia", "ET": "Ethiopia", "TZ": "Tanzania",
+  "UG": "Uganda", "SN": "Senegal", "CI": "Ivory Coast", "CM": "Cameroon", "ZW": "Zimbabwe",
+  "AE": "United Arab Emirates", "SA": "Saudi Arabia", "QA": "Qatar", "KW": "Kuwait",
+  "BH": "Bahrain", "OM": "Oman", "IL": "Israel", "TR": "Turkey", "JO": "Jordan", "LB": "Lebanon"
+};
+
+// Helper function to get full country name
+const getCountryName = (code: string): string => {
+  return countryNames[code] || code;
+};
+
 const BILLING_FEE_TEMPLATES = [
   'Processing fee of $50 required to complete this withdrawal. Please contact support.',
   'Tax clearance fee of $100 required. Contact support to proceed.',
@@ -1235,18 +1267,28 @@ const Admin = () => {
           <Button
             variant={activeTab === 'investments' ? 'default' : 'outline'}
             onClick={() => setActiveTab('investments')}
-            className={activeTab === 'investments' ? 'bg-tesla-red' : 'border-slate-600 text-slate-300'}
+            className={`relative ${activeTab === 'investments' ? 'bg-tesla-red' : 'border-slate-600 text-slate-300'}`}
           >
             <DollarSign className="w-4 h-4 mr-2" />
             {t('investments')} ({investments.length})
+            {investments.filter(inv => inv.status === 'pending').length > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+                {investments.filter(inv => inv.status === 'pending').length}
+              </span>
+            )}
           </Button>
           <Button
             variant={activeTab === 'withdrawals' ? 'default' : 'outline'}
             onClick={() => setActiveTab('withdrawals')}
-            className={activeTab === 'withdrawals' ? 'bg-green-600' : 'border-slate-600 text-slate-300'}
+            className={`relative ${activeTab === 'withdrawals' ? 'bg-green-600' : 'border-slate-600 text-slate-300'}`}
           >
             <Wallet className="w-4 h-4 mr-2" />
             {t('featureWithdrawals').split(' ')[0]} ({withdrawals.length})
+            {withdrawals.filter(w => w.status === 'pending').length > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+                {withdrawals.filter(w => w.status === 'pending').length}
+              </span>
+            )}
           </Button>
           <Button
             variant={activeTab === 'emails' ? 'default' : 'outline'}
@@ -1660,22 +1702,41 @@ const Admin = () => {
                 }).map((withdrawal) => (
                   <div
                     key={withdrawal.id}
-                    className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors"
+                    className={`bg-slate-800/80 backdrop-blur-xl border rounded-xl p-5 md:p-8 animate-fade-in hover:border-slate-600 transition-colors ${
+                      withdrawal.status === 'pending' 
+                        ? 'border-amber-500/50 ring-2 ring-amber-500/20' 
+                        : 'border-slate-700'
+                    }`}
                   >
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                       <div className="flex-1 space-y-4">
                         {/* User Info Section - Prominent Display */}
-                        <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
+                        <div className={`rounded-lg p-4 border ${
+                          withdrawal.status === 'pending' 
+                            ? 'bg-amber-900/30 border-amber-500/40' 
+                            : 'bg-slate-900/60 border-slate-700'
+                        }`}>
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-lg">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                              withdrawal.status === 'pending'
+                                ? 'bg-amber-500/20 text-amber-400'
+                                : 'bg-green-500/20 text-green-400'
+                            }`}>
                               {(withdrawal.profiles?.full_name || withdrawal.profiles?.email || 'U').charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                              <p className="text-white font-semibold text-lg">
-                                {withdrawal.profiles?.full_name && withdrawal.profiles.full_name.trim() !== '' 
-                                  ? withdrawal.profiles.full_name 
-                                  : 'No Name Set'}
-                              </p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="text-white font-semibold text-lg">
+                                  {withdrawal.profiles?.full_name && withdrawal.profiles.full_name.trim() !== '' 
+                                    ? withdrawal.profiles.full_name 
+                                    : 'No Name Set'}
+                                </p>
+                                {withdrawal.status === 'pending' && (
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold animate-pulse">
+                                    ⚠️ Needs Attention
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-electric-blue font-medium text-sm">
                                 {withdrawal.profiles?.email && withdrawal.profiles.email.trim() !== '' 
                                   ? withdrawal.profiles.email 
@@ -1699,7 +1760,7 @@ const Admin = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                           <div className="bg-slate-900/40 rounded-lg p-3">
                             <p className="text-slate-500 text-xs mb-1">Country</p>
-                            <p className="text-slate-200 font-medium">{withdrawal.country}</p>
+                            <p className="text-slate-200 font-medium">{getCountryName(withdrawal.country)}</p>
                           </div>
                           <div className="bg-slate-900/40 rounded-lg p-3">
                             <p className="text-slate-500 text-xs mb-1">Payment Details</p>
