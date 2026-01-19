@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 // Comprehensive list of users from countries around the world with authentic names and flags
 const allUsers = [
@@ -558,6 +559,24 @@ export const InvestmentNotification = () => {
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { playSound, initializeAudio } = useNotificationSound();
+
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const handleInteraction = () => {
+      initializeAudio();
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+    
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [initializeAudio]);
 
   const getUniqueUser = () => {
     // Reset if we've used most users
@@ -586,6 +605,9 @@ export const InvestmentNotification = () => {
     setMessage(randomMessage(user.name, user.country, amount, user.flag));
     
     setIsVisible(true);
+    
+    // Play sound effect
+    playSound(isWithdraw ? 'withdrawal' : 'investment');
     
     // Hide after random duration
     hideTimeoutRef.current = setTimeout(() => {
