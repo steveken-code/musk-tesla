@@ -54,50 +54,376 @@ const countryCoordinates: Record<string, { x: number; y: number }> = {
   "Ireland": { x: 45, y: 32 },
   "Portugal": { x: 44, y: 42 },
   "Czech Republic": { x: 53, y: 36 },
+  "Qatar": { x: 64, y: 48 },
+  "Morocco": { x: 45, y: 46 },
+  "Ghana": { x: 48, y: 55 },
+  "Uganda": { x: 58, y: 58 },
+  "Tanzania": { x: 59, y: 62 },
+  "Ukraine": { x: 58, y: 34 },
+  "Romania": { x: 56, y: 38 },
+  "Peru": { x: 26, y: 62 },
+  "Venezuela": { x: 30, y: 52 },
 };
 
-// User data - all amounts will be in USD
+// Expanded user data - all amounts will be in USD
 const allUsers = [
+  // United States (10)
   { name: "Liam", country: "United States", flag: "🇺🇸" },
   { name: "Olivia", country: "United States", flag: "🇺🇸" },
   { name: "Noah", country: "United States", flag: "🇺🇸" },
   { name: "Emma", country: "United States", flag: "🇺🇸" },
+  { name: "James", country: "United States", flag: "🇺🇸" },
+  { name: "Charlotte", country: "United States", flag: "🇺🇸" },
+  { name: "Benjamin", country: "United States", flag: "🇺🇸" },
+  { name: "Sophia", country: "United States", flag: "🇺🇸" },
+  { name: "William", country: "United States", flag: "🇺🇸" },
+  { name: "Isabella", country: "United States", flag: "🇺🇸" },
+  
+  // Russia (8)
   { name: "Dmitri", country: "Russia", flag: "🇷🇺" },
   { name: "Anastasia", country: "Russia", flag: "🇷🇺" },
   { name: "Mikhail", country: "Russia", flag: "🇷🇺" },
+  { name: "Olga", country: "Russia", flag: "🇷🇺" },
+  { name: "Sergei", country: "Russia", flag: "🇷🇺" },
+  { name: "Natalia", country: "Russia", flag: "🇷🇺" },
+  { name: "Alexei", country: "Russia", flag: "🇷🇺" },
+  { name: "Ekaterina", country: "Russia", flag: "🇷🇺" },
+  
+  // Germany (8)
   { name: "Lukas", country: "Germany", flag: "🇩🇪" },
   { name: "Anna", country: "Germany", flag: "🇩🇪" },
+  { name: "Maximilian", country: "Germany", flag: "🇩🇪" },
+  { name: "Sophie", country: "Germany", flag: "🇩🇪" },
+  { name: "Felix", country: "Germany", flag: "🇩🇪" },
+  { name: "Marie", country: "Germany", flag: "🇩🇪" },
+  { name: "Paul", country: "Germany", flag: "🇩🇪" },
+  { name: "Hannah", country: "Germany", flag: "🇩🇪" },
+  
+  // United Kingdom (8)
   { name: "Oliver", country: "United Kingdom", flag: "🇬🇧" },
   { name: "Amelia", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "George", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Grace", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Harry", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Freya", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Thomas", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Lily", country: "United Kingdom", flag: "🇬🇧" },
+  
+  // France (6)
   { name: "Gabriel", country: "France", flag: "🇫🇷" },
   { name: "Léa", country: "France", flag: "🇫🇷" },
+  { name: "Louis", country: "France", flag: "🇫🇷" },
+  { name: "Chloé", country: "France", flag: "🇫🇷" },
+  { name: "Raphaël", country: "France", flag: "🇫🇷" },
+  { name: "Manon", country: "France", flag: "🇫🇷" },
+  
+  // Hungary (4)
   { name: "Bence", country: "Hungary", flag: "🇭🇺" },
+  { name: "Eszter", country: "Hungary", flag: "🇭🇺" },
+  { name: "Levente", country: "Hungary", flag: "🇭🇺" },
+  { name: "Zsófia", country: "Hungary", flag: "🇭🇺" },
+  
+  // Netherlands (4)
   { name: "Daan", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Lotte", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Sem", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Julia", country: "Netherlands", flag: "🇳🇱" },
+  
+  // Norway (4)
   { name: "Lars", country: "Norway", flag: "🇳🇴" },
+  { name: "Ingrid", country: "Norway", flag: "🇳🇴" },
+  { name: "Magnus", country: "Norway", flag: "🇳🇴" },
+  { name: "Astrid", country: "Norway", flag: "🇳🇴" },
+  
+  // Poland (4)
   { name: "Jakub", country: "Poland", flag: "🇵🇱" },
+  { name: "Zuzanna", country: "Poland", flag: "🇵🇱" },
+  { name: "Kacper", country: "Poland", flag: "🇵🇱" },
+  { name: "Maja", country: "Poland", flag: "🇵🇱" },
+  
+  // Kenya (4)
   { name: "Njeri", country: "Kenya", flag: "🇰🇪" },
   { name: "Kamau", country: "Kenya", flag: "🇰🇪" },
+  { name: "Wambui", country: "Kenya", flag: "🇰🇪" },
+  { name: "Otieno", country: "Kenya", flag: "🇰🇪" },
+  
+  // Nigeria (4)
   { name: "Chukwuemeka", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Adaeze", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Oluwaseun", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Chidinma", country: "Nigeria", flag: "🇳🇬" },
+  
+  // UAE (4)
   { name: "Ahmed", country: "United Arab Emirates", flag: "🇦🇪" },
   { name: "Fatima", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Khalid", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Hessa", country: "United Arab Emirates", flag: "🇦🇪" },
+  
+  // Kuwait (4)
   { name: "Mohammad", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Sara", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Yousef", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Noura", country: "Kuwait", flag: "🇰🇼" },
+  
+  // Japan (6)
   { name: "Haruto", country: "Japan", flag: "🇯🇵" },
   { name: "Yui", country: "Japan", flag: "🇯🇵" },
+  { name: "Sota", country: "Japan", flag: "🇯🇵" },
+  { name: "Himari", country: "Japan", flag: "🇯🇵" },
+  { name: "Minato", country: "Japan", flag: "🇯🇵" },
+  { name: "Sakura", country: "Japan", flag: "🇯🇵" },
+  
+  // China (6)
   { name: "Wei", country: "China", flag: "🇨🇳" },
+  { name: "Xiaoming", country: "China", flag: "🇨🇳" },
+  { name: "Jing", country: "China", flag: "🇨🇳" },
+  { name: "Ming", country: "China", flag: "🇨🇳" },
+  { name: "Mei", country: "China", flag: "🇨🇳" },
+  { name: "Chen", country: "China", flag: "🇨🇳" },
+  
+  // Brazil (6)
   { name: "Miguel", country: "Brazil", flag: "🇧🇷" },
   { name: "Helena", country: "Brazil", flag: "🇧🇷" },
+  { name: "Arthur", country: "Brazil", flag: "🇧🇷" },
+  { name: "Alice", country: "Brazil", flag: "🇧🇷" },
+  { name: "Bernardo", country: "Brazil", flag: "🇧🇷" },
+  { name: "Valentina", country: "Brazil", flag: "🇧🇷" },
+  
+  // Canada (4)
   { name: "Ethan", country: "Canada", flag: "🇨🇦" },
+  { name: "Sophia", country: "Canada", flag: "🇨🇦" },
+  { name: "Mason", country: "Canada", flag: "🇨🇦" },
+  { name: "Emma", country: "Canada", flag: "🇨🇦" },
+  
+  // Australia (4)
   { name: "Jack", country: "Australia", flag: "🇦🇺" },
+  { name: "Chloe", country: "Australia", flag: "🇦🇺" },
+  { name: "William", country: "Australia", flag: "🇦🇺" },
+  { name: "Isla", country: "Australia", flag: "🇦🇺" },
+  
+  // India (6)
   { name: "Aarav", country: "India", flag: "🇮🇳" },
+  { name: "Ananya", country: "India", flag: "🇮🇳" },
+  { name: "Vihaan", country: "India", flag: "🇮🇳" },
+  { name: "Priya", country: "India", flag: "🇮🇳" },
+  { name: "Aditya", country: "India", flag: "🇮🇳" },
+  { name: "Ishita", country: "India", flag: "🇮🇳" },
+  
+  // South Africa (4)
   { name: "Thabo", country: "South Africa", flag: "🇿🇦" },
+  { name: "Naledi", country: "South Africa", flag: "🇿🇦" },
+  { name: "Sipho", country: "South Africa", flag: "🇿🇦" },
+  { name: "Lindiwe", country: "South Africa", flag: "🇿🇦" },
+  
+  // Saudi Arabia (4)
   { name: "Abdullah", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Fatimah", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Omar", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Nora", country: "Saudi Arabia", flag: "🇸🇦" },
+  
+  // Singapore (4)
   { name: "Jia Wei", country: "Singapore", flag: "🇸🇬" },
+  { name: "Hui Ling", country: "Singapore", flag: "🇸🇬" },
+  { name: "Wei Ming", country: "Singapore", flag: "🇸🇬" },
+  { name: "Xin Yi", country: "Singapore", flag: "🇸🇬" },
+  
+  // Switzerland (4)
   { name: "Luca", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Elena", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Noah", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Mia", country: "Switzerland", flag: "🇨🇭" },
+  
+  // Sweden (4)
   { name: "Oscar", country: "Sweden", flag: "🇸🇪" },
-  { name: "Sofia", country: "Spain", flag: "🇪🇸" },
-  { name: "Marco", country: "Italy", flag: "🇮🇹" },
-  { name: "Chen", country: "South Korea", flag: "🇰🇷" },
-  { name: "Yuki", country: "Thailand", flag: "🇹🇭" },
+  { name: "Maja", country: "Sweden", flag: "🇸🇪" },
+  { name: "Elias", country: "Sweden", flag: "🇸🇪" },
+  { name: "Ella", country: "Sweden", flag: "🇸🇪" },
+  
+  // Spain (4)
+  { name: "Hugo", country: "Spain", flag: "🇪🇸" },
+  { name: "Lucía", country: "Spain", flag: "🇪🇸" },
+  { name: "Martín", country: "Spain", flag: "🇪🇸" },
+  { name: "María", country: "Spain", flag: "🇪🇸" },
+  
+  // Italy (4)
+  { name: "Francesco", country: "Italy", flag: "🇮🇹" },
+  { name: "Giulia", country: "Italy", flag: "🇮🇹" },
+  { name: "Alessandro", country: "Italy", flag: "🇮🇹" },
+  { name: "Sofia", country: "Italy", flag: "🇮🇹" },
+  
+  // South Korea (4)
+  { name: "Minjun", country: "South Korea", flag: "🇰🇷" },
+  { name: "Seoyeon", country: "South Korea", flag: "🇰🇷" },
+  { name: "Jiho", country: "South Korea", flag: "🇰🇷" },
+  { name: "Soyeon", country: "South Korea", flag: "🇰🇷" },
+  
+  // Turkey (4)
+  { name: "Yusuf", country: "Turkey", flag: "🇹🇷" },
+  { name: "Zeynep", country: "Turkey", flag: "🇹🇷" },
+  { name: "Eymen", country: "Turkey", flag: "🇹🇷" },
+  { name: "Elif", country: "Turkey", flag: "🇹🇷" },
+  
+  // Qatar (4)
+  { name: "Hamad", country: "Qatar", flag: "🇶🇦" },
+  { name: "Shaikha", country: "Qatar", flag: "🇶🇦" },
+  { name: "Khalifa", country: "Qatar", flag: "🇶🇦" },
+  { name: "Mozah", country: "Qatar", flag: "🇶🇦" },
+  
+  // Egypt (4)
+  { name: "Omar", country: "Egypt", flag: "🇪🇬" },
+  { name: "Mariam", country: "Egypt", flag: "🇪🇬" },
+  { name: "Youssef", country: "Egypt", flag: "🇪🇬" },
+  { name: "Nour", country: "Egypt", flag: "🇪🇬" },
+  
+  // Thailand (4)
+  { name: "Tanawat", country: "Thailand", flag: "🇹🇭" },
+  { name: "Pimchanok", country: "Thailand", flag: "🇹🇭" },
+  { name: "Kittisak", country: "Thailand", flag: "🇹🇭" },
+  { name: "Siriporn", country: "Thailand", flag: "🇹🇭" },
+  
+  // Vietnam (4)
+  { name: "Minh", country: "Vietnam", flag: "🇻🇳" },
+  { name: "Linh", country: "Vietnam", flag: "🇻🇳" },
+  { name: "Hùng", country: "Vietnam", flag: "🇻🇳" },
+  { name: "Lan", country: "Vietnam", flag: "🇻🇳" },
+  
+  // Mexico (4)
+  { name: "Santiago", country: "Mexico", flag: "🇲🇽" },
+  { name: "Sofía", country: "Mexico", flag: "🇲🇽" },
+  { name: "Mateo", country: "Mexico", flag: "🇲🇽" },
+  { name: "Valentina", country: "Mexico", flag: "🇲🇽" },
+  
+  // Argentina (4)
+  { name: "Thiago", country: "Argentina", flag: "🇦🇷" },
+  { name: "Martina", country: "Argentina", flag: "🇦🇷" },
+  { name: "Benjamín", country: "Argentina", flag: "🇦🇷" },
+  { name: "Emma", country: "Argentina", flag: "🇦🇷" },
+  
+  // Colombia (4)
+  { name: "Samuel", country: "Colombia", flag: "🇨🇴" },
+  { name: "Isabella", country: "Colombia", flag: "🇨🇴" },
+  { name: "Sebastián", country: "Colombia", flag: "🇨🇴" },
+  { name: "Mariana", country: "Colombia", flag: "🇨🇴" },
+  
+  // Chile (4)
+  { name: "Agustín", country: "Chile", flag: "🇨🇱" },
+  { name: "Sofía", country: "Chile", flag: "🇨🇱" },
+  { name: "Tomás", country: "Chile", flag: "🇨🇱" },
+  { name: "Florencia", country: "Chile", flag: "🇨🇱" },
+  
+  // Philippines (4)
+  { name: "Juan", country: "Philippines", flag: "🇵🇭" },
+  { name: "Maria", country: "Philippines", flag: "🇵🇭" },
+  { name: "Jose", country: "Philippines", flag: "🇵🇭" },
+  { name: "Angela", country: "Philippines", flag: "🇵🇭" },
+  
+  // Malaysia (4)
+  { name: "Ahmad", country: "Malaysia", flag: "🇲🇾" },
+  { name: "Nurul", country: "Malaysia", flag: "🇲🇾" },
+  { name: "Hafiz", country: "Malaysia", flag: "🇲🇾" },
+  { name: "Aisyah", country: "Malaysia", flag: "🇲🇾" },
+  
+  // Indonesia (4)
+  { name: "Budi", country: "Indonesia", flag: "🇮🇩" },
+  { name: "Siti", country: "Indonesia", flag: "🇮🇩" },
+  { name: "Agus", country: "Indonesia", flag: "🇮🇩" },
+  { name: "Dewi", country: "Indonesia", flag: "🇮🇩" },
+  
+  // Pakistan (4)
+  { name: "Ali", country: "Pakistan", flag: "🇵🇰" },
+  { name: "Fatima", country: "Pakistan", flag: "🇵🇰" },
+  { name: "Hassan", country: "Pakistan", flag: "🇵🇰" },
+  { name: "Zainab", country: "Pakistan", flag: "🇵🇰" },
+  
+  // Bangladesh (4)
+  { name: "Rahman", country: "Bangladesh", flag: "🇧🇩" },
+  { name: "Fatema", country: "Bangladesh", flag: "🇧🇩" },
+  { name: "Karim", country: "Bangladesh", flag: "🇧🇩" },
+  { name: "Nasrin", country: "Bangladesh", flag: "🇧🇩" },
+  
+  // Morocco (4)
+  { name: "Youssef", country: "Morocco", flag: "🇲🇦" },
+  { name: "Fatima-Zahra", country: "Morocco", flag: "🇲🇦" },
+  { name: "Amine", country: "Morocco", flag: "🇲🇦" },
+  { name: "Salma", country: "Morocco", flag: "🇲🇦" },
+  
+  // Ghana (4)
+  { name: "Kwame", country: "Ghana", flag: "🇬🇭" },
+  { name: "Abena", country: "Ghana", flag: "🇬🇭" },
+  { name: "Kofi", country: "Ghana", flag: "🇬🇭" },
+  { name: "Akosua", country: "Ghana", flag: "🇬🇭" },
+  
+  // Ukraine (4)
+  { name: "Oleksandr", country: "Ukraine", flag: "🇺🇦" },
+  { name: "Anastasiia", country: "Ukraine", flag: "🇺🇦" },
+  { name: "Dmytro", country: "Ukraine", flag: "🇺🇦" },
+  { name: "Viktoriia", country: "Ukraine", flag: "🇺🇦" },
+  
+  // Romania (4)
+  { name: "Andrei", country: "Romania", flag: "🇷🇴" },
+  { name: "Maria", country: "Romania", flag: "🇷🇴" },
+  { name: "Alexandru", country: "Romania", flag: "🇷🇴" },
+  { name: "Elena", country: "Romania", flag: "🇷🇴" },
+  
+  // New Zealand (4)
+  { name: "Oliver", country: "New Zealand", flag: "🇳🇿" },
+  { name: "Charlotte", country: "New Zealand", flag: "🇳🇿" },
+  { name: "Jack", country: "New Zealand", flag: "🇳🇿" },
+  { name: "Amelia", country: "New Zealand", flag: "🇳🇿" },
+  
+  // Ireland (4)
+  { name: "Conor", country: "Ireland", flag: "🇮🇪" },
+  { name: "Aoife", country: "Ireland", flag: "🇮🇪" },
+  { name: "Sean", country: "Ireland", flag: "🇮🇪" },
+  { name: "Siobhan", country: "Ireland", flag: "🇮🇪" },
+  
+  // Portugal (4)
+  { name: "Martim", country: "Portugal", flag: "🇵🇹" },
+  { name: "Maria", country: "Portugal", flag: "🇵🇹" },
+  { name: "Afonso", country: "Portugal", flag: "🇵🇹" },
+  { name: "Leonor", country: "Portugal", flag: "🇵🇹" },
+  
+  // Denmark (4)
+  { name: "William", country: "Denmark", flag: "🇩🇰" },
+  { name: "Emma", country: "Denmark", flag: "🇩🇰" },
+  { name: "Noah", country: "Denmark", flag: "🇩🇰" },
+  { name: "Ida", country: "Denmark", flag: "🇩🇰" },
+  
+  // Finland (4)
+  { name: "Eino", country: "Finland", flag: "🇫🇮" },
+  { name: "Aino", country: "Finland", flag: "🇫🇮" },
+  { name: "Oliver", country: "Finland", flag: "🇫🇮" },
+  { name: "Olivia", country: "Finland", flag: "🇫🇮" },
+  
+  // Austria (4)
+  { name: "Maximilian", country: "Austria", flag: "🇦🇹" },
+  { name: "Anna", country: "Austria", flag: "🇦🇹" },
+  { name: "Felix", country: "Austria", flag: "🇦🇹" },
+  { name: "Marie", country: "Austria", flag: "🇦🇹" },
+  
+  // Belgium (4)
+  { name: "Louis", country: "Belgium", flag: "🇧🇪" },
+  { name: "Emma", country: "Belgium", flag: "🇧🇪" },
+  { name: "Lucas", country: "Belgium", flag: "🇧🇪" },
+  { name: "Olivia", country: "Belgium", flag: "🇧🇪" },
+  
+  // Greece (4)
+  { name: "Georgios", country: "Greece", flag: "🇬🇷" },
+  { name: "Maria", country: "Greece", flag: "🇬🇷" },
+  { name: "Dimitrios", country: "Greece", flag: "🇬🇷" },
+  { name: "Eleni", country: "Greece", flag: "🇬🇷" },
+  
+  // Czech Republic (4)
+  { name: "Jakub", country: "Czech Republic", flag: "🇨🇿" },
+  { name: "Eliška", country: "Czech Republic", flag: "🇨🇿" },
+  { name: "Jan", country: "Czech Republic", flag: "🇨🇿" },
+  { name: "Tereza", country: "Czech Republic", flag: "🇨🇿" },
+  
+  // Israel (4)
+  { name: "David", country: "Israel", flag: "🇮🇱" },
+  { name: "Noa", country: "Israel", flag: "🇮🇱" },
+  { name: "Yosef", country: "Israel", flag: "🇮🇱" },
+  { name: "Maya", country: "Israel", flag: "🇮🇱" },
 ];
 
 interface MapActivity {
@@ -110,6 +436,18 @@ interface MapActivity {
   x: number;
   y: number;
 }
+
+interface ConnectionLine {
+  id: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  type: 'investment' | 'withdrawal';
+}
+
+// Central hub location (representing the trading platform)
+const HUB_LOCATION = { x: 50, y: 45 };
 
 const getRandomAmount = (): string => {
   const ranges = [
@@ -139,6 +477,7 @@ const getRandomAmount = (): string => {
 export const WorldMapVisualization = () => {
   const [activities, setActivities] = useState<MapActivity[]>([]);
   const [recentActivities, setRecentActivities] = useState<MapActivity[]>([]);
+  const [connectionLines, setConnectionLines] = useState<ConnectionLine[]>([]);
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -175,6 +514,24 @@ export const WorldMapVisualization = () => {
     };
   };
 
+  const addConnectionLine = (activity: MapActivity) => {
+    const newLine: ConnectionLine = {
+      id: `line-${activity.id}`,
+      fromX: activity.type === 'investment' ? activity.x : HUB_LOCATION.x,
+      fromY: activity.type === 'investment' ? activity.y : HUB_LOCATION.y,
+      toX: activity.type === 'investment' ? HUB_LOCATION.x : activity.x,
+      toY: activity.type === 'investment' ? HUB_LOCATION.y : activity.y,
+      type: activity.type,
+    };
+
+    setConnectionLines(prev => [...prev, newLine]);
+
+    // Remove the line after animation completes
+    setTimeout(() => {
+      setConnectionLines(prev => prev.filter(line => line.id !== newLine.id));
+    }, 2000);
+  };
+
   useEffect(() => {
     // Generate initial activities
     const initial: MapActivity[] = [];
@@ -195,6 +552,9 @@ export const WorldMapVisualization = () => {
       });
       
       setRecentActivities(prev => [newActivity, ...prev].slice(0, 5));
+      
+      // Add connection line animation
+      addConnectionLine(newActivity);
       
       // Random interval between 5-10 seconds
       const nextInterval = Math.floor(Math.random() * 5000) + 5000;
@@ -350,6 +710,99 @@ export const WorldMapVisualization = () => {
         {/* Glow effect overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30 pointer-events-none" />
 
+        {/* Connection Lines Layer */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
+          <defs>
+            <linearGradient id="investmentLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#4ade80" stopOpacity="1" />
+              <stop offset="100%" stopColor="#22c55e" stopOpacity="0.2" />
+            </linearGradient>
+            <linearGradient id="withdrawalLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#34d399" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="#6ee7b7" stopOpacity="1" />
+              <stop offset="100%" stopColor="#34d399" stopOpacity="0.8" />
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <AnimatePresence>
+            {connectionLines.map((line) => {
+              // Calculate control point for curved line
+              const midX = (line.fromX + line.toX) / 2;
+              const midY = Math.min(line.fromY, line.toY) - 15; // Arc upward
+              
+              const pathD = `M ${line.fromX}% ${line.fromY}% Q ${midX}% ${midY}% ${line.toX}% ${line.toY}%`;
+              
+              return (
+                <motion.g key={line.id}>
+                  {/* Background glow */}
+                  <motion.path
+                    d={pathD}
+                    fill="none"
+                    stroke={line.type === 'investment' ? '#22c55e' : '#34d399'}
+                    strokeWidth="4"
+                    strokeOpacity="0.3"
+                    filter="url(#glow)"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  {/* Main line */}
+                  <motion.path
+                    d={pathD}
+                    fill="none"
+                    stroke={`url(#${line.type}LineGradient)`}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  {/* Moving dot along path */}
+                  <motion.circle
+                    r="3"
+                    fill={line.type === 'investment' ? '#4ade80' : '#6ee7b7'}
+                    filter="url(#glow)"
+                    initial={{ offsetDistance: "0%" }}
+                    animate={{ offsetDistance: "100%" }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    style={{
+                      offsetPath: `path("${pathD.replace(/%/g, '')}")`,
+                    }}
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;1;0"
+                      dur="1.5s"
+                      fill="freeze"
+                    />
+                  </motion.circle>
+                </motion.g>
+              );
+            })}
+          </AnimatePresence>
+        </svg>
+
+        {/* Central Hub Indicator */}
+        <div 
+          className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
+          style={{ left: `${HUB_LOCATION.x}%`, top: `${HUB_LOCATION.y}%` }}
+        >
+          <div className="relative">
+            <div className="w-4 h-4 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50">
+              <div className="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-50" style={{ animationDuration: '2s' }} />
+            </div>
+          </div>
+        </div>
+
         {/* Activity Pins */}
         <AnimatePresence>
           {activities.map((activity) => (
@@ -367,6 +820,7 @@ export const WorldMapVisualization = () => {
               style={{ 
                 left: `${activity.x}%`, 
                 top: `${activity.y}%`,
+                zIndex: 15
               }}
             >
               {/* Ripple Effect */}
@@ -412,6 +866,10 @@ export const WorldMapVisualization = () => {
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
             <span>Withdrawal</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+            <span>Trading Hub</span>
           </div>
         </div>
 

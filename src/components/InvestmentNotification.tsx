@@ -514,8 +514,8 @@ const withdrawalMessages = [
     `${flag} ${name} from ${country} cashed out ${amount}`,
 ];
 
-// Generate realistic weighted random amounts (minimum $100, up to $10M)
-const getRandomAmount = (currency: string): string => {
+// Generate realistic weighted random amounts (minimum $100, up to $10M) - always in USD
+const getRandomAmount = (): string => {
   const ranges = [
     { min: 100, max: 500, weight: 8 },         // Micro investors
     { min: 500, max: 2000, weight: 12 },       // Small investors
@@ -535,11 +535,11 @@ const getRandomAmount = (currency: string): string => {
     cumulative += range.weight;
     if (random <= cumulative) {
       const amount = Math.floor(Math.random() * (range.max - range.min) + range.min);
-      return `$${amount.toLocaleString()} ${currency}`;
+      return `$${amount.toLocaleString()}`;
     }
   }
   
-  return `$${Math.floor(Math.random() * 10000 + 1000).toLocaleString()} ${currency}`;
+  return `$${Math.floor(Math.random() * 10000 + 1000).toLocaleString()}`;
 };
 
 // Random interval between 8-15 seconds for natural real-life timing
@@ -595,7 +595,7 @@ export const InvestmentNotification = () => {
 
   const showNotification = () => {
     const user = getUniqueUser();
-    const amount = getRandomAmount(user.currency);
+    const amount = getRandomAmount();
     const isWithdraw = Math.random() > 0.65; // 35% withdrawals, 65% investments
     
     setIsWithdrawal(isWithdraw);
