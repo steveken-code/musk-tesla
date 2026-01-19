@@ -192,6 +192,15 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusMessage = "Your withdrawal has been successfully processed! The funds have been transferred to your account.";
       statusIcon = "✅";
       break;
+    case "rejected":
+      subject = `Withdrawal Request Declined`;
+      statusLabel = "REJECTED";
+      statusBgColor = "#fee2e2";
+      statusTextColor = "#991b1b";
+      statusMessage = holdMessage || "Unfortunately, your withdrawal request could not be processed. Please contact support for more information.";
+      statusIcon = "❌";
+      showSupportCTA = true;
+      break;
     case "on_hold":
       subject = `Withdrawal On Hold - Action Required`;
       statusLabel = "ON HOLD";
