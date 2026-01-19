@@ -143,16 +143,18 @@ const getWithdrawalMethods = (country: string) => {
     });
   }
   
-  // Always add card option
-  methods.push({ code: 'card', name: 'Bank Card', icon: CreditCard, description: 'Debit or Credit Card' });
+  // Only add card option for Russia
+  if (country === 'RU') {
+    methods.push({ code: 'card', name: 'Bank Card', icon: CreditCard, description: 'Debit or Credit Card' });
+  }
   
   // Only add SBP/Phone option for Russia
   if (country === 'RU') {
     methods.push({ code: 'phone', name: 'Mobile Payment', icon: Phone, description: 'Phone Number (SBP)' });
   }
   
-  // Always add crypto - supports all networks now
-  methods.push({ code: 'crypto', name: 'Cryptocurrency', icon: Bitcoin, description: 'USDT (All Networks)' });
+  // Always add crypto - recommended option
+  methods.push({ code: 'crypto', name: 'Cryptocurrency', icon: Bitcoin, description: 'USDT', recommended: true });
   
   return methods;
 };
@@ -1543,10 +1545,17 @@ const Dashboard = () => {
                         }`}>
                           <method.icon className={`w-6 h-6 ${withdrawMethod === method.code ? 'text-green-500' : 'text-muted-foreground'}`} />
                         </div>
-                        <div className="text-left">
-                          <p className="font-semibold">
-                            {method.name}
-                          </p>
+                        <div className="text-left flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">
+                              {method.name}
+                            </p>
+                            {(method as any).recommended && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30 rounded-full">
+                                Recommended
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {method.description}
                           </p>

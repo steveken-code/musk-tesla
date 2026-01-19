@@ -395,10 +395,6 @@ const WithdrawalBankingFields = ({
                           if (bank.swift) handleFieldChange('swiftCode', bank.swift);
                           setShowBankDropdown(false);
                           setBankSearch('');
-                          toast({
-                            title: "✓ Bank Selected",
-                            description: `${bank.name} has been selected successfully`,
-                          });
                         }}
                         className={`w-full flex items-center justify-between px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
                           paymentDetails.bankCode === bank.code ? 'bg-green-500/20' : 'hover:bg-[#2a2a2a]'
