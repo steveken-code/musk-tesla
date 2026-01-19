@@ -7,135 +7,135 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WorldMapVisualization from '@/components/WorldMapVisualization';
 
-// User data from InvestmentNotification
+// User data - all amounts will be in USD
 const allUsers = [
   // United States
-  { name: "Liam", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Olivia", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Noah", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Emma", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "James", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Charlotte", country: "United States", currency: "USD", flag: "🇺🇸" },
+  { name: "Liam", country: "United States", flag: "🇺🇸" },
+  { name: "Olivia", country: "United States", flag: "🇺🇸" },
+  { name: "Noah", country: "United States", flag: "🇺🇸" },
+  { name: "Emma", country: "United States", flag: "🇺🇸" },
+  { name: "James", country: "United States", flag: "🇺🇸" },
+  { name: "Charlotte", country: "United States", flag: "🇺🇸" },
   
   // Russia
-  { name: "Dmitri", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Anastasia", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Mikhail", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Olga", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Sergei", country: "Russia", currency: "RUB", flag: "🇷🇺" },
+  { name: "Dmitri", country: "Russia", flag: "🇷🇺" },
+  { name: "Anastasia", country: "Russia", flag: "🇷🇺" },
+  { name: "Mikhail", country: "Russia", flag: "🇷🇺" },
+  { name: "Olga", country: "Russia", flag: "🇷🇺" },
+  { name: "Sergei", country: "Russia", flag: "🇷🇺" },
   
   // Germany
-  { name: "Lukas", country: "Germany", currency: "EUR", flag: "🇩🇪" },
-  { name: "Anna", country: "Germany", currency: "EUR", flag: "🇩🇪" },
-  { name: "Maximilian", country: "Germany", currency: "EUR", flag: "🇩🇪" },
-  { name: "Sophie", country: "Germany", currency: "EUR", flag: "🇩🇪" },
+  { name: "Lukas", country: "Germany", flag: "🇩🇪" },
+  { name: "Anna", country: "Germany", flag: "🇩🇪" },
+  { name: "Maximilian", country: "Germany", flag: "🇩🇪" },
+  { name: "Sophie", country: "Germany", flag: "🇩🇪" },
   
   // United Kingdom
-  { name: "Oliver", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-  { name: "Amelia", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-  { name: "George", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-  { name: "Grace", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
+  { name: "Oliver", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Amelia", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "George", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Grace", country: "United Kingdom", flag: "🇬🇧" },
   
   // France
-  { name: "Gabriel", country: "France", currency: "EUR", flag: "🇫🇷" },
-  { name: "Léa", country: "France", currency: "EUR", flag: "🇫🇷" },
-  { name: "Louis", country: "France", currency: "EUR", flag: "🇫🇷" },
-  { name: "Chloé", country: "France", currency: "EUR", flag: "🇫🇷" },
+  { name: "Gabriel", country: "France", flag: "🇫🇷" },
+  { name: "Léa", country: "France", flag: "🇫🇷" },
+  { name: "Louis", country: "France", flag: "🇫🇷" },
+  { name: "Chloé", country: "France", flag: "🇫🇷" },
   
   // Hungary
-  { name: "Bence", country: "Hungary", currency: "HUF", flag: "🇭🇺" },
-  { name: "Eszter", country: "Hungary", currency: "HUF", flag: "🇭🇺" },
-  { name: "Levente", country: "Hungary", currency: "HUF", flag: "🇭🇺" },
+  { name: "Bence", country: "Hungary", flag: "🇭🇺" },
+  { name: "Eszter", country: "Hungary", flag: "🇭🇺" },
+  { name: "Levente", country: "Hungary", flag: "🇭🇺" },
   
   // Netherlands
-  { name: "Daan", country: "Netherlands", currency: "EUR", flag: "🇳🇱" },
-  { name: "Lotte", country: "Netherlands", currency: "EUR", flag: "🇳🇱" },
-  { name: "Sem", country: "Netherlands", currency: "EUR", flag: "🇳🇱" },
+  { name: "Daan", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Lotte", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Sem", country: "Netherlands", flag: "🇳🇱" },
   
   // Norway
-  { name: "Lars", country: "Norway", currency: "NOK", flag: "🇳🇴" },
-  { name: "Ingrid", country: "Norway", currency: "NOK", flag: "🇳🇴" },
-  { name: "Magnus", country: "Norway", currency: "NOK", flag: "🇳🇴" },
+  { name: "Lars", country: "Norway", flag: "🇳🇴" },
+  { name: "Ingrid", country: "Norway", flag: "🇳🇴" },
+  { name: "Magnus", country: "Norway", flag: "🇳🇴" },
   
   // Poland
-  { name: "Jakub", country: "Poland", currency: "PLN", flag: "🇵🇱" },
-  { name: "Zuzanna", country: "Poland", currency: "PLN", flag: "🇵🇱" },
-  { name: "Kacper", country: "Poland", currency: "PLN", flag: "🇵🇱" },
+  { name: "Jakub", country: "Poland", flag: "🇵🇱" },
+  { name: "Zuzanna", country: "Poland", flag: "🇵🇱" },
+  { name: "Kacper", country: "Poland", flag: "🇵🇱" },
   
   // Kenya
-  { name: "Njeri", country: "Kenya", currency: "KES", flag: "🇰🇪" },
-  { name: "Kamau", country: "Kenya", currency: "KES", flag: "🇰🇪" },
-  { name: "Wambui", country: "Kenya", currency: "KES", flag: "🇰🇪" },
+  { name: "Njeri", country: "Kenya", flag: "🇰🇪" },
+  { name: "Kamau", country: "Kenya", flag: "🇰🇪" },
+  { name: "Wambui", country: "Kenya", flag: "🇰🇪" },
   
   // Nigeria
-  { name: "Chukwuemeka", country: "Nigeria", currency: "NGN", flag: "🇳🇬" },
-  { name: "Adaeze", country: "Nigeria", currency: "NGN", flag: "🇳🇬" },
-  { name: "Oluwaseun", country: "Nigeria", currency: "NGN", flag: "🇳🇬" },
+  { name: "Chukwuemeka", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Adaeze", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Oluwaseun", country: "Nigeria", flag: "🇳🇬" },
   
   // UAE
-  { name: "Ahmed", country: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
-  { name: "Fatima", country: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
-  { name: "Khalid", country: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
+  { name: "Ahmed", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Fatima", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Khalid", country: "United Arab Emirates", flag: "🇦🇪" },
   
   // Kuwait
-  { name: "Mohammad", country: "Kuwait", currency: "KWD", flag: "🇰🇼" },
-  { name: "Sara", country: "Kuwait", currency: "KWD", flag: "🇰🇼" },
-  { name: "Yousef", country: "Kuwait", currency: "KWD", flag: "🇰🇼" },
+  { name: "Mohammad", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Sara", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Yousef", country: "Kuwait", flag: "🇰🇼" },
   
   // Japan
-  { name: "Haruto", country: "Japan", currency: "JPY", flag: "🇯🇵" },
-  { name: "Yui", country: "Japan", currency: "JPY", flag: "🇯🇵" },
-  { name: "Sota", country: "Japan", currency: "JPY", flag: "🇯🇵" },
+  { name: "Haruto", country: "Japan", flag: "🇯🇵" },
+  { name: "Yui", country: "Japan", flag: "🇯🇵" },
+  { name: "Sota", country: "Japan", flag: "🇯🇵" },
   
   // China
-  { name: "Wei", country: "China", currency: "CNY", flag: "🇨🇳" },
-  { name: "Xiaoming", country: "China", currency: "CNY", flag: "🇨🇳" },
-  { name: "Jing", country: "China", currency: "CNY", flag: "🇨🇳" },
+  { name: "Wei", country: "China", flag: "🇨🇳" },
+  { name: "Xiaoming", country: "China", flag: "🇨🇳" },
+  { name: "Jing", country: "China", flag: "🇨🇳" },
   
   // Brazil
-  { name: "Miguel", country: "Brazil", currency: "BRL", flag: "🇧🇷" },
-  { name: "Helena", country: "Brazil", currency: "BRL", flag: "🇧🇷" },
-  { name: "Arthur", country: "Brazil", currency: "BRL", flag: "🇧🇷" },
+  { name: "Miguel", country: "Brazil", flag: "🇧🇷" },
+  { name: "Helena", country: "Brazil", flag: "🇧🇷" },
+  { name: "Arthur", country: "Brazil", flag: "🇧🇷" },
   
   // Canada
-  { name: "Ethan", country: "Canada", currency: "CAD", flag: "🇨🇦" },
-  { name: "Sophia", country: "Canada", currency: "CAD", flag: "🇨🇦" },
-  { name: "Mason", country: "Canada", currency: "CAD", flag: "🇨🇦" },
+  { name: "Ethan", country: "Canada", flag: "🇨🇦" },
+  { name: "Sophia", country: "Canada", flag: "🇨🇦" },
+  { name: "Mason", country: "Canada", flag: "🇨🇦" },
   
   // Australia
-  { name: "Jack", country: "Australia", currency: "AUD", flag: "🇦🇺" },
-  { name: "Chloe", country: "Australia", currency: "AUD", flag: "🇦🇺" },
-  { name: "William", country: "Australia", currency: "AUD", flag: "🇦🇺" },
+  { name: "Jack", country: "Australia", flag: "🇦🇺" },
+  { name: "Chloe", country: "Australia", flag: "🇦🇺" },
+  { name: "William", country: "Australia", flag: "🇦🇺" },
   
   // India
-  { name: "Aarav", country: "India", currency: "INR", flag: "🇮🇳" },
-  { name: "Ananya", country: "India", currency: "INR", flag: "🇮🇳" },
-  { name: "Vihaan", country: "India", currency: "INR", flag: "🇮🇳" },
+  { name: "Aarav", country: "India", flag: "🇮🇳" },
+  { name: "Ananya", country: "India", flag: "🇮🇳" },
+  { name: "Vihaan", country: "India", flag: "🇮🇳" },
   
   // South Africa
-  { name: "Thabo", country: "South Africa", currency: "ZAR", flag: "🇿🇦" },
-  { name: "Naledi", country: "South Africa", currency: "ZAR", flag: "🇿🇦" },
-  { name: "Sipho", country: "South Africa", currency: "ZAR", flag: "🇿🇦" },
+  { name: "Thabo", country: "South Africa", flag: "🇿🇦" },
+  { name: "Naledi", country: "South Africa", flag: "🇿🇦" },
+  { name: "Sipho", country: "South Africa", flag: "🇿🇦" },
   
   // Saudi Arabia
-  { name: "Abdullah", country: "Saudi Arabia", currency: "SAR", flag: "🇸🇦" },
-  { name: "Fatimah", country: "Saudi Arabia", currency: "SAR", flag: "🇸🇦" },
-  { name: "Omar", country: "Saudi Arabia", currency: "SAR", flag: "🇸🇦" },
+  { name: "Abdullah", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Fatimah", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Omar", country: "Saudi Arabia", flag: "🇸🇦" },
   
   // Singapore
-  { name: "Jia Wei", country: "Singapore", currency: "SGD", flag: "🇸🇬" },
-  { name: "Hui Ling", country: "Singapore", currency: "SGD", flag: "🇸🇬" },
-  { name: "Wei Ming", country: "Singapore", currency: "SGD", flag: "🇸🇬" },
+  { name: "Jia Wei", country: "Singapore", flag: "🇸🇬" },
+  { name: "Hui Ling", country: "Singapore", flag: "🇸🇬" },
+  { name: "Wei Ming", country: "Singapore", flag: "🇸🇬" },
   
   // Switzerland
-  { name: "Luca", country: "Switzerland", currency: "CHF", flag: "🇨🇭" },
-  { name: "Elena", country: "Switzerland", currency: "CHF", flag: "🇨🇭" },
-  { name: "Noah", country: "Switzerland", currency: "CHF", flag: "🇨🇭" },
+  { name: "Luca", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Elena", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Noah", country: "Switzerland", flag: "🇨🇭" },
   
   // Sweden
-  { name: "Oscar", country: "Sweden", currency: "SEK", flag: "🇸🇪" },
-  { name: "Maja", country: "Sweden", currency: "SEK", flag: "🇸🇪" },
-  { name: "Elias", country: "Sweden", currency: "SEK", flag: "🇸🇪" },
+  { name: "Oscar", country: "Sweden", flag: "🇸🇪" },
+  { name: "Maja", country: "Sweden", flag: "🇸🇪" },
+  { name: "Elias", country: "Sweden", flag: "🇸🇪" },
 ];
 
 interface ActivityItem {
@@ -148,10 +148,10 @@ interface ActivityItem {
   timestamp: Date;
 }
 
-const formatAmount = (amount: number, currency: string): string => {
+const formatAmount = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency,
+    currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -226,7 +226,7 @@ const LiveActivity = () => {
       name: user.name,
       country: user.country,
       flag: user.flag,
-      amount: formatAmount(amount, 'USD'),
+      amount: formatAmount(amount),
       type: isWithdrawal ? 'withdrawal' : 'investment',
       timestamp: new Date(),
     };
