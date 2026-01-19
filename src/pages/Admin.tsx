@@ -132,9 +132,11 @@ const countryNames: Record<string, string> = {
   "BH": "Bahrain", "OM": "Oman", "IL": "Israel", "TR": "Turkey", "JO": "Jordan", "LB": "Lebanon"
 };
 
-// Helper function to get full country name
+// Helper function to get full country name (case-insensitive)
 const getCountryName = (code: string): string => {
-  return countryNames[code] || code;
+  if (!code) return 'Unknown';
+  const upperCode = code.toUpperCase();
+  return countryNames[upperCode] || code;
 };
 
 const BILLING_FEE_TEMPLATES = [
@@ -1772,7 +1774,7 @@ const Admin = () => {
                           Requested: {new Date(withdrawal.created_at).toLocaleDateString()} at {new Date(withdrawal.created_at).toLocaleTimeString()}
                         </p>
 
-                        {withdrawal.hold_message && (
+                        {withdrawal.hold_message && withdrawal.status !== 'completed' && (
                           <p className="text-orange-400 text-sm">
                             <AlertCircle className="w-3 h-3 inline mr-1" />
                             Hold Message: {withdrawal.hold_message}
@@ -1909,9 +1911,15 @@ const Admin = () => {
                     <textarea
                       value={statusModalMessage}
                       onChange={(e) => setStatusModalMessage(e.target.value)}
-                      className="w-full h-24 bg-[#1E1E1E] border-2 border-[#444] rounded-lg p-3 text-white text-base font-semibold resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder:text-[#888]"
+                      className="w-full h-24 bg-white border-2 border-slate-400 rounded-lg p-3 text-black text-base font-bold resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder:text-slate-500"
                       placeholder="Enter the billing fee or hold message..."
-                      style={{ color: '#ffffff', opacity: 1 }}
+                      style={{ 
+                        color: '#000000', 
+                        opacity: 1, 
+                        backgroundColor: '#ffffff',
+                        fontWeight: 700,
+                        WebkitTextFillColor: '#000000'
+                      }}
                     />
                   </div>
                   <div className="flex gap-2">
