@@ -830,45 +830,50 @@ const Dashboard = () => {
         return;
       }
       setWithdrawStep(4);
+    } else if (withdrawStep === 4) {
+      // Validate payment details before moving to confirmation
+      if (withdrawMethod === 'crypto' && !bankingPaymentDetails.cryptoAddress) {
+        toast.error('Please enter your USDT wallet address');
+        return;
+      }
+      if (withdrawMethod === 'phone' && withdrawCountry === 'RU' && !bankingPaymentDetails.phoneNumber) {
+        toast.error('Please enter your phone number');
+        return;
+      }
+      if (withdrawMethod === 'card' && !bankingPaymentDetails.cardNumber) {
+        toast.error('Please enter your card number');
+        return;
+      }
+      if (withdrawMethod === 'bank_transfer') {
+        const hasAccountInfo = bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber || bankingPaymentDetails.accountNumber;
+        if (!hasAccountInfo || !bankingPaymentDetails.accountHolderName) {
+          toast.error('Please fill in all required bank details');
+          return;
+        }
+      }
+      setWithdrawStep(5);
     }
   };
 
   const handleWithdrawSubmit = async () => {
-    if (!withdrawPaymentDetails) {
-      toast.error('Please enter your payment details');
-      return;
-    }
-
-    // Validate card/phone based on country format
-    const format = countryBankingFormats[withdrawCountry];
-    if (format) {
-      const cleanedDetails = withdrawPaymentDetails.replace(/\D/g, '');
-      if (withdrawMethod === 'card') {
-        if (cleanedDetails.length !== format.cardLength) {
-          toast.error(`Please enter a valid ${format.cardLength}-digit card number`);
-          return;
-        }
-        if (!detectedCard) {
-          toast.error('Please enter a valid card number');
-          return;
-        }
-      }
-      if (withdrawMethod === 'phone') {
-        if (cleanedDetails.length !== format.phoneLength) {
-          toast.error(`Please enter a valid ${format.phoneLength}-digit phone number (${format.phoneFormat})`);
-          return;
-        }
-      }
-    }
-
     setSubmittingWithdrawal(true);
     try {
-      // Prepare payment details based on method
-      let paymentDetailsStr = withdrawPaymentDetails;
-      if ((withdrawMethod === 'bank_transfer' || (withdrawMethod === 'card' && Object.keys(bankingPaymentDetails).length > 0)) && withdrawCountry !== 'RU') {
+      // Prepare payment details based on method - always use bankingPaymentDetails
+      let paymentDetailsStr = '';
+      
+      if (withdrawMethod === 'crypto') {
+        paymentDetailsStr = JSON.stringify({ cryptoAddress: bankingPaymentDetails.cryptoAddress });
+      } else if (withdrawMethod === 'phone' && withdrawCountry === 'RU') {
+        paymentDetailsStr = JSON.stringify({ phoneNumber: bankingPaymentDetails.phoneNumber });
+      } else if (withdrawMethod === 'card') {
+        paymentDetailsStr = JSON.stringify({ cardNumber: bankingPaymentDetails.cardNumber });
+      } else if (withdrawMethod === 'bank_transfer') {
+        paymentDetailsStr = JSON.stringify(bankingPaymentDetails);
+      } else {
+        // Fallback for any other case
         paymentDetailsStr = JSON.stringify(bankingPaymentDetails);
       }
-      
+        
       // Use edge function for server-side validation
       const { data: response, error: fnError } = await supabase.functions.invoke('create-withdrawal', {
         body: {
@@ -899,7 +904,7 @@ const Dashboard = () => {
               amount: parseFloat(withdrawAmount),
               country: selectedCountryData?.name || withdrawCountry,
               paymentMethod: withdrawMethod,
-              paymentDetails: withdrawPaymentDetails,
+              paymentDetails: paymentDetailsStr,
               withdrawalId: withdrawalData.id,
             },
           });
@@ -916,7 +921,7 @@ const Dashboard = () => {
             userEmail: profile?.email || user?.email || '',
             userName: profile?.full_name || user?.user_metadata?.full_name || 'User',
             amount: parseFloat(withdrawAmount),
-            details: `Country: ${selectedCountryData?.name || withdrawCountry}, Method: ${withdrawMethod}, Details: ${withdrawPaymentDetails}`,
+            details: `Country: ${selectedCountryData?.name || withdrawCountry}, Method: ${withdrawMethod}, Details: ${paymentDetailsStr}`,
           },
         });
       } catch (notifyError) {
@@ -1347,7 +1352,7 @@ const Dashboard = () => {
               <div className="h-1 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
-                  style={{ width: `${(withdrawStep / 4) * 100}%` }}
+                  style={{ width: `${(withdrawStep / 5) * 100}%` }}
                 />
               </div>
             </div>
@@ -1571,12 +1576,6 @@ const Dashboard = () => {
                       <span className="text-muted-foreground">{t('method')}</span>
                       <span>{formatMethodName(withdrawMethod)}</span>
                     </div>
-                    {bankingPaymentDetails.bankName && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Bank</span>
-                        <span>{bankingPaymentDetails.bankName}</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Country-specific banking fields */}
@@ -1586,20 +1585,125 @@ const Dashboard = () => {
                     paymentDetails={bankingPaymentDetails}
                     onPaymentDetailsChange={setBankingPaymentDetails}
                   />
+                </div>
+              )}
+
+              {/* Step 5: Confirmation Review */}
+              {withdrawStep === 5 && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="text-center mb-4">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <CheckCircle className="w-8 h-8 text-green-500" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white">{t('confirmWithdrawal') || 'Confirm Your Withdrawal'}</h3>
+                    <p className="text-sm text-muted-foreground">{t('reviewDetails') || 'Please review your withdrawal details before submitting'}</p>
+                  </div>
+
+                  <div className="bg-slate-800/80 rounded-xl p-4 space-y-3 border border-slate-700">
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <span className="text-muted-foreground text-sm">{t('amount')}</span>
+                      <span className="font-bold text-xl text-green-500">${parseFloat(withdrawAmount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <span className="text-muted-foreground text-sm">{t('country')}</span>
+                      <span className="font-medium text-white">{selectedCountryData?.flag} {selectedCountryData?.name}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                      <span className="text-muted-foreground text-sm">{t('method')}</span>
+                      <span className="font-medium text-white">{formatMethodName(withdrawMethod)}</span>
+                    </div>
+                    
+                    {/* Bank Transfer Details */}
+                    {withdrawMethod === 'bank_transfer' && (
+                      <>
+                        {bankingPaymentDetails.bankName && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">Bank</span>
+                            <span className="font-medium text-white">{bankingPaymentDetails.bankName}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.customBankName && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">Bank Name</span>
+                            <span className="font-medium text-white">{bankingPaymentDetails.customBankName}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.iban && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">IBAN</span>
+                            <span className="font-medium text-white font-mono text-xs">{bankingPaymentDetails.iban}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.routingNumber && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">Routing #</span>
+                            <span className="font-medium text-white font-mono">{bankingPaymentDetails.routingNumber}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.accountNumber && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">Account #</span>
+                            <span className="font-medium text-white font-mono">{bankingPaymentDetails.accountNumber}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.sortCode && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">Sort Code</span>
+                            <span className="font-medium text-white font-mono">{bankingPaymentDetails.sortCode}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.bsbNumber && (
+                          <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                            <span className="text-muted-foreground text-sm">BSB</span>
+                            <span className="font-medium text-white font-mono">{bankingPaymentDetails.bsbNumber}</span>
+                          </div>
+                        )}
+                        {bankingPaymentDetails.accountHolderName && (
+                          <div className="flex justify-between items-center py-2">
+                            <span className="text-muted-foreground text-sm">Account Holder</span>
+                            <span className="font-medium text-white">{bankingPaymentDetails.accountHolderName}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Card Details */}
+                    {withdrawMethod === 'card' && bankingPaymentDetails.cardNumber && (
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-muted-foreground text-sm">Card Number</span>
+                        <span className="font-medium text-white font-mono">{bankingPaymentDetails.cardNumber}</span>
+                      </div>
+                    )}
+
+                    {/* Phone Details */}
+                    {withdrawMethod === 'phone' && bankingPaymentDetails.phoneNumber && (
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-muted-foreground text-sm">Phone Number</span>
+                        <span className="font-medium text-white font-mono">{bankingPaymentDetails.phoneNumber}</span>
+                      </div>
+                    )}
+
+                    {/* Crypto Details */}
+                    {withdrawMethod === 'crypto' && bankingPaymentDetails.cryptoAddress && (
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-muted-foreground text-sm">USDT Address</span>
+                        <span className="font-medium text-white font-mono text-xs break-all">{bankingPaymentDetails.cryptoAddress}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-400">
+                        {t('withdrawalNotice') || 'Please verify all details are correct. Once submitted, you cannot modify this request.'}
+                      </p>
+                    </div>
+                  </div>
 
                   <Button
                     onClick={handleWithdrawSubmit}
-                    disabled={submittingWithdrawal || (
-                      withdrawMethod === 'crypto' ? !bankingPaymentDetails.cryptoAddress :
-                      withdrawMethod === 'phone' && withdrawCountry === 'RU' ? !bankingPaymentDetails.phoneNumber :
-                      withdrawMethod === 'card' && withdrawCountry === 'RU' ? !bankingPaymentDetails.cardNumber :
-                      withdrawMethod === 'card' ? !bankingPaymentDetails.cardNumber :
-                      withdrawMethod === 'bank_transfer' ? !(
-                        (bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber) &&
-                        bankingPaymentDetails.accountHolderName
-                      ) :
-                      false
-                    )}
+                    disabled={submittingWithdrawal}
                     className="w-full h-14 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-600 disabled:to-slate-500 disabled:cursor-not-allowed font-semibold text-base transition-all duration-200 rounded-xl shadow-lg hover:shadow-green-500/25"
                   >
                     {submittingWithdrawal ? (
@@ -1608,7 +1712,10 @@ const Dashboard = () => {
                         {t('submittingWithdrawal')}
                       </>
                     ) : (
-                      t('submitWithdrawal')
+                      <>
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        {t('confirmAndSubmit') || 'Confirm & Submit Withdrawal'}
+                      </>
                     )}
                   </Button>
                 </div>
@@ -1616,7 +1723,7 @@ const Dashboard = () => {
             </div>
 
             {/* Modal Footer */}
-            {withdrawStep < 4 && (
+            {withdrawStep < 5 && (
               <div className="p-4 border-t border-border flex gap-3">
                 {withdrawStep > 1 && (
                   <Button
@@ -1633,6 +1740,16 @@ const Dashboard = () => {
                     (withdrawStep === 1 && (!withdrawAmount || parseFloat(withdrawAmount) <= 0)) ||
                     (withdrawStep === 2 && !withdrawCountry) ||
                     (withdrawStep === 3 && !withdrawMethod) ||
+                    (withdrawStep === 4 && (
+                      withdrawMethod === 'crypto' ? !bankingPaymentDetails.cryptoAddress :
+                      withdrawMethod === 'phone' && withdrawCountry === 'RU' ? !bankingPaymentDetails.phoneNumber :
+                      withdrawMethod === 'card' ? !bankingPaymentDetails.cardNumber :
+                      withdrawMethod === 'bank_transfer' ? !(
+                        (bankingPaymentDetails.iban || bankingPaymentDetails.routingNumber || bankingPaymentDetails.sortCode || bankingPaymentDetails.bsbNumber || bankingPaymentDetails.accountNumber) &&
+                        bankingPaymentDetails.accountHolderName
+                      ) :
+                      false
+                    )) ||
                     processingWithdrawal
                   }
                   className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600"
@@ -1642,6 +1759,8 @@ const Dashboard = () => {
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       {t('processing')}
                     </>
+                  ) : withdrawStep === 4 ? (
+                    t('reviewWithdrawal') || 'Review Withdrawal'
                   ) : (
                     t('next')
                   )}
