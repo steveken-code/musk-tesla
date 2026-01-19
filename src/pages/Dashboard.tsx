@@ -151,8 +151,8 @@ const getWithdrawalMethods = (country: string) => {
     methods.push({ code: 'phone', name: 'Mobile Payment', icon: Phone, description: 'Phone Number (SBP)' });
   }
   
-  // Always add crypto
-  methods.push({ code: 'crypto', name: 'Cryptocurrency', icon: Bitcoin, description: 'USDT TRC20' });
+  // Always add crypto - supports all networks now
+  methods.push({ code: 'crypto', name: 'Cryptocurrency', icon: Bitcoin, description: 'USDT (All Networks)' });
   
   return methods;
 };
@@ -1345,7 +1345,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm sm:text-lg">Withdraw Funds</h3>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Step {withdrawStep} of 4</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Step {withdrawStep} of 5</p>
                 </div>
               </div>
               <button 
@@ -1604,8 +1604,8 @@ const Dashboard = () => {
                     <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-green-500/20 flex items-center justify-center">
                       <CheckCircle className="w-8 h-8 text-green-500" />
                     </div>
-                    <h3 className="text-lg font-bold text-white">{t('confirmWithdrawal') || 'Confirm Your Withdrawal'}</h3>
-                    <p className="text-sm text-muted-foreground">{t('reviewDetails') || 'Please review your withdrawal details before submitting'}</p>
+                    <h3 className="text-lg font-bold text-white">Confirm Withdrawal</h3>
+                    <p className="text-sm text-muted-foreground">Review Details Before Submitting</p>
                   </div>
 
                   <div className="bg-slate-800/80 rounded-xl p-4 space-y-3 border border-slate-700">
@@ -1713,7 +1713,7 @@ const Dashboard = () => {
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <p className="text-xs text-amber-400">
-                        {t('withdrawalNotice') || 'Please verify all details are correct. Once submitted, you cannot modify this request.'}
+                        Please verify all details are correct. Once submitted, you cannot modify this request.
                       </p>
                     </div>
                   </div>
@@ -1726,12 +1726,12 @@ const Dashboard = () => {
                     {submittingWithdrawal ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        {t('submittingWithdrawal')}
+                        Submitting...
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-5 h-5 mr-2" />
-                        {t('confirmAndSubmit') || 'Confirm & Submit Withdrawal'}
+                        Confirm & Submit Withdrawal
                       </>
                     )}
                   </Button>

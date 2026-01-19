@@ -1015,7 +1015,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.cardNumber}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, cardNumber: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 font-mono text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] font-mono text-base font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12"
                 maxLength={50}
               />
             </div>
@@ -1024,7 +1024,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.bankName}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, bankName: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12"
                 maxLength={100}
               />
             </div>
@@ -1033,7 +1033,7 @@ const Admin = () => {
               <Input
                 value={paymentSettings.accountHolder}
                 onChange={(e) => setPaymentSettings(prev => ({ ...prev, accountHolder: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 text-base placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 h-12"
                 maxLength={100}
               />
             </div>
@@ -1059,7 +1059,7 @@ const Admin = () => {
             <Input
               value={withdrawalSettings.defaultHoldMessage}
               onChange={(e) => setWithdrawalSettings(prev => ({ ...prev, defaultHoldMessage: e.target.value }))}
-              className="bg-white border-2 border-slate-300 text-slate-900 text-base font-medium placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12 opacity-100 contrast-[21]"
+              className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12"
               placeholder="Enter default message for withdrawals on hold..."
               maxLength={500}
             />
@@ -1104,7 +1104,7 @@ const Admin = () => {
                 <Input
                   value={supportSettings.whatsappPhone}
                   onChange={(e) => setSupportSettings(prev => ({ ...prev, whatsappPhone: e.target.value }))}
-                  className="bg-white border-2 border-slate-300 text-slate-900 text-base font-semibold font-mono placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12 opacity-100 contrast-[21]"
+                  className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold font-mono placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20 h-12"
                   placeholder="+12186500840"
                 />
               )}
@@ -1133,7 +1133,7 @@ const Admin = () => {
                 <Input
                   value={supportSettings.telegramUsername}
                   onChange={(e) => setSupportSettings(prev => ({ ...prev, telegramUsername: e.target.value }))}
-                  className="bg-white border-2 border-slate-300 text-slate-900 text-base font-semibold placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20 h-12 opacity-100 contrast-[21]"
+                  className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-blue-500 focus:ring-blue-500/20 h-12"
                   placeholder="@username or phone number"
                 />
               )}
@@ -1161,7 +1161,7 @@ const Admin = () => {
               <Input
                 value={referralSettings.referralCode}
                 onChange={(e) => setReferralSettings(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 font-mono text-base placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] font-mono text-base font-semibold placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12"
                 placeholder="TATY-8492"
               />
             </div>
@@ -1171,7 +1171,7 @@ const Admin = () => {
                 type="email"
                 value={referralSettings.referralEmail}
                 onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 text-base placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12"
                 placeholder="email@example.com"
               />
             </div>
@@ -1201,7 +1201,7 @@ const Admin = () => {
               <Input
                 value={cryptoSettings.walletAddress}
                 onChange={(e) => setCryptoSettings(prev => ({ ...prev, walletAddress: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 font-mono text-sm placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] font-mono text-sm font-semibold placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12"
                 placeholder="TFbr4FWR98Z8UWvVSouVMqrZ2mrLKrjsKA"
               />
             </div>
@@ -1210,7 +1210,7 @@ const Admin = () => {
               <Input
                 value={cryptoSettings.network}
                 onChange={(e) => setCryptoSettings(prev => ({ ...prev, network: e.target.value }))}
-                className="bg-white border-2 border-slate-300 text-slate-900 text-base placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12 opacity-100 contrast-[21]"
+                className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500/20 h-12"
                 placeholder="TRON (TRC20)"
               />
             </div>
@@ -1455,14 +1455,18 @@ const Admin = () => {
                         <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-10 h-10 rounded-full bg-tesla-red/20 flex items-center justify-center text-tesla-red font-bold text-lg">
-                              {(investment.profiles?.full_name?.[0] || investment.profiles?.email?.[0] || 'U').toUpperCase()}
+                              {(investment.profiles?.full_name || investment.profiles?.email || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <p className="text-white font-semibold text-lg">
-                                {investment.profiles?.full_name || 'User'}
+                                {investment.profiles?.full_name && investment.profiles.full_name.trim() !== '' 
+                                  ? investment.profiles.full_name 
+                                  : 'No Name Set'}
                               </p>
                               <p className="text-electric-blue font-medium text-sm">
-                                {investment.profiles?.email || '—'}
+                                {investment.profiles?.email && investment.profiles.email.trim() !== '' 
+                                  ? investment.profiles.email 
+                                  : 'No Email Set'}
                               </p>
                             </div>
                           </div>
@@ -1510,7 +1514,7 @@ const Admin = () => {
                                 const value = e.target.value.replace(/[^0-9.]/g, '');
                                 handleProfitChange(investment.id, value);
                               }}
-                              className="w-28 bg-white border-slate-300 text-slate-900 text-right font-semibold"
+                              className="w-28 bg-white border-slate-300 [color:#000000_!important] text-right font-semibold"
                             />
                           </div>
                         </div>
@@ -1603,14 +1607,18 @@ const Admin = () => {
                         <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 font-bold text-lg">
-                              {(withdrawal.profiles?.full_name?.[0] || withdrawal.profiles?.email?.[0] || 'U').toUpperCase()}
+                              {(withdrawal.profiles?.full_name || withdrawal.profiles?.email || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <p className="text-white font-semibold text-lg">
-                                {withdrawal.profiles?.full_name || 'User'}
+                                {withdrawal.profiles?.full_name && withdrawal.profiles.full_name.trim() !== '' 
+                                  ? withdrawal.profiles.full_name 
+                                  : 'No Name Set'}
                               </p>
                               <p className="text-electric-blue font-medium text-sm">
-                                {withdrawal.profiles?.email || '—'}
+                                {withdrawal.profiles?.email && withdrawal.profiles.email.trim() !== '' 
+                                  ? withdrawal.profiles.email 
+                                  : 'No Email Set'}
                               </p>
                             </div>
                           </div>
