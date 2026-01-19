@@ -56,48 +56,48 @@ const countryCoordinates: Record<string, { x: number; y: number }> = {
   "Czech Republic": { x: 53, y: 36 },
 };
 
-// User data with coordinates
+// User data - all amounts will be in USD
 const allUsers = [
-  { name: "Liam", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Olivia", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Noah", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Emma", country: "United States", currency: "USD", flag: "🇺🇸" },
-  { name: "Dmitri", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Anastasia", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Mikhail", country: "Russia", currency: "RUB", flag: "🇷🇺" },
-  { name: "Lukas", country: "Germany", currency: "EUR", flag: "🇩🇪" },
-  { name: "Anna", country: "Germany", currency: "EUR", flag: "🇩🇪" },
-  { name: "Oliver", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-  { name: "Amelia", country: "United Kingdom", currency: "GBP", flag: "🇬🇧" },
-  { name: "Gabriel", country: "France", currency: "EUR", flag: "🇫🇷" },
-  { name: "Léa", country: "France", currency: "EUR", flag: "🇫🇷" },
-  { name: "Bence", country: "Hungary", currency: "HUF", flag: "🇭🇺" },
-  { name: "Daan", country: "Netherlands", currency: "EUR", flag: "🇳🇱" },
-  { name: "Lars", country: "Norway", currency: "NOK", flag: "🇳🇴" },
-  { name: "Jakub", country: "Poland", currency: "PLN", flag: "🇵🇱" },
-  { name: "Njeri", country: "Kenya", currency: "KES", flag: "🇰🇪" },
-  { name: "Kamau", country: "Kenya", currency: "KES", flag: "🇰🇪" },
-  { name: "Chukwuemeka", country: "Nigeria", currency: "NGN", flag: "🇳🇬" },
-  { name: "Ahmed", country: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
-  { name: "Fatima", country: "United Arab Emirates", currency: "AED", flag: "🇦🇪" },
-  { name: "Mohammad", country: "Kuwait", currency: "KWD", flag: "🇰🇼" },
-  { name: "Haruto", country: "Japan", currency: "JPY", flag: "🇯🇵" },
-  { name: "Yui", country: "Japan", currency: "JPY", flag: "🇯🇵" },
-  { name: "Wei", country: "China", currency: "CNY", flag: "🇨🇳" },
-  { name: "Miguel", country: "Brazil", currency: "BRL", flag: "🇧🇷" },
-  { name: "Helena", country: "Brazil", currency: "BRL", flag: "🇧🇷" },
-  { name: "Ethan", country: "Canada", currency: "CAD", flag: "🇨🇦" },
-  { name: "Jack", country: "Australia", currency: "AUD", flag: "🇦🇺" },
-  { name: "Aarav", country: "India", currency: "INR", flag: "🇮🇳" },
-  { name: "Thabo", country: "South Africa", currency: "ZAR", flag: "🇿🇦" },
-  { name: "Abdullah", country: "Saudi Arabia", currency: "SAR", flag: "🇸🇦" },
-  { name: "Jia Wei", country: "Singapore", currency: "SGD", flag: "🇸🇬" },
-  { name: "Luca", country: "Switzerland", currency: "CHF", flag: "🇨🇭" },
-  { name: "Oscar", country: "Sweden", currency: "SEK", flag: "🇸🇪" },
-  { name: "Sofia", country: "Spain", currency: "EUR", flag: "🇪🇸" },
-  { name: "Marco", country: "Italy", currency: "EUR", flag: "🇮🇹" },
-  { name: "Chen", country: "South Korea", currency: "KRW", flag: "🇰🇷" },
-  { name: "Yuki", country: "Thailand", currency: "THB", flag: "🇹🇭" },
+  { name: "Liam", country: "United States", flag: "🇺🇸" },
+  { name: "Olivia", country: "United States", flag: "🇺🇸" },
+  { name: "Noah", country: "United States", flag: "🇺🇸" },
+  { name: "Emma", country: "United States", flag: "🇺🇸" },
+  { name: "Dmitri", country: "Russia", flag: "🇷🇺" },
+  { name: "Anastasia", country: "Russia", flag: "🇷🇺" },
+  { name: "Mikhail", country: "Russia", flag: "🇷🇺" },
+  { name: "Lukas", country: "Germany", flag: "🇩🇪" },
+  { name: "Anna", country: "Germany", flag: "🇩🇪" },
+  { name: "Oliver", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Amelia", country: "United Kingdom", flag: "🇬🇧" },
+  { name: "Gabriel", country: "France", flag: "🇫🇷" },
+  { name: "Léa", country: "France", flag: "🇫🇷" },
+  { name: "Bence", country: "Hungary", flag: "🇭🇺" },
+  { name: "Daan", country: "Netherlands", flag: "🇳🇱" },
+  { name: "Lars", country: "Norway", flag: "🇳🇴" },
+  { name: "Jakub", country: "Poland", flag: "🇵🇱" },
+  { name: "Njeri", country: "Kenya", flag: "🇰🇪" },
+  { name: "Kamau", country: "Kenya", flag: "🇰🇪" },
+  { name: "Chukwuemeka", country: "Nigeria", flag: "🇳🇬" },
+  { name: "Ahmed", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Fatima", country: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "Mohammad", country: "Kuwait", flag: "🇰🇼" },
+  { name: "Haruto", country: "Japan", flag: "🇯🇵" },
+  { name: "Yui", country: "Japan", flag: "🇯🇵" },
+  { name: "Wei", country: "China", flag: "🇨🇳" },
+  { name: "Miguel", country: "Brazil", flag: "🇧🇷" },
+  { name: "Helena", country: "Brazil", flag: "🇧🇷" },
+  { name: "Ethan", country: "Canada", flag: "🇨🇦" },
+  { name: "Jack", country: "Australia", flag: "🇦🇺" },
+  { name: "Aarav", country: "India", flag: "🇮🇳" },
+  { name: "Thabo", country: "South Africa", flag: "🇿🇦" },
+  { name: "Abdullah", country: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Jia Wei", country: "Singapore", flag: "🇸🇬" },
+  { name: "Luca", country: "Switzerland", flag: "🇨🇭" },
+  { name: "Oscar", country: "Sweden", flag: "🇸🇪" },
+  { name: "Sofia", country: "Spain", flag: "🇪🇸" },
+  { name: "Marco", country: "Italy", flag: "🇮🇹" },
+  { name: "Chen", country: "South Korea", flag: "🇰🇷" },
+  { name: "Yuki", country: "Thailand", flag: "🇹🇭" },
 ];
 
 interface MapActivity {
@@ -223,36 +223,132 @@ export const WorldMapVisualization = () => {
       {/* Map Container */}
       <div className="relative w-full aspect-[2/1] sm:aspect-[2.5/1] rounded-2xl overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border border-white/10">
         {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 opacity-10">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
+              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
 
-        {/* Simplified World Map SVG */}
+        {/* Real World Map SVG */}
         <svg 
-          viewBox="0 0 100 50" 
-          className="absolute inset-0 w-full h-full opacity-30"
+          viewBox="0 0 2000 1001" 
+          className="absolute inset-0 w-full h-full"
           preserveAspectRatio="xMidYMid slice"
+          style={{ opacity: 0.4 }}
         >
+          <defs>
+            <linearGradient id="landGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#059669" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
           {/* North America */}
-          <path d="M5,12 L25,8 L28,15 L30,25 L25,28 L20,35 L15,32 L10,28 L5,25 Z" fill="currentColor" className="text-green-500/50"/>
+          <path 
+            d="M165,135 L145,140 L130,160 L125,180 L140,200 L130,220 L120,250 L110,280 L95,300 L80,320 L100,340 L130,360 L160,380 L200,390 L240,400 L280,395 L320,380 L350,360 L380,340 L410,310 L430,280 L450,250 L460,220 L470,190 L480,160 L490,130 L500,110 L510,90 L490,80 L460,75 L430,80 L400,90 L370,100 L340,110 L310,120 L280,130 L250,140 L220,145 L190,140 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Canada */}
+          <path 
+            d="M200,50 L180,60 L160,80 L150,100 L165,120 L180,130 L200,125 L230,120 L260,110 L290,100 L320,90 L360,80 L400,70 L440,60 L480,55 L520,50 L560,48 L600,50 L640,55 L680,60 L700,70 L680,85 L640,95 L600,100 L560,105 L520,100 L480,95 L440,100 L400,110 L360,120 L320,130 L280,140 L240,145 L200,145 L180,140 L170,130 L175,110 L185,90 L195,70 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Mexico & Central America */}
+          <path 
+            d="M200,395 L180,410 L160,430 L150,450 L160,470 L180,490 L200,500 L230,510 L260,505 L290,495 L320,480 L350,460 L370,440 L380,420 L370,400 L350,385 L320,380 L290,385 L260,390 L230,395 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
           {/* South America */}
-          <path d="M20,35 L28,33 L32,40 L30,48 L25,50 L20,45 L18,40 Z" fill="currentColor" className="text-green-500/50"/>
+          <path 
+            d="M320,520 L290,540 L270,570 L260,600 L270,640 L290,680 L310,720 L330,760 L350,800 L370,840 L380,880 L370,920 L350,950 L320,970 L290,960 L270,930 L260,890 L270,850 L290,810 L300,770 L290,730 L270,690 L260,650 L270,610 L290,580 L320,560 L350,550 L380,545 L410,550 L440,560 L460,580 L470,610 L460,650 L440,690 L420,720 L400,750 L380,780 L360,810 L350,840 L360,870 L380,900 L400,920 L410,950 L400,970 L370,980 L340,970 L310,950 L300,920 L310,880 L330,840 L340,800 L330,760 L310,720 L290,680 L280,640 L290,600 L310,560 L340,530 L370,520 L400,530 L430,550 L450,580 L460,620 L450,660 L430,690 L400,710 L370,700 L350,680 L340,650 L350,620 L370,600 L390,590 L410,600 L420,630 L410,660 L390,680 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
           {/* Europe */}
-          <path d="M42,10 L55,8 L58,12 L60,18 L55,22 L48,20 L44,18 L42,14 Z" fill="currentColor" className="text-blue-500/50"/>
+          <path 
+            d="M880,120 L860,140 L850,160 L860,180 L880,200 L910,210 L940,200 L970,190 L1000,180 L1030,170 L1060,165 L1090,170 L1120,180 L1140,200 L1150,220 L1140,240 L1120,250 L1090,255 L1060,250 L1030,240 L1000,230 L970,225 L940,230 L910,240 L885,250 L860,260 L840,280 L830,300 L840,320 L860,330 L890,325 L920,310 L950,300 L980,295 L1010,300 L1040,310 L1070,320 L1100,325 L1130,320 L1150,300 L1160,280 L1150,260 L1130,245 L1100,240 L1070,245 L1040,255 L1010,260 L980,255 L950,245 L920,235 L890,230 L870,220 L860,200 L870,180 L890,165 L920,155 L950,150 L980,155 L1010,165 L1040,175 L1070,180 L1100,175 L1120,160 L1130,140 L1120,125 L1090,115 L1060,110 L1030,115 L1000,125 L970,135 L940,140 L910,135 L880,125 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
           {/* Africa */}
-          <path d="M45,22 L58,20 L62,28 L58,40 L52,42 L46,38 L44,30 Z" fill="currentColor" className="text-amber-500/50"/>
-          {/* Asia */}
-          <path d="M58,8 L85,6 L92,18 L88,28 L78,30 L68,28 L60,22 L58,15 Z" fill="currentColor" className="text-purple-500/50"/>
+          <path 
+            d="M950,340 L920,360 L900,390 L890,430 L900,470 L920,510 L950,550 L980,590 L1010,630 L1040,670 L1070,700 L1100,720 L1130,730 L1160,720 L1180,700 L1190,670 L1180,640 L1160,610 L1140,580 L1130,550 L1140,520 L1160,490 L1180,460 L1190,430 L1180,400 L1160,370 L1130,350 L1100,340 L1070,335 L1040,340 L1010,350 L980,355 L950,345 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Middle East */}
+          <path 
+            d="M1180,280 L1160,300 L1150,330 L1160,360 L1180,380 L1210,390 L1240,380 L1270,360 L1290,340 L1300,310 L1290,280 L1270,260 L1240,250 L1210,260 L1185,275 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Russia/Asia */}
+          <path 
+            d="M1150,80 L1120,100 L1100,120 L1120,140 L1150,150 L1190,145 L1230,135 L1280,125 L1330,120 L1380,115 L1430,110 L1480,105 L1530,100 L1580,98 L1630,100 L1680,105 L1720,115 L1750,130 L1770,150 L1780,175 L1770,200 L1750,220 L1720,235 L1680,245 L1640,250 L1600,248 L1560,240 L1520,230 L1480,220 L1440,215 L1400,220 L1360,230 L1320,240 L1280,245 L1240,240 L1200,230 L1170,215 L1150,195 L1145,170 L1155,145 L1175,125 L1200,110 L1230,100 L1260,95 L1290,100 L1320,110 L1350,120 L1380,125 L1410,120 L1440,110 L1470,105 L1500,110 L1530,120 L1560,130 L1590,135 L1620,130 L1650,120 L1680,115 L1710,120 L1730,135 L1740,155 L1730,175 L1710,190 L1680,200 L1650,205 L1620,200 L1590,190 L1560,180 L1530,175 L1500,180 L1470,190 L1440,200 L1410,205 L1380,200 L1350,190 L1320,180 L1290,175 L1260,180 L1230,190 L1200,195 L1175,185 L1160,165 L1155,140 L1165,115 L1185,95 L1210,85 L1240,80 L1270,85 L1300,95 L1330,100 L1360,95 L1390,85 L1420,80 L1450,85 L1480,95 L1510,100 L1540,95 L1570,85 L1600,80 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* India */}
+          <path 
+            d="M1350,320 L1320,350 L1300,390 L1290,430 L1300,470 L1330,500 L1370,520 L1410,530 L1450,520 L1480,500 L1500,470 L1510,430 L1500,390 L1480,360 L1450,340 L1420,330 L1390,325 L1360,325 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* China */}
+          <path 
+            d="M1450,230 L1420,250 L1400,280 L1390,310 L1400,340 L1430,360 L1470,370 L1510,365 L1550,350 L1590,330 L1620,310 L1640,285 L1650,260 L1640,235 L1620,215 L1590,200 L1550,195 L1510,200 L1480,215 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Japan */}
+          <path 
+            d="M1720,280 L1700,300 L1695,330 L1710,360 L1735,380 L1760,370 L1780,345 L1785,315 L1770,290 L1745,275 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* Southeast Asia */}
+          <path 
+            d="M1500,430 L1470,450 L1450,480 L1440,520 L1450,560 L1480,590 L1520,600 L1560,590 L1590,560 L1610,520 L1600,480 L1570,450 L1530,435 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
           {/* Australia */}
-          <path d="M78,35 L92,32 L95,40 L90,45 L82,44 L78,40 Z" fill="currentColor" className="text-red-500/50"/>
+          <path 
+            d="M1580,680 L1540,710 L1510,750 L1500,800 L1520,850 L1560,890 L1620,910 L1680,900 L1740,870 L1790,830 L1820,780 L1830,730 L1810,690 L1770,660 L1720,650 L1670,660 L1620,670 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
+          {/* New Zealand */}
+          <path 
+            d="M1880,820 L1865,850 L1870,890 L1895,920 L1920,910 L1930,880 L1920,850 L1900,830 Z" 
+            fill="url(#landGradient)" 
+            stroke="rgba(16, 185, 129, 0.3)" 
+            strokeWidth="1"
+          />
         </svg>
+
+        {/* Glow effect overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30 pointer-events-none" />
 
         {/* Activity Pins */}
         <AnimatePresence>
@@ -267,7 +363,7 @@ export const WorldMapVisualization = () => {
                 stiffness: 300,
                 damping: 20
               }}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 group"
               style={{ 
                 left: `${activity.x}%`, 
                 top: `${activity.y}%`,
@@ -284,7 +380,7 @@ export const WorldMapVisualization = () => {
               />
               
               {/* Pin */}
-              <div className={`relative z-10 w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-lg ${
+              <div className={`relative z-10 w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-lg cursor-pointer ${
                 activity.type === 'investment' 
                   ? 'bg-green-500 shadow-green-500/50' 
                   : 'bg-emerald-400 shadow-emerald-400/50'
@@ -298,8 +394,8 @@ export const WorldMapVisualization = () => {
               </div>
 
               {/* Tooltip on hover */}
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="px-2 py-1 bg-black/90 rounded text-xs whitespace-nowrap text-white">
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                <div className="px-3 py-1.5 bg-black/95 rounded-lg text-xs whitespace-nowrap text-white border border-white/10 shadow-xl">
                   {activity.flag} {activity.name} • {activity.amount}
                 </div>
               </div>
