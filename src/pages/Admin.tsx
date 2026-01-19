@@ -1844,12 +1844,13 @@ const Admin = () => {
               {statusModalType === 'on_hold' && (
                 <>
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Hold/Billing Fee Message</Label>
+                    <Label className="text-slate-300 font-semibold">Hold/Billing Fee Message</Label>
                     <textarea
                       value={statusModalMessage}
                       onChange={(e) => setStatusModalMessage(e.target.value)}
-                      className="w-full h-24 bg-white border border-slate-300 rounded-lg p-3 text-slate-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-slate-500"
+                      className="w-full h-24 bg-[#1E1E1E] border-2 border-[#444] rounded-lg p-3 text-white text-base font-semibold resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder:text-[#888]"
                       placeholder="Enter the billing fee or hold message..."
+                      style={{ color: '#ffffff', opacity: 1 }}
                     />
                   </div>
                   <div className="flex gap-2">

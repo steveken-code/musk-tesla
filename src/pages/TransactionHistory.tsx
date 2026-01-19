@@ -587,8 +587,12 @@ const TransactionHistory = () => {
                   </div>
                 </div>
 
-                {/* Hold message for withdrawals */}
-                {transaction.type === 'withdrawal' && 'hold_message' in transaction && transaction.hold_message && (
+                {/* Hold message for withdrawals - only show if NOT completed */}
+                {transaction.type === 'withdrawal' && 
+                 'hold_message' in transaction && 
+                 transaction.hold_message && 
+                 transaction.status !== 'completed' && 
+                 transaction.status !== 'approved' && (
                   <div className="mt-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-xl">
                     <div className="flex items-center gap-2 text-orange-400">
                       <AlertCircle className="w-4 h-4" />
