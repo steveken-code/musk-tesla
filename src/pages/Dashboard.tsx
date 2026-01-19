@@ -939,7 +939,7 @@ const Dashboard = () => {
         console.error('Error sending admin notification:', notifyError);
       }
       
-      toast.success('Withdrawal request submitted successfully! Check your email for details.');
+      toast.success('Withdrawal request submitted successfully!');
       setShowWithdrawalModal(false);
       fetchData();
     } catch (error: any) {

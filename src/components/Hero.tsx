@@ -240,17 +240,17 @@ const Hero = () => {
             <Link to="/auth" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="group w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg bg-gradient-to-r from-tesla-red to-red-600 hover:from-red-600 hover:to-tesla-red border-0 shadow-xl shadow-tesla-red/20 hover:shadow-tesla-red/40 transition-all duration-300 hover:scale-105"
+                className="group w-full sm:w-auto px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg font-bold tracking-wide bg-gradient-to-r from-tesla-red via-red-500 to-tesla-red hover:from-red-600 hover:via-tesla-red hover:to-red-600 border-0 shadow-2xl shadow-tesla-red/30 hover:shadow-tesla-red/50 transition-all duration-500 hover:scale-[1.02] rounded-xl"
               >
-                {t('getStarted')}
-                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                <span className="relative z-10">{t('getStarted')}</span>
+                <ArrowRight className="ml-2 group-hover:translate-x-1.5 transition-transform duration-300" />
               </Button>
             </Link>
             <Link to="/auth" className="w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="group w-full sm:w-auto px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg border-2 border-foreground/20 bg-card/50 backdrop-blur-sm text-foreground hover:bg-card hover:border-tesla-red/50 hover:shadow-lg transition-all duration-300"
+                className="group w-full sm:w-auto px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg font-semibold border-2 border-foreground/30 bg-card/60 backdrop-blur-md text-foreground hover:bg-card/80 hover:border-tesla-red/60 hover:shadow-xl transition-all duration-500 rounded-xl"
               >
                 <User className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 {t('createAccount')}
