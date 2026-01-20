@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX, Play } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -67,6 +69,7 @@ interface CryptoSettings {
 
 interface SoundSettings {
   enabled: boolean;
+  volume: number;
 }
 
 const languages = [
@@ -167,7 +170,8 @@ const Admin = () => {
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
   const [referralSettings, setReferralSettings] = useState<ReferralSettings>(DEFAULT_REFERRAL_SETTINGS);
   const [cryptoSettings, setCryptoSettings] = useState<CryptoSettings>(DEFAULT_CRYPTO_SETTINGS);
-  const [soundSettings, setSoundSettings] = useState<SoundSettings>({ enabled: true });
+  const [soundSettings, setSoundSettings] = useState<SoundSettings>({ enabled: true, volume: 0.5 });
+  const { playSound: playNotificationSound, initializeAudio } = useNotificationSound();
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
@@ -335,6 +339,7 @@ const Admin = () => {
             const value = setting.setting_value as unknown as SoundSettings;
             setSoundSettings({
               enabled: value.enabled ?? true,
+              volume: value.volume ?? 0.5,
             });
           }
         });
@@ -823,7 +828,7 @@ const Admin = () => {
         .eq('setting_key', 'sound_settings')
         .maybeSingle();
 
-      const newSettings = { enabled: newEnabled };
+      const newSettings = { enabled: newEnabled, volume: soundSettings.volume };
 
       if (existingSetting) {
         await supabase
@@ -852,6 +857,47 @@ const Admin = () => {
     } finally {
       setSavingSound(false);
     }
+  };
+
+  const handleVolumeChange = async (newVolume: number[]) => {
+    const volume = newVolume[0];
+    setSoundSettings(prev => ({ ...prev, volume }));
+    
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'sound_settings')
+        .maybeSingle();
+
+      const newSettings = { enabled: soundSettings.enabled, volume };
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify(newSettings)),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'sound_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'sound_settings',
+            setting_value: JSON.parse(JSON.stringify(newSettings)),
+            updated_by: user?.id
+          });
+      }
+    } catch (error: unknown) {
+      console.warn('Failed to save volume setting:', error);
+    }
+  };
+
+  const handlePreviewSound = (type: 'investment' | 'withdrawal') => {
+    initializeAudio();
+    playNotificationSound(type, true);
   };
 
   const handleSaveSupportSettings = async () => {
@@ -1328,7 +1374,9 @@ const Admin = () => {
             )}
             Notification Sound Settings
           </h2>
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/50 border border-slate-600">
+          
+          {/* Enable/Disable Toggle */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/50 border border-slate-600 mb-4">
             <div>
               <p className="text-white font-medium">Live Activity Sounds</p>
               <p className="text-xs text-slate-400 mt-1">
@@ -1358,6 +1406,54 @@ const Admin = () => {
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Volume Control */}
+          <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white font-medium">Volume Level</p>
+              <span className="text-sm text-slate-400">{Math.round(soundSettings.volume * 100)}%</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <VolumeX className="w-4 h-4 text-slate-400" />
+              <Slider
+                value={[soundSettings.volume]}
+                onValueChange={handleVolumeChange}
+                min={0}
+                max={1}
+                step={0.05}
+                className="flex-1"
+              />
+              <Volume2 className="w-4 h-4 text-slate-400" />
+            </div>
+          </div>
+
+          {/* Sound Preview */}
+          <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600">
+            <p className="text-white font-medium mb-3">Preview Sounds</p>
+            <p className="text-xs text-slate-400 mb-4">
+              Click to hear how each notification sounds. Uses current volume setting.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={() => handlePreviewSound('investment')}
+                variant="outline"
+                className="border-green-600 text-green-400 hover:bg-green-600/20 hover:text-green-300"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Investment Sound
+                <TrendingUp className="w-4 h-4 ml-2" />
+              </Button>
+              <Button
+                onClick={() => handlePreviewSound('withdrawal')}
+                variant="outline"
+                className="border-amber-600 text-amber-400 hover:bg-amber-600/20 hover:text-amber-300"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Withdrawal Sound
+                <Wallet className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
 
