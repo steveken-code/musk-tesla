@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 
 interface Investment {
@@ -63,6 +63,10 @@ interface ReferralSettings {
 interface CryptoSettings {
   walletAddress: string;
   network: string;
+}
+
+interface SoundSettings {
+  enabled: boolean;
 }
 
 const languages = [
@@ -163,11 +167,13 @@ const Admin = () => {
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
   const [referralSettings, setReferralSettings] = useState<ReferralSettings>(DEFAULT_REFERRAL_SETTINGS);
   const [cryptoSettings, setCryptoSettings] = useState<CryptoSettings>(DEFAULT_CRYPTO_SETTINGS);
+  const [soundSettings, setSoundSettings] = useState<SoundSettings>({ enabled: true });
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
   const [savingCrypto, setSavingCrypto] = useState(false);
+  const [savingSound, setSavingSound] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
   
   // Security logs state - Admin login attempts
@@ -324,6 +330,11 @@ const Admin = () => {
             setCryptoSettings({
               walletAddress: value.walletAddress || DEFAULT_CRYPTO_SETTINGS.walletAddress,
               network: value.network || DEFAULT_CRYPTO_SETTINGS.network,
+            });
+          } else if (setting.setting_key === 'sound_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as SoundSettings;
+            setSoundSettings({
+              enabled: value.enabled ?? true,
             });
           }
         });
@@ -801,6 +812,48 @@ const Admin = () => {
     }
   };
 
+  const handleToggleSoundSettings = async () => {
+    const newEnabled = !soundSettings.enabled;
+    setSavingSound(true);
+    
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'sound_settings')
+        .maybeSingle();
+
+      const newSettings = { enabled: newEnabled };
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({ 
+            setting_value: JSON.parse(JSON.stringify(newSettings)),
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'sound_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ 
+            setting_key: 'sound_settings',
+            setting_value: JSON.parse(JSON.stringify(newSettings)),
+            updated_by: user?.id
+          });
+      }
+      
+      setSoundSettings(newSettings);
+      toast.success(newEnabled ? 'Notification sounds enabled!' : 'Notification sounds disabled!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save sound settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingSound(false);
+    }
+  };
+
   const handleSaveSupportSettings = async () => {
     if (!supportSettings.whatsappEnabled && !supportSettings.telegramEnabled) {
       toast.error('Enable at least one support channel');
@@ -1263,6 +1316,49 @@ const Admin = () => {
             {savingCrypto ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             {t('saveCryptoSettings') || 'Save Crypto Settings'}
           </Button>
+        </div>
+
+        {/* Notification Sound Settings Section */}
+        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+            {soundSettings.enabled ? (
+              <Volume2 className="w-5 h-5 text-green-500" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-slate-500" />
+            )}
+            Notification Sound Settings
+          </h2>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/50 border border-slate-600">
+            <div>
+              <p className="text-white font-medium">Live Activity Sounds</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Play notification sounds when new investments or withdrawals appear in the live activity feed
+              </p>
+            </div>
+            <Button
+              onClick={handleToggleSoundSettings}
+              disabled={savingSound}
+              className={`min-w-[100px] ${
+                soundSettings.enabled 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-slate-600 hover:bg-slate-500'
+              }`}
+            >
+              {savingSound ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : soundSettings.enabled ? (
+                <>
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  ON
+                </>
+              ) : (
+                <>
+                  <VolumeX className="w-4 h-4 mr-2" />
+                  OFF
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
