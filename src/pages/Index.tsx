@@ -13,7 +13,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
-import { InvestmentNotification } from "@/components/InvestmentNotification";
+
 import StockMarketWidget from "@/components/StockMarketWidget";
 
 const Index = () => {
@@ -46,7 +46,7 @@ const Index = () => {
       <Investment />
       <Footer />
       <SupportButtons />
-      <InvestmentNotification />
+      
     </div>
   );
 };
