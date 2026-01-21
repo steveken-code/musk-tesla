@@ -1727,14 +1727,10 @@ const Admin = () => {
                             </div>
                             <div>
                               <p className="text-white font-semibold text-lg">
-                                {investment.profiles?.full_name && investment.profiles.full_name.trim() !== '' 
-                                  ? investment.profiles.full_name 
-                                  : 'No Name Set'}
+                                {investment.profiles?.full_name?.trim() || investment.profiles?.email?.split('@')[0] || `User-${investment.user_id.slice(0,8)}`}
                               </p>
                               <p className="text-electric-blue font-medium text-sm">
-                                {investment.profiles?.email && investment.profiles.email.trim() !== '' 
-                                  ? investment.profiles.email 
-                                  : 'No Email Set'}
+                                {investment.profiles?.email || `ID: ${investment.user_id.slice(0,12)}...`}
                               </p>
                             </div>
                           </div>
@@ -1921,9 +1917,7 @@ const Admin = () => {
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
                                 <p className="text-white font-semibold text-lg">
-                                  {withdrawal.profiles?.full_name && withdrawal.profiles.full_name.trim() !== '' 
-                                    ? withdrawal.profiles.full_name 
-                                    : 'No Name Set'}
+                                  {withdrawal.profiles?.full_name?.trim() || withdrawal.profiles?.email?.split('@')[0] || `User-${withdrawal.user_id.slice(0,8)}`}
                                 </p>
                                 {withdrawal.status === 'pending' && (
                                   <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold animate-pulse">
@@ -1932,9 +1926,7 @@ const Admin = () => {
                                 )}
                               </div>
                               <p className="text-electric-blue font-medium text-sm">
-                                {withdrawal.profiles?.email && withdrawal.profiles.email.trim() !== '' 
-                                  ? withdrawal.profiles.email 
-                                  : 'No Email Set'}
+                                {withdrawal.profiles?.email || `ID: ${withdrawal.user_id.slice(0,12)}...`}
                               </p>
                             </div>
                           </div>
