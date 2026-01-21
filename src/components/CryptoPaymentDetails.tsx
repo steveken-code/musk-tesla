@@ -3,6 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Copy, Check, Loader2, Wallet, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatUSDT } from '@/lib/formatCurrency';
 
 interface CryptoPaymentDetailsProps {
   amount: number;
@@ -119,7 +120,7 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
         {/* Amount to send */}
         <div className="p-3 bg-teal-500/15 rounded-lg border border-teal-500/30">
           <p className="text-xs text-slate-400 mb-1">{t('amountToSend') || 'Amount to Send'}</p>
-          <p className="text-xl font-bold text-teal-400">{amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT</p>
+          <p className="text-xl font-bold text-teal-400">{formatUSDT(amount)}</p>
         </div>
       </div>
 

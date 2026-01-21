@@ -23,8 +23,9 @@ import InvestmentCountrySelector from '@/components/InvestmentCountrySelector';
 import DashboardSkeleton from '@/components/DashboardSkeleton';
 import WithdrawalBankingFields from '@/components/WithdrawalBankingFields';
 import LiveTradingFeed from '@/components/LiveTradingFeed';
-
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
+import PriceTicker from '@/components/PriceTicker';
+import DashboardSidebar from '@/components/DashboardSidebar';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
 
@@ -1062,6 +1063,15 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
       <div className="absolute inset-0 bg-gradient-hero opacity-30 pointer-events-none" />
       
+      {/* Professional Sliding Sidebar */}
+      <DashboardSidebar 
+        isOpen={showMobileMenu}
+        onClose={() => setShowMobileMenu(false)}
+        onSignOut={handleSignOut}
+        userEmail={profile?.email || user?.email}
+        userName={profile?.full_name || undefined}
+      />
+
       {/* Header with animated menu */}
       <header className="relative z-20 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0">
         <div className="container mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
@@ -1069,7 +1079,7 @@ const Dashboard = () => {
             {/* Mobile menu button with animation */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-2 rounded-lg hover:bg-muted/50 transition-all md:hidden"
+              className="p-2 rounded-lg hover:bg-muted/50 transition-all"
             >
               <div className="relative w-5 h-4 flex flex-col justify-between">
                 <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-1.5' : ''}`} />
@@ -1109,35 +1119,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Mobile menu dropdown */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${showMobileMenu ? 'max-h-60' : 'max-h-0'}`}>
-          <nav className="px-4 py-3 bg-card border-t border-border space-y-1">
-            <Link 
-              to="/" 
-              onClick={() => setShowMobileMenu(false)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              Home
-            </Link>
-            <Link 
-              to="/transactions" 
-              onClick={() => setShowMobileMenu(false)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-            >
-              <History className="w-4 h-4" />
-              Transaction History
-            </Link>
-            <Link 
-              to="/live-activity" 
-              onClick={() => setShowMobileMenu(false)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Live Activity
-            </Link>
-          </nav>
-        </div>
+        {/* Live Price Ticker */}
+        <PriceTicker />
       </header>
 
       <main className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-full overflow-x-hidden">

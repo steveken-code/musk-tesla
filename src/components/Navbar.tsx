@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import PriceTicker from './PriceTicker';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -64,11 +65,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav 
-      className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm shadow-black/20"
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <nav className="bg-background border-b border-border shadow-sm shadow-black/20">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link 
             to="/" 
@@ -209,9 +209,11 @@ const Navbar = () => {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
-    </nav>
+          </AnimatePresence>
+        </div>
+      </nav>
+      <PriceTicker />
+    </div>
   );
 };
 
