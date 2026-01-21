@@ -14,12 +14,13 @@ interface DashboardSidebarProps {
   onClose: () => void;
   onSignOut: () => void;
   onWithdrawClick?: () => void;
+  onEditProfileClick?: () => void;
   userEmail?: string;
   userName?: string;
   userAvatarUrl?: string;
 }
 
-const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEmail, userName, userAvatarUrl }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, onEditProfileClick, userEmail, userName, userAvatarUrl }: DashboardSidebarProps) => {
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -123,8 +124,14 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEma
 
             {/* User Profile */}
             <div className="p-4 border-b border-border bg-muted/30">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-tesla-red to-electric-blue flex items-center justify-center">
+              <button
+                onClick={() => {
+                  onEditProfileClick?.();
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 group"
+              >
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-tesla-red to-electric-blue flex items-center justify-center ring-2 ring-transparent group-hover:ring-tesla-red/50 transition-all">
                   {userAvatarUrl ? (
                     <img 
                       src={userAvatarUrl} 
@@ -135,15 +142,16 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEma
                     <User className="w-6 h-6 text-white" />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-semibold text-foreground truncate group-hover:text-tesla-red transition-colors">
                     {userName || 'Investor'}
                   </p>
                   <p className="text-sm text-muted-foreground truncate">
                     {userEmail || 'user@example.com'}
                   </p>
                 </div>
-              </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-tesla-red transition-colors" />
+              </button>
             </div>
 
             {/* Navigation */}

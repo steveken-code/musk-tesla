@@ -239,13 +239,13 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(Math.max(rangePosition, 0), 100)}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded-full"
               />
               <motion.div
                 initial={{ left: 0 }}
                 animate={{ left: `${Math.min(Math.max(rangePosition, 0), 100)}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-foreground rounded-full border-2 border-background shadow-lg"
               />
             </div>
