@@ -546,9 +546,9 @@ const getRandomInterval = (): number => {
   return Math.floor(Math.random() * (15000 - 8000) + 8000);
 };
 
-// Display duration 4-6 seconds - visible but not lingering
+// Display duration 2.5-3.5 seconds - quick and non-intrusive
 const getRandomDisplayDuration = (): number => {
-  return Math.floor(Math.random() * (6000 - 4000) + 4000);
+  return Math.floor(Math.random() * (3500 - 2500) + 2500);
 };
 
 export const InvestmentNotification = () => {
@@ -614,57 +614,35 @@ export const InvestmentNotification = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, x: -100, scale: 0.8 }}
+          initial={{ opacity: 0, x: -60, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -50, scale: 0.9 }}
-          transition={{ 
-            duration: 0.5, 
-            ease: [0.25, 0.46, 0.45, 0.94],
-            type: "spring",
-            stiffness: 100,
-            damping: 15
-          }}
-          className="fixed bottom-20 left-4 z-40 max-w-[calc(100vw-100px)] sm:max-w-xs md:max-w-sm will-change-transform"
-          style={{ transform: 'translateZ(0)' }}
+          exit={{ opacity: 0, x: -30, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="fixed bottom-20 left-3 z-40 max-w-[240px]"
         >
-          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20">
-            {/* Animated gradient border */}
-            <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-green-500/20 via-emerald-500/10 to-green-500/20 opacity-50" />
-            
-            <div className="relative p-3 sm:p-4">
-              <div className="flex items-start gap-3">
-                {/* Icon with pulse animation */}
-                <div className={`relative flex-shrink-0 p-2 sm:p-2.5 rounded-lg sm:rounded-xl ${
+          <div className="overflow-hidden rounded-lg border border-border/40 bg-card/90 backdrop-blur-md shadow-lg">
+            <div className="p-2.5">
+              <div className="flex items-center gap-2">
+                <div className={`flex-shrink-0 p-1.5 rounded-md ${
                   isWithdrawal 
-                    ? 'bg-gradient-to-br from-emerald-500/20 to-green-500/10' 
-                    : 'bg-gradient-to-br from-green-500/20 to-emerald-500/10'
+                    ? 'bg-emerald-500/15' 
+                    : 'bg-green-500/15'
                 }`}>
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {isWithdrawal ? (
-                      <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-                    ) : (
-                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
-                    )}
-                  </motion.div>
-                  {/* Pulse ring */}
-                  <span className="absolute inset-0 rounded-lg sm:rounded-xl animate-ping bg-green-500/20" style={{ animationDuration: '2s' }} />
+                  {isWithdrawal ? (
+                    <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : (
+                    <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+                  )}
                 </div>
                 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-foreground leading-relaxed break-words">
+                  <p className="text-[11px] font-medium text-foreground leading-tight line-clamp-2">
                     {message}
                   </p>
-                  <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 text-[10px] sm:text-xs font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                      Just now
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">
-                      {isWithdrawal ? 'Withdrawal' : 'Investment'}
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="inline-flex items-center gap-1 text-[9px] text-green-400 font-medium">
+                      <span className="w-1 h-1 rounded-full bg-green-400" />
+                      now
                     </span>
                   </div>
                 </div>

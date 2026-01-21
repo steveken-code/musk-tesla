@@ -10,7 +10,8 @@ const fallbackPrices: StockQuote[] = [
   { symbol: 'QQQ', name: 'NASDAQ-100', price: 518.42, change: 4.28, changePercent: 0.83, volume: 0, high: 520, low: 514, open: 515, previousClose: 514.14 },
   { symbol: 'RIVN', name: 'Rivian', price: 14.85, change: -0.32, changePercent: -2.11, volume: 0, high: 15.2, low: 14.6, open: 15.1, previousClose: 15.17 },
   { symbol: 'LCID', name: 'Lucid', price: 2.45, change: 0.08, changePercent: 3.38, volume: 0, high: 2.5, low: 2.35, open: 2.38, previousClose: 2.37 },
-  { symbol: 'NIO', name: 'NIO Inc.', price: 4.12, change: -0.15, changePercent: -3.51, volume: 0, high: 4.3, low: 4.05, open: 4.25, previousClose: 4.27 },
+  { symbol: 'TM', name: 'Toyota Motor', price: 176.42, change: 1.28, changePercent: 0.73, volume: 0, high: 178, low: 174, open: 175, previousClose: 175.14 },
+  { symbol: 'STLA', name: 'Stellantis', price: 12.85, change: -0.18, changePercent: -1.38, volume: 0, high: 13.1, low: 12.6, open: 13.0, previousClose: 13.03 },
   { symbol: 'F', name: 'Ford', price: 9.85, change: 0.12, changePercent: 1.23, volume: 0, high: 9.95, low: 9.7, open: 9.75, previousClose: 9.73 },
   { symbol: 'GM', name: 'General Motors', price: 54.32, change: 0.87, changePercent: 1.63, volume: 0, high: 54.8, low: 53.5, open: 53.6, previousClose: 53.45 },
 ];
