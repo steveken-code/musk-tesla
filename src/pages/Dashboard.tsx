@@ -26,6 +26,7 @@ import LiveTradingFeed from '@/components/LiveTradingFeed';
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import GoogleTranslate from '@/components/GoogleTranslate';
 import StockMarketWidget from '@/components/StockMarketWidget';
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
 import teslaLogo from '@/assets/tesla-logo-red.png';
@@ -1126,6 +1127,10 @@ const Dashboard = () => {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Google Translate for Dashboard */}
+            <div className="hidden sm:block">
+              <GoogleTranslate />
+            </div>
             {/* User Avatar & Name with Edit Profile */}
             <button
               onClick={() => setShowProfileModal(true)}
@@ -1160,7 +1165,7 @@ const Dashboard = () => {
 
       <main className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-7xl overflow-x-hidden">
         {/* Hero Balance Card - Like reference image */}
-        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-[hsl(var(--secondary)/0.15)] via-[hsl(var(--accent)/0.1)] to-[hsl(var(--primary)/0.1)] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border/50 animate-fade-in">
+        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-brand-purple/15 via-electric-blue/10 to-primary/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-brand-purple/30 animate-fade-in">
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t('welcomeBack')},</p>
@@ -1185,9 +1190,8 @@ const Dashboard = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex-1 sm:flex-none h-9 px-4 text-xs border-border hover:bg-muted"
+                className="flex-1 sm:flex-none h-10 px-5 text-sm font-semibold border-brand-purple/50 text-brand-purple hover:bg-brand-purple/10 hover:border-brand-purple transition-all"
                 onClick={() => {
-                  // Scroll to invest form
                   document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
@@ -1195,7 +1199,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 size="sm" 
-                className="flex-1 sm:flex-none h-9 px-4 text-xs bg-primary hover:bg-primary/90"
+                className="flex-1 sm:flex-none h-10 px-5 text-sm font-semibold bg-gradient-to-r from-brand-purple to-electric-blue hover:from-brand-purple/90 hover:to-electric-blue/90 text-white shadow-lg transition-all"
                 onClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
                 disabled={portfolioBalance <= 0}
               >

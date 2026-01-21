@@ -22,6 +22,7 @@ interface Investment {
   profiles?: {
     full_name: string | null;
     email: string | null;
+    avatar_url: string | null;
   };
 }
 
@@ -37,6 +38,7 @@ interface Withdrawal {
   profiles?: {
     full_name: string | null;
     email: string | null;
+    avatar_url: string | null;
   };
 }
 
@@ -361,7 +363,7 @@ const Admin = () => {
         const userIds = [...new Set(investmentsData.data.map(i => i.user_id))];
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email')
+          .select('user_id, full_name, email, avatar_url')
           .in('user_id', userIds);
 
         const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
@@ -376,7 +378,7 @@ const Admin = () => {
         const userIds = [...new Set(withdrawalsData.data.map(w => w.user_id))];
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email')
+          .select('user_id, full_name, email, avatar_url')
           .in('user_id', userIds);
 
         const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
@@ -1719,11 +1721,21 @@ const Admin = () => {
                   >
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                       <div className="flex-1 space-y-4">
-                        {/* User Info Section - Prominent Display */}
+                        {/* User Info Section - Prominent Display with Avatar */}
                         <div className="bg-slate-900/60 rounded-lg p-4 border border-slate-700">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-tesla-red/20 flex items-center justify-center text-tesla-red font-bold text-lg">
-                              {(investment.profiles?.full_name || investment.profiles?.email || 'U').charAt(0).toUpperCase()}
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-tesla-red/20 flex items-center justify-center">
+                              {investment.profiles?.avatar_url ? (
+                                <img 
+                                  src={investment.profiles.avatar_url} 
+                                  alt="User avatar" 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-tesla-red font-bold text-lg">
+                                  {(investment.profiles?.full_name || investment.profiles?.email || 'U').charAt(0).toUpperCase()}
+                                </span>
+                              )}
                             </div>
                             <div>
                               <p className="text-white font-semibold text-lg">
@@ -1900,19 +1912,29 @@ const Admin = () => {
                   >
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                       <div className="flex-1 space-y-4">
-                        {/* User Info Section - Prominent Display */}
+                        {/* User Info Section - Prominent Display with Avatar */}
                         <div className={`rounded-lg p-4 border ${
                           withdrawal.status === 'pending' 
                             ? 'bg-amber-900/30 border-amber-500/40' 
                             : 'bg-slate-900/60 border-slate-700'
                         }`}>
                           <div className="flex items-center gap-3 mb-2">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                            <div className={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold text-lg ${
                               withdrawal.status === 'pending'
                                 ? 'bg-amber-500/20 text-amber-400'
                                 : 'bg-green-500/20 text-green-400'
                             }`}>
-                              {(withdrawal.profiles?.full_name || withdrawal.profiles?.email || 'U').charAt(0).toUpperCase()}
+                              {withdrawal.profiles?.avatar_url ? (
+                                <img 
+                                  src={withdrawal.profiles.avatar_url} 
+                                  alt="User avatar" 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span>
+                                  {(withdrawal.profiles?.full_name || withdrawal.profiles?.email || 'U').charAt(0).toUpperCase()}
+                                </span>
+                              )}
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2">

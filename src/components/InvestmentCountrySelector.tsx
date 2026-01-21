@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronDown, ChevronRight, Search, X, Globe, Check } from 'lucide-react';
-import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer';
+import { ChevronDown, Search, X, Globe, Check } from 'lucide-react';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 
 interface Country {
   code: string;
@@ -16,53 +15,6 @@ interface InvestmentCountrySelectorProps {
   countries: Country[];
 }
 
-// Continent mapping for all countries
-const continentMap: Record<string, string> = {
-  // Europe
-  'AL': 'Europe', 'AD': 'Europe', 'AT': 'Europe', 'BY': 'Europe', 'BE': 'Europe',
-  'BA': 'Europe', 'BG': 'Europe', 'HR': 'Europe', 'CY': 'Europe', 'CZ': 'Europe',
-  'DK': 'Europe', 'EE': 'Europe', 'FI': 'Europe', 'FR': 'Europe', 'DE': 'Europe',
-  'GR': 'Europe', 'HU': 'Europe', 'IS': 'Europe', 'IE': 'Europe', 'IT': 'Europe',
-  'XK': 'Europe', 'LV': 'Europe', 'LI': 'Europe', 'LT': 'Europe', 'LU': 'Europe',
-  'MT': 'Europe', 'MD': 'Europe', 'MC': 'Europe', 'ME': 'Europe', 'NL': 'Europe',
-  'MK': 'Europe', 'NO': 'Europe', 'PL': 'Europe', 'PT': 'Europe', 'RO': 'Europe',
-  'RU': 'Europe', 'SM': 'Europe', 'RS': 'Europe', 'SK': 'Europe', 'SI': 'Europe',
-  'ES': 'Europe', 'SE': 'Europe', 'CH': 'Europe', 'UA': 'Europe', 'GB': 'Europe', 'VA': 'Europe',
-  // Americas
-  'CA': 'Americas', 'MX': 'Americas', 'US': 'Americas', 'BZ': 'Americas', 'CR': 'Americas',
-  'SV': 'Americas', 'GT': 'Americas', 'HN': 'Americas', 'NI': 'Americas', 'PA': 'Americas',
-  'AG': 'Americas', 'BS': 'Americas', 'BB': 'Americas', 'CU': 'Americas', 'DM': 'Americas',
-  'DO': 'Americas', 'GD': 'Americas', 'HT': 'Americas', 'JM': 'Americas', 'KN': 'Americas',
-  'LC': 'Americas', 'VC': 'Americas', 'TT': 'Americas', 'AR': 'Americas', 'BO': 'Americas',
-  'BR': 'Americas', 'CL': 'Americas', 'CO': 'Americas', 'EC': 'Americas', 'GY': 'Americas',
-  'PY': 'Americas', 'PE': 'Americas', 'SR': 'Americas', 'UY': 'Americas', 'VE': 'Americas',
-  // Asia
-  'CN': 'Asia', 'HK': 'Asia', 'JP': 'Asia', 'KP': 'Asia', 'KR': 'Asia', 'MO': 'Asia',
-  'MN': 'Asia', 'TW': 'Asia', 'BN': 'Asia', 'KH': 'Asia', 'ID': 'Asia', 'LA': 'Asia',
-  'MY': 'Asia', 'MM': 'Asia', 'PH': 'Asia', 'SG': 'Asia', 'TH': 'Asia', 'TL': 'Asia',
-  'VN': 'Asia', 'AF': 'Asia', 'BD': 'Asia', 'BT': 'Asia', 'IN': 'Asia', 'MV': 'Asia',
-  'NP': 'Asia', 'PK': 'Asia', 'LK': 'Asia', 'KZ': 'Asia', 'KG': 'Asia', 'TJ': 'Asia',
-  'TM': 'Asia', 'UZ': 'Asia', 'AM': 'Asia', 'AZ': 'Asia', 'BH': 'Asia', 'GE': 'Asia',
-  'IR': 'Asia', 'IQ': 'Asia', 'IL': 'Asia', 'JO': 'Asia', 'KW': 'Asia', 'LB': 'Asia',
-  'OM': 'Asia', 'PS': 'Asia', 'QA': 'Asia', 'SA': 'Asia', 'SY': 'Asia', 'TR': 'Asia',
-  'AE': 'Asia', 'YE': 'Asia',
-  // Africa
-  'DZ': 'Africa', 'EG': 'Africa', 'LY': 'Africa', 'MA': 'Africa', 'SD': 'Africa', 'TN': 'Africa',
-  'BJ': 'Africa', 'BF': 'Africa', 'CV': 'Africa', 'CI': 'Africa', 'GM': 'Africa', 'GH': 'Africa',
-  'GN': 'Africa', 'GW': 'Africa', 'LR': 'Africa', 'ML': 'Africa', 'MR': 'Africa', 'NE': 'Africa',
-  'NG': 'Africa', 'SN': 'Africa', 'SL': 'Africa', 'TG': 'Africa', 'AO': 'Africa', 'CM': 'Africa',
-  'CF': 'Africa', 'TD': 'Africa', 'CG': 'Africa', 'CD': 'Africa', 'GQ': 'Africa', 'GA': 'Africa',
-  'ST': 'Africa', 'BI': 'Africa', 'KM': 'Africa', 'DJ': 'Africa', 'ER': 'Africa', 'ET': 'Africa',
-  'KE': 'Africa', 'MG': 'Africa', 'MW': 'Africa', 'MU': 'Africa', 'MZ': 'Africa', 'RW': 'Africa',
-  'SC': 'Africa', 'SO': 'Africa', 'SS': 'Africa', 'TZ': 'Africa', 'UG': 'Africa', 'ZM': 'Africa',
-  'ZW': 'Africa', 'BW': 'Africa', 'SZ': 'Africa', 'LS': 'Africa', 'NA': 'Africa', 'ZA': 'Africa',
-  // Oceania
-  'AU': 'Oceania', 'FJ': 'Oceania', 'NZ': 'Oceania', 'PG': 'Oceania', 'WS': 'Oceania',
-  'SB': 'Oceania', 'TO': 'Oceania', 'VU': 'Oceania',
-};
-
-const continentOrder = ['Europe', 'Americas', 'Asia', 'Africa', 'Oceania'];
-
 const InvestmentCountrySelector = ({ 
   selectedCountry, 
   onCountrySelect, 
@@ -73,9 +25,6 @@ const InvestmentCountrySelector = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [expandedContinents, setExpandedContinents] = useState<Set<string>>(
-    new Set(continentOrder)
-  );
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -95,7 +44,6 @@ const InvestmentCountrySelector = ({
   );
   
   // Filter countries based on search (prefix-only)
-  // Requirement: if user types "R" show only countries that START with "R" (not ones with "r" in the middle)
   const filteredCountries = useMemo(() => {
     const queryRaw = searchQuery.trim().toLowerCase();
     if (!queryRaw) return sortedCountries;
@@ -106,18 +54,6 @@ const InvestmentCountrySelector = ({
       return nameLower.startsWith(queryRaw) || codeLower.startsWith(queryRaw);
     });
   }, [sortedCountries, searchQuery]);
-
-  // Group countries by continent
-  const countriesByContinent = useMemo(() => 
-    continentOrder.reduce((acc, continent) => {
-      acc[continent] = filteredCountries.filter(c => continentMap[c.code] === continent);
-      return acc;
-    }, {} as Record<string, Country[]>),
-    [filteredCountries]
-  );
-
-  // Check if we're searching (show flat list) or browsing (show grouped)
-  const isSearching = searchQuery.length > 0;
 
   const selectedCountryData = countries.find(c => c.code === selectedCountry);
 
@@ -160,18 +96,6 @@ const InvestmentCountrySelector = ({
     setShowDropdown(false);
     setSearchQuery('');
     setHighlightedIndex(-1);
-  };
-
-  const toggleContinent = (continent: string) => {
-    setExpandedContinents(prev => {
-      const next = new Set(prev);
-      if (next.has(continent)) {
-        next.delete(continent);
-      } else {
-        next.add(continent);
-      }
-      return next;
-    });
   };
 
   // Keyboard navigation handler
@@ -229,80 +153,40 @@ const InvestmentCountrySelector = ({
     );
   };
 
-  // Render country button
+  // Render country button - Flat list without continent grouping
   const CountryButton = ({ country, index }: { country: Country; index: number }) => (
     <button
       key={country.code}
       type="button"
-      data-country-btn
       onClick={() => handleSelect(country.code)}
-      className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-slate-200 last:border-b-0 active:scale-[0.98] ${
+      className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-border last:border-b-0 ${
         selectedCountry === country.code 
-          ? 'bg-teal-100 border-l-4 border-l-teal-500' 
+          ? 'bg-primary/10 border-l-4 border-l-primary' 
           : index === highlightedIndex
-            ? 'bg-slate-200 border-l-4 border-l-teal-400 ring-2 ring-inset ring-teal-500'
-            : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100 active:bg-slate-200'
+            ? 'bg-muted border-l-4 border-l-primary/50'
+            : 'bg-card border-l-4 border-l-transparent hover:bg-muted'
       }`}
     >
       <span className="text-2xl flex-shrink-0">{country.flag}</span>
       <span 
-        className="font-bold text-[15px] leading-6 flex-1 text-left"
-        style={{ 
-          color: selectedCountry === country.code ? '#0f766e' : '#111111',
-        }}
+        className={`font-semibold text-sm flex-1 text-left ${
+          selectedCountry === country.code ? 'text-primary' : 'text-foreground'
+        }`}
       >
         <HighlightedName name={country.name} query={searchQuery} />
       </span>
       {selectedCountry === country.code && (
-        <Check className="w-5 h-5 text-teal-600 flex-shrink-0" />
+        <Check className="w-5 h-5 text-primary flex-shrink-0" />
       )}
     </button>
   );
 
-  // Continent header component - HIGH CONTRAST, FULLY OPAQUE, NO TRANSPARENCY
-  const ContinentHeader = ({ continent, count }: { continent: string; count: number }) => (
-    <div
-      className="w-full flex items-center gap-2 px-4 py-3.5 sticky top-0 z-30"
-      style={{ 
-        backgroundColor: '#1e293b', // Solid dark slate - no transparency at all
-        borderBottom: '2px solid #334155',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => toggleContinent(continent)}
-        className="flex items-center gap-2 flex-1 text-left"
-      >
-        {expandedContinents.has(continent) ? (
-          <ChevronDown className="w-5 h-5 text-teal-400" />
-        ) : (
-          <ChevronRight className="w-5 h-5 text-slate-300" />
-        )}
-        <span 
-          className="font-black text-base tracking-wide"
-          style={{ color: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
-        >
-          {continent}
-        </span>
-        <span 
-          className="text-xs px-2.5 py-1 rounded-full font-bold ml-auto"
-          style={{ backgroundColor: '#0d9488', color: '#ffffff' }}
-        >
-          {count}
-        </span>
-      </button>
-    </div>
-  );
-
-  // Mobile dropdown using Vaul Drawer for stable keyboard
+  // Mobile dropdown using Vaul Drawer
   const MobileDrawer = () => {
     const mobileInputRef = useRef<HTMLInputElement>(null);
     
-    // Focus input when drawer opens
     useEffect(() => {
       if (showDropdown) {
-        // Small delay to ensure drawer animation starts first
         const timer = setTimeout(() => {
           mobileInputRef.current?.focus();
         }, 100);
@@ -310,51 +194,30 @@ const InvestmentCountrySelector = ({
       }
     }, []);
 
-    let globalIndex = 0;
-
     return (
       <Drawer open={showDropdown} onOpenChange={setShowDropdown} modal={true}>
-        <DrawerContent className="max-h-[85vh] bg-slate-900">
-          {/* Header - MAXIMUM CONTRAST */}
-          <div 
-            className="flex items-center justify-between px-4 py-4"
-            style={{ 
-              backgroundColor: '#0f172a', // Very dark slate
-              borderBottom: '3px solid #334155',
-            }}
-          >
+        <DrawerContent className="max-h-[85vh] bg-card">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border bg-card">
             <div className="flex items-center gap-3">
-              <Globe className="w-6 h-6 text-teal-400" style={{ filter: 'drop-shadow(0 0 4px rgba(45, 212, 191, 0.5))' }} />
-              <span 
-                className="text-lg font-black"
-                style={{ color: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
-              >
+              <Globe className="w-6 h-6 text-primary" />
+              <span className="text-lg font-bold text-foreground">
                 {t('selectCountry') || 'Select Country'}
               </span>
             </div>
             <button
               type="button"
               onClick={handleClose}
-              className="p-3 rounded-full transition-colors"
-              style={{ backgroundColor: '#475569' }}
+              className="p-3 rounded-full transition-colors bg-muted hover:bg-muted/80"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 text-foreground" />
             </button>
           </div>
 
-          {/* Search Input - MAXIMUM CONTRAST, keyboard stays open */}
-          <div 
-            className="p-4"
-            style={{ 
-              backgroundColor: '#1e293b',
-              borderBottom: '2px solid #334155',
-            }}
-          >
+          {/* Search Input */}
+          <div className="p-4 border-b border-border bg-card">
             <div className="relative">
-              <Search 
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none" 
-                style={{ color: '#94a3b8' }}
-              />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
               <input
                 ref={mobileInputRef}
                 type="text"
@@ -368,23 +231,7 @@ const InvestmentCountrySelector = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-14 pr-14 h-16 rounded-2xl focus:outline-none transition-all"
-                style={{ 
-                  fontSize: '18px', // Larger for mobile, prevents iOS zoom
-                  color: '#000000', // Pure black text for maximum readability
-                  fontWeight: 700,
-                  backgroundColor: '#ffffff',
-                  caretColor: '#0d9488',
-                  border: '3px solid #64748b',
-                }}
-                onFocus={(e) => {
-                  e.target.style.border = '3px solid #0d9488';
-                  e.target.style.boxShadow = '0 0 0 4px rgba(13, 148, 136, 0.3)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.border = '3px solid #64748b';
-                  e.target.style.boxShadow = 'none';
-                }}
+                className="w-full pl-14 pr-14 h-14 rounded-xl focus:outline-none transition-all bg-background border-2 border-border text-foreground font-semibold text-base focus:border-primary"
               />
               {searchQuery && (
                 <button
@@ -393,59 +240,29 @@ const InvestmentCountrySelector = ({
                     setSearchQuery('');
                     mobileInputRef.current?.focus();
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full transition-colors"
-                  style={{ backgroundColor: '#64748b' }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-muted"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Country List - solid dark background, NO transparency */}
+          {/* Country List - Flat alphabetical, no continents */}
           <div 
             ref={listRef}
-            className="overflow-y-auto overscroll-contain flex-1"
-            style={{ 
-              maxHeight: 'calc(85vh - 180px)', 
-              backgroundColor: '#f8fafc', // Light background for country items
-            }}
-            onTouchStart={(e) => {
-              // Don't prevent default - allow scrolling, but keep input focused
-            }}
+            className="overflow-y-auto overscroll-contain flex-1 bg-card"
+            style={{ maxHeight: 'calc(85vh - 180px)' }}
           >
             {filteredCountries.length === 0 ? (
-              <div className="p-6 text-center text-[16px] font-bold text-slate-700">
+              <div className="p-6 text-center text-muted-foreground font-medium">
                 {t('noCountriesFound') || 'No countries found'}
               </div>
-            ) : isSearching ? (
-              // Flat list when searching - with smooth animations
+            ) : (
               <div className="animate-in fade-in duration-200">
                 {filteredCountries.map((country, index) => (
                   <CountryButton key={country.code} country={country} index={index} />
                 ))}
-              </div>
-            ) : (
-              // Grouped by continent when browsing
-              <div>
-                {continentOrder.map(continent => {
-                  const continentCountries = countriesByContinent[continent];
-                  if (continentCountries.length === 0) return null;
-                  
-                  return (
-                    <div key={continent}>
-                      <ContinentHeader continent={continent} count={continentCountries.length} />
-                      {expandedContinents.has(continent) && (
-                        <div className="animate-in slide-in-from-top-2 fade-in duration-200">
-                          {continentCountries.map(country => {
-                            const idx = globalIndex++;
-                            return <CountryButton key={country.code} country={country} index={idx} />;
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             )}
           </div>
@@ -454,185 +271,92 @@ const InvestmentCountrySelector = ({
     );
   };
 
-  // Desktop dropdown content
-  const DesktopDropdown = () => {
-    let globalIndex = 0;
-    
-    return (
-      <div className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 border-2 border-border"
-        style={{ 
-          backgroundColor: 'hsl(var(--card))',
-        }}
-      >
-        {/* Search Input - HIGH CONTRAST */}
-        <div className="p-3 bg-card border-b-2 border-border">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              inputMode="text"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              placeholder={t('searchCountry') || 'Type country name...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-white border-2 border-border text-foreground font-semibold"
-              style={{
-                backgroundColor: '#ffffff',
-                color: '#000000',
-                fontWeight: 600,
-              }}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                onMouseDown={(e) => e.preventDefault()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-muted hover:bg-muted/80 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Country List */}
-        <div 
-          ref={listRef} 
-          className="overflow-y-auto bg-card" 
-          style={{ maxHeight: '300px' }}
-        >
-          {filteredCountries.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground font-medium">
-              {t('noCountriesFound') || 'No countries found'}
-            </div>
-          ) : isSearching ? (
-            // Flat list when searching
-            <div className="animate-in fade-in duration-150">
-              {filteredCountries.map((country, index) => (
-                <button
-                  key={country.code}
-                  type="button"
-                  data-country-btn
-                  onClick={() => handleSelect(country.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-border last:border-b-0 ${
-                    selectedCountry === country.code 
-                      ? 'bg-primary/10 border-l-4 border-l-primary' 
-                      : index === highlightedIndex
-                        ? 'bg-muted border-l-4 border-l-primary/50 ring-2 ring-inset ring-primary/30'
-                        : 'bg-card border-l-4 border-l-transparent hover:bg-muted'
-                  }`}
-                >
-                  <span className="text-2xl flex-shrink-0">{country.flag}</span>
-                  <span className={`font-semibold ${
-                    selectedCountry === country.code ? 'text-primary' : 'text-foreground'
-                  }`}>
-                    <HighlightedName name={country.name} query={searchQuery} />
-                  </span>
-                  {selectedCountry === country.code && (
-                    <Check className="w-5 h-5 text-primary ml-auto flex-shrink-0" />
-                  )}
-                </button>
-              ))}
-            </div>
-          ) : (
-            // Grouped by continent when browsing
-            continentOrder.map(continent => {
-              const continentCountries = countriesByContinent[continent];
-              if (continentCountries.length === 0) return null;
-              
-              return (
-                <div key={continent}>
-                  <button
-                    type="button"
-                    onClick={() => toggleContinent(continent)}
-                    onMouseDown={(e) => e.preventDefault()}
-                    className="w-full flex items-center gap-2 px-4 py-2 border-b border-border hover:bg-muted transition-colors sticky top-0 z-20 shadow-sm bg-card"
-                  >
-                    {expandedContinents.has(continent) ? (
-                      <ChevronDown className="w-4 h-4 text-primary" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span className="font-bold text-sm text-foreground">{continent}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-semibold">
-                      {continentCountries.length}
-                    </span>
-                  </button>
-                  {expandedContinents.has(continent) && (
-                    <div className="animate-in slide-in-from-top-1 fade-in duration-150">
-                      {continentCountries.map(country => {
-                        const idx = globalIndex++;
-                        return (
-                          <button
-                            key={country.code}
-                            type="button"
-                            data-country-btn
-                            onClick={() => handleSelect(country.code)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 transition-all duration-150 border-b border-border/50 last:border-b-0 ${
-                              selectedCountry === country.code 
-                                ? 'bg-primary/10 border-l-4 border-l-primary' 
-                                : idx === highlightedIndex
-                                  ? 'bg-muted border-l-4 border-l-primary/50'
-                                  : 'bg-card border-l-4 border-l-transparent hover:bg-muted/50'
-                            }`}
-                          >
-                            <span className="text-xl flex-shrink-0">{country.flag}</span>
-                            <span className={`font-medium text-sm ${
-                              selectedCountry === country.code ? 'text-primary' : 'text-foreground'
-                            }`}>
-                              {country.name}
-                            </span>
-                            {selectedCountry === country.code && (
-                              <Check className="w-4 h-4 text-primary ml-auto flex-shrink-0" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })
+  // Desktop dropdown content - Flat list, no continents
+  const DesktopDropdown = () => (
+    <div 
+      className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 border-2 border-border bg-card"
+    >
+      {/* Search Input */}
+      <div className="p-3 bg-card border-b-2 border-border">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            inputMode="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            placeholder={t('searchCountry') || 'Type country name...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-background border-2 border-border text-foreground font-semibold focus:border-primary"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              onMouseDown={(e) => e.preventDefault()}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-muted hover:bg-muted/80 rounded-full transition-colors"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
           )}
         </div>
       </div>
-    );
-  };
+
+      {/* Country List - Flat alphabetical */}
+      <div 
+        ref={listRef} 
+        className="overflow-y-auto bg-card" 
+        style={{ maxHeight: '300px' }}
+      >
+        {filteredCountries.length === 0 ? (
+          <div className="p-4 text-center text-muted-foreground font-medium">
+            {t('noCountriesFound') || 'No countries found'}
+          </div>
+        ) : (
+          <div className="animate-in fade-in duration-150">
+            {filteredCountries.map((country, index) => (
+              <CountryButton key={country.code} country={country} index={index} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-2 relative" ref={containerRef}>
       <label className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-2">
-        <Globe className="w-4 h-4 text-tesla-red" />
+        <Globe className="w-4 h-4 text-primary" />
         {t('selectCountry') || 'Select Your Country'}
-        <span className="text-red-500">*</span>
+        <span className="text-destructive">*</span>
       </label>
       
       <button
         type="button"
         onClick={() => setShowDropdown(!showDropdown)}
-        className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 shadow-lg ${
+        className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-card ${
           selectedCountry 
-            ? 'bg-gradient-to-r from-slate-800 to-slate-700 border-teal-500/60 hover:border-teal-400' 
-            : 'bg-gradient-to-r from-slate-800 to-slate-700 border-slate-600 hover:border-slate-500'
+            ? 'border-primary/50 hover:border-primary' 
+            : 'border-border hover:border-primary/50'
         }`}
       >
         {selectedCountryData ? (
           <div className="flex items-center gap-3">
             <span className="text-2xl">{selectedCountryData.flag}</span>
-            <span className="font-semibold text-white">{selectedCountryData.name}</span>
+            <span className="font-semibold text-foreground">{selectedCountryData.name}</span>
           </div>
         ) : (
-          <span className="text-slate-400">{t('chooseCountry') || 'Choose your country...'}</span>
+          <span className="text-muted-foreground">{t('chooseCountry') || 'Choose your country...'}</span>
         )}
-        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Mobile: Use Vaul Drawer for stable keyboard */}
+      {/* Mobile: Use Vaul Drawer */}
       {isMobile && <MobileDrawer />}
 
       {/* Desktop: Render inline dropdown */}

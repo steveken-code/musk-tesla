@@ -8,13 +8,10 @@ import SupportButtons from "@/components/SupportButtons";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Testimonials from "@/components/Testimonials";
-import StockGrowthChart from "@/components/StockGrowthChart";
 import LoadingScreen from "@/components/LoadingScreen";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
-
-import StockMarketWidget from "@/components/StockMarketWidget";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -27,17 +24,8 @@ const Index = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navbar />
       <Hero />
-      {/* Tesla Stock Widget Section */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-md mx-auto">
-            <StockMarketWidget />
-          </div>
-        </div>
-      </section>
       <Features />
       <Metrics />
-      <StockGrowthChart />
       <HowItWorks />
       <Vision />
       <Innovations />
@@ -46,7 +34,6 @@ const Index = () => {
       <Investment />
       <Footer />
       <SupportButtons />
-      
     </div>
   );
 };

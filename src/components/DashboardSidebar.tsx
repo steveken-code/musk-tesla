@@ -49,20 +49,13 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, onEditP
       items: [
         { icon: ArrowDownToLine, label: 'Deposit', href: '#deposit', action: 'scroll' },
         { icon: ArrowUpFromLine, label: 'Withdraw', href: '#withdraw', action: 'modal' },
-        { icon: History, label: 'Transactions', href: '/history' },
-      ]
-    },
-    {
-      title: 'TRADING & INVESTMENTS',
-      items: [
-        { icon: TrendingUp, label: 'Trading Plans', href: '#plans', action: 'scroll' },
-        { icon: Signal, label: 'Trade Signals', href: '/live-activity' },
       ]
     },
     {
       title: 'NAVIGATION',
       items: [
         { icon: Home, label: t('home'), href: '/' },
+        { icon: History, label: 'History', href: '/history' },
         { icon: Activity, label: 'Live Activity', href: '/live-activity' },
       ]
     },
@@ -171,7 +164,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, onEditP
                           onClick={() => handleNavClick(item)}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                             item.active
-                              ? 'bg-tesla-red/20 text-tesla-red border-l-4 border-tesla-red'
+                              ? 'bg-brand-purple/20 text-brand-purple border-l-4 border-brand-purple'
                               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                           }`}
                         >
@@ -186,7 +179,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, onEditP
                           onClick={onClose}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                             item.active
-                              ? 'bg-tesla-red/20 text-tesla-red border-l-4 border-tesla-red'
+                              ? 'bg-brand-purple/20 text-brand-purple border-l-4 border-brand-purple'
                               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                           }`}
                         >
