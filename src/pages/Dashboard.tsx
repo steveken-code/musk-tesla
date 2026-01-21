@@ -1160,7 +1160,7 @@ const Dashboard = () => {
             <div>
               <p className="text-muted-foreground text-xs sm:text-sm mb-1">Available Balance</p>
               <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-                ${portfolioBalance.toLocaleString()}
+                ${portfolioBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div className="flex gap-2">
@@ -1411,10 +1411,10 @@ const Dashboard = () => {
                     className="flex items-center justify-between p-2.5 sm:p-3 md:p-4 bg-background/50 rounded-lg border border-border hover:border-[#ff4d4d]/40 hover:shadow-[0_0_8px_rgba(255,77,77,0.1)] transition-all duration-300 ease-in-out"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-xs sm:text-sm md:text-base">${Number(inv.amount).toLocaleString()}</p>
+                      <p className="font-semibold text-xs sm:text-sm md:text-base">${Number(inv.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       {inv.profit_amount > 0 && (
                         <p className="text-[10px] sm:text-xs md:text-sm text-green-500">
-                          +${Number(inv.profit_amount).toLocaleString()} {t('profit')}
+                          +${Number(inv.profit_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t('profit')}
                         </p>
                       )}
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -1682,7 +1682,7 @@ const Dashboard = () => {
                   <div className="bg-muted/50 rounded-xl p-4 mb-4">
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-muted-foreground">{t('amount')}</span>
-                      <span className="font-bold">${parseFloat(withdrawAmount).toLocaleString()}</span>
+                      <span className="font-bold">${parseFloat(withdrawAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between text-sm mb-2">
                       <span className="text-muted-foreground">{t('country')}</span>

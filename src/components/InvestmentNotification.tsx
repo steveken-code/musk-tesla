@@ -534,11 +534,11 @@ const getRandomAmount = (): string => {
     cumulative += range.weight;
     if (random <= cumulative) {
       const amount = Math.floor(Math.random() * (range.max - range.min) + range.min);
-      return `$${amount.toLocaleString()}`;
+      return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   }
   
-  return `$${Math.floor(Math.random() * 10000 + 1000).toLocaleString()}`;
+  return `$${Math.floor(Math.random() * 10000 + 1000).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 // Random interval between 8-15 seconds for natural real-life timing

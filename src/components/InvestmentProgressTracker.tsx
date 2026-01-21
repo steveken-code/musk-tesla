@@ -44,7 +44,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         id: 1,
         label: 'Funds Deposited',
         description: hasInvestments 
-          ? `$${totalAmount.toLocaleString()} total invested` 
+          ? `$${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total invested` 
           : 'Awaiting deposit',
         icon: DollarSign,
         status: hasInvestments ? 'completed' : 'current',
@@ -75,8 +75,8 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         id: 4,
         label: 'Profits Generated',
         description: hasProfits 
-          ? `+$${totalProfit.toLocaleString()} total earned` 
-          : isCurrentlyTrading 
+          ? `+$${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total earned` 
+          : isCurrentlyTrading
           ? 'Accumulating returns...'
           : 'After trading completes',
         icon: DollarSign,
