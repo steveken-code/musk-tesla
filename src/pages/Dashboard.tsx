@@ -27,6 +27,7 @@ import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import StockMarketWidget from '@/components/StockMarketWidget';
+import ProfileCompletionModal from '@/components/ProfileCompletionModal';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
 import { formatCurrencyValue } from '@/lib/formatCurrency';
@@ -111,6 +112,7 @@ interface Profile {
   full_name: string | null;
   email: string | null;
   email_verified: boolean;
+  avatar_url: string | null;
 }
 
 const USD_TO_RUB = 96.5;
@@ -602,6 +604,7 @@ const Dashboard = () => {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
@@ -716,7 +719,7 @@ const Dashboard = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('profiles')
-          .select('full_name, email, email_verified')
+          .select('full_name, email, email_verified, avatar_url')
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase
@@ -732,7 +735,16 @@ const Dashboard = () => {
           previousProfitsRef.current[inv.id] = inv.profit_amount;
         });
       }
-      if (profileRes.data) setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        // Show profile completion modal if name is missing
+        if (!profileRes.data.full_name?.trim()) {
+          setShowProfileModal(true);
+        }
+      } else {
+        // No profile record - show modal
+        setShowProfileModal(true);
+      }
       if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data as Withdrawal[]);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -1073,6 +1085,7 @@ const Dashboard = () => {
         onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
         userEmail={profile?.email || user?.email}
         userName={profile?.full_name || undefined}
+        userAvatarUrl={profile?.avatar_url || undefined}
       />
 
       {/* Header with animated menu */}
@@ -1887,6 +1900,17 @@ const Dashboard = () => {
       )}
 
       <SupportButtons />
+
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        userId={user?.id || ''}
+        currentName={profile?.full_name || ''}
+        currentEmail={profile?.email || user?.email || ''}
+        currentAvatarUrl={profile?.avatar_url || ''}
+        onProfileUpdated={fetchData}
+      />
     </div>
   );
 };
