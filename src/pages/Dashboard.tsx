@@ -1165,17 +1165,13 @@ const Dashboard = () => {
 
       <main className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-7xl overflow-x-hidden">
         {/* Hero Balance Card - Like reference image */}
-        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-brand-purple/15 via-electric-blue/10 to-primary/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-brand-purple/30 animate-fade-in">
+        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-600/50 animate-fade-in shadow-lg">
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t('welcomeBack')},</p>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                 {displayName}!
               </h1>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] sm:text-xs">Online</span>
             </div>
           </div>
           
