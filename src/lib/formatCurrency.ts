@@ -21,3 +21,16 @@ export const formatCurrencyValue = (amount: number): string => {
     maximumFractionDigits: 2,
   }).format(amount);
 };
+
+/**
+ * Format USDT amounts in professional crypto format
+ * Example: formatUSDT(25000) => "25,000.00 USDT"
+ * Note: No $ prefix for USDT, uses USDT suffix
+ */
+export const formatUSDT = (amount: number): string => {
+  const formatted = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${formatted} USDT`;
+};
