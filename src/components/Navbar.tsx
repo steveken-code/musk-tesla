@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSelector from './LanguageSelector';
+import GoogleTranslate from './GoogleTranslate';
 import PriceTicker from './PriceTicker';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info, Activity } from 'lucide-react';
@@ -110,7 +110,7 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
-            <LanguageSelector />
+            <GoogleTranslate />
             <Link to="/auth">
               <Button 
                 variant="outline" 
@@ -198,7 +198,7 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: 0.3 }}
                 >
-                  <LanguageSelector />
+                  <GoogleTranslate />
                   <Link to="/auth" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">{t('signIn')}</Button>
                   </Link>

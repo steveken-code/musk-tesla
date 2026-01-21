@@ -1069,6 +1069,7 @@ const Dashboard = () => {
         isOpen={showMobileMenu}
         onClose={() => setShowMobileMenu(false)}
         onSignOut={handleSignOut}
+        onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
         userEmail={profile?.email || user?.email}
         userName={profile?.full_name || undefined}
       />
@@ -1077,15 +1078,15 @@ const Dashboard = () => {
       <header className="relative z-20 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0">
         <div className="container mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Mobile menu button with animation */}
+            {/* Mobile menu button with improved animation */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="p-2 rounded-lg hover:bg-muted/50 transition-all"
+              className="p-2 rounded-lg hover:bg-muted/50 transition-all duration-300 active:scale-95"
             >
               <div className="relative w-5 h-4 flex flex-col justify-between">
-                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-1.5' : ''}`} />
-                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? 'opacity-0 scale-0' : ''}`} />
-                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-1.5' : ''}`} />
+                <span className={`block h-0.5 w-full bg-foreground rounded origin-center transition-all duration-300 ease-out ${showMobileMenu ? 'rotate-45 translate-y-[7px]' : ''}`} />
+                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-200 ${showMobileMenu ? 'opacity-0 scale-x-0' : ''}`} />
+                <span className={`block h-0.5 w-full bg-foreground rounded origin-center transition-all duration-300 ease-out ${showMobileMenu ? '-rotate-45 -translate-y-[7px]' : ''}`} />
               </div>
             </button>
             <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
@@ -1124,7 +1125,7 @@ const Dashboard = () => {
         <PriceTicker />
       </header>
 
-      <main className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-full overflow-x-hidden">
+      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-7xl overflow-x-hidden">
         {/* Hero Balance Card - Like reference image */}
         <div className="mb-4 sm:mb-6 bg-gradient-to-br from-[hsl(var(--secondary)/0.15)] via-[hsl(var(--accent)/0.1)] to-[hsl(var(--primary)/0.1)] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border/50 animate-fade-in">
           <div className="flex items-start justify-between mb-4">
@@ -1154,7 +1155,7 @@ const Dashboard = () => {
                 className="flex-1 sm:flex-none h-9 px-4 text-xs border-border hover:bg-muted"
                 onClick={() => {
                   // Scroll to invest form
-                  document.querySelector('#invest-form')?.scrollIntoView({ behavior: 'smooth' });
+                  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
                 Invest
@@ -1282,13 +1283,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8 md:mb-10">
-          <TeslaChart />
-          <InvestmentChart investments={investments} />
+        {/* Charts Section - Horizontal Layout */}
+        <div id="plans" className="mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+            <TeslaChart />
+            <InvestmentChart investments={investments} />
+          </div>
         </div>
 
-        <div id="invest-form" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
+        <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
           {/* New Investment Form */}
           <div className="bg-card/90 border border-border rounded-xl p-4 sm:p-5 md:p-6">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">

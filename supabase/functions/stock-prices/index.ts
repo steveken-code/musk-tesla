@@ -46,7 +46,10 @@ const symbols = Object.keys(stockInfo);
 // Simple in-memory cache to avoid rate limits
 let cachedData: { stocks: StockQuote[]; lastUpdated: string; marketStatus: string } | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 10000; // 10 seconds cache
+const CACHE_DURATION = 60000; // 60 seconds cache - increased to avoid rate limiting
+
+// Helper function to delay execution
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 function getMarketStatus(): string {
   const now = new Date();
@@ -103,16 +106,30 @@ serve(async (req) => {
 
     console.log('Fetching fresh stock data from Finnhub');
 
-    // Fetch all stock quotes in parallel
-    const quotePromises = symbols.map(async (symbol) => {
+    const stocks: StockQuote[] = [];
+
+    // Fetch sequentially with delays to avoid rate limiting (Finnhub free tier: 60 calls/min)
+    for (const symbol of symbols) {
       try {
         const response = await fetch(
           `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${finnhubApiKey}`
         );
         
+        if (response.status === 429) {
+          console.warn(`Rate limited on ${symbol}, using cached data`);
+          // If we hit rate limit and have cache, return it
+          if (cachedData) {
+            return new Response(
+              JSON.stringify(cachedData),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          break;
+        }
+        
         if (!response.ok) {
           console.error(`Failed to fetch ${symbol}: ${response.status}`);
-          return null;
+          continue;
         }
         
         const data: FinnhubQuote = await response.json();
@@ -120,45 +137,60 @@ serve(async (req) => {
         // Check if we got valid data
         if (data.c === 0 && data.pc === 0) {
           console.warn(`No data available for ${symbol}`);
-          return null;
+          continue;
         }
         
-        return {
+        stocks.push({
           symbol,
           name: stockInfo[symbol],
           price: data.c,
           change: data.d,
           changePercent: data.dp,
-          volume: 0, // Finnhub quote endpoint doesn't include volume
+          volume: 0,
           high: data.h,
           low: data.l,
           open: data.o,
           previousClose: data.pc,
-        } as StockQuote;
+        });
+
+        // Add delay between requests to avoid rate limiting (150ms = ~6 req/sec, well under 60/min)
+        await delay(150);
       } catch (error) {
         console.error(`Error fetching ${symbol}:`, error);
-        return null;
       }
-    });
+    }
 
-    const results = await Promise.all(quotePromises);
-    const stocks = results.filter((stock): stock is StockQuote => stock !== null);
+    // Only update cache if we got some data
+    if (stocks.length > 0) {
+      const responseData = {
+        stocks,
+        lastUpdated: new Date().toISOString(),
+        marketStatus: getMarketStatus(),
+      };
 
-    const responseData = {
-      stocks,
-      lastUpdated: new Date().toISOString(),
-      marketStatus: getMarketStatus(),
-    };
+      cachedData = responseData;
+      cacheTimestamp = now;
 
-    // Update cache
-    cachedData = responseData;
-    cacheTimestamp = now;
+      console.log(`Successfully fetched ${stocks.length} stock quotes`);
 
-    console.log(`Successfully fetched ${stocks.length} stock quotes`);
+      return new Response(
+        JSON.stringify(responseData),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // If no new data but we have cache, return stale cache
+    if (cachedData) {
+      console.log('No new data, returning stale cached data');
+      return new Response(
+        JSON.stringify(cachedData),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     return new Response(
-      JSON.stringify(responseData),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'No stock data available', stocks: [], marketStatus: getMarketStatus() }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
