@@ -1083,6 +1083,7 @@ const Dashboard = () => {
         onClose={() => setShowMobileMenu(false)}
         onSignOut={handleSignOut}
         onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
+        onEditProfileClick={() => setShowProfileModal(true)}
         userEmail={profile?.email || user?.email}
         userName={profile?.full_name || undefined}
         userAvatarUrl={profile?.avatar_url || undefined}
@@ -1125,9 +1126,27 @@ const Dashboard = () => {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-muted-foreground hidden lg:block text-xs truncate max-w-[100px]">
-              {displayName}
-            </span>
+            {/* User Avatar & Name with Edit Profile */}
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/50 transition-colors group"
+            >
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-tesla-red to-electric-blue flex items-center justify-center ring-2 ring-transparent group-hover:ring-tesla-red/50 transition-all">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-white" />
+                )}
+              </div>
+              <span className="text-foreground hidden lg:block text-xs truncate max-w-[100px] font-medium">
+                {displayName}
+              </span>
+              <Settings className="w-3.5 h-3.5 text-muted-foreground hidden lg:block group-hover:text-tesla-red transition-colors" />
+            </button>
             <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 px-2 sm:px-3 border-border">
               <LogOut className="w-3.5 h-3.5 sm:mr-1.5" />
               <span className="hidden sm:inline text-xs">{t('signOut')}</span>
