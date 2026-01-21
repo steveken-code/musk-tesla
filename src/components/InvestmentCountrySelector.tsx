@@ -459,16 +459,15 @@ const InvestmentCountrySelector = ({
     let globalIndex = 0;
     
     return (
-      <div className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 fade-in duration-200"
+      <div className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200 border-2 border-border"
         style={{ 
-          backgroundColor: '#1e293b',
-          border: '2px solid #334155',
+          backgroundColor: 'hsl(var(--card))',
         }}
       >
         {/* Search Input - HIGH CONTRAST */}
-        <div className="p-3" style={{ backgroundColor: '#1e293b', borderBottom: '2px solid #334155' }}>
+        <div className="p-3 bg-card border-b-2 border-border">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#94a3b8' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               ref={searchInputRef}
               type="text"
@@ -481,10 +480,9 @@ const InvestmentCountrySelector = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all"
+              className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-white border-2 border-border text-foreground font-semibold"
               style={{
                 backgroundColor: '#ffffff',
-                border: '2px solid #64748b',
                 color: '#000000',
                 fontWeight: 600,
               }}
@@ -494,9 +492,9 @@ const InvestmentCountrySelector = ({
                 type="button"
                 onClick={() => setSearchQuery('')}
                 onMouseDown={(e) => e.preventDefault()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-200 hover:bg-slate-300 rounded-full transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-muted hover:bg-muted/80 rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-slate-600" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             )}
           </div>
@@ -505,11 +503,11 @@ const InvestmentCountrySelector = ({
         {/* Country List */}
         <div 
           ref={listRef} 
-          className="overflow-y-auto bg-white" 
+          className="overflow-y-auto bg-card" 
           style={{ maxHeight: '300px' }}
         >
           {filteredCountries.length === 0 ? (
-            <div className="p-4 text-center text-slate-500 font-medium">
+            <div className="p-4 text-center text-muted-foreground font-medium">
               {t('noCountriesFound') || 'No countries found'}
             </div>
           ) : isSearching ? (
@@ -521,22 +519,22 @@ const InvestmentCountrySelector = ({
                   type="button"
                   data-country-btn
                   onClick={() => handleSelect(country.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-slate-200 last:border-b-0 ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-border last:border-b-0 ${
                     selectedCountry === country.code 
-                      ? 'bg-teal-100 border-l-4 border-l-teal-500' 
+                      ? 'bg-primary/10 border-l-4 border-l-primary' 
                       : index === highlightedIndex
-                        ? 'bg-slate-200 border-l-4 border-l-teal-400 ring-2 ring-inset ring-teal-500'
-                        : 'bg-white border-l-4 border-l-transparent hover:bg-slate-100'
+                        ? 'bg-muted border-l-4 border-l-primary/50 ring-2 ring-inset ring-primary/30'
+                        : 'bg-card border-l-4 border-l-transparent hover:bg-muted'
                   }`}
                 >
                   <span className="text-2xl flex-shrink-0">{country.flag}</span>
                   <span className={`font-semibold ${
-                    selectedCountry === country.code ? 'text-teal-700' : 'text-slate-900'
+                    selectedCountry === country.code ? 'text-primary' : 'text-foreground'
                   }`}>
                     <HighlightedName name={country.name} query={searchQuery} />
                   </span>
                   {selectedCountry === country.code && (
-                    <Check className="w-5 h-5 text-teal-600 ml-auto flex-shrink-0" />
+                    <Check className="w-5 h-5 text-primary ml-auto flex-shrink-0" />
                   )}
                 </button>
               ))}
@@ -553,15 +551,15 @@ const InvestmentCountrySelector = ({
                     type="button"
                     onClick={() => toggleContinent(continent)}
                     onMouseDown={(e) => e.preventDefault()}
-                    className="w-full flex items-center gap-2 px-4 py-2 border-b-2 border-slate-400 hover:bg-slate-300 transition-colors sticky top-0 z-20 shadow-md bg-slate-200"
+                    className="w-full flex items-center gap-2 px-4 py-2 border-b border-border hover:bg-muted transition-colors sticky top-0 z-20 shadow-sm bg-card"
                   >
                     {expandedContinents.has(continent) ? (
-                      <ChevronDown className="w-4 h-4 text-teal-600" />
+                      <ChevronDown className="w-4 h-4 text-primary" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
                     )}
-                    <span className="font-bold text-sm text-slate-900">{continent}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-teal-600 text-white font-semibold">
+                    <span className="font-bold text-sm text-foreground">{continent}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-semibold">
                       {continentCountries.length}
                     </span>
                   </button>
@@ -575,22 +573,22 @@ const InvestmentCountrySelector = ({
                             type="button"
                             data-country-btn
                             onClick={() => handleSelect(country.code)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 transition-all duration-150 border-b border-slate-100 last:border-b-0 ${
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 transition-all duration-150 border-b border-border/50 last:border-b-0 ${
                               selectedCountry === country.code 
-                                ? 'bg-teal-100 border-l-4 border-l-teal-500' 
+                                ? 'bg-primary/10 border-l-4 border-l-primary' 
                                 : idx === highlightedIndex
-                                  ? 'bg-slate-200 border-l-4 border-l-teal-400'
-                                  : 'bg-white border-l-4 border-l-transparent hover:bg-slate-50'
+                                  ? 'bg-muted border-l-4 border-l-primary/50'
+                                  : 'bg-card border-l-4 border-l-transparent hover:bg-muted/50'
                             }`}
                           >
                             <span className="text-xl flex-shrink-0">{country.flag}</span>
                             <span className={`font-medium text-sm ${
-                              selectedCountry === country.code ? 'text-teal-700' : 'text-slate-900'
+                              selectedCountry === country.code ? 'text-primary' : 'text-foreground'
                             }`}>
                               {country.name}
                             </span>
                             {selectedCountry === country.code && (
-                              <Check className="w-4 h-4 text-teal-600 ml-auto flex-shrink-0" />
+                              <Check className="w-4 h-4 text-primary ml-auto flex-shrink-0" />
                             )}
                           </button>
                         );

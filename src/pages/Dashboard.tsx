@@ -11,7 +11,8 @@ import {
   LogOut, TrendingUp, DollarSign, Clock, 
   CheckCircle, XCircle, Loader2, ArrowLeft,
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
-  CreditCard, Phone, Bitcoin, ChevronDown, X, History, Search
+  CreditCard, Phone, Bitcoin, ChevronDown, X, History, Search,
+  Menu, Home, BarChart3, Settings, User
 } from 'lucide-react';
 import SupportButtons from '@/components/SupportButtons';
 import TeslaChart from '@/components/TeslaChart';
@@ -597,6 +598,7 @@ const Dashboard = () => {
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
@@ -1060,91 +1062,176 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
       <div className="absolute inset-0 bg-gradient-hero opacity-30 pointer-events-none" />
       
-      {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-xl">
+      {/* Header with animated menu */}
+      <header className="relative z-20 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0">
         <div className="container mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link to="/" className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity">
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+            {/* Mobile menu button with animation */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-2 rounded-lg hover:bg-muted/50 transition-all md:hidden"
+            >
+              <div className="relative w-5 h-4 flex flex-col justify-between">
+                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-1.5' : ''}`} />
+                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? 'opacity-0 scale-0' : ''}`} />
+                <span className={`block h-0.5 w-full bg-foreground rounded transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-1.5' : ''}`} />
+              </div>
+            </button>
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <img src={teslaLogo} alt="Tesla Stock" className="h-10 sm:h-12 w-auto brightness-150 drop-shadow-lg" />
             </Link>
-            <img src={teslaLogo} alt="Tesla Stock" className="h-10 sm:h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="text-muted-foreground hidden sm:block text-xs sm:text-sm truncate max-w-[100px] sm:max-w-[120px]">
+
+          {/* Desktop nav links */}
+          <nav className="hidden md:flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
+            <Link to="/transactions" className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <History className="w-4 h-4" />
+              History
+            </Link>
+            <Link to="/live-activity" className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <BarChart3 className="w-4 h-4" />
+              Live Activity
+            </Link>
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-muted-foreground hidden lg:block text-xs truncate max-w-[100px]">
               {displayName}
             </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 sm:h-9 px-2 sm:px-3">
-              <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline text-xs sm:text-sm">{t('signOut')}</span>
+            <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 px-2 sm:px-3 border-border">
+              <LogOut className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline text-xs">{t('signOut')}</span>
             </Button>
           </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${showMobileMenu ? 'max-h-60' : 'max-h-0'}`}>
+          <nav className="px-4 py-3 bg-card border-t border-border space-y-1">
+            <Link 
+              to="/" 
+              onClick={() => setShowMobileMenu(false)}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
+            <Link 
+              to="/transactions" 
+              onClick={() => setShowMobileMenu(false)}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            >
+              <History className="w-4 h-4" />
+              Transaction History
+            </Link>
+            <Link 
+              to="/live-activity" 
+              onClick={() => setShowMobileMenu(false)}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Live Activity
+            </Link>
+          </nav>
+        </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-full overflow-x-hidden">
-        {/* Welcome Message */}
-        <div className="mb-4 sm:mb-6 md:mb-8 animate-fade-in">
-          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
-            {t('welcomeBack')}, <span className="text-brand-purple drop-shadow-[0_0_20px_hsl(270_70%_60%/0.5)]">{displayName}</span>!
-          </h1>
-          <p className="text-muted-foreground mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm">{t('dashboardSubtitle')}</p>
+      <main className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-full overflow-x-hidden">
+        {/* Hero Balance Card - Like reference image */}
+        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-[hsl(var(--secondary)/0.15)] via-[hsl(var(--accent)/0.1)] to-[hsl(var(--primary)/0.1)] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-border/50 animate-fade-in">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t('welcomeBack')},</p>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+                {displayName}!
+              </h1>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[10px] sm:text-xs">Online</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <p className="text-muted-foreground text-xs sm:text-sm mb-1">Available Balance</p>
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+                ${portfolioBalance.toLocaleString()}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 sm:flex-none h-9 px-4 text-xs border-border hover:bg-muted"
+                onClick={() => {
+                  // Scroll to invest form
+                  document.querySelector('#invest-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Invest
+              </Button>
+              <Button 
+                size="sm" 
+                className="flex-1 sm:flex-none h-9 px-4 text-xs bg-primary hover:bg-primary/90"
+                onClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
+                disabled={portfolioBalance <= 0}
+              >
+                Withdraw
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Email verification is now automatic - banner removed */}
-
-        {/* Stats with Withdrawal */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-tesla-red/30 transition-colors">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-tesla-red flex-shrink-0" />
-              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('totalInvested')}</span>
+        {/* Stats Grid - Compact cards like reference */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
+                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+              </div>
+              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalInvested')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">${totalInvested.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold">${totalInvested.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-green-500/30 transition-colors">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('totalProfit')}</span>
+          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-green-500/30 transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/10">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+              </div>
+              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalProfit')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+            {totalInvested > 0 && (
+              <p className="text-[10px] text-green-400 mt-0.5">↑ {((totalProfit / totalInvested) * 100).toFixed(1)}%</p>
+            )}
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-yellow-500/30 transition-colors">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-500 flex-shrink-0" />
-              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('pending')}</span>
+          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-yellow-500/30 transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-yellow-500/10">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500" />
+              </div>
+              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('pending')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">${pendingAmount.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold">${pendingAmount.toLocaleString()}</p>
           </div>
           
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-electric-blue/30 transition-colors">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-electric-blue flex-shrink-0" />
-              <span className="text-muted-foreground text-[10px] sm:text-xs md:text-sm truncate">{t('active')}</span>
+          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-secondary/30 transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-secondary/10">
+                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" />
+              </div>
+              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('active')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold">
+            <p className="text-base sm:text-lg md:text-xl font-bold">
               {investments.filter(i => i.status === 'active').length}
             </p>
-          </div>
-
-          {/* Portfolio Balance Card */}
-          <div 
-            onClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
-            className={`bg-gradient-to-br from-green-600/20 to-green-500/10 backdrop-blur-xl border border-green-500/30 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 transition-all col-span-2 md:col-span-1 ${
-              portfolioBalance > 0 ? 'cursor-pointer hover:border-green-500/60 hover:scale-[1.02]' : 'opacity-60'
-            }`}
-          >
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
-              <span className="text-green-400 text-[10px] sm:text-xs md:text-sm font-medium">{t('portfolioBalance') || 'Portfolio Balance'}</span>
-            </div>
-            <p className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-green-400">
-              {portfolioBalance > 0 ? `$${portfolioBalance.toLocaleString()}` : t('noBalanceYet') || 'No Balance Yet'}
-            </p>
-            {portfolioBalance > 0 && (
-              <p className="text-[10px] sm:text-xs text-green-500/70 mt-1">{t('clickToWithdraw') || 'Click to Withdraw'}</p>
-            )}
           </div>
         </div>
 
@@ -1214,11 +1301,11 @@ const Dashboard = () => {
           <InvestmentChart investments={investments} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
+        <div id="invest-form" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
           {/* New Investment Form */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
+          <div className="bg-card/90 border border-border rounded-xl p-4 sm:p-5 md:p-6">
             <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-tesla-red" />
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               {t('makeNewInvestment')}
             </h2>
             
