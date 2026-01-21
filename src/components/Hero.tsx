@@ -108,18 +108,8 @@ const Hero = () => {
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 py-20 pt-28 sm:pt-24">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Premium Investment Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-2.5 mb-6 sm:mb-8 bg-gradient-to-r from-tesla-red/10 via-orange-500/10 to-electric-blue/10 backdrop-blur-md border border-tesla-red/20 rounded-full shadow-lg"
-          >
-            <Sparkles className="w-4 h-4 text-tesla-red animate-pulse" />
-            <span className="text-xs sm:text-sm font-semibold text-foreground tracking-wide">
-              Professional Investment Platform
-            </span>
-          </motion.div>
+          {/* Spacer for visual balance */}
+          <div className="mb-6 sm:mb-8" />
 
           {/* Main Headline with enhanced typography */}
           <motion.h1
