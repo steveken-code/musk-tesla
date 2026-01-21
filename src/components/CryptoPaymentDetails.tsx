@@ -119,7 +119,7 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
         {/* Amount to send */}
         <div className="p-3 bg-teal-500/15 rounded-lg border border-teal-500/30">
           <p className="text-xs text-slate-400 mb-1">{t('amountToSend') || 'Amount to Send'}</p>
-          <p className="text-xl font-bold text-teal-400">{amount.toLocaleString()} USDT</p>
+          <p className="text-xl font-bold text-teal-400">{amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT</p>
         </div>
       </div>
 

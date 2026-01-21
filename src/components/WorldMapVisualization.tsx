@@ -467,11 +467,11 @@ const getRandomAmount = (): string => {
     random -= range.weight;
     if (random <= 0) {
       const amount = Math.floor(Math.random() * (range.max - range.min) + range.min);
-      return `$${amount.toLocaleString()}`;
+      return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
   }
   
-  return `$${ranges[0].min.toLocaleString()}`;
+  return `$${ranges[0].min.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 export const WorldMapVisualization = () => {

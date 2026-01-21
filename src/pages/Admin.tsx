@@ -1743,7 +1743,7 @@ const Admin = () => {
                         {/* Investment Details */}
                         <div className="flex flex-wrap items-center gap-3">
                           <h3 className="text-2xl font-bold text-white">
-                            ${investment.amount.toLocaleString()}
+                            ${investment.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </h3>
                           <span className={`px-3 py-1.5 text-xs rounded-full border font-medium ${getStatusBadge(investment.status)}`}>
                             {investment.status.toUpperCase()}
@@ -1754,7 +1754,7 @@ const Admin = () => {
                         <div className="flex flex-wrap gap-3">
                           {investment.profit_amount > 0 && (
                             <span className="px-4 py-2 text-sm rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 font-semibold">
-                              +${investment.profit_amount.toLocaleString()} Profit
+                              +${investment.profit_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Profit
                             </span>
                           )}
                           {(investment.status === 'active' || investment.status === 'completed') && (

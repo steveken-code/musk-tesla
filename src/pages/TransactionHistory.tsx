@@ -283,7 +283,7 @@ const TransactionHistory = () => {
                 </div>
                 <span className="text-muted-foreground text-xs font-medium">{t('totalInvested')}</span>
               </div>
-              <p className="text-2xl font-bold tracking-tight">${totalInvested.toLocaleString()}</p>
+              <p className="text-2xl font-bold tracking-tight">${totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <div className="mt-2 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3 text-tesla-red" />
                 <span className="text-xs text-muted-foreground">{investments.length} investments</span>
@@ -301,7 +301,7 @@ const TransactionHistory = () => {
                 </div>
                 <span className="text-muted-foreground text-xs font-medium">{t('totalProfit')}</span>
               </div>
-              <p className="text-2xl font-bold text-green-500 tracking-tight">${totalProfit.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-500 tracking-tight">${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <div className="mt-2 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3 text-green-500" />
                 <span className="text-xs text-green-500/70">+{((totalProfit / Math.max(totalInvested, 1)) * 100).toFixed(1)}%</span>
@@ -319,7 +319,7 @@ const TransactionHistory = () => {
                 </div>
                 <span className="text-muted-foreground text-xs font-medium">{t('withdrawn') || 'Withdrawn'}</span>
               </div>
-              <p className="text-2xl font-bold text-emerald-400 tracking-tight">${totalWithdrawn.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-emerald-400 tracking-tight">${totalWithdrawn.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <div className="mt-2 flex items-center gap-1">
                 <BadgeCheck className="w-3 h-3 text-emerald-400" />
                 <span className="text-xs text-emerald-400/70">{successfulWithdrawalsCount} successful</span>
@@ -337,7 +337,7 @@ const TransactionHistory = () => {
                 </div>
                 <span className="text-muted-foreground text-xs font-medium">{t('pending')}</span>
               </div>
-              <p className="text-2xl font-bold text-amber-400 tracking-tight">${pendingWithdrawals.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-amber-400 tracking-tight">${pendingWithdrawals.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <div className="mt-2 flex items-center gap-1">
                 <Clock className="w-3 h-3 text-amber-400 animate-pulse" />
                 <span className="text-xs text-amber-400/70">Processing</span>
