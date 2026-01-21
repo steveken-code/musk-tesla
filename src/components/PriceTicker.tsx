@@ -50,7 +50,7 @@ const PriceTicker = () => {
   const tickerItems = [...displayPrices, ...displayPrices];
 
   return (
-    <div className="w-full bg-background border-y border-border/50 overflow-hidden shadow-md shadow-black/20">
+    <div className="w-full bg-background supports-[backdrop-filter]:bg-background/95 supports-[backdrop-filter]:backdrop-blur-lg supports-[backdrop-filter]:backdrop-saturate-150 border-y border-border/50 overflow-hidden shadow-md">
       <div className="relative h-8 sm:h-9">
         {/* Loading indicator */}
         {loading && !data && (
