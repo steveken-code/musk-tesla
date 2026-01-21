@@ -16,9 +16,10 @@ interface DashboardSidebarProps {
   onWithdrawClick?: () => void;
   userEmail?: string;
   userName?: string;
+  userAvatarUrl?: string;
 }
 
-const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEmail, userName }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEmail, userName, userAvatarUrl }: DashboardSidebarProps) => {
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -123,8 +124,16 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEma
             {/* User Profile */}
             <div className="p-4 border-b border-border bg-muted/30">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-tesla-red to-electric-blue flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-tesla-red to-electric-blue flex items-center justify-center">
+                  {userAvatarUrl ? (
+                    <img 
+                      src={userAvatarUrl} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-6 h-6 text-white" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate">
