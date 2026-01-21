@@ -169,19 +169,19 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
             <span className="text-slate-400 flex items-center gap-1.5">
               <DollarSign className="w-3 h-3" /> Portfolio Value
             </span>
-            <span className="font-mono font-bold text-white text-sm">${d.value.toLocaleString()}</span>
+            <span className="font-mono font-bold text-white text-sm">${d.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-emerald-400 flex items-center gap-1.5">
               <TrendingUp className="w-3 h-3" /> Total Profit
             </span>
-            <span className="font-mono font-bold text-emerald-400">+${d.profit.toLocaleString()}</span>
+            <span className="font-mono font-bold text-emerald-400">+${d.profit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-slate-500 flex items-center gap-1.5">
               <Target className="w-3 h-3" /> Invested
             </span>
-            <span className="font-mono text-slate-400">${d.invested.toLocaleString()}</span>
+            <span className="font-mono text-slate-400">${d.invested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
         
@@ -241,7 +241,7 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
           <div className="flex-1 bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-700/50">
             <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-1">Portfolio Value</p>
             <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-white transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
-              ${displayValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
           <div className="flex-1 bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-emerald-500/30">
@@ -249,7 +249,7 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
             <div className="flex items-center gap-1">
               <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
               <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-emerald-400 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
-                ${displayProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                ${displayProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -264,11 +264,11 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
           <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">{t('profit')}</p>
-          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">${totalProfit.toLocaleString()}</p>
+          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
           <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Invested</p>
-          <p className="text-sm sm:text-base md:text-lg font-bold text-white">${totalInvested.toLocaleString()}</p>
+          <p className="text-sm sm:text-base md:text-lg font-bold text-white">${totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
           <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Status</p>
@@ -401,11 +401,11 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px]">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-1 rounded-full bg-gradient-to-r from-emerald-400 to-green-500" />
-            <span className="text-slate-400">Portfolio: <span className="text-white font-mono">${portfolioValue.toLocaleString()}</span></span>
+            <span className="text-slate-400">Portfolio: <span className="text-white font-mono">${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-1 rounded-full bg-emerald-500/60" />
-            <span className="text-slate-400">{t('profit')}: <span className="text-emerald-400 font-mono">+${totalProfit.toLocaleString()}</span></span>
+            <span className="text-slate-400">{t('profit')}: <span className="text-emerald-400 font-mono">+${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
           </div>
         </div>
         <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-slate-500">

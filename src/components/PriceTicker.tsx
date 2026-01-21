@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, Loader2, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useStockPrices, StockQuote } from '@/hooks/useStockPrices';
 
 // Fallback prices for when API is loading or errors
@@ -19,12 +18,52 @@ const fallbackPrices: StockQuote[] = [
 const PriceTicker = () => {
   const { data, loading, error } = useStockPrices(30000); // Poll every 30 seconds
   const [displayPrices, setDisplayPrices] = useState<StockQuote[]>(fallbackPrices);
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number | null>(null);
+  const positionRef = useRef(0);
 
   useEffect(() => {
     if (data?.stocks && data.stocks.length > 0) {
       setDisplayPrices(data.stocks);
     }
   }, [data]);
+
+  // Smooth continuous animation using requestAnimationFrame
+  useEffect(() => {
+    const ticker = tickerRef.current;
+    if (!ticker) return;
+
+    const speed = 0.8; // pixels per frame - adjust for smoother/slower movement
+    let lastTime = 0;
+
+    const animate = (currentTime: number) => {
+      if (!lastTime) lastTime = currentTime;
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      // Move based on time delta for consistent speed
+      positionRef.current -= speed * (deltaTime / 16.67); // normalize to ~60fps
+
+      // Get the width of one set of items (half the total since we duplicate)
+      const singleSetWidth = ticker.scrollWidth / 2;
+
+      // Reset position when we've scrolled through one complete set
+      if (Math.abs(positionRef.current) >= singleSetWidth) {
+        positionRef.current = 0;
+      }
+
+      ticker.style.transform = `translateX(${positionRef.current}px)`;
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [displayPrices]);
 
   const formatPrice = (price: number) => {
     if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -35,7 +74,7 @@ const PriceTicker = () => {
   const TickerItemComponent = ({ item }: { item: StockQuote }) => {
     const isPositive = item.changePercent >= 0;
     return (
-      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1">
+      <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-1 shrink-0">
         <span className="font-bold text-xs sm:text-sm text-foreground whitespace-nowrap">{item.symbol}</span>
         <span className="text-xs sm:text-sm text-foreground font-medium whitespace-nowrap">${formatPrice(item.price)}</span>
         <span className={`flex items-center gap-0.5 text-[10px] sm:text-xs font-medium whitespace-nowrap ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
@@ -46,8 +85,8 @@ const PriceTicker = () => {
     );
   };
 
-  // Duplicate the items for seamless loop
-  const tickerItems = [...displayPrices, ...displayPrices];
+  // Triplicate items for extra smooth seamless loop
+  const tickerItems = [...displayPrices, ...displayPrices, ...displayPrices];
 
   return (
     <div className="w-full bg-background supports-[backdrop-filter]:bg-background/95 supports-[backdrop-filter]:backdrop-blur-lg supports-[backdrop-filter]:backdrop-saturate-150 border-y border-border/50 overflow-hidden shadow-md">
@@ -67,23 +106,15 @@ const PriceTicker = () => {
           </div>
         )}
 
-        <motion.div
-          className="flex absolute whitespace-nowrap"
-          animate={{
-            x: ['0%', '-50%'],
-          }}
-          transition={{
-            x: {
-              duration: 40,
-              repeat: Infinity,
-              ease: 'linear',
-            },
-          }}
+        <div
+          ref={tickerRef}
+          className="flex absolute whitespace-nowrap will-change-transform"
+          style={{ transform: 'translateX(0px)' }}
         >
           {tickerItems.map((item, index) => (
             <TickerItemComponent key={`${item.symbol}-${index}`} item={item} />
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
