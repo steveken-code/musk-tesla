@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { Globe, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -19,7 +17,6 @@ declare global {
 }
 
 const GoogleTranslate = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -31,13 +28,13 @@ const GoogleTranslate = () => {
       new window.google.translate.TranslateElement(
         {
           pageLanguage: 'en',
-          includedLanguages: 'en,es,fr,de,it,pt,ru,zh-CN,zh-TW,ja,ko,ar,hi,th,vi,nl,pl,tr,sv,da,no,fi,cs,hu,ro,el,he,id,ms,tl,uk,bg,hr,sk,sl,et,lv,lt',
-          layout: 0, // SIMPLE layout
+          // Empty string = ALL supported languages (100+), sorted alphabetically by Google
+          includedLanguages: '',
+          layout: 0, // SIMPLE dropdown layout
           autoDisplay: false,
         },
         'google_translate_element'
       );
-      setIsLoaded(true);
     };
 
     // Load Google Translate script
@@ -46,45 +43,87 @@ const GoogleTranslate = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Add custom styles to hide Google Translate branding
+    // Add custom styles to integrate with site design
     const style = document.createElement('style');
     style.textContent = `
+      /* Hide Google branding banner */
       .goog-te-banner-frame { display: none !important; }
-      .goog-te-gadget { font-size: 0 !important; }
+      body { top: 0 !important; }
+      
+      /* Style the main gadget container */
+      .goog-te-gadget { 
+        font-size: 0 !important; 
+        font-family: inherit !important;
+      }
       .goog-te-gadget img { display: none !important; }
       .goog-te-gadget-simple { 
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
+        background: hsl(var(--card)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+        border-radius: 0.5rem !important;
+        padding: 0.5rem 0.75rem !important;
         font-size: 0 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
       }
+      .goog-te-gadget-simple:hover {
+        background: hsl(var(--muted)) !important;
+        border-color: hsl(var(--primary) / 0.5) !important;
+      }
+      
+      /* Style the selected language text */
       .goog-te-gadget-simple .goog-te-menu-value {
-        color: inherit !important;
+        color: hsl(var(--foreground)) !important;
         font-family: inherit !important;
       }
       .goog-te-gadget-simple .goog-te-menu-value span {
         color: hsl(var(--foreground)) !important;
-        font-size: 12px !important;
+        font-size: 13px !important;
         font-weight: 500 !important;
       }
+      /* Hide the dropdown arrow text */
       .goog-te-gadget-simple .goog-te-menu-value span:nth-child(3) {
         display: none !important;
       }
-      .goog-te-menu-frame {
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+      /* Style the dropdown arrow */
+      .goog-te-gadget-simple .goog-te-menu-value span[style*="border-left"] {
+        border-left-color: hsl(var(--muted-foreground)) !important;
       }
-      body { top: 0 !important; }
+      
+      /* Style the dropdown menu iframe container */
+      .goog-te-menu-frame {
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+        border-radius: 0.75rem !important;
+        border: 1px solid hsl(var(--border)) !important;
+      }
+      
+      /* Hide the "Powered by Google" text */
       .skiptranslate { display: none !important; }
       #google_translate_element .goog-te-gadget-simple {
         display: inline-flex !important;
         align-items: center !important;
-        gap: 4px !important;
+        gap: 6px !important;
+        min-width: 100px !important;
+      }
+      
+      /* Additional dropdown menu styling (injected into iframe) */
+      .goog-te-menu2 {
+        background: hsl(var(--card)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+        border-radius: 0.5rem !important;
+        max-height: 400px !important;
+        overflow-y: auto !important;
+      }
+      .goog-te-menu2-item {
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+      }
+      .goog-te-menu2-item:hover {
+        background: hsl(var(--muted)) !important;
       }
     `;
     document.head.appendChild(style);
 
     return () => {
-      // Cleanup
       const existingScript = document.querySelector('script[src*="translate.google.com"]');
       if (existingScript) {
         existingScript.remove();
@@ -94,26 +133,10 @@ const GoogleTranslate = () => {
 
   return (
     <div className="relative">
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="gap-2 min-w-[80px] h-8 px-2.5 border-border/50 bg-transparent hover:bg-muted/50"
-        onClick={() => {
-          const translateElement = document.querySelector('.goog-te-gadget-simple') as HTMLElement;
-          if (translateElement) {
-            translateElement.click();
-          }
-        }}
-      >
-        <Globe className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-xs font-medium hidden sm:inline">Translate</span>
-        <ChevronDown className="w-3 h-3 text-muted-foreground" />
-      </Button>
-      
-      {/* Hidden Google Translate element */}
+      {/* Google Translate renders its own styled dropdown here */}
       <div 
         id="google_translate_element" 
-        className="absolute opacity-0 pointer-events-none top-0 left-0 w-0 h-0 overflow-hidden"
+        className="translate-widget"
       />
     </div>
   );

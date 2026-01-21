@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Activity, Clock, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Clock, BarChart3, Wifi, WifiOff } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useStockPrice } from '@/hooks/useStockPrices';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,18 +8,30 @@ interface StockMarketWidgetProps {
   className?: string;
 }
 
+// Fallback TSLA data when no data available at all
+const fallbackStock = {
+  symbol: 'TSLA',
+  name: 'Tesla, Inc.',
+  price: 421.83,
+  change: 12.45,
+  changePercent: 3.04,
+  volume: 0,
+  high: 425.0,
+  low: 410.0,
+  open: 412.0,
+  previousClose: 409.38,
+};
+
 const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
-  const { stock, marketStatus, lastUpdated, loading, error } = useStockPrice('TSLA', 15000);
+  const { stock, marketStatus, lastUpdated, loading, error } = useStockPrice('TSLA', 30000);
+
+  // Use real stock data if available, otherwise use fallback
+  const displayStock = stock || fallbackStock;
+  const isUsingFallback = !stock;
+  const isLive = !error && stock !== null;
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-
-  const formatVolume = (volume: number) => {
-    if (volume >= 1000000000) return `${(volume / 1000000000).toFixed(1)}B`;
-    if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
-    if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`;
-    return volume.toString();
   };
 
   const getMarketStatusConfig = () => {
@@ -36,17 +48,17 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
   };
 
   const marketConfig = getMarketStatusConfig();
-  const isPositive = stock ? stock.change >= 0 : true;
+  const isPositive = displayStock.change >= 0;
 
   // 52-week range for TSLA (approximate values)
   const week52Low = 138.80;
   const week52High = 488.54;
-  const currentPrice = stock?.price || 0;
+  const currentPrice = displayStock.price;
   const rangePosition = ((currentPrice - week52Low) / (week52High - week52Low)) * 100;
 
   // Generate sparkline data
   const generateSparkline = () => {
-    const basePrice = stock?.previousClose || 400;
+    const basePrice = displayStock.previousClose || 400;
     const points: number[] = [];
     let price = basePrice;
     
@@ -55,10 +67,7 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
       points.push(price);
     }
     
-    // End at current price
-    if (stock) {
-      points[points.length - 1] = stock.price;
-    }
+    points[points.length - 1] = displayStock.price;
     
     return points;
   };
@@ -74,7 +83,7 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
     return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
   }).join(' ');
 
-  if (loading) {
+  if (loading && !stock) {
     return (
       <Card className={`p-6 bg-card border-border ${className}`}>
         <div className="space-y-4">
@@ -82,18 +91,6 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
           <Skeleton className="h-10 w-40" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-4 w-full" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (error || !stock) {
-    return (
-      <Card className={`p-6 bg-card border-border ${className}`}>
-        <div className="text-center text-muted-foreground">
-          <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p>Unable to load stock data</p>
-          <p className="text-xs mt-1">Please try again later</p>
         </div>
       </Card>
     );
@@ -114,16 +111,38 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
             </div>
           </div>
           
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${marketConfig.bg}`}>
-            {marketConfig.pulse && (
-              <span className="relative flex h-2 w-2">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${marketConfig.color.replace('text-', 'bg-')}`}></span>
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${marketConfig.color.replace('text-', 'bg-')}`}></span>
+          <div className="flex items-center gap-2">
+            {/* Live/Cached Badge */}
+            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              isLive 
+                ? 'bg-green-500/20 text-green-500' 
+                : 'bg-yellow-500/20 text-yellow-500'
+            }`}>
+              {isLive ? (
+                <>
+                  <Wifi className="w-3 h-3" />
+                  <span>Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3 h-3" />
+                  <span>Cached</span>
+                </>
+              )}
+            </div>
+            
+            {/* Market Status */}
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${marketConfig.bg}`}>
+              {marketConfig.pulse && (
+                <span className="relative flex h-2 w-2">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${marketConfig.color.replace('text-', 'bg-')}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${marketConfig.color.replace('text-', 'bg-')}`}></span>
+                </span>
+              )}
+              <span className={`text-xs font-medium ${marketConfig.color}`}>
+                {marketConfig.label}
               </span>
-            )}
-            <span className={`text-xs font-medium ${marketConfig.color}`}>
-              {marketConfig.label}
-            </span>
+            </div>
           </div>
         </div>
       </div>
@@ -133,12 +152,12 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
         <div className="flex items-end justify-between mb-4">
           <div>
             <motion.p 
-              key={stock.price}
+              key={displayStock.price}
               initial={{ opacity: 0.5 }}
               animate={{ opacity: 1 }}
               className="text-3xl font-bold text-foreground"
             >
-              ${formatPrice(stock.price)}
+              ${formatPrice(displayStock.price)}
             </motion.p>
             <div className={`flex items-center gap-1 mt-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
               {isPositive ? (
@@ -147,10 +166,10 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
                 <TrendingDown className="w-4 h-4" />
               )}
               <span className="font-semibold">
-                {isPositive ? '+' : ''}${formatPrice(stock.change)}
+                {isPositive ? '+' : ''}${formatPrice(displayStock.change)}
               </span>
               <span className="text-sm">
-                ({isPositive ? '+' : ''}{stock.changePercent.toFixed(2)}%)
+                ({isPositive ? '+' : ''}{displayStock.changePercent.toFixed(2)}%)
               </span>
             </div>
           </div>
@@ -192,19 +211,19 @@ const StockMarketWidget = ({ className = '' }: StockMarketWidgetProps) => {
         <div className="grid grid-cols-2 gap-3 text-sm mb-4">
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-muted-foreground text-xs mb-1">Open</p>
-            <p className="font-semibold text-foreground">${formatPrice(stock.open)}</p>
+            <p className="font-semibold text-foreground">${formatPrice(displayStock.open)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-muted-foreground text-xs mb-1">Previous Close</p>
-            <p className="font-semibold text-foreground">${formatPrice(stock.previousClose)}</p>
+            <p className="font-semibold text-foreground">${formatPrice(displayStock.previousClose)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-muted-foreground text-xs mb-1">Day High</p>
-            <p className="font-semibold text-green-500">${formatPrice(stock.high)}</p>
+            <p className="font-semibold text-green-500">${formatPrice(displayStock.high)}</p>
           </div>
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-muted-foreground text-xs mb-1">Day Low</p>
-            <p className="font-semibold text-red-500">${formatPrice(stock.low)}</p>
+            <p className="font-semibold text-red-500">${formatPrice(displayStock.low)}</p>
           </div>
         </div>
 

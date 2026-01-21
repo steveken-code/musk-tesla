@@ -29,6 +29,7 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import StockMarketWidget from '@/components/StockMarketWidget';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
+import { formatCurrencyValue } from '@/lib/formatCurrency';
 
 // Create notification sound using Web Audio API
 const createNotificationSound = () => {
@@ -1181,7 +1182,7 @@ const Dashboard = () => {
               </div>
               <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalInvested')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold">${totalInvested.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold">${formatCurrencyValue(totalInvested)}</p>
           </div>
           
           <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-green-500/30 transition-all">
@@ -1191,7 +1192,7 @@ const Dashboard = () => {
               </div>
               <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalProfit')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold text-green-500">${totalProfit.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-green-500">${formatCurrencyValue(totalProfit)}</p>
             {totalInvested > 0 && (
               <p className="text-[10px] text-green-400 mt-0.5">↑ {((totalProfit / totalInvested) * 100).toFixed(1)}%</p>
             )}
@@ -1204,7 +1205,7 @@ const Dashboard = () => {
               </div>
               <span className="text-muted-foreground text-[10px] sm:text-xs">{t('pending')}</span>
             </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold">${pendingAmount.toLocaleString()}</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold">${formatCurrencyValue(pendingAmount)}</p>
           </div>
           
           <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-secondary/30 transition-all">
