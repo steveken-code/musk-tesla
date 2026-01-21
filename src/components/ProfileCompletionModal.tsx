@@ -179,12 +179,18 @@ const ProfileCompletionModal = ({
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Avatar Upload */}
                 <div className="flex flex-col items-center gap-4">
-                  <div 
+                  <motion.div 
                     onClick={() => fileInputRef.current?.click()}
                     className="relative w-28 h-28 rounded-full overflow-hidden cursor-pointer group border-4 border-tesla-red/30 hover:border-tesla-red transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     {avatarPreview ? (
-                      <img 
+                      <motion.img 
+                        key={avatarPreview}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
                         src={avatarPreview} 
                         alt="Avatar preview" 
                         className="w-full h-full object-cover"
@@ -203,7 +209,7 @@ const ProfileCompletionModal = ({
                         <Camera className="w-8 h-8 text-white" />
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                   
                   <input
                     ref={fileInputRef}

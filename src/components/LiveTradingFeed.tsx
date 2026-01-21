@@ -172,7 +172,7 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
   }, []);
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full flex flex-col">
+    <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-600/50 rounded-xl p-4 sm:p-5 h-full flex flex-col shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
                   animate={{ opacity: 1, x: 0, height: 'auto' }}
                   exit={{ opacity: 0, x: 20, height: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="flex items-start gap-3 p-2.5 rounded-lg bg-background/40 border border-border/30 hover:border-border/50 transition-colors"
+                  className="flex items-start gap-3 p-2.5 rounded-lg bg-slate-700/40 border border-slate-600/40 hover:border-slate-500/50 transition-colors"
                 >
                   <div className={`p-1.5 rounded-lg shrink-0 ${colorClass}`}>
                     <Icon className="w-3.5 h-3.5" />
