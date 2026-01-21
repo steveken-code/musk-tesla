@@ -96,8 +96,9 @@ const GoogleTranslate = () => {
         border: 1px solid hsl(var(--border)) !important;
       }
       
-      /* Hide the "Powered by Google" text */
-      .skiptranslate { display: none !important; }
+      /* Hide the "Powered by Google" text but keep the widget visible */
+      #google_translate_element .skiptranslate { display: block !important; }
+      body > .skiptranslate { display: none !important; }
       #google_translate_element .goog-te-gadget-simple {
         display: inline-flex !important;
         align-items: center !important;

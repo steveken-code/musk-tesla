@@ -108,7 +108,7 @@ const Hero = () => {
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 py-20 pt-28 sm:pt-24">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Premium Badge */}
+          {/* Premium Investment Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -117,12 +117,8 @@ const Hero = () => {
           >
             <Sparkles className="w-4 h-4 text-tesla-red animate-pulse" />
             <span className="text-xs sm:text-sm font-semibold text-foreground tracking-wide">
-              TSLA +$247.03 (12.4%) {t('yearToDate')}
+              Professional Investment Platform
             </span>
-            <div className="flex items-center gap-1 text-green-500">
-              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="text-xs font-bold hidden sm:inline">OUTPERFORMING</span>
-            </div>
           </motion.div>
 
           {/* Main Headline with enhanced typography */}
