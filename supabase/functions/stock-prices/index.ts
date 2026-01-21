@@ -35,7 +35,8 @@ const stockInfo: Record<string, string> = {
   'QQQ': 'NASDAQ-100 ETF',
   'RIVN': 'Rivian',
   'LCID': 'Lucid Motors',
-  'NIO': 'NIO Inc.',
+  'TM': 'Toyota Motor',
+  'STLA': 'Stellantis',
   'F': 'Ford',
   'GM': 'General Motors',
 };
