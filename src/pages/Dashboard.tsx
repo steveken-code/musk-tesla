@@ -26,6 +26,7 @@ import LiveTradingFeed from '@/components/LiveTradingFeed';
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import StockMarketWidget from '@/components/StockMarketWidget';
 import teslaLogo from '@/assets/tesla-logo-red.png';
 import { countryBankingSystems } from '@/data/countryBankingSystems';
 
@@ -1268,12 +1269,15 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Live Trading Feed & Investment Progress */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
-          <div className="h-[320px] sm:h-[340px]">
+        {/* Tesla Stock Widget & Live Trading Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
+          <div className="lg:col-span-1">
+            <StockMarketWidget className="h-full" />
+          </div>
+          <div className="lg:col-span-1 h-[320px] sm:h-[340px]">
             <LiveTradingFeed hasActiveInvestment={investments.some(i => i.status === 'active')} />
           </div>
-          <div className="h-[320px] sm:h-[340px]">
+          <div className="lg:col-span-1 h-[320px] sm:h-[340px]">
             <InvestmentProgressTracker investments={investments} />
           </div>
         </div>

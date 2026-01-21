@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap, Activity, BarChart3, Globe, ChevronUp, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStockPrice } from "@/hooks/useStockPrices";
 import heroImage from "@/assets/tesla-hero.jpg";
 import elonHero from "@/assets/elon-hero.webp";
 
@@ -11,29 +12,6 @@ const slides = [
   { image: heroImage, alt: "Tesla on a futuristic highway" },
   { image: elonHero, alt: "Elon Musk presenting Tesla" },
 ];
-
-// Simulated live price data
-const useLivePrice = () => {
-  const [price, setPrice] = useState(421.83);
-  const [change, setChange] = useState(12.47);
-  const [changePercent, setChangePercent] = useState(3.05);
-  const [isUp, setIsUp] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const fluctuation = (Math.random() - 0.5) * 2;
-      const newPrice = price + fluctuation;
-      const newChange = newPrice - 409.36; // Base price
-      setPrice(newPrice);
-      setChange(newChange);
-      setChangePercent((newChange / 409.36) * 100);
-      setIsUp(newChange >= 0);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [price]);
-
-  return { price, change, changePercent, isUp };
-};
 
 // Animated counter component
 const AnimatedCounter = ({ value, prefix = "", suffix = "" }: { value: string; prefix?: string; suffix?: string }) => {
@@ -53,7 +31,13 @@ const AnimatedCounter = ({ value, prefix = "", suffix = "" }: { value: string; p
 const Hero = () => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { price, change, changePercent, isUp } = useLivePrice();
+  const { stock, marketStatus } = useStockPrice('TSLA', 15000);
+  
+  // Use real data or fallback
+  const price = stock?.price ?? 421.83;
+  const change = stock?.change ?? 12.47;
+  const changePercent = stock?.changePercent ?? 3.05;
+  const isUp = change >= 0;
 
   useEffect(() => {
     const interval = setInterval(() => {

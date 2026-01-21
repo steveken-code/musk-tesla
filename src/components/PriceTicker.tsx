@@ -1,56 +1,30 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useStockPrices, StockQuote } from '@/hooks/useStockPrices';
 
-interface TickerItem {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-}
-
-// Generate realistic price with small fluctuations
-const generatePrice = (basePrice: number, volatility: number = 0.002): number => {
-  const change = (Math.random() - 0.5) * 2 * volatility * basePrice;
-  return basePrice + change;
-};
-
-const initialPrices: TickerItem[] = [
-  { symbol: 'BTC', name: 'Bitcoin', price: 98234.50, change: 2341.25, changePercent: 2.44 },
-  { symbol: 'ETH', name: 'Ethereum', price: 3456.78, change: -28.45, changePercent: -0.82 },
-  { symbol: 'TSLA', name: 'Tesla', price: 248.75, change: 3.12, changePercent: 1.27 },
-  { symbol: 'USDT', name: 'Tether', price: 1.00, change: 0.00, changePercent: 0.00 },
-  { symbol: 'BNB', name: 'BNB', price: 612.30, change: 8.45, changePercent: 1.40 },
-  { symbol: 'SOL', name: 'Solana', price: 187.42, change: -2.18, changePercent: -1.15 },
-  { symbol: 'XRP', name: 'Ripple', price: 2.34, change: 0.08, changePercent: 3.54 },
-  { symbol: 'DOGE', name: 'Dogecoin', price: 0.3245, change: 0.0123, changePercent: 3.94 },
+// Fallback data when API is loading or unavailable
+const fallbackPrices: StockQuote[] = [
+  { symbol: 'TSLA', name: 'Tesla, Inc.', price: 421.83, change: 12.47, changePercent: 3.05, volume: 0, high: 425, low: 408, open: 410, previousClose: 409.36 },
+  { symbol: 'SPY', name: 'S&P 500 ETF', price: 594.25, change: 2.15, changePercent: 0.36, volume: 0, high: 595, low: 591, open: 592, previousClose: 592.10 },
+  { symbol: 'QQQ', name: 'NASDAQ-100', price: 518.42, change: 4.28, changePercent: 0.83, volume: 0, high: 520, low: 514, open: 515, previousClose: 514.14 },
+  { symbol: 'RIVN', name: 'Rivian', price: 14.85, change: -0.32, changePercent: -2.11, volume: 0, high: 15.2, low: 14.6, open: 15.1, previousClose: 15.17 },
+  { symbol: 'LCID', name: 'Lucid', price: 2.45, change: 0.08, changePercent: 3.38, volume: 0, high: 2.5, low: 2.35, open: 2.38, previousClose: 2.37 },
+  { symbol: 'NIO', name: 'NIO Inc.', price: 4.12, change: -0.15, changePercent: -3.51, volume: 0, high: 4.3, low: 4.05, open: 4.25, previousClose: 4.27 },
+  { symbol: 'F', name: 'Ford', price: 9.85, change: 0.12, changePercent: 1.23, volume: 0, high: 9.95, low: 9.7, open: 9.75, previousClose: 9.73 },
+  { symbol: 'GM', name: 'General Motors', price: 54.32, change: 0.87, changePercent: 1.63, volume: 0, high: 54.8, low: 53.5, open: 53.6, previousClose: 53.45 },
 ];
 
 const PriceTicker = () => {
-  const [prices, setPrices] = useState<TickerItem[]>(initialPrices);
+  const { data, loading, error } = useStockPrices(15000);
+  const [displayPrices, setDisplayPrices] = useState<StockQuote[]>(fallbackPrices);
 
-  // Update prices periodically for realism
+  // Update display prices when real data arrives
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPrices(prev => prev.map(item => {
-        if (item.symbol === 'USDT') return item; // USDT stays stable
-        
-        const newPrice = generatePrice(item.price, 0.001);
-        const priceChange = newPrice - (item.price - item.change);
-        const percentChange = (priceChange / (item.price - item.change)) * 100;
-        
-        return {
-          ...item,
-          price: newPrice,
-          change: priceChange,
-          changePercent: percentChange,
-        };
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
+    if (data?.stocks && data.stocks.length > 0) {
+      setDisplayPrices(data.stocks);
+    }
+  }, [data]);
 
   const formatPrice = (price: number) => {
     if (price >= 1000) {
@@ -62,7 +36,7 @@ const PriceTicker = () => {
     }
   };
 
-  const TickerItemComponent = ({ item }: { item: TickerItem }) => {
+  const TickerItemComponent = ({ item }: { item: StockQuote }) => {
     const isPositive = item.change >= 0;
     
     return (
@@ -92,7 +66,7 @@ const PriceTicker = () => {
   };
 
   // Double the items for seamless loop
-  const tickerItems = [...prices, ...prices];
+  const tickerItems = [...displayPrices, ...displayPrices];
 
   return (
     <div className="w-full bg-card border-b border-border overflow-hidden">
@@ -100,7 +74,7 @@ const PriceTicker = () => {
         <motion.div
           className="flex"
           animate={{
-            x: [0, -50 * prices.length * 8],
+            x: [0, -50 * displayPrices.length * 8],
           }}
           transition={{
             x: {
