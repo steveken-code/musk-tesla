@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 // Comprehensive list of users from countries around the world with authentic names and flags
 const allUsers = [
@@ -559,24 +558,7 @@ export const InvestmentNotification = () => {
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { playSound, initializeAudio } = useNotificationSound();
-
-  // Initialize audio on first user interaction
-  useEffect(() => {
-    const handleInteraction = () => {
-      initializeAudio();
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
-    };
-    
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('touchstart', handleInteraction);
-    
-    return () => {
-      document.removeEventListener('click', handleInteraction);
-      document.removeEventListener('touchstart', handleInteraction);
-    };
-  }, [initializeAudio]);
+  // Sound notifications disabled per user request
 
   const getUniqueUser = () => {
     // Reset if we've used most users
@@ -606,8 +588,7 @@ export const InvestmentNotification = () => {
     
     setIsVisible(true);
     
-    // Play sound effect
-    playSound(isWithdraw ? 'withdrawal' : 'investment');
+    // Sound disabled - no audio playback
     
     // Hide after random duration
     hideTimeoutRef.current = setTimeout(() => {
@@ -643,7 +624,7 @@ export const InvestmentNotification = () => {
             stiffness: 100,
             damping: 15
           }}
-          className="fixed bottom-4 left-4 z-50 max-w-[calc(100vw-32px)] sm:max-w-sm md:max-w-md will-change-transform"
+          className="fixed bottom-20 left-4 z-40 max-w-[calc(100vw-100px)] sm:max-w-xs md:max-w-sm will-change-transform"
           style={{ transform: 'translateZ(0)' }}
         >
           <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20">
