@@ -122,9 +122,8 @@ const Navbar = () => {
             </Link>
             <Link to="/dashboard">
               <Button 
-                variant="hero" 
                 size="sm" 
-                className="hover:scale-105 transition-transform shadow-lg shadow-tesla-red/25"
+                className="bg-brand-purple hover:bg-brand-purple/90 text-white hover:scale-105 transition-transform shadow-lg shadow-brand-purple/25"
               >
                 {t('dashboard')}
               </Button>
@@ -203,7 +202,7 @@ const Navbar = () => {
                     <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">{t('signIn')}</Button>
                   </Link>
                   <Link to="/dashboard" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="hero" className="w-full">{t('dashboard')}</Button>
+                    <Button className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white">{t('dashboard')}</Button>
                   </Link>
                 </motion.div>
               </motion.div>

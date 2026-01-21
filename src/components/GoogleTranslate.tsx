@@ -46,71 +46,89 @@ const GoogleTranslate = () => {
     // Add custom styles to integrate with site design
     const style = document.createElement('style');
     style.textContent = `
-      /* Hide Google branding banner */
+      /* Hide Google branding banner completely */
       .goog-te-banner-frame { display: none !important; }
-      body { top: 0 !important; }
+      body { top: 0 !important; position: static !important; }
+      
+      /* Prevent page jumps when translating */
+      html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
       
       /* Style the main gadget container */
       .goog-te-gadget { 
         font-size: 0 !important; 
         font-family: inherit !important;
+        line-height: 1 !important;
       }
       .goog-te-gadget img { display: none !important; }
+      .goog-te-gadget > span { display: none !important; }
+      
       .goog-te-gadget-simple { 
-        background: hsl(var(--card)) !important;
+        background: transparent !important;
         border: 1px solid hsl(var(--border)) !important;
-        border-radius: 0.5rem !important;
-        padding: 0.5rem 0.75rem !important;
+        border-radius: 6px !important;
+        padding: 6px 10px !important;
         font-size: 0 !important;
         cursor: pointer !important;
         transition: all 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        min-width: auto !important;
+        max-width: 90px !important;
+        overflow: hidden !important;
       }
       .goog-te-gadget-simple:hover {
         background: hsl(var(--muted)) !important;
-        border-color: hsl(var(--primary) / 0.5) !important;
+        border-color: hsl(var(--brand-purple) / 0.5) !important;
       }
       
       /* Style the selected language text */
       .goog-te-gadget-simple .goog-te-menu-value {
         color: hsl(var(--foreground)) !important;
         font-family: inherit !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
       }
       .goog-te-gadget-simple .goog-te-menu-value span {
         color: hsl(var(--foreground)) !important;
-        font-size: 13px !important;
+        font-size: 12px !important;
         font-weight: 500 !important;
       }
-      /* Hide the dropdown arrow text */
+      /* Only show first 2 letters of language */
+      .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+        max-width: 50px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      /* Hide extra spans */
+      .goog-te-gadget-simple .goog-te-menu-value span:nth-child(2),
       .goog-te-gadget-simple .goog-te-menu-value span:nth-child(3) {
         display: none !important;
       }
       /* Style the dropdown arrow */
       .goog-te-gadget-simple .goog-te-menu-value span[style*="border-left"] {
         border-left-color: hsl(var(--muted-foreground)) !important;
+        margin-left: 4px !important;
       }
+      
+      /* Hide the "Powered by Google" and skip translate elements */
+      #google_translate_element .skiptranslate { display: block !important; }
+      body > .skiptranslate { display: none !important; }
+      .goog-te-spinner-pos { display: none !important; }
       
       /* Style the dropdown menu iframe container */
       .goog-te-menu-frame {
         box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
-        border-radius: 0.75rem !important;
+        border-radius: 8px !important;
         border: 1px solid hsl(var(--border)) !important;
       }
       
-      /* Hide the "Powered by Google" text but keep the widget visible */
-      #google_translate_element .skiptranslate { display: block !important; }
-      body > .skiptranslate { display: none !important; }
-      #google_translate_element .goog-te-gadget-simple {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        min-width: 100px !important;
-      }
-      
-      /* Additional dropdown menu styling (injected into iframe) */
+      /* Dropdown menu styling */
       .goog-te-menu2 {
         background: hsl(var(--card)) !important;
         border: 1px solid hsl(var(--border)) !important;
-        border-radius: 0.5rem !important;
+        border-radius: 8px !important;
         max-height: 400px !important;
         overflow-y: auto !important;
       }
@@ -133,11 +151,10 @@ const GoogleTranslate = () => {
   }, []);
 
   return (
-    <div className="relative">
-      {/* Google Translate renders its own styled dropdown here */}
+    <div className="relative flex items-center">
       <div 
         id="google_translate_element" 
-        className="translate-widget"
+        className="translate-widget [&_.goog-te-gadget]:!leading-none"
       />
     </div>
   );
