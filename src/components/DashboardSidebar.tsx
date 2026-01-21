@@ -13,11 +13,12 @@ interface DashboardSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onSignOut: () => void;
+  onWithdrawClick?: () => void;
   userEmail?: string;
   userName?: string;
 }
 
-const DashboardSidebar = ({ isOpen, onClose, onSignOut, userEmail, userName }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, userEmail, userName }: DashboardSidebarProps) => {
   const { t } = useLanguage();
   const location = useLocation();
 
@@ -26,7 +27,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, userEmail, userName }: D
     label: string;
     href: string;
     active?: boolean;
-    action?: 'scroll';
+    action?: 'scroll' | 'modal';
   }
 
   interface MenuSection {
@@ -45,7 +46,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, userEmail, userName }: D
       title: 'FINANCE MANAGEMENT',
       items: [
         { icon: ArrowDownToLine, label: 'Deposit', href: '#deposit', action: 'scroll' },
-        { icon: ArrowUpFromLine, label: 'Withdraw', href: '#withdraw', action: 'scroll' },
+        { icon: ArrowUpFromLine, label: 'Withdraw', href: '#withdraw', action: 'modal' },
         { icon: History, label: 'Transactions', href: '/history' },
       ]
     },
@@ -66,7 +67,11 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, userEmail, userName }: D
   ];
 
   const handleNavClick = (item: MenuItem) => {
-    if (item.action === 'scroll') {
+    if (item.action === 'modal' && item.href === '#withdraw') {
+      // Trigger withdrawal modal
+      onWithdrawClick?.();
+      onClose();
+    } else if (item.action === 'scroll') {
       // Scroll to section on dashboard
       const sectionId = item.href.replace('#', '');
       const element = document.getElementById(sectionId);
@@ -143,7 +148,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, userEmail, userName }: D
                   )}
                   <div className="space-y-1 px-2">
                     {section.items.map((item, itemIndex) => (
-                      item.action === 'scroll' ? (
+                      item.action === 'scroll' || item.action === 'modal' ? (
                         <button
                           key={itemIndex}
                           onClick={() => handleNavClick(item)}
