@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap, Activity, BarChart3, Globe, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowRight, TrendingUp, User, Sparkles, Shield, Zap, BarChart3, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useStockPrice } from "@/hooks/useStockPrices";
 import heroImage from "@/assets/tesla-hero.jpg";
 import elonHero from "@/assets/elon-hero.webp";
 
@@ -31,13 +30,6 @@ const AnimatedCounter = ({ value, prefix = "", suffix = "" }: { value: string; p
 const Hero = () => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { stock, marketStatus } = useStockPrice('TSLA', 15000);
-  
-  // Use real data or fallback
-  const price = stock?.price ?? 421.83;
-  const change = stock?.change ?? 12.47;
-  const changePercent = stock?.changePercent ?? 3.05;
-  const isUp = change >= 0;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -96,58 +88,6 @@ const Hero = () => {
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
       </div>
-
-      {/* Live Trading Ticker Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-auto max-w-[95vw]"
-      >
-        <div className="flex items-center gap-3 sm:gap-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-card/80 backdrop-blur-xl border border-border/50 rounded-full shadow-2xl">
-          {/* Live indicator */}
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-            </span>
-            <span className="text-xs font-semibold text-green-500 hidden sm:inline">LIVE</span>
-          </div>
-          
-          {/* Stock symbol */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm sm:text-base font-bold text-foreground">TSLA</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">NASDAQ</span>
-          </div>
-          
-          {/* Price display */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={price.toFixed(2)}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="text-lg sm:text-xl font-bold text-foreground tabular-nums"
-              >
-                ${price.toFixed(2)}
-              </motion.span>
-            </AnimatePresence>
-            
-            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md ${
-              isUp ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-            }`}>
-              {isUp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              <span className="text-xs sm:text-sm font-semibold tabular-nums">
-                {isUp ? '+' : ''}{change.toFixed(2)} ({changePercent.toFixed(2)}%)
-              </span>
-            </div>
-          </div>
-          
-          {/* Activity indicator */}
-          <Activity className="w-4 h-4 text-muted-foreground hidden sm:block" />
-        </div>
-      </motion.div>
 
       {/* Slide Indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
