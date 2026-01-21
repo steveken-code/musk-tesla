@@ -27,9 +27,30 @@ interface UseStockPricesResult {
   refetch: () => Promise<void>;
 }
 
+const STOCK_CACHE_KEY = 'stock_prices_cache_v1';
+
+const readCachedPrices = (): StockPricesData | null => {
+  try {
+    const raw = localStorage.getItem(STOCK_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StockPricesData;
+  } catch {
+    return null;
+  }
+};
+
+const writeCachedPrices = (data: StockPricesData) => {
+  try {
+    localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // ignore storage failures (private mode, quota, etc.)
+  }
+};
+
 export const useStockPrices = (pollInterval: number = 15000): UseStockPricesResult => {
-  const [data, setData] = useState<StockPricesData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialCache = readCachedPrices();
+  const [data, setData] = useState<StockPricesData | null>(initialCache);
+  const [loading, setLoading] = useState(!initialCache);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPrices = useCallback(async () => {
@@ -39,22 +60,48 @@ export const useStockPrices = (pollInterval: number = 15000): UseStockPricesResu
       if (fetchError) {
         console.error('Error fetching stock prices:', fetchError);
         setError(fetchError.message);
+        // Keep last known good data if available
+        if (!data) {
+          const cached = readCachedPrices();
+          if (cached) setData(cached);
+        }
         return;
       }
 
       if (responseData?.stocks) {
-        setData(responseData as StockPricesData);
+        const next = responseData as StockPricesData;
+
+        // Avoid overwriting a good state with empty data (common during rate limits)
+        if (Array.isArray(next.stocks) && next.stocks.length === 0) {
+          setError('No stock data available');
+          if (!data) {
+            const cached = readCachedPrices();
+            if (cached) setData(cached);
+          }
+          return;
+        }
+
+        setData(next);
+        writeCachedPrices(next);
         setError(null);
       } else if (responseData?.error) {
         setError(responseData.error);
+        if (!data) {
+          const cached = readCachedPrices();
+          if (cached) setData(cached);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch stock prices:', err);
       setError('Failed to fetch stock prices');
+      if (!data) {
+        const cached = readCachedPrices();
+        if (cached) setData(cached);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     // Initial fetch
