@@ -76,6 +76,17 @@ const GoogleTranslate = () => {
         max-width: 90px !important;
         overflow: hidden !important;
       }
+
+        /* Mobile: keep it visible next to the hamburger without stretching */
+        @media (max-width: 767px) {
+          .goog-te-gadget-simple {
+            max-width: 76px !important;
+            padding: 6px 8px !important;
+          }
+          .goog-te-gadget-simple .goog-te-menu-value span {
+            font-size: 11px !important;
+          }
+        }
       .goog-te-gadget-simple:hover {
         background: hsl(var(--muted)) !important;
         border-color: hsl(var(--brand-purple) / 0.5) !important;
