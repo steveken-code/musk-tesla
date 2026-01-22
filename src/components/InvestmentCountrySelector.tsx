@@ -231,7 +231,7 @@ const InvestmentCountrySelector = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-14 pr-14 h-14 rounded-xl focus:outline-none transition-all bg-background border-2 border-border text-foreground font-semibold text-base focus:border-primary"
+                className="w-full pl-14 pr-14 h-14 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-300 text-foreground font-semibold text-base focus:border-slate-500"
               />
               {searchQuery && (
                 <button
@@ -292,7 +292,7 @@ const InvestmentCountrySelector = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-background border-2 border-border text-foreground font-semibold focus:border-primary"
+            className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-300 text-foreground font-semibold focus:border-slate-500"
           />
           {searchQuery && (
             <button
@@ -331,7 +331,7 @@ const InvestmentCountrySelector = ({
   return (
     <div className="space-y-2 relative" ref={containerRef}>
       <label className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-2">
-        <Globe className="w-4 h-4 text-primary" />
+        <Globe className="w-4 h-4 text-slate-500" />
         {t('selectCountry') || 'Select Your Country'}
         <span className="text-destructive">*</span>
       </label>
@@ -341,8 +341,8 @@ const InvestmentCountrySelector = ({
         onClick={() => setShowDropdown(!showDropdown)}
         className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-card ${
           selectedCountry 
-            ? 'border-primary/50 hover:border-primary' 
-            : 'border-border hover:border-primary/50'
+            ? 'border-slate-400 hover:border-slate-500' 
+            : 'border-slate-300 hover:border-slate-400'
         }`}
       >
         {selectedCountryData ? (

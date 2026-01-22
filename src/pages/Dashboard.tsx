@@ -1358,7 +1358,7 @@ const Dashboard = () => {
                 {investCountry && (
                   <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
                     <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
-                    <Input
+                  <Input
                       id="amount"
                       type="text"
                       inputMode="decimal"
@@ -1371,6 +1371,22 @@ const Dashboard = () => {
                       className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
                       required
                     />
+                    {/* Real-time USDT preview */}
+                    {investAmount && parseFloat(investAmount) > 0 && (
+                      <div className="mt-2 p-2.5 bg-slate-100 rounded-lg border border-slate-200">
+                        <p className="text-xs text-slate-500 mb-0.5">Investment Amount</p>
+                        <p className="text-lg font-bold text-slate-800">
+                          {(() => {
+                            const amt = parseFloat(investAmount);
+                            const hasDecimals = amt % 1 !== 0;
+                            return new Intl.NumberFormat('en-US', {
+                              minimumFractionDigits: hasDecimals ? 2 : 0,
+                              maximumFractionDigits: 2,
+                            }).format(amt) + ' USDT';
+                          })()}
+                        </p>
+                      </div>
+                    )}
                     {/* Only show RUB conversion for Russia */}
                     {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
