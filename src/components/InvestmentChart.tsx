@@ -257,31 +257,31 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       </div>
 
       {/* Performance Metrics Bar */}
-      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-4 sm:mb-5">
-        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
-          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Total Return</p>
-          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">+{percentGain.toFixed(2)}%</p>
+      <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-5">
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
+          <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Return</p>
+          <p className="text-[11px] sm:text-sm md:text-base font-bold text-emerald-400 truncate">+{percentGain.toFixed(1)}%</p>
         </div>
-        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
-          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">{t('profit')}</p>
-          <p className="text-sm sm:text-base md:text-lg font-bold text-emerald-400">${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
+          <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">{t('profit')}</p>
+          <p className="text-[11px] sm:text-sm md:text-base font-bold text-emerald-400 truncate">${totalProfit >= 1000 ? (totalProfit / 1000).toFixed(1) + 'k' : totalProfit.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
         </div>
-        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
-          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Invested</p>
-          <p className="text-sm sm:text-base md:text-lg font-bold text-white">${totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
+          <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Invested</p>
+          <p className="text-[11px] sm:text-sm md:text-base font-bold text-white truncate">${totalInvested >= 1000 ? (totalInvested / 1000).toFixed(1) + 'k' : totalInvested.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
         </div>
-        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-3 text-center border border-slate-700/30">
-          <p className="text-[8px] sm:text-[10px] text-slate-500 mb-1 uppercase tracking-wide">Status</p>
-          <div className="flex items-center justify-center gap-1">
+        <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
+          <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Status</p>
+          <div className="flex items-center justify-center gap-0.5">
             {hasCompletedInvestments ? (
               <>
-                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
-                <p className="text-sm sm:text-base font-bold text-emerald-400">Done</p>
+                <CheckCircle className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
+                <p className="text-[11px] sm:text-sm font-bold text-emerald-400">Done</p>
               </>
             ) : (
               <>
-                <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
-                <p className="text-sm sm:text-base font-bold text-yellow-400">Active</p>
+                <Zap className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-yellow-400 flex-shrink-0" />
+                <p className="text-[11px] sm:text-sm font-bold text-yellow-400">Active</p>
               </>
             )}
           </div>

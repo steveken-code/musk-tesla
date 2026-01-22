@@ -123,7 +123,7 @@ const Navbar = () => {
             <Link to="/dashboard">
               <Button 
                 size="sm" 
-                className="bg-brand-purple hover:bg-brand-purple/90 text-white hover:scale-105 transition-transform shadow-lg shadow-brand-purple/25"
+                className="bg-purple-700 hover:bg-purple-800 text-white hover:scale-105 transition-transform shadow-lg shadow-purple-700/25"
               >
                 {t('dashboard')}
               </Button>
@@ -191,18 +191,26 @@ const Navbar = () => {
                     </motion.div>
                   )
                 ))}
+                {/* Google Translate for Mobile */}
                 <motion.div 
-                  className="flex items-center gap-2 px-4 pt-4 border-t border-slate-700 mt-2"
+                  className="flex items-center justify-center px-4 pt-3 border-t border-slate-700 mt-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: 0.25 }}
+                >
+                  <GoogleTranslate />
+                </motion.div>
+                <motion.div 
+                  className="flex items-center gap-2 px-4 pt-3"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: 0.3 }}
                 >
-                  <GoogleTranslate />
                   <Link to="/auth" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">{t('signIn')}</Button>
                   </Link>
                   <Link to="/dashboard" className="flex-1" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button className="w-full bg-brand-purple hover:bg-brand-purple/90 text-white">{t('dashboard')}</Button>
+                    <Button className="w-full bg-purple-700 hover:bg-purple-800 text-white">{t('dashboard')}</Button>
                   </Link>
                 </motion.div>
               </motion.div>
