@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { Globe } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 declare global {
   interface Window {
@@ -162,12 +164,22 @@ const GoogleTranslate = () => {
   }, []);
 
   return (
-    <div className="relative flex items-center">
-      <div 
-        id="google_translate_element" 
-        className="translate-widget [&_.goog-te-gadget]:!leading-none"
-      />
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative flex items-center gap-1.5 cursor-pointer group">
+            <Globe className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+            <div 
+              id="google_translate_element" 
+              className="translate-widget [&_.goog-te-gadget]:!leading-none"
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="bg-card border-border">
+          <p className="text-sm">Select Language</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
