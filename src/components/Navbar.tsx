@@ -132,6 +132,10 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+             {/* Mobile Translate (visible without opening menu) */}
+             <div className="max-w-[76px] overflow-hidden">
+               <GoogleTranslate />
+             </div>
             <button
               className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -191,15 +195,7 @@ const Navbar = () => {
                     </motion.div>
                   )
                 ))}
-                {/* Google Translate for Mobile */}
-                <motion.div 
-                  className="flex items-center justify-center px-4 pt-3 border-t border-slate-700 mt-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2, delay: 0.25 }}
-                >
-                  <GoogleTranslate />
-                </motion.div>
+                {/* Google Translate already shown in header on mobile */}
                 <motion.div 
                   className="flex items-center gap-2 px-4 pt-3"
                   initial={{ opacity: 0, y: 10 }}
