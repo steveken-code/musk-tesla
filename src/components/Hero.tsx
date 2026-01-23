@@ -160,7 +160,7 @@ const Hero = () => {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="group w-full sm:w-auto px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg font-semibold border-2 border-foreground/30 bg-card/60 backdrop-blur-md text-foreground hover:bg-card/80 hover:border-tesla-red/60 hover:shadow-xl transition-all duration-500 rounded-xl"
+                className="group w-full sm:w-auto px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg font-semibold border-2 border-foreground/30 bg-card/60 backdrop-blur-md text-foreground hover:bg-card/80 hover:border-electric-blue/60 hover:shadow-xl hover:shadow-electric-blue/20 transition-all duration-500 rounded-xl"
               >
                 <User className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 {t('createAccount')}

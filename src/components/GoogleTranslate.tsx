@@ -163,12 +163,23 @@ const GoogleTranslate = () => {
     };
   }, []);
 
+  const handleGlobeClick = () => {
+    // Find and click the Google Translate dropdown to open it
+    const translateElement = document.querySelector('.goog-te-gadget-simple') as HTMLElement;
+    if (translateElement) {
+      translateElement.click();
+    }
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="relative flex items-center gap-1.5 cursor-pointer group">
-            <Globe className="w-4 h-4 text-electric-blue group-hover:text-foreground transition-colors shrink-0 animate-pulse-gentle" />
+            <Globe 
+              className="w-4 h-4 text-electric-blue group-hover:text-foreground transition-colors shrink-0 animate-pulse-gentle"
+              onClick={handleGlobeClick}
+            />
             <div 
               id="google_translate_element" 
               className="translate-widget [&_.goog-te-gadget]:!leading-none"
