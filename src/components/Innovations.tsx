@@ -85,7 +85,7 @@ const Innovations = () => {
           {innovations.map((innovation, index) => (
             <motion.div key={index} variants={cardVariants}>
               <Card 
-                className="p-8 bg-navy-light border border-white/10 hover:border-tesla-red/30 transition-all duration-300 hover:shadow-xl group"
+                className="p-8 bg-navy-light border border-white/10 hover:border-electric-blue/30 transition-all duration-300 hover:shadow-xl group"
               >
                 <div className="mb-6">
                   <div className="inline-flex p-4 bg-electric-blue/10 rounded-xl group-hover:bg-electric-blue/20 transition-colors">

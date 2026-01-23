@@ -60,25 +60,25 @@ const Footer = () => {
                   key={index}
                   href={social.href}
                   whileHover={{ scale: 1.1 }}
-                  className="p-5 bg-slate-800/50 rounded-lg hover:bg-tesla-red/20 transition-colors group"
+                  className="p-5 bg-slate-800/50 rounded-lg hover:bg-electric-blue/20 transition-colors group"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-9 h-9 text-slate-400 group-hover:text-tesla-red transition-colors" />
+                  <social.icon className="w-9 h-9 text-slate-400 group-hover:text-electric-blue transition-colors" />
                 </motion.a>
               ))}
             </div>
 
             <div className="space-y-3">
-              <a href="mailto:support@teslastock.com" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group">
-                <Mail className="w-5 h-5 text-tesla-red group-hover:scale-110 transition-transform" />
-                support@teslastock.com
+              <a href="mailto:support@msktesla.net" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group">
+                <Mail className="w-5 h-5 text-electric-blue group-hover:scale-110 transition-transform" />
+                support@msktesla.net
               </a>
               <a href="tel:+12186500840" className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors group">
                 <Phone className="w-5 h-5 text-electric-blue group-hover:scale-110 transition-transform" />
                 +1 (218) 650-0840
               </a>
               <div className="flex items-center gap-3 text-slate-400">
-                <MapPin className="w-5 h-5 text-tesla-red" />
+                <MapPin className="w-5 h-5 text-electric-blue" />
                 3500 Deer Creek Road, Palo Alto, CA 94304
               </div>
             </div>
@@ -87,7 +87,7 @@ const Footer = () => {
           {/* Company Links */}
           <div>
             <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-white">
-              <Building className="w-5 h-5 text-tesla-red" />
+              <Building className="w-5 h-5 text-electric-blue" />
               {t('company')}
             </h3>
             <ul className="space-y-3">
@@ -127,7 +127,7 @@ const Footer = () => {
           {/* Regulatory Links */}
           <div>
             <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-white">
-              <Scale className="w-5 h-5 text-tesla-red" />
+              <Scale className="w-5 h-5 text-electric-blue" />
               {t('regulatory')}
             </h3>
             <ul className="space-y-3">

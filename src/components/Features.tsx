@@ -75,7 +75,7 @@ const Features = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
+          <p className="text-electric-blue font-semibold text-sm uppercase tracking-widest mb-4">
             {t('whyChooseUs')}
           </p>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
@@ -102,14 +102,14 @@ const Features = () => {
                 scale: 1.02,
                 transition: { duration: 0.3 }
               }}
-              className="group bg-navy-light border border-white/10 rounded-2xl p-8 h-full cursor-pointer hover:shadow-xl hover:border-tesla-red/30 transition-all duration-300"
+              className="group bg-navy-light border border-white/10 rounded-2xl p-8 h-full cursor-pointer hover:shadow-xl hover:border-electric-blue/30 transition-all duration-300"
             >
               <motion.div 
-                className="w-14 h-14 rounded-xl bg-tesla-red/10 flex items-center justify-center mb-6 group-hover:bg-tesla-red/20 transition-colors"
+                className="w-14 h-14 rounded-xl bg-electric-blue/10 flex items-center justify-center mb-6 group-hover:bg-electric-blue/20 transition-colors"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ duration: 0.3 }}
               >
-                <feature.icon className="w-7 h-7 text-tesla-red" />
+                <feature.icon className="w-7 h-7 text-electric-blue" />
               </motion.div>
               <h3 className="text-xl font-semibold text-white mb-3">
                 {t(feature.titleKey)}
