@@ -67,7 +67,7 @@ const HowItWorks = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <p className="text-tesla-red font-semibold text-sm uppercase tracking-widest mb-4">
+          <p className="text-electric-blue font-semibold text-sm uppercase tracking-widest mb-4">
             {t('gettingStarted')}
           </p>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
@@ -91,14 +91,14 @@ const HowItWorks = () => {
                 key={index}
                 variants={cardVariants}
                 whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                className="relative text-center bg-slate-800 border border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-tesla-red/30 transition-all duration-300"
+                className="relative text-center bg-slate-800 border border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-electric-blue/30 transition-all duration-300"
               >
                 {/* Step number */}
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-tesla-red to-tesla-red/70 flex items-center justify-center shadow-lg shadow-tesla-red/20">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-electric-blue to-electric-blue/70 flex items-center justify-center shadow-lg shadow-electric-blue/20">
                   <item.icon className="w-8 h-8 text-white" />
                 </div>
                 
-                <div className="text-tesla-red font-bold text-sm mb-2">
+                <div className="text-electric-blue font-bold text-sm mb-2">
                   {t('step')} {item.step}
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">

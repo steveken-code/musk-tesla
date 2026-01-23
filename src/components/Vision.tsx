@@ -94,8 +94,8 @@ const Vision = () => {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-50px" }}
               >
-                <Card className="p-5 md:p-6 bg-slate-800 border border-white/10 h-full group hover:shadow-lg hover:border-tesla-red/30 transition-all duration-300">
-                  <h3 className="text-lg md:text-xl font-bold mb-2 text-tesla-red">{item.title}</h3>
+                <Card className="p-5 md:p-6 bg-slate-800 border border-white/10 h-full group hover:shadow-lg hover:border-electric-blue/30 transition-all duration-300">
+                  <h3 className="text-lg md:text-xl font-bold mb-2 text-electric-blue">{item.title}</h3>
                   <p className="text-gray-400 text-sm md:text-base">{item.desc}</p>
                 </Card>
               </motion.div>
