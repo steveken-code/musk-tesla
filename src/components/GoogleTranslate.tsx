@@ -168,7 +168,7 @@ const GoogleTranslate = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="relative flex items-center gap-1.5 cursor-pointer group">
-            <Globe className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+            <Globe className="w-4 h-4 text-electric-blue group-hover:text-foreground transition-colors shrink-0 animate-pulse-gentle" />
             <div 
               id="google_translate_element" 
               className="translate-widget [&_.goog-te-gadget]:!leading-none"

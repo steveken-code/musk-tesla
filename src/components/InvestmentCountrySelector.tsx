@@ -231,7 +231,7 @@ const InvestmentCountrySelector = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-14 pr-14 h-14 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-300 text-foreground font-semibold text-base focus:border-slate-500"
+                className="w-full pl-14 pr-14 h-14 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-400 text-foreground font-semibold text-base focus:border-electric-blue"
               />
               {searchQuery && (
                 <button
@@ -292,7 +292,7 @@ const InvestmentCountrySelector = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-300 text-foreground font-semibold focus:border-slate-500"
+            className="w-full pl-11 pr-10 h-12 rounded-xl focus:outline-none transition-all bg-background border-2 border-slate-400 text-foreground font-semibold focus:border-electric-blue"
           />
           {searchQuery && (
             <button
@@ -341,8 +341,8 @@ const InvestmentCountrySelector = ({
         onClick={() => setShowDropdown(!showDropdown)}
         className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-card ${
           selectedCountry 
-            ? 'border-slate-400 hover:border-slate-500' 
-            : 'border-slate-300 hover:border-slate-400'
+            ? 'border-electric-blue/50 hover:border-electric-blue' 
+            : 'border-slate-400 hover:border-electric-blue/60'
         }`}
       >
         {selectedCountryData ? (

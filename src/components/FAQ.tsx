@@ -61,11 +61,11 @@ const FAQ = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-tesla-red bg-tesla-red/10 rounded-full border border-tesla-red/20">
+          <span className="inline-block px-4 py-2 mb-4 text-sm font-medium text-electric-blue bg-electric-blue/10 rounded-full border border-electric-blue/20">
             {t('support')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white">
-            {t('faqTitle')} <span className="text-tesla-red">{t('faqTitleHighlight')}</span>
+            {t('faqTitle')} <span className="text-electric-blue">{t('faqTitleHighlight')}</span>
           </h2>
           <p className="text-gray-300 max-w-2xl mx-auto text-lg">
             {t('faqSubtitle')}
@@ -84,9 +84,9 @@ const FAQ = () => {
               <motion.div key={index} variants={itemVariants}>
                 <AccordionItem
                   value={`item-${index}`}
-                  className="bg-navy-light border border-white/10 rounded-xl px-6 transition-all duration-300 ease-in-out data-[state=open]:border-[#ff4d4d]/60 data-[state=open]:shadow-[0_0_12px_rgba(255,77,77,0.15)] hover:border-[#ff4d4d]/40 hover:bg-navy-light/80"
+                  className="bg-navy-light border border-white/10 rounded-xl px-6 transition-all duration-300 ease-in-out data-[state=open]:border-electric-blue/50 data-[state=open]:shadow-[0_0_12px_rgba(59,130,246,0.15)] hover:border-electric-blue/30 hover:bg-navy-light/80"
                 >
-                  <AccordionTrigger className="text-left text-white hover:text-tesla-red py-6 hover:no-underline text-lg font-medium">
+                  <AccordionTrigger className="text-left text-white hover:text-electric-blue py-6 hover:no-underline text-lg font-medium">
                     {t(faq.questionKey)}
                   </AccordionTrigger>
                   <AccordionContent className="text-gray-400 pb-6 text-base leading-relaxed">
