@@ -55,85 +55,37 @@ const GoogleTranslate = () => {
       /* Prevent page jumps when translating */
       html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
       
-      /* Style the main gadget container */
-      .goog-te-gadget { 
-        font-size: 0 !important; 
-        font-family: inherit !important;
-        line-height: 1 !important;
+      /* Hide the entire Google Translate gadget - we use our own globe icon */
+      #google_translate_element { 
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
       }
-      .goog-te-gadget img { display: none !important; }
-      .goog-te-gadget > span { display: none !important; }
       
+      /* But keep the gadget clickable for programmatic access */
       .goog-te-gadget-simple { 
-        background: transparent !important;
-        border: 1px solid hsl(var(--border)) !important;
-        border-radius: 6px !important;
-        padding: 6px 10px !important;
-        font-size: 0 !important;
+        position: absolute !important;
+        opacity: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        top: 0 !important;
+        left: 0 !important;
         cursor: pointer !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        min-width: auto !important;
-        max-width: 90px !important;
-        overflow: hidden !important;
-      }
-
-        /* Mobile: keep it visible next to the hamburger without stretching */
-        @media (max-width: 767px) {
-          .goog-te-gadget-simple {
-            max-width: 76px !important;
-            padding: 6px 8px !important;
-          }
-          .goog-te-gadget-simple .goog-te-menu-value span {
-            font-size: 11px !important;
-          }
-        }
-      .goog-te-gadget-simple:hover {
-        background: hsl(var(--muted)) !important;
-        border-color: hsl(var(--brand-purple) / 0.5) !important;
-      }
-      
-      /* Style the selected language text */
-      .goog-te-gadget-simple .goog-te-menu-value {
-        color: hsl(var(--foreground)) !important;
-        font-family: inherit !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-      }
-      .goog-te-gadget-simple .goog-te-menu-value span {
-        color: hsl(var(--foreground)) !important;
-        font-size: 12px !important;
-        font-weight: 500 !important;
-      }
-      /* Only show first 2 letters of language */
-      .goog-te-gadget-simple .goog-te-menu-value span:first-child {
-        max-width: 50px !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-      }
-      /* Hide extra spans */
-      .goog-te-gadget-simple .goog-te-menu-value span:nth-child(2),
-      .goog-te-gadget-simple .goog-te-menu-value span:nth-child(3) {
-        display: none !important;
-      }
-      /* Style the dropdown arrow */
-      .goog-te-gadget-simple .goog-te-menu-value span[style*="border-left"] {
-        border-left-color: hsl(var(--muted-foreground)) !important;
-        margin-left: 4px !important;
+        z-index: 10 !important;
+        pointer-events: auto !important;
       }
       
       /* Hide the "Powered by Google" and skip translate elements */
-      #google_translate_element .skiptranslate { display: block !important; }
       body > .skiptranslate { display: none !important; }
       .goog-te-spinner-pos { display: none !important; }
       
       /* Style the dropdown menu iframe container */
       .goog-te-menu-frame {
         box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         border: 1px solid hsl(var(--border)) !important;
       }
       
@@ -141,16 +93,21 @@ const GoogleTranslate = () => {
       .goog-te-menu2 {
         background: hsl(var(--card)) !important;
         border: 1px solid hsl(var(--border)) !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         max-height: 400px !important;
         overflow-y: auto !important;
+        padding: 8px 0 !important;
       }
       .goog-te-menu2-item {
-        padding: 8px 16px !important;
+        padding: 10px 16px !important;
         font-size: 14px !important;
+        font-family: inherit !important;
       }
       .goog-te-menu2-item:hover {
         background: hsl(var(--muted)) !important;
+      }
+      .goog-te-menu2-item span {
+        color: hsl(var(--foreground)) !important;
       }
     `;
     document.head.appendChild(style);
@@ -175,23 +132,23 @@ const GoogleTranslate = () => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative flex items-center gap-1.5 cursor-pointer group">
-            <Globe 
-              className="w-4 h-4 text-electric-blue group-hover:text-foreground transition-colors shrink-0 animate-pulse-gentle"
-              onClick={handleGlobeClick}
-            />
+          <button 
+            onClick={handleGlobeClick}
+            className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card/50 hover:bg-muted hover:border-electric-blue/50 transition-all duration-200 cursor-pointer group"
+            aria-label="Select Language"
+          >
+            <Globe className="w-4 h-4 text-electric-blue group-hover:text-electric-blue transition-colors shrink-0 animate-pulse-gentle" />
             <div 
               id="google_translate_element" 
-              className="translate-widget [&_.goog-te-gadget]:!leading-none"
+              className="absolute inset-0 opacity-0"
             />
-          </div>
+          </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-card border-border">
-          <p className="text-sm">Select Language</p>
+          <p className="text-sm">Translate Page</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 };
-
 export default GoogleTranslate;
