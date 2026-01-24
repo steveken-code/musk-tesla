@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Globe } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import LanguageSelectorModal from './LanguageSelectorModal';
 
 declare global {
   interface Window {
@@ -18,8 +19,44 @@ declare global {
   }
 }
 
+// Map language codes to display names
+const languageCodeToDisplay: Record<string, string> = {
+  'en': 'EN',
+  'es': 'ES',
+  'fr': 'FR',
+  'de': 'DE',
+  'zh-CN': 'ZH',
+  'zh-TW': 'ZH',
+  'ru': 'RU',
+  'ar': 'AR',
+  'hi': 'HI',
+  'pt-BR': 'PT',
+  'pt-PT': 'PT',
+  'ja': 'JA',
+  'ko': 'KO',
+  'it': 'IT',
+  'nl': 'NL',
+  'pl': 'PL',
+  'tr': 'TR',
+  'vi': 'VI',
+  'th': 'TH',
+  'uk': 'UK',
+};
+
 const GoogleTranslate = () => {
   const initialized = useRef(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+
+  // Get current language from Google Translate cookie
+  const detectCurrentLanguage = useCallback(() => {
+    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+    if (match && match[1]) {
+      setCurrentLanguage(match[1]);
+    } else {
+      setCurrentLanguage('en');
+    }
+  }, []);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -30,9 +67,8 @@ const GoogleTranslate = () => {
       new window.google.translate.TranslateElement(
         {
           pageLanguage: 'en',
-          // Empty string = ALL supported languages (100+), sorted alphabetically by Google
           includedLanguages: '',
-          layout: 0, // SIMPLE dropdown layout
+          layout: 0,
           autoDisplay: false,
         },
         'google_translate_element'
@@ -45,7 +81,7 @@ const GoogleTranslate = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Add custom styles to integrate with site design
+    // Add custom styles to completely hide Google Translate widget
     const style = document.createElement('style');
     style.textContent = `
       /* Hide Google branding banner completely */
@@ -55,122 +91,70 @@ const GoogleTranslate = () => {
       /* Prevent page jumps when translating */
       html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
       
-      /* Hide the entire Google Translate gadget visually but keep it interactive */
-      #google_translate_element { 
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
+      /* Hide the entire Google Translate gadget completely */
+      #google_translate_element {
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
         opacity: 0 !important;
-        overflow: visible !important;
-        z-index: 20 !important;
+        pointer-events: none !important;
       }
       
-      /* Make the gadget clickable */
-      .goog-te-gadget-simple { 
-        position: absolute !important;
-        width: 100% !important;
-        height: 100% !important;
-        top: 0 !important;
-        left: 0 !important;
-        cursor: pointer !important;
-        z-index: 25 !important;
-        background: transparent !important;
-        border: none !important;
-      }
-      
-      /* Style the select dropdown to be visible when clicked */
-      .goog-te-combo {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        opacity: 0 !important;
-        cursor: pointer !important;
-        z-index: 30 !important;
-      }
+      .goog-te-gadget-simple { display: none !important; }
+      .goog-te-combo { display: none !important; }
       
       /* Hide the "Powered by Google" and skip translate elements */
       body > .skiptranslate { display: none !important; }
       .goog-te-spinner-pos { display: none !important; }
       .goog-logo-link { display: none !important; }
-      .goog-te-gadget span { display: none !important; }
-      
-      /* Style the dropdown menu iframe container */
-      .goog-te-menu-frame {
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
-        border-radius: 12px !important;
-        border: 1px solid hsl(var(--border)) !important;
-        z-index: 9999 !important;
-      }
-      
-      /* Dropdown menu styling */
-      .goog-te-menu2 {
-        background: hsl(222, 47%, 11%) !important;
-        border: 1px solid hsl(var(--border)) !important;
-        border-radius: 12px !important;
-        max-height: 400px !important;
-        overflow-y: auto !important;
-        padding: 8px 0 !important;
-      }
-      .goog-te-menu2-item {
-        padding: 10px 16px !important;
-        font-size: 14px !important;
-        font-family: inherit !important;
-      }
-      .goog-te-menu2-item:hover {
-        background: hsl(var(--muted)) !important;
-      }
-      .goog-te-menu2-item span,
-      .goog-te-menu2-item div {
-        color: hsl(var(--foreground)) !important;
-      }
     `;
     document.head.appendChild(style);
 
+    // Check for language changes
+    const interval = setInterval(detectCurrentLanguage, 1000);
+
     return () => {
+      clearInterval(interval);
       const existingScript = document.querySelector('script[src*="translate.google.com"]');
       if (existingScript) {
         existingScript.remove();
       }
     };
-  }, []);
+  }, [detectCurrentLanguage]);
 
-  const handleGlobeClick = () => {
-    // Try multiple methods to trigger the Google Translate dropdown
-    const gadgetSimple = document.querySelector('.goog-te-gadget-simple') as HTMLElement;
-    const gadgetCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-    const gadgetMenu = document.querySelector('.goog-te-gadget-simple span') as HTMLElement;
+  const handleLanguageSelect = (code: string) => {
+    // Set the Google Translate cookie
+    const domain = window.location.hostname;
+    document.cookie = `googtrans=/en/${code}; path=/; domain=${domain}`;
+    document.cookie = `googtrans=/en/${code}; path=/`;
     
-    if (gadgetCombo) {
-      // If there's a select dropdown, open it
-      gadgetCombo.focus();
-      gadgetCombo.click();
-      // Trigger mouse event to open dropdown
-      const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-      gadgetCombo.dispatchEvent(event);
-    } else if (gadgetMenu) {
-      gadgetMenu.click();
-    } else if (gadgetSimple) {
-      gadgetSimple.click();
-    }
+    setCurrentLanguage(code);
+    
+    // Reload to apply translation
+    window.location.reload();
   };
+
+  const displayCode = languageCodeToDisplay[currentLanguage] || currentLanguage.toUpperCase().substring(0, 2);
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <button 
-            onClick={handleGlobeClick}
-            className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-card/50 hover:bg-muted hover:border-electric-blue/50 transition-all duration-200 cursor-pointer group"
+            onClick={() => setModalOpen(true)}
+            className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card/50 hover:bg-muted hover:border-electric-blue/50 transition-all duration-200 cursor-pointer group"
             aria-label="Select Language"
           >
-            <Globe className="w-4 h-4 text-electric-blue group-hover:text-electric-blue transition-colors shrink-0 animate-pulse-gentle" />
+            <Globe className="w-4 h-4 text-electric-blue group-hover:text-electric-blue transition-colors shrink-0" />
+            <span className="text-xs font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+              {displayCode}
+            </span>
             <div 
               id="google_translate_element" 
-              className="absolute inset-0 opacity-0"
+              className="hidden"
             />
           </button>
         </TooltipTrigger>
@@ -178,7 +162,15 @@ const GoogleTranslate = () => {
           <p className="text-sm">Translate Page</p>
         </TooltipContent>
       </Tooltip>
+
+      <LanguageSelectorModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        currentLanguage={currentLanguage}
+        onLanguageSelect={handleLanguageSelect}
+      />
     </TooltipProvider>
   );
 };
+
 export default GoogleTranslate;
