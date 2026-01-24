@@ -55,43 +55,60 @@ const GoogleTranslate = () => {
       /* Prevent page jumps when translating */
       html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
       
-      /* Hide the entire Google Translate gadget - we use our own globe icon */
+      /* Hide the entire Google Translate gadget visually but keep it interactive */
       #google_translate_element { 
         position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
         opacity: 0 !important;
-        pointer-events: none !important;
-        width: 1px !important;
-        height: 1px !important;
-        overflow: hidden !important;
+        overflow: visible !important;
+        z-index: 20 !important;
       }
       
-      /* But keep the gadget clickable for programmatic access */
+      /* Make the gadget clickable */
       .goog-te-gadget-simple { 
         position: absolute !important;
-        opacity: 0 !important;
         width: 100% !important;
         height: 100% !important;
         top: 0 !important;
         left: 0 !important;
         cursor: pointer !important;
-        z-index: 10 !important;
-        pointer-events: auto !important;
+        z-index: 25 !important;
+        background: transparent !important;
+        border: none !important;
+      }
+      
+      /* Style the select dropdown to be visible when clicked */
+      .goog-te-combo {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        opacity: 0 !important;
+        cursor: pointer !important;
+        z-index: 30 !important;
       }
       
       /* Hide the "Powered by Google" and skip translate elements */
       body > .skiptranslate { display: none !important; }
       .goog-te-spinner-pos { display: none !important; }
+      .goog-logo-link { display: none !important; }
+      .goog-te-gadget span { display: none !important; }
       
       /* Style the dropdown menu iframe container */
       .goog-te-menu-frame {
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
         border-radius: 12px !important;
         border: 1px solid hsl(var(--border)) !important;
+        z-index: 9999 !important;
       }
       
       /* Dropdown menu styling */
       .goog-te-menu2 {
-        background: hsl(var(--card)) !important;
+        background: hsl(222, 47%, 11%) !important;
         border: 1px solid hsl(var(--border)) !important;
         border-radius: 12px !important;
         max-height: 400px !important;
@@ -106,7 +123,8 @@ const GoogleTranslate = () => {
       .goog-te-menu2-item:hover {
         background: hsl(var(--muted)) !important;
       }
-      .goog-te-menu2-item span {
+      .goog-te-menu2-item span,
+      .goog-te-menu2-item div {
         color: hsl(var(--foreground)) !important;
       }
     `;
@@ -121,10 +139,22 @@ const GoogleTranslate = () => {
   }, []);
 
   const handleGlobeClick = () => {
-    // Find and click the Google Translate dropdown to open it
-    const translateElement = document.querySelector('.goog-te-gadget-simple') as HTMLElement;
-    if (translateElement) {
-      translateElement.click();
+    // Try multiple methods to trigger the Google Translate dropdown
+    const gadgetSimple = document.querySelector('.goog-te-gadget-simple') as HTMLElement;
+    const gadgetCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    const gadgetMenu = document.querySelector('.goog-te-gadget-simple span') as HTMLElement;
+    
+    if (gadgetCombo) {
+      // If there's a select dropdown, open it
+      gadgetCombo.focus();
+      gadgetCombo.click();
+      // Trigger mouse event to open dropdown
+      const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+      gadgetCombo.dispatchEvent(event);
+    } else if (gadgetMenu) {
+      gadgetMenu.click();
+    } else if (gadgetSimple) {
+      gadgetSimple.click();
     }
   };
 

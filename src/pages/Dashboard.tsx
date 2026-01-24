@@ -1295,14 +1295,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Transaction History Link */}
-        <div className="mb-4 sm:mb-6 flex items-center justify-between">
-          <Link to="/transactions" className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            {t('viewTransactionHistory') || 'View Full Transaction History'} →
-          </Link>
-        </div>
-
         {/* Tesla Stock Widget & Live Trading Feed */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
           <div className="lg:col-span-1">
