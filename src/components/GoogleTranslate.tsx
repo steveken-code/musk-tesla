@@ -64,15 +64,17 @@ const GoogleTranslate = () => {
 
     // Define the callback before loading the script
     window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: 'en',
-          includedLanguages: '',
-          layout: 0,
-          autoDisplay: false,
-        },
-        'google_translate_element'
-      );
+      if (window.google && window.google.translate) {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: '',
+            layout: 0,
+            autoDisplay: false,
+          },
+          'google_translate_element'
+        );
+      }
     };
 
     // Load Google Translate script
@@ -83,6 +85,7 @@ const GoogleTranslate = () => {
 
     // Add custom styles to completely hide Google Translate widget and auto-dismiss bar
     const style = document.createElement('style');
+    style.id = 'google-translate-custom-styles';
     style.textContent = `
       /* Hide Google branding banner completely */
       .goog-te-banner-frame { display: none !important; }
@@ -91,35 +94,35 @@ const GoogleTranslate = () => {
       /* Prevent page jumps when translating */
       html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
       
-      /* Hide the entire Google Translate gadget completely */
+      /* Keep the translate element functional but visually hidden */
       #google_translate_element {
-        position: fixed !important;
+        position: absolute !important;
         top: -9999px !important;
         left: -9999px !important;
-        width: 1px !important;
-        height: 1px !important;
-        overflow: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
+        visibility: hidden !important;
       }
       
-      .goog-te-gadget-simple { display: none !important; }
-      .goog-te-combo { display: none !important; }
-      
       /* Hide the "Powered by Google" and skip translate elements */
-      body > .skiptranslate { display: none !important; }
+      body > .skiptranslate { 
+        display: none !important; 
+        height: 0 !important;
+        visibility: hidden !important;
+      }
       .goog-te-spinner-pos { display: none !important; }
       .goog-logo-link { display: none !important; }
-      
-      /* Hide the Google Translate menu/popup that appears */
-      .goog-te-menu-frame { display: none !important; }
-      .goog-te-menu2 { display: none !important; }
       
       /* Auto-dismiss any floating translation bars */
       #goog-gt-tt { display: none !important; }
       .goog-tooltip { display: none !important; }
       .goog-tooltip:hover { display: none !important; }
       .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+      
+      /* Hide the gadget simple but keep combo functional */
+      .goog-te-gadget-simple { 
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
       
       /* Smooth page transition after language change */
       body.translating {
@@ -141,10 +144,13 @@ const GoogleTranslate = () => {
         bannerFrame.style.display = 'none';
       }
       
-      // Hide any skiptranslate elements
-      const skipTranslate = document.querySelectorAll('.skiptranslate');
+      // Hide any skiptranslate elements except the main translate element
+      const skipTranslate = document.querySelectorAll('body > .skiptranslate');
       skipTranslate.forEach((el) => {
-        (el as HTMLElement).style.display = 'none';
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.display = 'none';
+        htmlEl.style.height = '0';
+        htmlEl.style.visibility = 'hidden';
       });
       
       // Reset body position
@@ -159,12 +165,10 @@ const GoogleTranslate = () => {
     autoDismissTranslateBar();
     const dismissInterval = setInterval(autoDismissTranslateBar, 500);
     
-    // Stop checking after 5 seconds (translation should be complete)
+    // Stop checking after 3 seconds (translation should be complete)
     setTimeout(() => {
       clearInterval(dismissInterval);
-      // Final cleanup
       autoDismissTranslateBar();
-      // Add translated class for smooth appearance
       document.body.classList.remove('translating');
       document.body.classList.add('translated');
     }, 3000);
@@ -174,19 +178,14 @@ const GoogleTranslate = () => {
 
     return () => {
       clearInterval(interval);
-      const existingScript = document.querySelector('script[src*="translate.google.com"]');
-      if (existingScript) {
-        existingScript.remove();
-      }
+      clearInterval(dismissInterval);
     };
   }, [detectCurrentLanguage]);
 
   // Smooth transition effect when language changes
   useEffect(() => {
-    // Check if page just loaded after a language change
     const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
     if (match && match[1] && match[1] !== 'en') {
-      // Page was translated, add smooth fade-in
       document.body.classList.add('translated');
     }
   }, []);
@@ -196,17 +195,47 @@ const GoogleTranslate = () => {
     document.body.classList.add('translating');
     document.body.classList.remove('translated');
     
-    // Set the Google Translate cookie
-    const domain = window.location.hostname;
-    document.cookie = `googtrans=/en/${code}; path=/; domain=${domain}`;
-    document.cookie = `googtrans=/en/${code}; path=/`;
+    // Clear any existing googtrans cookies first
+    const hostname = window.location.hostname;
+    const domains = [hostname, '.' + hostname, ''];
+    
+    domains.forEach(domain => {
+      if (domain) {
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
+      } else {
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+      }
+    });
+    
+    // Set the new Google Translate cookie
+    if (code === 'en') {
+      // For English, clear the cookie to reset
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+    } else {
+      // Set new language
+      document.cookie = `googtrans=/en/${code}; path=/`;
+      document.cookie = `googtrans=/en/${code}; path=/; domain=${hostname}`;
+    }
     
     setCurrentLanguage(code);
     
-    // Delay reload slightly for smooth fade-out effect
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
+    // Try to trigger Google Translate directly via the combo box
+    const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (combo) {
+      combo.value = code;
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      // Give time for translation to apply, then fade back in
+      setTimeout(() => {
+        document.body.classList.remove('translating');
+        document.body.classList.add('translated');
+      }, 1500);
+    } else {
+      // Fallback: Reload the page to apply translation
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    }
   };
 
   const displayCode = languageCodeToDisplay[currentLanguage] || currentLanguage.toUpperCase().substring(0, 2);
@@ -224,16 +253,18 @@ const GoogleTranslate = () => {
             <span className="text-xs font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
               {displayCode}
             </span>
-            <div 
-              id="google_translate_element" 
-              className="hidden"
-            />
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-card border-border">
           <p className="text-sm">Translate Page</p>
         </TooltipContent>
       </Tooltip>
+
+      {/* Hidden Google Translate element - must exist in DOM for translation to work */}
+      <div 
+        id="google_translate_element" 
+        style={{ position: 'absolute', top: '-9999px', left: '-9999px', visibility: 'hidden' }}
+      />
 
       <LanguageSelectorModal
         open={modalOpen}
