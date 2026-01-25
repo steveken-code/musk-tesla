@@ -23,23 +23,36 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-interface InvestmentActivationRequest {
+interface TradeClosedRequest {
   userEmail: string;
   userName: string;
   amount: number;
+  profitAmount: number;
   investmentId: string;
   investmentDate: string;
 }
 
-async function sendActivationEmail(data: InvestmentActivationRequest) {
-  const { userEmail, userName, amount, investmentId, investmentDate } = data;
+async function sendTradeClosedEmail(data: TradeClosedRequest) {
+  const { userEmail, userName, amount, profitAmount, investmentId, investmentDate } = data;
 
-  console.log(`Sending investment activation email to ${userEmail} for $${amount}`);
+  console.log(`Sending trade closed email to ${userEmail} - Investment: $${amount}, Profit: $${profitAmount}`);
 
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(amount);
+
+  const formattedProfit = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(profitAmount);
+
+  const totalValue = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount + profitAmount);
+
+  const profitPercentage = ((profitAmount / amount) * 100).toFixed(1);
 
   const formattedDate = new Date(investmentDate).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -48,7 +61,75 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     day: 'numeric',
   });
 
+  const closedDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
   const transactionId = investmentId.substring(0, 8).toUpperCase();
+
+  // Fetch support settings
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  let supportSettings = {
+    whatsappEnabled: true,
+    whatsappPhone: '+12186500840',
+    telegramEnabled: false,
+    telegramUsername: '',
+  };
+
+  try {
+    const { data: settingsData } = await supabaseAdmin
+      .from('admin_settings')
+      .select('setting_value')
+      .eq('setting_key', 'support_settings')
+      .maybeSingle();
+
+    if (settingsData?.setting_value) {
+      const value = settingsData.setting_value as any;
+      supportSettings = {
+        whatsappEnabled: value.whatsappEnabled ?? true,
+        whatsappPhone: value.whatsappPhone || '+12186500840',
+        telegramEnabled: value.telegramEnabled ?? false,
+        telegramUsername: value.telegramUsername || '',
+      };
+    }
+  } catch (e) {
+    console.log('Using default support settings');
+  }
+
+  const whatsappUrl = `https://wa.me/${supportSettings.whatsappPhone.replace('+', '')}`;
+  const telegramUrl = supportSettings.telegramUsername.startsWith('@') 
+    ? `https://t.me/${supportSettings.telegramUsername.replace('@', '')}`
+    : `https://t.me/${supportSettings.telegramUsername.replace('+', '')}`;
+
+  let supportButtonsHtml = '';
+  if (supportSettings.whatsappEnabled || supportSettings.telegramEnabled) {
+    supportButtonsHtml = `
+      <tr>
+        <td style="padding: 0 50px 35px;">
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
+            <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
+              Questions about your withdrawal?
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+              ${supportSettings.whatsappEnabled ? `
+                <a href="${whatsappUrl}" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-size: 15px; font-weight: 700;">
+                  💬 WhatsApp
+                </a>
+              ` : ''}
+              ${supportSettings.telegramEnabled && supportSettings.telegramUsername ? `
+                <a href="${telegramUrl}" style="display: inline-block; background: #0088cc; color: #ffffff; text-decoration: none; padding: 14px 25px; border-radius: 50px; font-size: 15px; font-weight: 700;">
+                  ✈️ Telegram
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -56,6 +137,8 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="x-apple-disable-message-reformatting">
+      <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
     </head>
     <body style="margin: 0; padding: 0; background-color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
@@ -63,14 +146,14 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
           <td align="center">
             <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
               
-              <!-- Header - Tesla Red -->
+              <!-- Header - Success Green -->
               <tr>
-                <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);">
                   <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
                   <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
-                    Investment Activation Notice
+                    🎉 Trade Successfully Closed
                   </p>
                 </td>
               </tr>
@@ -78,8 +161,8 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #c4b5fd; font-size: 22px; font-weight: 700;">
-                    Hello ${userName || 'Valued Investor'},
+                  <p style="margin: 0; color: #059669; font-size: 22px; font-weight: 700;">
+                    Congratulations ${userName || 'Valued Investor'}!
                   </p>
                 </td>
               </tr>
@@ -88,30 +171,55 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <tr>
                 <td style="padding: 15px 50px 25px;">
                   <div style="text-align: center; margin: 25px 0;">
-                    <span style="background: #dcfce7; color: #166534; padding: 14px 35px; border-radius: 50px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block;">
-                      ✅ INVESTMENT ACTIVATED
+                    <span style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #166534; padding: 14px 35px; border-radius: 50px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block; border: 2px solid #22c55e;">
+                      ✅ TRADE COMPLETED
                     </span>
                   </div>
                   <p style="margin: 25px 0 0; color: #374151; font-size: 16px; line-height: 1.7; text-align: center;">
-                    Great news! Your investment has been verified and is now <strong style="color: #16a34a;">ACTIVE</strong>. Your capital is now being actively managed in our Tesla growth portfolio.
+                    Great news! Your investment trade has been <strong style="color: #16a34a;">successfully completed</strong>. 
+                    Your funds including profits are now ready for withdrawal.
                   </p>
                 </td>
               </tr>
               
-              <!-- Amount Display -->
+              <!-- Total Value Display -->
               <tr>
                 <td style="padding: 0 50px 25px; text-align: center;">
-                  <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Investment Amount</p>
-                  <p style="color: #16a34a; font-size: 48px; font-weight: 800; margin: 0;">${formattedAmount}</p>
+                  <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Total Portfolio Value</p>
+                  <p style="color: #059669; font-size: 52px; font-weight: 800; margin: 0;">${totalValue}</p>
+                  <p style="color: #16a34a; font-size: 18px; font-weight: 700; margin: 10px 0 0 0;">📈 +${profitPercentage}% Return</p>
                 </td>
               </tr>
               
-              <!-- Investment Details Card -->
+              <!-- Stats Cards -->
+              <tr>
+                <td style="padding: 0 50px 35px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td width="48%" style="padding: 10px;">
+                        <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 16px; padding: 25px; text-align: center;">
+                          <div style="color: #166534; font-size: 28px; font-weight: 800;">${formattedAmount}</div>
+                          <div style="color: #15803d; font-size: 13px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Initial Investment</div>
+                        </div>
+                      </td>
+                      <td width="4%"></td>
+                      <td width="48%" style="padding: 10px;">
+                        <div style="background: #dcfce7; border: 2px solid #16a34a; border-radius: 16px; padding: 25px; text-align: center;">
+                          <div style="color: #166534; font-size: 28px; font-weight: 800;">+${formattedProfit}</div>
+                          <div style="color: #15803d; font-size: 13px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Profit</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              
+              <!-- Trade Details Card -->
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #c4b5fd; font-size: 20px; font-weight: 700;">
-                      📋 Investment Details
+                    <h3 style="margin: 0 0 25px; color: #059669; font-size: 20px; font-weight: 700;">
+                      📋 Trade Summary
                     </h3>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
@@ -129,28 +237,38 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
                         <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Description</td>
-                              <td style="color: #111827; font-size: 15px; text-align: right;">Investment Activation</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
-                          <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Amount</td>
-                              <td style="color: #059669; font-size: 22px; text-align: right; font-weight: 800;">${formattedAmount}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
-                          <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Date Activated</td>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Trade Opened</td>
                               <td style="color: #111827; font-size: 15px; text-align: right;">${formattedDate}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Trade Closed</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right;">${closedDate}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Investment Amount</td>
+                              <td style="color: #111827; font-size: 15px; text-align: right; font-weight: 600;">${formattedAmount}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Total Profit</td>
+                              <td style="color: #059669; font-size: 18px; text-align: right; font-weight: 800;">+${formattedProfit}</td>
                             </tr>
                           </table>
                         </td>
@@ -161,7 +279,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
                             <tr>
                               <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Status</td>
                               <td style="text-align: right;">
-                                <span style="background: #dcfce7; color: #166534; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase;">✅ ACTIVE</span>
+                                <span style="background: #dcfce7; color: #166534; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase;">✅ COMPLETED</span>
                               </td>
                             </tr>
                           </table>
@@ -172,54 +290,27 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
                 </td>
               </tr>
               
-              <!-- Growth Potential -->
+              <!-- Withdrawal Notice -->
               <tr>
                 <td style="padding: 0 50px 35px;">
-                  <div style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #22c55e; border-radius: 16px; padding: 30px; text-align: center;">
-                    <p style="color: #166534; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Expected Returns</p>
-                    <p style="color: #166534; font-size: 28px; font-weight: 800; margin: 0;">📈 Up to 847% Growth Potential</p>
-                    <p style="color: #15803d; font-size: 14px; margin: 10px 0 0 0;">Based on Tesla's 5-year historical performance</p>
+                  <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 16px; padding: 30px; text-align: center;">
+                    <p style="color: #065f46; font-size: 18px; font-weight: 700; margin: 0 0 10px 0;">💰 Funds Ready for Withdrawal</p>
+                    <p style="color: #047857; font-size: 15px; margin: 0;">Your ${totalValue} is now available to withdraw from your dashboard.</p>
                   </div>
                 </td>
               </tr>
               
-              <!-- What's Next -->
-              <tr>
-                <td style="padding: 0 50px 35px;">
-                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 30px;">
-                    <h3 style="color: #c4b5fd; margin: 0 0 20px 0; font-size: 18px; font-weight: 700;">🚀 What Happens Next?</h3>
-                    <ul style="margin: 0; padding: 0 0 0 25px; color: #374151; font-size: 15px; line-height: 2.2;">
-                      <li>Your investment is now actively managed</li>
-                      <li>Track real-time performance on your dashboard</li>
-                      <li>Receive profit updates as your investment grows</li>
-                      <li>Withdraw profits anytime from your dashboard</li>
-                    </ul>
-                  </div>
-                </td>
-              </tr>
-              
-              <!-- Dashboard CTA - Tesla Red -->
+              <!-- Dashboard CTA -->
               <tr>
                 <td style="padding: 0 50px 35px; text-align: center;">
-                  <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
-                    View Your Portfolio →
+                  <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                    Withdraw Now →
                   </a>
                 </td>
               </tr>
               
               <!-- Support -->
-              <tr>
-                <td style="padding: 0 50px 35px;">
-                  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 30px; text-align: center;">
-                    <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 600;">
-                      Questions about your investment?
-                    </p>
-                    <a href="https://wa.me/12186500840" style="display: inline-block; background: #25D366; color: #ffffff; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 15px; font-weight: 700;">
-                      💬 Contact Support on WhatsApp
-                    </a>
-                  </div>
-                </td>
-              </tr>
+              ${supportButtonsHtml}
               
               <!-- Footer -->
               <tr>
@@ -249,7 +340,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [userEmail],
-      subject: `✅ Investment Activated - ${formattedAmount} Now Trading`,
+      subject: `🎉 Trade Completed - ${totalValue} Ready for Withdrawal`,
       headers: {
         "X-Mailer": "Tesla Stock Platform",
         "X-Priority": "1",
@@ -257,7 +348,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
         "Precedence": "bulk",
       },
       tags: [
-        { name: "category", value: "investment_activation" },
+        { name: "category", value: "trade_notification" },
         { name: "transaction_id", value: transactionId }
       ],
       html: emailHtml,
@@ -267,12 +358,12 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
   const sendTime = Date.now();
   if (!res.ok) {
     const errorData = await res.text();
-    console.error(`[EMAIL_MONITOR] FAILED | To: ${userEmail} | Type: investment_activation | Error: ${errorData}`);
+    console.error(`[EMAIL_MONITOR] FAILED | To: ${userEmail} | Type: trade_closed | Error: ${errorData}`);
     return { success: false, error: errorData };
   }
 
   const result = await res.json();
-  console.log(`[EMAIL_MONITOR] SENT | To: ${userEmail} | Type: investment_activation | Resend_ID: ${result.id} | Time: ${sendTime}`);
+  console.log(`[EMAIL_MONITOR] SENT | To: ${userEmail} | Type: trade_closed | Resend_ID: ${result.id} | Time: ${sendTime}`);
   return { success: true, data: result };
 }
 
@@ -329,21 +420,20 @@ serve(async (req) => {
       );
     }
 
-    const requestData = await req.json() as InvestmentActivationRequest;
+    const requestData = await req.json() as TradeClosedRequest;
 
     // Use background task for faster response
-    EdgeRuntime.waitUntil(sendActivationEmail(requestData));
+    EdgeRuntime.waitUntil(sendTradeClosedEmail(requestData));
 
     return new Response(
-      JSON.stringify({ success: true, message: "Activation email queued" }),
+      JSON.stringify({ success: true, message: "Trade closed email queued" }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
   } catch (error: any) {
-    console.error("Error in send-investment-activation:", error);
-    // Return generic error message to client
+    console.error("Error in send-trade-closed:", error);
     return new Response(
       JSON.stringify({ error: "An error occurred while processing your request. Please try again." }),
       {

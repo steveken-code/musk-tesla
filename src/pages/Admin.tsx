@@ -483,6 +483,24 @@ const Admin = () => {
           console.error('Error sending activation email:', emailError);
           toast.success('Investment Approved! (email notification failed)');
         }
+      } else if (status === 'completed' && investment && investment.profiles?.email) {
+        // Send trade closed notification email when investment is completed
+        try {
+          await supabase.functions.invoke('send-trade-closed', {
+            body: {
+              userEmail: investment.profiles.email,
+              userName: investment.profiles.full_name || 'Valued Investor',
+              amount: investment.amount,
+              profitAmount: investment.profit_amount || 0,
+              investmentId: investment.id,
+              investmentDate: investment.created_at,
+            },
+          });
+          toast.success('Trade Completed! User notified via email.');
+        } catch (emailError) {
+          console.error('Error sending trade closed email:', emailError);
+          toast.success('Trade Completed! (email notification failed)');
+        }
       } else if (status === 'declined') {
         toast.success('Investment Declined.');
       } else if (status === 'pending') {
