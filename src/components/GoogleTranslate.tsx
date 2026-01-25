@@ -81,7 +81,7 @@ const GoogleTranslate = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Add custom styles to completely hide Google Translate widget
+    // Add custom styles to completely hide Google Translate widget and auto-dismiss bar
     const style = document.createElement('style');
     style.textContent = `
       /* Hide Google branding banner completely */
@@ -110,8 +110,64 @@ const GoogleTranslate = () => {
       body > .skiptranslate { display: none !important; }
       .goog-te-spinner-pos { display: none !important; }
       .goog-logo-link { display: none !important; }
+      
+      /* Hide the Google Translate menu/popup that appears */
+      .goog-te-menu-frame { display: none !important; }
+      .goog-te-menu2 { display: none !important; }
+      
+      /* Auto-dismiss any floating translation bars */
+      #goog-gt-tt { display: none !important; }
+      .goog-tooltip { display: none !important; }
+      .goog-tooltip:hover { display: none !important; }
+      .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+      
+      /* Smooth page transition after language change */
+      body.translating {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+      }
+      body.translated {
+        opacity: 1;
+        transition: opacity 0.4s ease-in;
+      }
     `;
     document.head.appendChild(style);
+
+    // Auto-dismiss any Google Translate bars that appear
+    const autoDismissTranslateBar = () => {
+      // Hide banner frame
+      const bannerFrame = document.querySelector('.goog-te-banner-frame') as HTMLElement;
+      if (bannerFrame) {
+        bannerFrame.style.display = 'none';
+      }
+      
+      // Hide any skiptranslate elements
+      const skipTranslate = document.querySelectorAll('.skiptranslate');
+      skipTranslate.forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
+      });
+      
+      // Reset body position
+      document.body.style.top = '0';
+      document.body.style.position = 'static';
+      
+      // Remove margin-top from html
+      document.documentElement.style.marginTop = '0';
+    };
+    
+    // Run auto-dismiss immediately and periodically
+    autoDismissTranslateBar();
+    const dismissInterval = setInterval(autoDismissTranslateBar, 500);
+    
+    // Stop checking after 5 seconds (translation should be complete)
+    setTimeout(() => {
+      clearInterval(dismissInterval);
+      // Final cleanup
+      autoDismissTranslateBar();
+      // Add translated class for smooth appearance
+      document.body.classList.remove('translating');
+      document.body.classList.add('translated');
+    }, 3000);
 
     // Check for language changes
     const interval = setInterval(detectCurrentLanguage, 1000);
@@ -125,7 +181,21 @@ const GoogleTranslate = () => {
     };
   }, [detectCurrentLanguage]);
 
+  // Smooth transition effect when language changes
+  useEffect(() => {
+    // Check if page just loaded after a language change
+    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+    if (match && match[1] && match[1] !== 'en') {
+      // Page was translated, add smooth fade-in
+      document.body.classList.add('translated');
+    }
+  }, []);
+
   const handleLanguageSelect = (code: string) => {
+    // Add translating class for smooth transition out
+    document.body.classList.add('translating');
+    document.body.classList.remove('translated');
+    
     // Set the Google Translate cookie
     const domain = window.location.hostname;
     document.cookie = `googtrans=/en/${code}; path=/; domain=${domain}`;
@@ -133,8 +203,10 @@ const GoogleTranslate = () => {
     
     setCurrentLanguage(code);
     
-    // Reload to apply translation
-    window.location.reload();
+    // Delay reload slightly for smooth fade-out effect
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   };
 
   const displayCode = languageCodeToDisplay[currentLanguage] || currentLanguage.toUpperCase().substring(0, 2);
