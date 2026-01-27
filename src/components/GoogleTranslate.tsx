@@ -117,17 +117,32 @@ const GoogleTranslate = () => {
         new window.google.translate.TranslateElement(
           {
             pageLanguage: 'en',
+            // Empty string = all languages supported
             includedLanguages: '',
+            // Layout 0 = dropdown only (no inline)
             layout: 0,
             autoDisplay: false,
           },
           'google_translate_element'
         );
         
+        // Force translation on page load if cookie exists
+        setTimeout(() => {
+          const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+          if (match && match[1] && match[1] !== 'en') {
+            const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+            if (combo) {
+              combo.value = match[1];
+              combo.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+          hideGoogleTranslateUI();
+        }, 500);
+        
         // Start monitoring for translation UI elements
         setTimeout(hideGoogleTranslateUI, 100);
-        setTimeout(hideGoogleTranslateUI, 500);
         setTimeout(hideGoogleTranslateUI, 1000);
+        setTimeout(hideGoogleTranslateUI, 2000);
       }
     };
 
@@ -137,7 +152,7 @@ const GoogleTranslate = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Add comprehensive CSS to hide Google Translate UI
+    // Add comprehensive CSS to hide Google Translate UI and ensure translation works
     const style = document.createElement('style');
     style.id = 'google-translate-custom-styles';
     style.textContent = `
@@ -165,18 +180,23 @@ const GoogleTranslate = () => {
         padding-top: 0 !important;
       }
       
-      /* Keep the translate element functional but completely hidden */
+      /* Keep the translate element functional but visually hidden */
       #google_translate_element {
-        position: absolute !important;
-        top: -9999px !important;
+        position: fixed !important;
+        bottom: -9999px !important;
         left: -9999px !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -1 !important;
+      }
+      
+      /* Ensure the combo box is accessible for programmatic control */
+      #google_translate_element .goog-te-combo {
+        pointer-events: auto !important;
       }
       
       /* Hide skip translate containers except our main element */
-      body > .skiptranslate,
+      body > .skiptranslate:not(#google_translate_element),
       .skiptranslate:not(#google_translate_element) {
         display: none !important;
         height: 0 !important;
@@ -190,6 +210,7 @@ const GoogleTranslate = () => {
       .goog-logo-link,
       #goog-gt-tt,
       .goog-tooltip,
+      .goog-tooltip-content,
       .goog-te-balloon-frame,
       .goog-te-menu-frame,
       .goog-te-menu2,
@@ -197,15 +218,24 @@ const GoogleTranslate = () => {
       .goog-te-gadget-icon,
       .goog-te-gadget img,
       .VIpgJd-ZVi9od-ORHb-OEVmcd,
-      .VIpgJd-ZVi9od-l4eHX-hSRGPd {
+      .VIpgJd-ZVi9od-l4eHX-hSRGPd,
+      .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+      #goog-gt-,
+      [id^="goog-gt-"] {
         display: none !important;
         visibility: hidden !important;
       }
       
-      /* Hide text highlight effects */
+      /* Hide text highlight effects from translation hover */
       .goog-text-highlight {
         background-color: transparent !important;
         box-shadow: none !important;
+        border: none !important;
+      }
+      
+      /* Ensure translated text looks natural */
+      font[style*="vertical-align: inherit"] {
+        vertical-align: baseline !important;
       }
       
       /* Hide the gadget simple but keep combo functional */
@@ -229,14 +259,28 @@ const GoogleTranslate = () => {
         transition: opacity 0.3s ease-in;
       }
       
-      /* Hide Google's floating widgets */
+      /* Hide Google's floating widgets and popups */
       .goog-te-ftab-frame,
       #\\:1\\.container,
-      div[id^=":"][id$=".container"] {
+      div[id^=":"][id$=".container"],
+      iframe[src*="translate.google"],
+      .goog-te-spinner-pos {
         display: none !important;
+      }
+      
+      /* Disable the default browser translation bar prompt */
+      html {
+        translate: no;
       }
     `;
     document.head.appendChild(style);
+    
+    // Add meta tag to prevent browser's built-in translation prompt
+    const metaTranslate = document.createElement('meta');
+    metaTranslate.name = 'google';
+    metaTranslate.content = 'notranslate';
+    // We actually WANT Google Translate to work, so remove this if it blocks it
+    // document.head.appendChild(metaTranslate);
 
     // Continuous monitoring to hide any Google UI that appears
     const monitoringInterval = setInterval(hideGoogleTranslateUI, 300);
@@ -274,69 +318,87 @@ const GoogleTranslate = () => {
     document.body.classList.add('translating');
     document.body.classList.remove('translated');
     
-    // Clear any existing googtrans cookies
+    // Clear any existing googtrans cookies on all possible domains
     const hostname = window.location.hostname;
-    const domains = [hostname, '.' + hostname, ''];
+    const clearCookies = () => {
+      const paths = ['/', ''];
+      const domains = [hostname, '.' + hostname, ''];
+      
+      paths.forEach(path => {
+        domains.forEach(domain => {
+          const domainPart = domain ? `; domain=${domain}` : '';
+          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path || '/'}${domainPart}`;
+        });
+      });
+    };
     
-    domains.forEach(domain => {
-      if (domain) {
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
-      } else {
-        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      }
-    });
+    clearCookies();
     
     // Set the new Google Translate cookie
     if (code === 'en') {
-      // For English, clear cookies and reload to get original content
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${hostname}`;
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${hostname}`;
-    } else {
-      // Set new language cookies on all domains
-      document.cookie = `googtrans=/en/${code}; path=/`;
-      document.cookie = `googtrans=/en/${code}; path=/; domain=${hostname}`;
-      document.cookie = `googtrans=/en/${code}; path=/; domain=.${hostname}`;
+      // For English, just clear and reload
+      setCurrentLanguage('en');
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+      return;
     }
     
+    // Set new language cookies on multiple domain configurations for cross-browser support
+    const setCookies = (langCode: string) => {
+      document.cookie = `googtrans=/en/${langCode}; path=/`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=${hostname}`;
+      if (hostname.includes('.')) {
+        document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
+      }
+    };
+    
+    setCookies(code);
     setCurrentLanguage(code);
     
-    // Try to trigger Google Translate directly
+    // Try to trigger Google Translate directly via the combo box
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     
-    if (combo && code !== 'en') {
-      // Wait for combo to be ready
-      setTimeout(() => {
-        combo.value = code;
-        combo.dispatchEvent(new Event('change', { bubbles: true }));
+    if (combo) {
+      // Set value and trigger change
+      combo.value = code;
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      // Monitor for translation completion
+      let checkCount = 0;
+      const maxChecks = 30; // 3 seconds max
+      
+      translationCheckInterval.current = window.setInterval(() => {
+        checkCount++;
+        hideGoogleTranslateUI();
         
-        // Start checking if translation completed
-        let checkCount = 0;
-        translationCheckInterval.current = window.setInterval(() => {
-          checkCount++;
-          hideGoogleTranslateUI();
-          
-          // Check if translation is complete (text changed or max time reached)
-          if (checkCount > 20) { // 2 seconds max
-            if (translationCheckInterval.current) {
-              clearInterval(translationCheckInterval.current);
-            }
-            setIsTranslating(false);
-            document.body.classList.remove('translating');
-            document.body.classList.add('translated');
+        // Check if body has translated class or max time reached
+        const isTranslated = document.documentElement.classList.contains('translated-ltr') ||
+                            document.documentElement.classList.contains('translated-rtl');
+        
+        if (isTranslated || checkCount >= maxChecks) {
+          if (translationCheckInterval.current) {
+            clearInterval(translationCheckInterval.current);
           }
-        }, 100);
-        
-        // Fallback: ensure we exit translating state
-        setTimeout(() => {
           setIsTranslating(false);
           document.body.classList.remove('translating');
           document.body.classList.add('translated');
           hideGoogleTranslateUI();
-        }, 2000);
+        }
       }, 100);
+      
+      // Fallback: ensure we exit translating state
+      setTimeout(() => {
+        if (translationCheckInterval.current) {
+          clearInterval(translationCheckInterval.current);
+        }
+        setIsTranslating(false);
+        document.body.classList.remove('translating');
+        document.body.classList.add('translated');
+        hideGoogleTranslateUI();
+      }, 3000);
     } else {
-      // Fallback: Reload the page to apply translation
+      // Combo not ready - reload the page to apply translation
       setTimeout(() => {
         window.location.reload();
       }, 200);
