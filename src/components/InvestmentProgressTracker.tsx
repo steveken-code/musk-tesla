@@ -24,15 +24,23 @@ interface ProgressStep {
 
 const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerProps) => {
   const progressData = useMemo(() => {
-    const hasInvestments = investments.length > 0;
+    // Only count active or completed investments (not pending or cancelled)
     const activeInvestments = investments.filter(inv => inv.status === 'active');
     const completedInvestments = investments.filter(inv => inv.status === 'completed');
+    const activatedInvestments = investments.filter(inv => inv.status === 'active' || inv.status === 'completed');
+    
+    const hasInvestments = activatedInvestments.length > 0;
     const hasActiveInvestment = activeInvestments.length > 0;
     const hasCompletedInvestment = completedInvestments.length > 0;
-    const totalProfit = investments.reduce((sum, inv) => sum + (inv.profit_amount || 0), 0);
+    
+    // Only count profits and amounts from activated investments
+    const totalProfit = activatedInvestments.reduce((sum, inv) => sum + (inv.profit_amount || 0), 0);
     const hasProfits = totalProfit > 0;
-    const totalAmount = investments.reduce((sum, inv) => sum + inv.amount, 0);
+    const totalAmount = activatedInvestments.reduce((sum, inv) => sum + inv.amount, 0);
     const canWithdraw = totalProfit >= 50; // Minimum withdrawal
+    
+    // Check if there are pending investments (for status display)
+    const hasPendingInvestments = investments.some(inv => inv.status === 'pending');
 
     // Determine current trading state - prioritize active over completed
     const isCurrentlyTrading = hasActiveInvestment;
@@ -45,9 +53,11 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
         label: 'Funds Deposited',
         description: hasInvestments 
           ? `$${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total invested` 
+          : hasPendingInvestments 
+          ? 'Awaiting activation'
           : 'Awaiting deposit',
         icon: DollarSign,
-        status: hasInvestments ? 'completed' : 'current',
+        status: hasInvestments ? 'completed' : hasPendingInvestments ? 'current' : 'current',
       },
       {
         id: 2,
@@ -56,9 +66,11 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
           ? `${activeInvestments.length} active position${activeInvestments.length > 1 ? 's' : ''}` 
           : hasEverCompleted 
           ? `${completedCount} trade${completedCount > 1 ? 's' : ''} completed`
+          : hasPendingInvestments
+          ? 'Pending activation'
           : 'Pending activation',
         icon: Clock,
-        status: (isCurrentlyTrading || hasEverCompleted) ? 'completed' : hasInvestments ? 'current' : 'upcoming',
+        status: (isCurrentlyTrading || hasEverCompleted) ? 'completed' : hasPendingInvestments ? 'current' : 'upcoming',
       },
       {
         id: 3,
