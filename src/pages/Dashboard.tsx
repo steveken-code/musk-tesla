@@ -738,13 +738,7 @@ const Dashboard = () => {
       }
       if (profileRes.data) {
         setProfile(profileRes.data);
-        // Show profile completion modal if name is missing
-        if (!profileRes.data.full_name?.trim()) {
-          setShowProfileModal(true);
-        }
-      } else {
-        // No profile record - show modal
-        setShowProfileModal(true);
+        // Profile completion is now optional - users can update anytime via header/sidebar
       }
       if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data as Withdrawal[]);
     } catch (error) {
