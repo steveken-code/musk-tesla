@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Globe } from 'lucide-react';
+import { Globe, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import LanguageSelectorModal from './LanguageSelectorModal';
 
@@ -47,6 +47,8 @@ const GoogleTranslate = () => {
   const initialized = useRef(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const translationCheckInterval = useRef<number | null>(null);
 
   // Get current language from Google Translate cookie
   const detectCurrentLanguage = useCallback(() => {
@@ -55,6 +57,53 @@ const GoogleTranslate = () => {
       setCurrentLanguage(match[1]);
     } else {
       setCurrentLanguage('en');
+    }
+  }, []);
+
+  // Comprehensive function to hide all Google Translate UI elements
+  const hideGoogleTranslateUI = useCallback(() => {
+    // Hide banner frame (the top bar)
+    const bannerFrame = document.querySelector('.goog-te-banner-frame') as HTMLElement;
+    if (bannerFrame) {
+      bannerFrame.style.display = 'none';
+      bannerFrame.style.visibility = 'hidden';
+      bannerFrame.style.height = '0';
+    }
+
+    // Hide all skiptranslate elements (popup boxes)
+    document.querySelectorAll('.skiptranslate').forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      if (!htmlEl.id?.includes('google_translate_element')) {
+        htmlEl.style.display = 'none';
+        htmlEl.style.visibility = 'hidden';
+        htmlEl.style.height = '0';
+      }
+    });
+
+    // Hide tooltips and popups
+    const elementsToHide = [
+      '#goog-gt-tt',
+      '.goog-te-balloon-frame',
+      '.goog-tooltip',
+      '.goog-te-menu-frame',
+      '.goog-te-spinner-pos'
+    ];
+    
+    elementsToHide.forEach(selector => {
+      document.querySelectorAll(selector).forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
+      });
+    });
+
+    // Reset body position that Google Translate might have changed
+    document.body.style.top = '0';
+    document.body.style.position = 'static';
+    document.documentElement.style.marginTop = '0';
+    
+    // Remove any margin-top from html that translation adds
+    const computedStyle = window.getComputedStyle(document.documentElement);
+    if (computedStyle.marginTop !== '0px') {
+      document.documentElement.style.marginTop = '0';
     }
   }, []);
 
@@ -74,6 +123,11 @@ const GoogleTranslate = () => {
           },
           'google_translate_element'
         );
+        
+        // Start monitoring for translation UI elements
+        setTimeout(hideGoogleTranslateUI, 100);
+        setTimeout(hideGoogleTranslateUI, 500);
+        setTimeout(hideGoogleTranslateUI, 1000);
       }
     };
 
@@ -83,119 +137,144 @@ const GoogleTranslate = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Add custom styles to completely hide Google Translate widget and auto-dismiss bar
+    // Add comprehensive CSS to hide Google Translate UI
     const style = document.createElement('style');
     style.id = 'google-translate-custom-styles';
     style.textContent = `
-      /* Hide Google branding banner completely */
-      .goog-te-banner-frame { display: none !important; }
-      body { top: 0 !important; position: static !important; }
+      /* Completely hide Google branding banner */
+      .goog-te-banner-frame,
+      .goog-te-banner-frame.skiptranslate,
+      iframe.goog-te-banner-frame {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
       
-      /* Prevent page jumps when translating */
-      html.translated-ltr, html.translated-rtl { margin-top: 0 !important; }
+      /* Prevent page shifts */
+      body {
+        top: 0 !important;
+        position: static !important;
+      }
       
-      /* Keep the translate element functional but visually hidden */
+      html.translated-ltr,
+      html.translated-rtl,
+      html[class*="translated"] {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+      
+      /* Keep the translate element functional but completely hidden */
       #google_translate_element {
         position: absolute !important;
         top: -9999px !important;
         left: -9999px !important;
         visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
       }
       
-      /* Hide the "Powered by Google" and skip translate elements */
-      body > .skiptranslate { 
-        display: none !important; 
+      /* Hide skip translate containers except our main element */
+      body > .skiptranslate,
+      .skiptranslate:not(#google_translate_element) {
+        display: none !important;
         height: 0 !important;
         visibility: hidden !important;
-      }
-      .goog-te-spinner-pos { display: none !important; }
-      .goog-logo-link { display: none !important; }
-      
-      /* Auto-dismiss any floating translation bars */
-      #goog-gt-tt { display: none !important; }
-      .goog-tooltip { display: none !important; }
-      .goog-tooltip:hover { display: none !important; }
-      .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
-      
-      /* Hide the gadget simple but keep combo functional */
-      .goog-te-gadget-simple { 
-        position: absolute !important;
         opacity: 0 !important;
         pointer-events: none !important;
       }
       
-      /* Smooth page transition after language change */
-      body.translating {
-        opacity: 0;
-        transition: opacity 0.3s ease-out;
+      /* Hide all Google UI elements */
+      .goog-te-spinner-pos,
+      .goog-logo-link,
+      #goog-gt-tt,
+      .goog-tooltip,
+      .goog-te-balloon-frame,
+      .goog-te-menu-frame,
+      .goog-te-menu2,
+      .goog-te-menu-value,
+      .goog-te-gadget-icon,
+      .goog-te-gadget img,
+      .VIpgJd-ZVi9od-ORHb-OEVmcd,
+      .VIpgJd-ZVi9od-l4eHX-hSRGPd {
+        display: none !important;
+        visibility: hidden !important;
       }
+      
+      /* Hide text highlight effects */
+      .goog-text-highlight {
+        background-color: transparent !important;
+        box-shadow: none !important;
+      }
+      
+      /* Hide the gadget simple but keep combo functional */
+      .goog-te-gadget-simple {
+        position: absolute !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        overflow: hidden !important;
+      }
+      
+      /* Smooth page transition */
+      body.translating {
+        opacity: 0.7;
+        transition: opacity 0.2s ease-out;
+        pointer-events: none;
+      }
+      
       body.translated {
         opacity: 1;
-        transition: opacity 0.4s ease-in;
+        transition: opacity 0.3s ease-in;
+      }
+      
+      /* Hide Google's floating widgets */
+      .goog-te-ftab-frame,
+      #\\:1\\.container,
+      div[id^=":"][id$=".container"] {
+        display: none !important;
       }
     `;
     document.head.appendChild(style);
 
-    // Auto-dismiss any Google Translate bars that appear
-    const autoDismissTranslateBar = () => {
-      // Hide banner frame
-      const bannerFrame = document.querySelector('.goog-te-banner-frame') as HTMLElement;
-      if (bannerFrame) {
-        bannerFrame.style.display = 'none';
-      }
-      
-      // Hide any skiptranslate elements except the main translate element
-      const skipTranslate = document.querySelectorAll('body > .skiptranslate');
-      skipTranslate.forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.display = 'none';
-        htmlEl.style.height = '0';
-        htmlEl.style.visibility = 'hidden';
-      });
-      
-      // Reset body position
-      document.body.style.top = '0';
-      document.body.style.position = 'static';
-      
-      // Remove margin-top from html
-      document.documentElement.style.marginTop = '0';
-    };
+    // Continuous monitoring to hide any Google UI that appears
+    const monitoringInterval = setInterval(hideGoogleTranslateUI, 300);
     
-    // Run auto-dismiss immediately and periodically
-    autoDismissTranslateBar();
-    const dismissInterval = setInterval(autoDismissTranslateBar, 500);
-    
-    // Stop checking after 3 seconds (translation should be complete)
+    // Stop aggressive monitoring after 5 seconds, then check less frequently
     setTimeout(() => {
-      clearInterval(dismissInterval);
-      autoDismissTranslateBar();
-      document.body.classList.remove('translating');
-      document.body.classList.add('translated');
-    }, 3000);
+      clearInterval(monitoringInterval);
+      // Continue checking but less frequently
+      setInterval(hideGoogleTranslateUI, 2000);
+    }, 5000);
 
     // Check for language changes
     const interval = setInterval(detectCurrentLanguage, 1000);
 
     return () => {
       clearInterval(interval);
-      clearInterval(dismissInterval);
+      clearInterval(monitoringInterval);
     };
-  }, [detectCurrentLanguage]);
+  }, [detectCurrentLanguage, hideGoogleTranslateUI]);
 
-  // Smooth transition effect when language changes
+  // Apply translation on initial load if cookie exists
   useEffect(() => {
     const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
     if (match && match[1] && match[1] !== 'en') {
+      setCurrentLanguage(match[1]);
       document.body.classList.add('translated');
     }
   }, []);
 
   const handleLanguageSelect = (code: string) => {
-    // Add translating class for smooth transition out
+    setIsTranslating(true);
+    setModalOpen(false);
+    
+    // Add translating class for smooth transition
     document.body.classList.add('translating');
     document.body.classList.remove('translated');
     
-    // Clear any existing googtrans cookies first
+    // Clear any existing googtrans cookies
     const hostname = window.location.hostname;
     const domains = [hostname, '.' + hostname, ''];
     
@@ -209,32 +288,58 @@ const GoogleTranslate = () => {
     
     // Set the new Google Translate cookie
     if (code === 'en') {
-      // For English, clear the cookie to reset
+      // For English, clear cookies and reload to get original content
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${hostname}`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${hostname}`;
     } else {
-      // Set new language
+      // Set new language cookies on all domains
       document.cookie = `googtrans=/en/${code}; path=/`;
       document.cookie = `googtrans=/en/${code}; path=/; domain=${hostname}`;
+      document.cookie = `googtrans=/en/${code}; path=/; domain=.${hostname}`;
     }
     
     setCurrentLanguage(code);
     
-    // Try to trigger Google Translate directly via the combo box
+    // Try to trigger Google Translate directly
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-    if (combo) {
-      combo.value = code;
-      combo.dispatchEvent(new Event('change', { bubbles: true }));
-      
-      // Give time for translation to apply, then fade back in
+    
+    if (combo && code !== 'en') {
+      // Wait for combo to be ready
       setTimeout(() => {
-        document.body.classList.remove('translating');
-        document.body.classList.add('translated');
-      }, 1500);
+        combo.value = code;
+        combo.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // Start checking if translation completed
+        let checkCount = 0;
+        translationCheckInterval.current = window.setInterval(() => {
+          checkCount++;
+          hideGoogleTranslateUI();
+          
+          // Check if translation is complete (text changed or max time reached)
+          if (checkCount > 20) { // 2 seconds max
+            if (translationCheckInterval.current) {
+              clearInterval(translationCheckInterval.current);
+            }
+            setIsTranslating(false);
+            document.body.classList.remove('translating');
+            document.body.classList.add('translated');
+          }
+        }, 100);
+        
+        // Fallback: ensure we exit translating state
+        setTimeout(() => {
+          setIsTranslating(false);
+          document.body.classList.remove('translating');
+          document.body.classList.add('translated');
+          hideGoogleTranslateUI();
+        }, 2000);
+      }, 100);
     } else {
       // Fallback: Reload the page to apply translation
       setTimeout(() => {
         window.location.reload();
-      }, 300);
+      }, 200);
     }
   };
 
@@ -246,24 +351,37 @@ const GoogleTranslate = () => {
         <TooltipTrigger asChild>
           <button 
             onClick={() => setModalOpen(true)}
-            className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card/50 hover:bg-muted hover:border-electric-blue/50 transition-all duration-200 cursor-pointer group"
+            disabled={isTranslating}
+            className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card/50 hover:bg-muted hover:border-electric-blue/50 transition-all duration-200 cursor-pointer group disabled:opacity-70 disabled:cursor-wait"
             aria-label="Select Language"
           >
-            <Globe className="w-4 h-4 text-electric-blue group-hover:text-electric-blue transition-colors shrink-0" />
+            {isTranslating ? (
+              <Loader2 className="w-4 h-4 text-electric-blue animate-spin shrink-0" />
+            ) : (
+              <Globe className="w-4 h-4 text-electric-blue group-hover:text-electric-blue transition-colors shrink-0" />
+            )}
             <span className="text-xs font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
               {displayCode}
             </span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="bg-card border-border">
-          <p className="text-sm">Translate Page</p>
+          <p className="text-sm">{isTranslating ? 'Translating...' : 'Translate Page'}</p>
         </TooltipContent>
       </Tooltip>
 
       {/* Hidden Google Translate element - must exist in DOM for translation to work */}
       <div 
         id="google_translate_element" 
-        style={{ position: 'absolute', top: '-9999px', left: '-9999px', visibility: 'hidden' }}
+        aria-hidden="true"
+        style={{ 
+          position: 'absolute', 
+          top: '-9999px', 
+          left: '-9999px', 
+          visibility: 'hidden',
+          height: 0,
+          overflow: 'hidden'
+        }}
       />
 
       <LanguageSelectorModal
