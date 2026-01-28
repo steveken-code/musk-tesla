@@ -131,19 +131,21 @@ const ProfileCompletionModal = ({
     }
   };
 
+  // Always allow closing - profile completion is optional
+
   const isProfileIncomplete = !currentName?.trim();
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - always allow clicking to close */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
-            onClick={isProfileIncomplete ? undefined : onClose}
+            onClick={onClose}
           />
 
           {/* Modal */}
@@ -156,22 +158,18 @@ const ProfileCompletionModal = ({
             <div className="bg-card border border-border rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
               {/* Header */}
               <div className="relative p-6 pb-4 border-b border-border bg-gradient-to-r from-tesla-red/10 to-electric-blue/10">
-                {!isProfileIncomplete && (
-                  <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <X className="w-5 h-5 text-muted-foreground" />
-                  </button>
-                )}
-                <h2 className="text-2xl font-bold text-foreground">
-                  {isProfileIncomplete ? 'Complete Your Profile' : 'Edit Profile'}
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted transition-colors"
+                  aria-label="Cancel"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+                <h2 className="text-2xl font-bold text-foreground pr-10">
+                  Edit Profile
                 </h2>
                 <p className="text-muted-foreground mt-1">
-                  {isProfileIncomplete 
-                    ? 'Please complete your profile to continue'
-                    : 'Update your profile information'
-                  }
+                  Update your profile information
                 </p>
               </div>
 
@@ -286,11 +284,15 @@ const ProfileCompletionModal = ({
                   )}
                 </Button>
 
-                {isProfileIncomplete && (
-                  <p className="text-xs text-center text-muted-foreground">
-                    You need to complete your profile before using the dashboard
-                  </p>
-                )}
+                {/* Cancel button for easy dismissal */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={onClose}
+                  className="w-full text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </Button>
               </form>
             </div>
           </motion.div>
