@@ -107,6 +107,26 @@ const GoogleTranslate = () => {
     }
   }, []);
 
+  // Force trigger translation for all elements
+  const forceTranslation = useCallback((langCode: string) => {
+    const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (combo) {
+      // Set the value
+      combo.value = langCode;
+      
+      // Create and dispatch events
+      const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+      combo.dispatchEvent(changeEvent);
+      
+      // Also try native change
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(combo, langCode);
+        combo.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -130,14 +150,20 @@ const GoogleTranslate = () => {
         setTimeout(() => {
           const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
           if (match && match[1] && match[1] !== 'en') {
-            const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-            if (combo) {
-              combo.value = match[1];
-              combo.dispatchEvent(new Event('change', { bubbles: true }));
-            }
+            forceTranslation(match[1]);
+            setCurrentLanguage(match[1]);
           }
           hideGoogleTranslateUI();
-        }, 500);
+        }, 800);
+        
+        // Retry translation trigger after a delay
+        setTimeout(() => {
+          const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+          if (match && match[1] && match[1] !== 'en') {
+            forceTranslation(match[1]);
+          }
+          hideGoogleTranslateUI();
+        }, 1500);
         
         // Start monitoring for translation UI elements
         setTimeout(hideGoogleTranslateUI, 100);
@@ -274,13 +300,6 @@ const GoogleTranslate = () => {
       }
     `;
     document.head.appendChild(style);
-    
-    // Add meta tag to prevent browser's built-in translation prompt
-    const metaTranslate = document.createElement('meta');
-    metaTranslate.name = 'google';
-    metaTranslate.content = 'notranslate';
-    // We actually WANT Google Translate to work, so remove this if it blocks it
-    // document.head.appendChild(metaTranslate);
 
     // Continuous monitoring to hide any Google UI that appears
     const monitoringInterval = setInterval(hideGoogleTranslateUI, 300);
@@ -299,7 +318,7 @@ const GoogleTranslate = () => {
       clearInterval(interval);
       clearInterval(monitoringInterval);
     };
-  }, [detectCurrentLanguage, hideGoogleTranslateUI]);
+  }, [detectCurrentLanguage, hideGoogleTranslateUI, forceTranslation]);
 
   // Apply translation on initial load if cookie exists
   useEffect(() => {
@@ -360,13 +379,22 @@ const GoogleTranslate = () => {
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     
     if (combo) {
-      // Set value and trigger change
+      // Set value and trigger change multiple times for reliability
       combo.value = code;
       combo.dispatchEvent(new Event('change', { bubbles: true }));
       
+      // Retry after a short delay
+      setTimeout(() => {
+        forceTranslation(code);
+      }, 200);
+      
+      setTimeout(() => {
+        forceTranslation(code);
+      }, 500);
+      
       // Monitor for translation completion
       let checkCount = 0;
-      const maxChecks = 30; // 3 seconds max
+      const maxChecks = 50; // 5 seconds max
       
       translationCheckInterval.current = window.setInterval(() => {
         checkCount++;
@@ -374,7 +402,8 @@ const GoogleTranslate = () => {
         
         // Check if body has translated class or max time reached
         const isTranslated = document.documentElement.classList.contains('translated-ltr') ||
-                            document.documentElement.classList.contains('translated-rtl');
+                            document.documentElement.classList.contains('translated-rtl') ||
+                            document.documentElement.className.includes('translated');
         
         if (isTranslated || checkCount >= maxChecks) {
           if (translationCheckInterval.current) {
@@ -384,6 +413,11 @@ const GoogleTranslate = () => {
           document.body.classList.remove('translating');
           document.body.classList.add('translated');
           hideGoogleTranslateUI();
+          
+          // If not translated after max checks, reload the page
+          if (!isTranslated && checkCount >= maxChecks) {
+            window.location.reload();
+          }
         }
       }, 100);
       
@@ -396,7 +430,7 @@ const GoogleTranslate = () => {
         document.body.classList.remove('translating');
         document.body.classList.add('translated');
         hideGoogleTranslateUI();
-      }, 3000);
+      }, 5000);
     } else {
       // Combo not ready - reload the page to apply translation
       setTimeout(() => {
