@@ -29,6 +29,9 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import WelcomeCard from '@/components/dashboard/WelcomeCard';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import DashboardSectionHeader from '@/components/dashboard/DashboardSectionHeader';
+import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
+import PopularStocksTable from '@/components/dashboard/PopularStocksTable';
+import ActionsPanel from '@/components/dashboard/ActionsPanel';
 
 // StockMarketWidget removed from dashboard layout
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
@@ -1081,12 +1084,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
-      {/* Premium background pattern */}
+      {/* Clean gradient background - no dot pattern */}
       <div className="fixed inset-0 bg-gradient-hero opacity-40 pointer-events-none" />
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
-        backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-        backgroundSize: '32px 32px'
-      }} />
       
       {/* Professional Sliding Sidebar */}
       <DashboardSidebar 
@@ -1172,105 +1171,135 @@ const Dashboard = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 sm:px-6 py-5 sm:py-7 max-w-7xl overflow-x-hidden">
-        {/* Hero Welcome Card - New Premium Design */}
-        <WelcomeCard
-          displayName={displayName}
-          portfolioBalance={portfolioBalance}
-          greeting={greeting}
-          onInvestClick={() => {
-            document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
-          t={t}
-        />
+        {/* Main Grid Layout - 2/3 + 1/3 on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Main Content (2/3) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Hero Welcome Card - Clean Purple Gradient */}
+            <WelcomeCard
+              displayName={displayName}
+              portfolioBalance={portfolioBalance}
+              greeting={greeting}
+              onInvestClick={() => {
+                document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
+              t={t}
+            />
 
-        {/* Stats Grid - Modernized with Animations */}
-        <StatsGrid
-          totalInvested={totalInvested}
-          totalProfit={totalProfit}
-          pendingAmount={pendingAmount}
-          activeCount={investments.filter(i => i.status === 'active').length}
-          formatValue={formatCurrencyValue}
-          t={t}
-        />
+            {/* Investment Portfolio Cards */}
+            <InvestmentPortfolio />
 
-        {/* Active Withdrawal Status */}
-        {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && withdrawals[0].status !== 'approved' && (
-          <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg sm:rounded-xl border animate-fade-in ${
-            withdrawals[0].status === 'on_hold' 
-              ? 'bg-orange-500/10 border-orange-500/30' 
-              : withdrawals[0].status === 'pending'
-              ? 'bg-yellow-500/10 border-yellow-500/30'
-              : 'bg-green-500/10 border-green-500/30'
-          }`}>
-            <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                {getStatusIcon(withdrawals[0].status)}
-                <div>
-                  <span className="font-semibold capitalize block text-sm sm:text-base">
-                    {withdrawals[0].status === 'on_hold' 
-                      ? t('withdrawalOnHold') 
-                      : withdrawals[0].status === 'pending'
-                      ? t('withdrawalPending')
-                      : t('withdrawalCompleted')}
-                  </span>
-                  <span className="text-xs sm:text-sm text-muted-foreground">
-                    ${Number(withdrawals[0].amount).toLocaleString()}
-                  </span>
+            {/* Active Withdrawal Status */}
+            {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && withdrawals[0].status !== 'approved' && (
+              <div className={`p-3 sm:p-4 rounded-xl border animate-fade-in ${
+                withdrawals[0].status === 'on_hold' 
+                  ? 'bg-orange-500/10 border-orange-500/30' 
+                  : withdrawals[0].status === 'pending'
+                  ? 'bg-amber-500/10 border-amber-500/30'
+                  : 'bg-green-500/10 border-green-500/30'
+              }`}>
+                <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {getStatusIcon(withdrawals[0].status)}
+                    <div>
+                      <span className="font-semibold capitalize block text-sm sm:text-base">
+                        {withdrawals[0].status === 'on_hold' 
+                          ? t('withdrawalOnHold') 
+                          : withdrawals[0].status === 'pending'
+                          ? t('withdrawalPending')
+                          : t('withdrawalCompleted')}
+                      </span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        ${Number(withdrawals[0].amount).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  {withdrawals[0].hold_message && withdrawals[0].status === 'on_hold' && (
+                    <p className="text-xs sm:text-sm text-orange-400 w-full sm:w-auto">{withdrawals[0].hold_message}</p>
+                  )}
+                  {withdrawals[0].status === 'on_hold' && (
+                    <a 
+                      href="https://wa.me/12186500840" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      {t('contactSupport')}
+                    </a>
+                  )}
                 </div>
               </div>
-              {withdrawals[0].hold_message && withdrawals[0].status === 'on_hold' && (
-                <p className="text-xs sm:text-sm text-orange-400 w-full sm:w-auto">{withdrawals[0].hold_message}</p>
-              )}
-              {withdrawals[0].status === 'on_hold' && (
-                <a 
-                  href="https://wa.me/12186500840" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  {t('contactSupport')}
-                </a>
-              )}
+            )}
+
+            {/* Popular Stocks Table */}
+            <PopularStocksTable />
+
+            {/* Stats Grid */}
+            <StatsGrid
+              totalInvested={totalInvested}
+              totalProfit={totalProfit}
+              pendingAmount={pendingAmount}
+              activeCount={investments.filter(i => i.status === 'active').length}
+              formatValue={formatCurrencyValue}
+              t={t}
+            />
+          </div>
+
+          {/* Right Column - Actions Panel (1/3) */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-32">
+              <ActionsPanel
+                onInvestClick={() => {
+                  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
+                portfolioBalance={portfolioBalance}
+              />
             </div>
           </div>
-        )}
-
-        {/* Real-Time Activity Section */}
-        <DashboardSectionHeader 
-          title="Real-Time Activity" 
-          subtitle="Live trading updates and investment progress"
-          icon={Activity}
-        />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-10">
-          <div className="h-[320px] sm:h-[360px]">
-            <LiveTradingFeed hasActiveInvestment={investments.some(i => i.status === 'active')} />
-          </div>
-          <div className="h-[320px] sm:h-[360px]">
-            <InvestmentProgressTracker investments={investments} />
-          </div>
         </div>
 
-        {/* Market Analysis Section */}
-        <DashboardSectionHeader 
-          title="Performance Overview" 
-          subtitle="Market data and portfolio analytics"
-          icon={PieChart}
-        />
-        <div id="plans" className="mb-8 sm:mb-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-            <TeslaChart />
-            <InvestmentChart investments={investments} />
+        {/* Full-Width Sections Below */}
+        <div className="mt-8 sm:mt-10 space-y-8 sm:space-y-10">
+          {/* Real-Time Activity Section */}
+          <div>
+            <DashboardSectionHeader 
+              title="Real-Time Activity" 
+              subtitle="Live trading updates and investment progress"
+              icon={Activity}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+              <div className="h-[320px] sm:h-[360px]">
+                <LiveTradingFeed hasActiveInvestment={investments.some(i => i.status === 'active')} />
+              </div>
+              <div className="h-[320px] sm:h-[360px]">
+                <InvestmentProgressTracker investments={investments} />
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Investment Section */}
-        <DashboardSectionHeader 
-          title="Make Your Move" 
-          subtitle="Invest or manage your portfolio"
-          icon={TrendingUp}
-        />
-        <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-8 sm:mb-10">
+          {/* Market Analysis Section */}
+          <div>
+            <DashboardSectionHeader 
+              title="Performance Overview" 
+              subtitle="Market data and portfolio analytics"
+              icon={PieChart}
+            />
+            <div id="plans" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+              <TeslaChart />
+              <InvestmentChart investments={investments} />
+            </div>
+          </div>
+
+          {/* Investment Section */}
+          <div>
+            <DashboardSectionHeader 
+              title="Make Your Move" 
+              subtitle="Invest or manage your portfolio"
+              icon={TrendingUp}
+            />
+            <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
           {/* New Investment Form */}
           <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-lg">
             <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
@@ -1416,6 +1445,8 @@ const Dashboard = () => {
                 ))}
               </div>
             )}
+          </div>
+            </div>
           </div>
         </div>
       </main>
