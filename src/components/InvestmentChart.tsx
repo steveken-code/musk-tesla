@@ -3,6 +3,19 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaCh
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TrendingUp, Activity, BarChart2, Zap, ArrowUpRight, ArrowDownRight, CheckCircle, PieChart, Target, DollarSign, Radio } from 'lucide-react';
 
+// Smart currency formatting - no decimals for whole numbers, abbreviations for large values
+const formatSmartValue = (amount: number, abbreviated = false): string => {
+  if (abbreviated) {
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 10000) return `$${(amount / 1000).toFixed(1)}k`;
+  }
+  const hasDecimals = amount % 1 !== 0;
+  return `$${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
+};
+
 interface Investment {
   id: string;
   amount: number;
@@ -238,18 +251,18 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
         
         {/* Stats Cards Row */}
         <div className="flex gap-2 sm:gap-3">
-          <div className="flex-1 bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-700/50">
+          <div className="flex-1 bg-slate-800/60 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-700/50 overflow-hidden">
             <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-1">Portfolio Value</p>
-            <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-white transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
-              ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <p className={`text-base sm:text-lg md:text-xl font-bold font-mono text-white transition-all duration-300 truncate ${isAnimating ? 'scale-105' : ''}`}>
+              {formatSmartValue(displayValue)}
             </p>
           </div>
-          <div className="flex-1 bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-emerald-500/30">
+          <div className="flex-1 bg-emerald-500/10 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-emerald-500/30 overflow-hidden">
             <p className="text-[9px] sm:text-[10px] text-emerald-400 uppercase tracking-wider mb-1">Total Profit</p>
-            <div className="flex items-center gap-1">
-              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-              <p className={`text-lg sm:text-xl md:text-2xl font-bold font-mono text-emerald-400 transition-all duration-300 ${isAnimating ? 'scale-105' : ''}`}>
-                ${displayProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="flex items-center gap-1 overflow-hidden">
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0" />
+              <p className={`text-base sm:text-lg md:text-xl font-bold font-mono text-emerald-400 transition-all duration-300 truncate ${isAnimating ? 'scale-105' : ''}`}>
+                {formatSmartValue(displayProfit)}
               </p>
             </div>
           </div>
@@ -260,28 +273,28 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
       <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-5">
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
           <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Return</p>
-          <p className="text-[11px] sm:text-sm md:text-base font-bold text-emerald-400 truncate">+{percentGain.toFixed(1)}%</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-emerald-400 truncate">+{percentGain.toFixed(1)}%</p>
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
           <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">{t('profit')}</p>
-          <p className="text-[11px] sm:text-sm md:text-base font-bold text-emerald-400 truncate">${totalProfit >= 1000 ? (totalProfit / 1000).toFixed(1) + 'k' : totalProfit.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-emerald-400 truncate">{formatSmartValue(totalProfit, true)}</p>
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
           <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Invested</p>
-          <p className="text-[11px] sm:text-sm md:text-base font-bold text-white truncate">${totalInvested >= 1000 ? (totalInvested / 1000).toFixed(1) + 'k' : totalInvested.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-white truncate">{formatSmartValue(totalInvested, true)}</p>
         </div>
         <div className="bg-slate-800/40 backdrop-blur-sm rounded-lg sm:rounded-xl p-1.5 sm:p-2 md:p-3 text-center border border-slate-700/30 min-w-0 overflow-hidden">
           <p className="text-[7px] sm:text-[9px] md:text-[10px] text-slate-500 mb-0.5 uppercase tracking-wide truncate">Status</p>
-          <div className="flex items-center justify-center gap-0.5">
+          <div className="flex items-center justify-center gap-0.5 overflow-hidden">
             {hasCompletedInvestments ? (
               <>
-                <CheckCircle className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
-                <p className="text-[11px] sm:text-sm font-bold text-emerald-400">Done</p>
+                <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400 flex-shrink-0" />
+                <p className="text-[10px] sm:text-xs font-bold text-emerald-400 truncate">Done</p>
               </>
             ) : (
               <>
-                <Zap className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-yellow-400 flex-shrink-0" />
-                <p className="text-[11px] sm:text-sm font-bold text-yellow-400">Active</p>
+                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-400 flex-shrink-0" />
+                <p className="text-[10px] sm:text-xs font-bold text-yellow-400 truncate">Active</p>
               </>
             )}
           </div>
@@ -366,7 +379,7 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
           <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium flex items-center gap-1">
             <TrendingUp className="w-3 h-3 text-emerald-500" /> Profit Growth
           </span>
-          <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono">+${totalProfit.toLocaleString()}</span>
+          <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono">+{formatSmartValue(totalProfit)}</span>
         </div>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 0, right: 10, left: -15, bottom: 0 }}>
@@ -398,19 +411,19 @@ const InvestmentChart = ({ investments }: InvestmentChartProps) => {
 
       {/* Legend & Stats */}
       <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 border-t border-slate-700/50">
-        <div className="flex items-center gap-3 sm:gap-5 text-[9px] sm:text-[10px]">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-1 rounded-full bg-gradient-to-r from-emerald-400 to-green-500" />
-            <span className="text-slate-400">Portfolio: <span className="text-white font-mono">${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
+        <div className="flex items-center gap-3 sm:gap-4 text-[8px] sm:text-[10px]">
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-1 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 flex-shrink-0" />
+            <span className="text-slate-400 truncate">Portfolio: <span className="text-white font-mono">{formatSmartValue(portfolioValue)}</span></span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-1 rounded-full bg-emerald-500/60" />
-            <span className="text-slate-400">{t('profit')}: <span className="text-emerald-400 font-mono">+${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
+          <div className="flex items-center gap-1">
+            <div className="w-2.5 h-1 rounded-full bg-emerald-500/60 flex-shrink-0" />
+            <span className="text-slate-400 truncate">{t('profit')}: <span className="text-emerald-400 font-mono">+{formatSmartValue(totalProfit)}</span></span>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-slate-500">
-          <Radio className="w-3 h-3 text-emerald-500" />
-          <span>{hasCompletedInvestments ? 'Investment Complete' : 'Tracking Active'}</span>
+        <div className="flex items-center gap-1.5 text-[8px] sm:text-[10px] text-slate-500">
+          <Radio className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-500 flex-shrink-0" />
+          <span className="truncate">{hasCompletedInvestments ? 'Complete' : 'Active'}</span>
         </div>
       </div>
     </div>
