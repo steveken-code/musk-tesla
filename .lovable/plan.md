@@ -1,123 +1,64 @@
 
 
-# Rules Modal Scroll Fix & Complete Referral System Enhancement
+# Investment Rules Modal Scroll Fix & Referral Tracking Enhancement
 
 ## Overview
-This plan addresses all the user's concerns:
-1. Fix the rules modal scrolling issue
-2. Ensure HTTPS in referral links
-3. Send referral emails to BOTH referrer and referred user
-4. Show comprehensive referral tracking stats
-5. Referral bonus withdrawable only if user has invested
+Improve the Investment Rules modal scrolling reliability on mobile devices and ensure the referral tracking displays properly with all stats visible.
 
 ---
 
-## Current State Analysis
+## Current Issues Identified
 
-### Issues Found:
-1. **Rules Modal**: Already has `ScrollArea` but may not be working properly on mobile - needs explicit overflow handling
-2. **HTTPS**: Link already uses `https://msktesla.net` (confirmed in code) - this is correct
-3. **Referral Emails**: Currently only sends to the referrer - need to also send welcome email to referred user
-4. **Referral Stats**: Stats display exists but needs enhancement with withdrawal eligibility
-5. **Withdrawal Restriction**: Need to add logic to check if user has active/completed investment before allowing referral bonus withdrawal
-
----
-
-## Changes Summary
-
-### 1. Fix Rules Modal Scrolling
+### 1. Rules Modal Scrolling
 **File:** `src/components/dashboard/ActionsPanel.tsx`
 
-**Problem:** The `ScrollArea` may not be properly scrolling on some mobile browsers
+The modal currently uses:
+- `overflow-y-auto` on a plain `div` (line 128-131)
+- `WebkitOverflowScrolling: 'touch'` inline style
 
-**Solution:**
-- Add explicit `overflow-y-auto` as fallback
-- Ensure proper viewport height calculation
-- Add touch-friendly scrolling with `-webkit-overflow-scrolling: touch`
+**Problems:**
+- The `ScrollArea` component is imported but not being used
+- Some mobile browsers may still have scrolling issues with flex containers
+- Need to add `min-h-0` to the flex container to ensure proper overflow behavior
+
+### 2. Referral Stats Already Working
+The `ReferralBonus.tsx` component already has comprehensive tracking:
+- Shows total referrals, paid referrals, pending referrals
+- Displays total earned vs withdrawable amounts
+- Shows investment requirement warning
+- All functionality is properly implemented
+
+---
+
+## Proposed Changes
+
+### Fix #1: Improve Modal Scroll Reliability
+**File:** `src/components/dashboard/ActionsPanel.tsx`
+
+**Changes:**
+1. Add `min-h-0` to the scrollable container (critical for flex overflow)
+2. Use `ScrollArea` component instead of plain div for better cross-browser support
+3. Add proper height constraints
 
 ```tsx
-<DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col p-0">
-  <ScrollArea className="flex-1 overflow-y-auto px-4 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
-    {/* Rules content */}
-  </ScrollArea>
-</DialogContent>
+// Before (lines 128-131)
+<div 
+  className="flex-1 overflow-y-auto px-4 sm:px-6 overscroll-contain"
+  style={{ WebkitOverflowScrolling: 'touch' }}
+>
+
+// After - Use ScrollArea for better mobile support
+<ScrollArea className="flex-1 min-h-0">
+  <div className="px-4 sm:px-6">
+    <div className="space-y-3 py-4">
+      {/* Rules content */}
+    </div>
+  </div>
+</ScrollArea>
 ```
 
----
-
-### 2. Send Referral Email to BOTH Users
-**File:** `supabase/functions/send-referral-notification/index.ts`
-
-**Enhancement:**
-- Add new email type `'welcome_referred'` for the referred user
-- Send welcome email with $100 bonus info to the new user
-- Send notification to referrer about the new signup
-
-**New Email for Referred User:**
-```typescript
-// When someone signs up with a referral code, send them a welcome email
-type: 'welcome_referred' -> Sends to the NEW user
-  - Subject: "Welcome! You've Earned a $100 Referral Bonus"
-  - Content: Congratulations on joining, your $100 bonus will be credited when you invest
-```
-
-**File:** `src/contexts/AuthContext.tsx`
-
-**Update:**
-- After creating referral record, also send welcome email to the referred user
-- Send notification to the referrer
-
----
-
-### 3. Enhance Referral Stats Display with Withdrawal Eligibility
-**File:** `src/components/dashboard/ReferralBonus.tsx`
-
-**New Features:**
-- Check if user has an active/completed investment
-- Show "Withdrawable" vs "Pending" status for bonus
-- Display clear message: "Invest to unlock your referral bonus"
-- Add visual indicator for withdrawal eligibility
-
-**UI Update:**
-```text
-+------------------------------------------------+
-|  Refer & Earn                                   |
-|  $500 per referral                              |
-|-------------------------------------------------|
-|  Your Referrals  |  Total Earned | Withdrawable |
-|       3          |    $1,500     |    $1,000    |
-|  (2 paid, 1 pending)              (1 pending)   |
-|-------------------------------------------------|
-|  ⚠️ Invest to withdraw referral bonus           |
-|-------------------------------------------------|
-|  [msktesla.net/auth?ref=ABC12345]        [Copy] |
-|  [Share with Friends]                           |
-+------------------------------------------------+
-```
-
----
-
-### 4. Add Withdrawal Eligibility Check
-**File:** `src/components/dashboard/ReferralBonus.tsx`
-
-**Logic:**
-1. Fetch user's investments from database
-2. Check if any investment has status 'active' or 'completed'
-3. If no investment: Show warning "Invest to unlock your referral bonus withdrawal"
-4. If invested: Show "Bonus ready to withdraw"
-
-**Code:**
-```tsx
-// Check if user has invested
-const { data: investments } = await supabase
-  .from('investments')
-  .select('status')
-  .eq('user_id', user.id)
-  .in('status', ['active', 'completed']);
-
-const hasInvested = investments && investments.length > 0;
-const withdrawableBonus = hasInvested ? stats.totalBonus : 0;
-```
+### Why min-h-0 is Critical
+In flexbox layouts, the default `min-height: auto` prevents flex children from shrinking below their content height. Adding `min-h-0` allows the scrollable area to properly shrink and enable scrolling.
 
 ---
 
@@ -125,96 +66,94 @@ const withdrawableBonus = hasInvested ? stats.totalBonus : 0;
 
 | File | Changes |
 |------|---------|
-| `src/components/dashboard/ActionsPanel.tsx` | Fix ScrollArea with explicit overflow handling |
-| `src/components/dashboard/ReferralBonus.tsx` | Add investment check, show withdrawal eligibility |
-| `src/contexts/AuthContext.tsx` | Send referral email to BOTH referrer and referred user |
-| `supabase/functions/send-referral-notification/index.ts` | Add `welcome_referred` email type for new users |
+| `src/components/dashboard/ActionsPanel.tsx` | Use ScrollArea with min-h-0 for reliable scrolling |
 
 ---
 
-## Technical Implementation Details
-
-### Edge Function Update (send-referral-notification)
-
-Add new email type for referred users:
-```typescript
-interface ReferralNotificationRequest {
-  referralEmail: string;
-  referredUserName: string;
-  referredUserEmail: string;
-  type: 'signup' | 'investment_active' | 'welcome_referred';
-  referrerName?: string;
-  investmentAmount?: number;
-}
-
-// New case for referred user welcome email
-if (type === 'welcome_referred') {
-  subject = '🎁 Welcome! You\'ve Earned a $100 Referral Bonus';
-  htmlContent = `...Welcome to Tesla Investment Platform! 
-    You signed up using a referral code and earned a $100 bonus!
-    Make your first investment to unlock your bonus...`;
-  // Send to referredUserEmail instead of referralEmail
-}
-```
-
-### AuthContext Update
-
-```typescript
-// After creating referral record, send emails to BOTH users
-if (referrerUserId && referrerUserId !== data.user!.id) {
-  // Create referral record
-  await supabase.from('referrals').insert({...});
-  
-  // Send notification to REFERRER
-  await supabase.functions.invoke('send-referral-notification', {
-    body: { type: 'signup', referralEmail: referrerEmail, ... }
-  });
-  
-  // Send welcome email to REFERRED user
-  await supabase.functions.invoke('send-referral-notification', {
-    body: { type: 'welcome_referred', referredUserEmail: email, ... }
-  });
-}
-```
-
-### ReferralBonus Component Update
+## Technical Implementation
 
 ```tsx
-// Add state for investment status
-const [hasInvested, setHasInvested] = useState(false);
+// ActionsPanel.tsx - Updated Modal Structure (lines 111-166)
 
-// Fetch investment status
-useEffect(() => {
-  const checkInvestmentStatus = async () => {
-    const { data } = await supabase
-      .from('investments')
-      .select('id')
-      .eq('user_id', user.id)
-      .in('status', ['active', 'completed'])
-      .limit(1);
+<Dialog open={showRules} onOpenChange={setShowRules}>
+  <DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col p-0 bg-card border-border">
+    {/* Fixed Header */}
+    <DialogHeader className="p-4 sm:p-6 pb-2 shrink-0 border-b border-border/30">
+      <DialogTitle className="flex items-center gap-2 text-foreground">
+        <div className="p-1.5 rounded-lg bg-electric-blue/10">
+          <CheckCircle className="w-5 h-5 text-electric-blue" />
+        </div>
+        Investment Rules
+      </DialogTitle>
+      <DialogDescription className="text-muted-foreground text-sm">
+        Follow these guidelines for a successful investment experience.
+      </DialogDescription>
+    </DialogHeader>
     
-    setHasInvested(data && data.length > 0);
-  };
-  checkInvestmentStatus();
-}, [user?.id]);
-
-// Show warning if not invested
-{!hasInvested && stats.totalBonus > 0 && (
-  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-    <p className="text-amber-500 text-sm">
-      ⚠️ Invest to unlock your ${stats.totalBonus} referral bonus for withdrawal
-    </p>
-  </div>
-)}
+    {/* Scrollable Content - Use ScrollArea with min-h-0 */}
+    <ScrollArea className="flex-1 min-h-0">
+      <div className="px-4 sm:px-6">
+        <div className="space-y-3 py-4">
+          {investmentRules.map((rule, index) => (
+            <motion.div
+              key={rule.title}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border/30"
+            >
+              <div className="p-1.5 sm:p-2 rounded-md bg-electric-blue/10 shrink-0">
+                <rule.icon className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">{rule.title}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{rule.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </ScrollArea>
+    
+    {/* Fixed Footer */}
+    <div className="p-4 sm:p-6 pt-4 border-t border-border/50 shrink-0">
+      <Button 
+        onClick={() => {
+          setShowRules(false);
+          onInvestClick();
+        }}
+        className="w-full h-11 sm:h-12 bg-gradient-to-r from-electric-blue to-electric-blue/80"
+      >
+        Start Investing Now
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
 ```
+
+---
+
+## Referral Tracking (Already Implemented)
+
+The `ReferralBonus.tsx` component already shows:
+
+| Stat | Display |
+|------|---------|
+| Total Referrals | Number with Users icon |
+| Total Earned | Green amount (paid + pending) |
+| Withdrawable | Amber amount (only if invested) |
+| Status Breakdown | "X paid, Y pending" labels |
+| Investment Warning | Yellow alert when not invested |
+| Ready to Withdraw | Green alert when invested |
+
+No changes needed for referral tracking - it's already professional and complete.
 
 ---
 
 ## Result After Changes
 
-1. **Scrollable Rules** - Modal scrolls smoothly on all devices with touch support
-2. **HTTPS Verified** - Links already use HTTPS (msktesla.net)
-3. **Dual Emails** - Both referrer AND referred user receive email notifications
-4. **Full Tracking** - Users see referral count, earnings, and withdrawal eligibility
-5. **Investment Gate** - Referral bonus can only be withdrawn after making an investment
+1. **Reliable Scrolling**: Modal will scroll smoothly on all mobile devices using the Radix ScrollArea component
+2. **Professional Layout**: Fixed header + scrollable content + fixed footer structure
+3. **Referral Tracking**: Already shows all stats (referrals, earnings, withdrawable amounts)
+4. **Investment Gate**: Already displays warning about investing to unlock withdrawals
 
