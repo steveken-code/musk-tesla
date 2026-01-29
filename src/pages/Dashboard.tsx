@@ -26,7 +26,7 @@ import LiveTradingFeed from '@/components/LiveTradingFeed';
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
-import GoogleTranslate from '@/components/GoogleTranslate';
+
 import StockMarketWidget from '@/components/StockMarketWidget';
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
 import teslaLogo from '@/assets/tesla-logo-red.png';
@@ -1121,10 +1121,6 @@ const Dashboard = () => {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Google Translate for Dashboard */}
-            <div className="hidden sm:block">
-              <GoogleTranslate />
-            </div>
             {/* User Avatar & Name with Edit Profile */}
             <button
               onClick={() => setShowProfileModal(true)}
@@ -1357,8 +1353,8 @@ const Dashboard = () => {
                       className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
                       required
                     />
-                    {/* Real-time USDT preview */}
-                    {investAmount && parseFloat(investAmount) > 0 && (
+                    {/* Real-time amount preview - show USDT only for non-Russian users */}
+                    {investAmount && parseFloat(investAmount) > 0 && investCountry !== 'RU' && (
                       <div className="mt-2 p-2.5 bg-slate-100 rounded-lg border border-slate-200">
                         <p className="text-xs text-slate-500 mb-0.5">Investment Amount</p>
                         <p className="text-lg font-bold text-slate-800">
