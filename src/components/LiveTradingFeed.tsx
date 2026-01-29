@@ -172,28 +172,31 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-xl border border-slate-600/50 rounded-xl p-4 sm:p-5 h-full flex flex-col shadow-lg">
+    <div className="bg-gradient-to-br from-slate-800/95 via-slate-800/90 to-slate-900/95 backdrop-blur-xl border border-slate-600/40 rounded-xl sm:rounded-2xl p-4 sm:p-5 h-full flex flex-col shadow-xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Activity className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/50">
+        <div className="flex items-center gap-2.5">
+          <div className="relative p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             {hasActiveInvestment && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse ring-2 ring-slate-800" />
             )}
           </div>
-          <h3 className="font-semibold text-sm sm:text-base">Expert Trading Activity</h3>
+          <div>
+            <h3 className="font-semibold text-sm sm:text-base text-foreground">Expert Trading Activity</h3>
+            <p className="text-[10px] text-muted-foreground">Real-time market operations</p>
+          </div>
         </div>
         {hasActiveInvestment ? (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/30">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
-            <span className="text-xs font-medium text-green-400">LIVE</span>
+            <span className="text-[10px] sm:text-xs font-bold text-green-400 uppercase tracking-wide">LIVE</span>
           </div>
         ) : (
-          <span className="text-xs font-medium text-muted-foreground">INACTIVE</span>
+          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground px-2.5 py-1 rounded-full bg-muted/30">INACTIVE</span>
         )}
       </div>
 
@@ -246,13 +249,13 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
       </div>
 
       {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-border/30">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3" />
-            Managed by certified experts
+      <div className="mt-3 pt-3 border-t border-slate-700/40">
+        <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5 text-green-500/70" />
+            <span>Managed by certified experts</span>
           </span>
-          <span>24/7 Active Trading</span>
+          <span className="text-electric-blue/70">24/7 Active Trading</span>
         </div>
       </div>
     </div>
