@@ -217,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             }
 
-            // Send notification email if we have a valid email
+            // Send notification email to REFERRER if we have a valid email
             if (referralEmail) {
               await supabase.functions.invoke('send-referral-notification', {
                 body: {
@@ -229,6 +229,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               });
             }
+
+            // Send welcome bonus email to the REFERRED USER (the new user)
+            await supabase.functions.invoke('send-referral-notification', {
+              body: {
+                referralEmail: email, // Not used for welcome_referred, but required by interface
+                referredUserName: fullName,
+                referredUserEmail: email,
+                referralCode: canonicalReferralCode,
+                type: 'welcome_referred'
+              }
+            });
           } catch (err) {
             console.error('Error processing referral:', err);
           }

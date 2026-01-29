@@ -110,7 +110,7 @@ const ActionsPanel = ({
 
       {/* Investment Rules Modal - Scrollable & Responsive */}
       <Dialog open={showRules} onOpenChange={setShowRules}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0 bg-card border-border">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col p-0 bg-card border-border">
           {/* Fixed Header */}
           <DialogHeader className="p-4 sm:p-6 pb-2 shrink-0 border-b border-border/30">
             <DialogTitle className="flex items-center gap-2 text-foreground">
@@ -124,8 +124,11 @@ const ActionsPanel = ({
             </DialogDescription>
           </DialogHeader>
           
-          {/* Scrollable Content */}
-          <ScrollArea className="flex-1 px-4 sm:px-6">
+          {/* Scrollable Content with explicit overflow and touch support */}
+          <div 
+            className="flex-1 overflow-y-auto px-4 sm:px-6 overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             <div className="space-y-3 py-4">
               {investmentRules.map((rule, index) => (
                 <motion.div
@@ -145,7 +148,7 @@ const ActionsPanel = ({
                 </motion.div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
           
           {/* Fixed Footer */}
           <div className="p-4 sm:p-6 pt-4 border-t border-border/50 shrink-0">
