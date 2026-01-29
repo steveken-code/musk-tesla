@@ -24,9 +24,11 @@ const ReferralBonus = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Generate unique referral link based on user ID
+  // Generate unique referral link based on user ID - always use production domain
+  const PRODUCTION_DOMAIN = 'https://msktesla.net';
   const referralCode = user?.id?.slice(0, 8).toUpperCase() || 'TESLA500';
-  const referralLink = `${window.location.origin}/auth?ref=${referralCode}`;
+  const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
+  const displayLink = `msktesla.net/auth?ref=${referralCode}`;
 
   // Fetch referral stats from database
   useEffect(() => {
@@ -180,7 +182,7 @@ const ReferralBonus = () => {
           
           <div className="flex gap-2">
             <div className="flex-1 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg bg-background/50 border border-border/50 overflow-hidden">
-              <p className="text-xs sm:text-sm text-foreground truncate font-mono">{referralLink}</p>
+              <p className="text-xs sm:text-sm text-foreground truncate font-mono">{displayLink}</p>
             </div>
             
             <Button
