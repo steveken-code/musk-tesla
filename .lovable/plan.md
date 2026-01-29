@@ -1,186 +1,202 @@
 
-# Dashboard Cleanup and Enhancement Plan
+# Referral Tracking & Rules Modal Enhancement Plan
 
 ## Overview
-This plan addresses several improvements to make the dashboard cleaner and more interactive:
-1. Remove the Tesla Stock Performance chart (TeslaChart component)
-2. Remove the Recent Activity section from the ActionsPanel
-3. Make the "See rules" link functional with a modal showing platform rules
-4. Implement scroll-to-invest with electric blue highlight animation
-5. Make the Popular Stocks Table tabs (This Week, Price, Volume) fully dynamic and professional
+This plan implements referral tracking in the database so users can see how many friends they've referred and their bonus status. Additionally, we'll make the investment rules modal scrollable and fully responsive for mobile devices.
 
 ---
 
 ## Changes Summary
 
-### 1. Remove Tesla Stock Performance Chart
-**File:** `src/pages/Dashboard.tsx` (lines 1282-1293)
+### 1. Database: Create Referrals Tracking Table
+Create a new `referrals` table to track referral relationships and bonus status.
 
-**Current:** The "Performance Overview" section displays two charts side-by-side:
-- TeslaChart (Tesla Stock Performance)
-- InvestmentChart (Investment Performance)
+**Table Schema:**
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary key |
+| referrer_user_id | uuid | The user who shared the referral link |
+| referred_user_id | uuid | The user who signed up using the link |
+| referral_code | text | The code used for signup |
+| status | text | pending, eligible, paid |
+| bonus_amount | numeric | $500 default for referrer |
+| referred_bonus | numeric | $100 for referred user |
+| created_at | timestamp | When referral was recorded |
+| updated_at | timestamp | Last status update |
 
-**Change:** Remove TeslaChart from the grid and make InvestmentChart full-width, keeping the section cleaner.
+**RLS Policies:**
+- Users can view their own referrals (where referrer_user_id = auth.uid())
+- Admins can view and update all referrals
+- Insert allowed for authenticated users
 
-### 2. Remove Recent Activity from Actions Panel
-**File:** `src/components/dashboard/ActionsPanel.tsx` (lines 111-152)
+---
 
-**Current:** Shows a "Recent Activity" card with transaction history
-**Change:** Remove the Recent Activity section entirely to reduce clutter. Keep:
-- Quick Actions (Invest/Withdraw buttons)
-- Promo Card (with See Rules functionality)
-- Watchlist
-
-### 3. Activate "See Rules" Modal
+### 2. Make Rules Modal Scrollable and Responsive
 **File:** `src/components/dashboard/ActionsPanel.tsx`
 
-**Current:** The "See rules" button does nothing
-**Change:** Add a Dialog/Modal that shows Tesla Stock Platform investment rules when clicked:
-- Minimum investment: $100
-- Investment returns: 7.5% weekly
-- Bonus: 5% extra for $500+ investments
-- Withdrawal processing: 24-48 hours
-- One active investment at a time
-- Support contact information
+**Current Issue:** Rules modal may overflow on small screens without scrolling
 
-### 4. Scroll-to-Invest with Electric Blue Highlight
-**Files:** 
-- `src/components/dashboard/WelcomeCard.tsx`
-- `src/components/dashboard/ActionsPanel.tsx`
-- `src/pages/Dashboard.tsx`
+**Changes:**
+- Add `max-h-[80vh]` to DialogContent for height constraint
+- Wrap rules list in `ScrollArea` component for smooth scrolling
+- Add better mobile padding and spacing
+- Improve touch-friendly sizing for rule items
+- Add visual scroll indicator
 
-**Current:** Clicking "Invest" scrolls to the form but with no visual indicator
-**Change:** 
-- When user clicks "Invest", scroll to the investment form
-- Apply a subtle electric-blue glow/ring animation around the investment form card
-- The glow should fade after 2-3 seconds
-- Not too bright - use `ring-electric-blue/30` or similar muted opacity
-
-**Implementation:**
-- Add state to track "highlight" mode
-- Pass callback to WelcomeCard and ActionsPanel
-- Apply conditional CSS class with animation
-- Auto-remove class after timeout
-
-### 5. Activate Dynamic Stock Table Tabs
-**File:** `src/components/dashboard/PopularStocksTable.tsx`
-
-**Current:** Tabs exist but sorting logic is basic
-**Change:** Enhance the tabs with:
-- **This Week:** Sort by absolute change percentage (biggest movers first)
-- **Price:** Sort by current price (highest to lowest)
-- **Volume:** Sort by trading volume (highest to lowest)
-
-Also improve the table with:
-- Add subtle row hover animations
-- Add active tab indicator animation (animated underline)
-- Make mini-charts more dynamic (use actual stock color and trend direction)
-- Add a subtle shimmer effect on data refresh
-- Show "Live" indicator badge for real-time data
-
----
-
-## Technical Implementation
-
-### Dashboard.tsx Changes
+**Key Code:**
 ```tsx
-// Remove TeslaChart import and usage
-// Add state for invest form highlight
-const [highlightInvestForm, setHighlightInvestForm] = useState(false);
-
-// Pass highlight handler to WelcomeCard and ActionsPanel
-const handleInvestClick = () => {
-  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
-  setHighlightInvestForm(true);
-  setTimeout(() => setHighlightInvestForm(false), 2500);
-};
-
-// Apply highlight class to investment form container
-<div 
-  id="deposit" 
-  className={`... ${highlightInvestForm ? 'ring-2 ring-electric-blue/40 animate-pulse-subtle' : ''}`}
->
-```
-
-### ActionsPanel.tsx Changes
-```tsx
-// Add Dialog import
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-
-// Add state for rules modal
-const [showRules, setShowRules] = useState(false);
-
-// Rules modal content with professional styling
-<Dialog open={showRules} onOpenChange={setShowRules}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Investment Rules</DialogTitle>
-    </DialogHeader>
-    {/* Rule items with icons */}
-  </DialogContent>
-</Dialog>
-```
-
-### PopularStocksTable.tsx Enhancements
-```tsx
-// Add visual active tab indicator with animation
-<motion.div 
-  className="absolute bottom-0 h-0.5 bg-electric-blue"
-  layoutId="activeTab"
-  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-/>
-
-// Add row hover scale animation
-<motion.tr whileHover={{ scale: 1.01 }}>
-
-// Dynamic mini-chart based on trend direction
-const trendDirection = stock.changePercent >= 0 ? 'up' : 'down';
-// Generate bars that trend upward or downward based on stock direction
+<DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0">
+  <DialogHeader className="p-6 pb-2 shrink-0">
+    {/* Header content */}
+  </DialogHeader>
+  
+  <ScrollArea className="flex-1 px-6">
+    <div className="space-y-3 pb-4">
+      {/* Rules items */}
+    </div>
+  </ScrollArea>
+  
+  <div className="p-6 pt-4 border-t shrink-0">
+    <Button>Start Investing Now</Button>
+  </div>
+</DialogContent>
 ```
 
 ---
 
-## Files to Modify
+### 3. Update Referral Component with Tracking Stats
+**File:** `src/components/dashboard/ReferralBonus.tsx`
 
+**New Features:**
+- Fetch user's referral statistics from database
+- Display total referrals count
+- Show total bonus earned
+- Show pending vs paid referrals
+- Add visual progress indicator
+
+**UI Enhancement:**
+```text
++----------------------------------------+
+|  Refer & Earn                          |
+|  $500 per referral                     |
+|----------------------------------------|
+|  Your Referrals     |  Total Bonus     |
+|       5             |    $2,500        |
+|  (3 paid, 2 pending)|                  |
+|----------------------------------------|
+|  [Your unique referral link]    [Copy] |
+|  [Share with Friends]                  |
++----------------------------------------+
+```
+
+---
+
+### 4. Track Referrals on Signup
+**File:** `src/contexts/AuthContext.tsx`
+
+**Enhancement:**
+When a user signs up with a valid referral code:
+1. Create entry in `referrals` table
+2. Link referrer_user_id (from code) to new user
+3. Set initial status as "pending"
+4. Admin can later mark as "eligible" then "paid"
+
+---
+
+## Technical Implementation Details
+
+### Files to Create:
+1. **Database Migration** - Create `referrals` table with RLS policies
+
+### Files to Modify:
 | File | Changes |
 |------|---------|
-| `src/pages/Dashboard.tsx` | Remove TeslaChart, add highlight state and handler |
-| `src/components/dashboard/ActionsPanel.tsx` | Remove Recent Activity, add Rules modal |
-| `src/components/dashboard/PopularStocksTable.tsx` | Enhance tabs, add animations, improve sorting |
-| `src/components/dashboard/WelcomeCard.tsx` | Minor update to use new invest handler |
-| `src/index.css` | Add subtle animation utilities for highlight effect |
+| `src/components/dashboard/ActionsPanel.tsx` | Add ScrollArea, max-height, responsive padding |
+| `src/components/dashboard/ReferralBonus.tsx` | Add referral stats display, fetch from database |
+| `src/contexts/AuthContext.tsx` | Insert referral record on signup |
+
+### Database SQL Migration:
+```sql
+-- Create referrals table for tracking referral bonuses
+CREATE TABLE public.referrals (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_user_id uuid NOT NULL,
+  referred_user_id uuid NOT NULL UNIQUE,
+  referral_code text NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  bonus_amount numeric NOT NULL DEFAULT 500,
+  referred_bonus numeric NOT NULL DEFAULT 100,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Add RLS policies
+ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
+
+-- Users can view referrals where they are the referrer
+CREATE POLICY "Users can view own referrals"
+  ON public.referrals FOR SELECT
+  USING (auth.uid() = referrer_user_id);
+
+-- Admins can view all referrals
+CREATE POLICY "Admins can view all referrals"
+  ON public.referrals FOR SELECT
+  USING (has_role(auth.uid(), 'admin'::app_role));
+
+-- Admins can update referral status
+CREATE POLICY "Admins can update referrals"
+  ON public.referrals FOR UPDATE
+  USING (has_role(auth.uid(), 'admin'::app_role));
+
+-- Allow insert for creating referral records
+CREATE POLICY "Insert referrals"
+  ON public.referrals FOR INSERT
+  WITH CHECK (true);
+
+-- Update timestamp trigger
+CREATE TRIGGER update_referrals_updated_at
+  BEFORE UPDATE ON public.referrals
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+```
 
 ---
 
-## Visual Specifications
+## Visual Design Specifications
 
-### Electric Blue Highlight (Not Too Bright)
+### Rules Modal - Responsive Improvements:
+- **Max height:** 85vh (leaves room for status bar on mobile)
+- **Scroll area:** Smooth scrolling with visible scrollbar
+- **Rule items:** Larger touch targets (min-h-[52px])
+- **Padding:** Reduced on mobile (p-4 vs p-6)
+- **Button:** Sticky at bottom with border separator
+
+### Referral Stats Display:
 ```css
-/* Subtle glow effect */
-.invest-form-highlight {
-  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3), 
-              0 0 20px rgba(66, 153, 225, 0.15);
-  animation: highlight-pulse 2s ease-out;
+/* Stats grid */
+.referral-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(var(--electric-blue), 0.05);
+  border-radius: 12px;
 }
 
-@keyframes highlight-pulse {
-  0% { box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5); }
-  100% { box-shadow: 0 0 0 2px rgba(66, 153, 225, 0); }
+/* Stat item */
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--electric-blue);
 }
 ```
-
-### Rules Modal Content
-- Clean, card-based layout
-- Icons for each rule (DollarSign, Percent, Clock, etc.)
-- Tesla-themed but professional
-- Clear call-to-action to start investing
 
 ---
 
 ## Result After Changes
 
-The dashboard will be:
-1. **Cleaner** - No duplicate stock chart, less clutter in sidebar
-2. **More Interactive** - Functional rules modal, visual feedback on invest click
-3. **More Professional** - Dynamic stock data with animated tabs
-4. **Better UX** - Clear visual guidance when user clicks Invest button
+1. **Scrollable Rules Modal** - Works smoothly on all screen sizes
+2. **Referral Tracking** - Database stores all referral relationships
+3. **Stats Display** - Users see their referral count and bonus earned
+4. **Better Mobile UX** - Touch-friendly, properly sized elements
+5. **Admin Control** - Admins can update referral payment status
