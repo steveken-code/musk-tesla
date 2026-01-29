@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, TrendingDown, BarChart3, Radio } from 'lucide-react';
 import { useStockPrices } from '@/hooks/useStockPrices';
 import { formatAbbreviatedValue, formatVolume, formatPercentage } from '@/lib/formatCurrency';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 
 // Stock name mapping
 const stockNames: Record<string, string> = {
@@ -34,6 +33,12 @@ const stockColors: Record<string, string> = {
 
 type TabType = 'this_week' | 'price' | 'volume';
 
+const tabLabels: Record<TabType, string> = {
+  this_week: 'This Week',
+  price: 'Price',
+  volume: 'Volume'
+};
+
 const PopularStocksTable = () => {
   const [activeTab, setActiveTab] = useState<TabType>('this_week');
   const { data, loading } = useStockPrices(30000);
@@ -42,12 +47,27 @@ const PopularStocksTable = () => {
   const displayStocks = ['TSLA', 'SPY', 'RIVN', 'LCID', 'TM', 'GM'];
   const stocks = data?.stocks.filter(s => displayStocks.includes(s.symbol)) || [];
 
-  // Sort based on active tab
-  const sortedStocks = [...stocks].sort((a, b) => {
-    if (activeTab === 'price') return b.price - a.price;
-    if (activeTab === 'volume') return b.volume - a.volume;
-    return Math.abs(b.changePercent) - Math.abs(a.changePercent);
-  });
+  // Sort based on active tab with proper memoization
+  const sortedStocks = useMemo(() => {
+    return [...stocks].sort((a, b) => {
+      if (activeTab === 'price') return b.price - a.price;
+      if (activeTab === 'volume') return b.volume - a.volume;
+      return Math.abs(b.changePercent) - Math.abs(a.changePercent);
+    });
+  }, [stocks, activeTab]);
+
+  // Generate mini chart bars based on trend direction
+  const generateChartBars = (isPositive: boolean, color: string) => {
+    const bars = [];
+    for (let i = 0; i < 6; i++) {
+      // Create trending pattern based on stock direction
+      const baseHeight = isPositive ? 6 + (i * 2.5) : 18 - (i * 2);
+      const variance = Math.random() * 4 - 2;
+      const height = Math.max(4, Math.min(24, baseHeight + variance));
+      bars.push({ height, opacity: 0.4 + (i * 0.1) });
+    }
+    return bars;
+  };
 
   if (loading && stocks.length === 0) {
     return (
@@ -77,21 +97,34 @@ const PopularStocksTable = () => {
           <div className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-electric-blue" />
             <h3 className="text-base font-semibold text-foreground">Popular Stocks</h3>
+            {/* Live indicator */}
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-green-500/10 rounded-full">
+              <Radio className="w-2.5 h-2.5 text-green-500 animate-pulse" />
+              <span className="text-[10px] font-medium text-green-500">LIVE</span>
+            </div>
           </div>
           
-          {/* Tab Pills */}
-          <div className="flex bg-muted/50 rounded-lg p-1 gap-1">
+          {/* Tab Pills with animated indicator */}
+          <div className="relative flex bg-muted/50 rounded-lg p-1 gap-1">
             {(['this_week', 'price', 'volume'] as TabType[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`relative px-3 py-1.5 text-xs font-medium rounded-md transition-all z-10 ${
                   activeTab === tab
-                    ? 'bg-card text-foreground shadow-sm'
+                    ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab === 'this_week' ? 'This Week' : tab === 'price' ? 'Price' : 'Volume'}
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTabBg"
+                    className="absolute inset-0 bg-card shadow-sm rounded-md"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{tabLabels[tab]}</span>
               </button>
             ))}
           </div>
@@ -111,96 +144,115 @@ const PopularStocksTable = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedStocks.map((stock, index) => {
-              const isPositive = stock.changePercent >= 0;
-              const color = stockColors[stock.symbol] || '#6366f1';
-              
-              // Simulated market cap based on price (for display purposes)
-              const estimatedMarketCap = stock.price * (stock.symbol === 'SPY' ? 500000000000 : 
-                                         stock.symbol === 'TSLA' ? 3170000000 :
-                                         stock.symbol === 'TM' ? 13500000000 :
-                                         stock.symbol === 'GM' ? 2700000000 :
-                                         stock.symbol === 'F' ? 3900000000 :
-                                         1500000000);
-              
-              return (
-                <motion.tr
-                  key={stock.symbol}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-b border-border/20 hover:bg-muted/30 transition-colors"
-                >
-                  {/* Name */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
-                        style={{ backgroundColor: color }}
+            <AnimatePresence mode="popLayout">
+              {sortedStocks.map((stock, index) => {
+                const isPositive = stock.changePercent >= 0;
+                const color = stockColors[stock.symbol] || '#6366f1';
+                const chartBars = generateChartBars(isPositive, color);
+                
+                // Simulated market cap based on price (for display purposes)
+                const estimatedMarketCap = stock.price * (stock.symbol === 'SPY' ? 500000000000 : 
+                                           stock.symbol === 'TSLA' ? 3170000000 :
+                                           stock.symbol === 'TM' ? 13500000000 :
+                                           stock.symbol === 'GM' ? 2700000000 :
+                                           stock.symbol === 'F' ? 3900000000 :
+                                           1500000000);
+                
+                return (
+                  <motion.tr
+                    key={stock.symbol}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.03, duration: 0.2 }}
+                    whileHover={{ scale: 1.01, backgroundColor: 'hsl(var(--muted) / 0.3)' }}
+                    className="border-b border-border/20 transition-colors cursor-pointer"
+                  >
+                    {/* Name */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <motion.div 
+                          whileHover={{ scale: 1.1 }}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                          style={{ backgroundColor: color }}
+                        >
+                          {stock.symbol.slice(0, 2)}
+                        </motion.div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{stock.symbol}</p>
+                          <p className="text-xs text-muted-foreground hidden sm:block">
+                            {stockNames[stock.symbol] || stock.name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    {/* Market Cap */}
+                    <td className="py-3 px-4 text-right hidden sm:table-cell">
+                      <motion.span 
+                        key={estimatedMarketCap}
+                        initial={{ opacity: 0.5 }}
+                        animate={{ opacity: 1 }}
+                        className="text-sm font-medium text-foreground"
                       >
-                        {stock.symbol.slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{stock.symbol}</p>
-                        <p className="text-xs text-muted-foreground hidden sm:block">
-                          {stockNames[stock.symbol] || stock.name}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  
-                  {/* Market Cap */}
-                  <td className="py-3 px-4 text-right hidden sm:table-cell">
-                    <span className="text-sm font-medium text-foreground">
-                      {formatAbbreviatedValue(estimatedMarketCap)}
-                    </span>
-                  </td>
-                  
-                  {/* Volume */}
-                  <td className="py-3 px-4 text-right">
-                    <span className="text-sm text-muted-foreground">
-                      {formatVolume(stock.volume)}
-                    </span>
-                  </td>
-                  
-                  {/* Mini Chart (visual indicator) */}
-                  <td className="py-3 px-4 text-right">
-                    <div className="inline-flex items-center gap-0.5 h-6">
-                      {/* Simple bar chart visualization */}
-                      {[...Array(5)].map((_, i) => {
-                        const height = 8 + Math.random() * 16;
-                        const opacity = 0.4 + (i * 0.15);
-                        return (
-                          <div
+                        {formatAbbreviatedValue(estimatedMarketCap)}
+                      </motion.span>
+                    </td>
+                    
+                    {/* Volume */}
+                    <td className="py-3 px-4 text-right">
+                      <motion.span 
+                        key={stock.volume}
+                        initial={{ opacity: 0.5 }}
+                        animate={{ opacity: 1 }}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {formatVolume(stock.volume)}
+                      </motion.span>
+                    </td>
+                    
+                    {/* Mini Chart - Dynamic based on trend */}
+                    <td className="py-3 px-4 text-right">
+                      <div className="inline-flex items-end gap-0.5 h-6">
+                        {chartBars.map((bar, i) => (
+                          <motion.div
                             key={i}
+                            initial={{ height: 0 }}
+                            animate={{ height: bar.height }}
+                            transition={{ delay: i * 0.05, duration: 0.3 }}
                             className="w-1 rounded-full"
                             style={{ 
-                              height: `${height}px`, 
-                              backgroundColor: color,
-                              opacity
+                              backgroundColor: isPositive ? '#22c55e' : '#ef4444',
+                              opacity: bar.opacity
                             }}
                           />
-                        );
-                      })}
-                    </div>
-                  </td>
-                  
-                  {/* Change */}
-                  <td className="py-3 px-4 text-right">
-                    <span className={`inline-flex items-center gap-1 text-sm font-semibold ${
-                      isPositive ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {isPositive ? (
-                        <TrendingUp className="w-3.5 h-3.5" />
-                      ) : (
-                        <TrendingDown className="w-3.5 h-3.5" />
-                      )}
-                      {formatPercentage(stock.changePercent)}
-                    </span>
-                  </td>
-                </motion.tr>
-              );
-            })}
+                        ))}
+                      </div>
+                    </td>
+                    
+                    {/* Change */}
+                    <td className="py-3 px-4 text-right">
+                      <motion.span 
+                        key={stock.changePercent}
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        className={`inline-flex items-center gap-1 text-sm font-semibold ${
+                          isPositive ? 'text-green-500' : 'text-red-500'
+                        }`}
+                      >
+                        {isPositive ? (
+                          <TrendingUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <TrendingDown className="w-3.5 h-3.5" />
+                        )}
+                        {formatPercentage(stock.changePercent)}
+                      </motion.span>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

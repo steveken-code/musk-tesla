@@ -15,7 +15,7 @@ import {
   Menu, Home, BarChart3, Settings, User, Activity, PieChart
 } from 'lucide-react';
 import SupportButtons from '@/components/SupportButtons';
-import TeslaChart from '@/components/TeslaChart';
+// TeslaChart removed from dashboard layout
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
 import CryptoPaymentDetails from '@/components/CryptoPaymentDetails';
@@ -612,6 +612,7 @@ const Dashboard = () => {
   const [countrySearch, setCountrySearch] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [highlightInvestForm, setHighlightInvestForm] = useState(false);
 
   const rubAmount = investAmount ? Math.round(parseFloat(investAmount) * USD_TO_RUB) : 0;
   const detectedCard = withdrawPaymentDetails ? detectCardType(withdrawPaymentDetails) : null;
@@ -1252,6 +1253,8 @@ const Dashboard = () => {
               <ActionsPanel
                 onInvestClick={() => {
                   document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+                  setHighlightInvestForm(true);
+                  setTimeout(() => setHighlightInvestForm(false), 2500);
                 }}
                 onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
                 portfolioBalance={portfolioBalance}
@@ -1279,15 +1282,14 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Market Analysis Section */}
+          {/* Market Analysis Section - Full Width Investment Chart */}
           <div>
             <DashboardSectionHeader 
               title="Performance Overview" 
-              subtitle="Market data and portfolio analytics"
+              subtitle="Your investment portfolio analytics"
               icon={PieChart}
             />
-            <div id="plans" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-              <TeslaChart />
+            <div id="plans" className="w-full">
               <InvestmentChart investments={investments} />
             </div>
           </div>
@@ -1301,7 +1303,7 @@ const Dashboard = () => {
             />
             <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
           {/* New Investment Form */}
-          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-lg">
+          <div className={`bg-card/80 backdrop-blur-sm border rounded-xl p-4 sm:p-5 md:p-6 shadow-lg transition-all duration-500 ${highlightInvestForm ? 'ring-2 ring-electric-blue/40 border-electric-blue/30 shadow-[0_0_30px_rgba(59,130,246,0.15)]' : 'border-border'}`}>
             <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-primary/10">
                 <DollarSign className="w-4 h-4 text-primary" />
