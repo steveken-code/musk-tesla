@@ -1,86 +1,135 @@
 
-# Plan: Remove Tesla Stock Widget and Fix Number Display
+# Dashboard Professional Redesign Plan
 
-## Overview
-This plan addresses three issues:
-1. Remove the Tesla Stock Performance card (StockMarketWidget) from the dashboard
-2. Fix numbers overflowing their container boxes in the Investment Performance chart
-3. Apply professional "smart" number formatting throughout (whole numbers display without decimals)
+## Current State Analysis
+The dashboard currently has:
+- Header with hamburger menu, logo, navigation links, user avatar, and sign-out button
+- Price ticker below header
+- Welcome/balance card with slate gradient
+- 4-column stats grid (Total Invested, Total Profit, Pending, Active)
+- Withdrawal status banner (conditional)
+- 2-column grid: Live Trading Feed | Investment Progress Tracker
+- 2-column grid: Tesla Chart | Investment Performance Chart
+- 2-column grid: New Investment Form | Investment History
 
----
+## Proposed Improvements (Top to Bottom)
 
-## Changes
+### 1. Header Enhancement
+**Current**: Basic header with cramped elements
+**Improvement**:
+- Add subtle bottom border glow effect
+- Improve spacing and visual hierarchy
+- Add a greeting time-based message (Good Morning/Afternoon/Evening)
+- Cleaner hamburger menu styling with improved touch target
 
-### 1. Remove StockMarketWidget from Dashboard
+### 2. Welcome Card Redesign
+**Current**: Slate gradient card with basic layout
+**Improvement**:
+- Modernize with a cleaner, more premium gradient (subtle blue-to-purple accent)
+- Add a decorative background pattern/mesh for depth
+- Larger, bolder balance display with better typography hierarchy
+- Add a subtle "Account verified" or "Pro Investor" badge if applicable
+- Improve button styling with better visual separation
+- Add a subtle animated border or glow effect
 
-**File:** `src/pages/Dashboard.tsx`
+### 3. Stats Grid Modernization
+**Current**: 4 equal cards with icons and values
+**Improvement**:
+- Add micro-animations on hover (scale + border glow)
+- Use gradient icons instead of flat colors
+- Add trend indicators where applicable (sparklines or arrows)
+- Better visual hierarchy with larger numbers
+- Add subtle card shadows for depth
+- Consider 2-2 layout on mobile instead of 2-2-2
 
-- Remove the import for `StockMarketWidget` (line 30)
-- Remove the grid section containing `StockMarketWidget` (lines 1289-1292)
-- Adjust the grid layout so `LiveTradingFeed` and `InvestmentProgressTracker` take the remaining space (change from 3-column grid to 2-column)
+### 4. Trading Activity & Progress Section
+**Current**: 2-column grid with fixed heights
+**Improvement**:
+- Add section header with "Real-Time Activity" title
+- Improve card headers with better typography
+- Add subtle entrance animations when scrolling into view
+- Ensure equal height cards with better content alignment
+- Add loading skeleton states for better UX
 
-**Result:** Dashboard will show only LiveTradingFeed and InvestmentProgressTracker side-by-side, without the Tesla stock price widget.
+### 5. Charts Section Enhancement
+**Current**: 2-column grid with Tesla and Investment charts
+**Improvement**:
+- Add section divider with subtle gradient line
+- Add section header "Market Analysis" or "Performance Overview"
+- Improve chart container styling with better borders
+- Add toggle controls for chart timeframes (if not present)
+- Ensure responsive behavior on smaller screens
 
----
+### 6. Investment Form & History Improvements
+**Current**: Basic form layout with investment history list
+**Improvement**:
+- Add section header "Make Your Move"
+- Improve form field styling with better focus states
+- Add progress indicator for multi-step process
+- Better visual treatment for the investment history items
+- Add empty state illustration if no investments
+- Improve the "Investment in Progress" blocked state UI
 
-### 2. Fix Metric Boxes in InvestmentChart
+### 7. Global Styling Improvements
+- Add subtle page background texture/pattern
+- Improve overall spacing rhythm (consistent 6/8 unit grid)
+- Add smooth scroll transitions between sections
+- Improve focus states for accessibility
+- Add subtle parallax or scroll-triggered animations
 
-**File:** `src/components/InvestmentChart.tsx`
+## Technical Implementation
 
-**Current Problem:** The metric boxes (Return, Profit, Invested, Status) have numbers that overflow their containers on smaller screens.
+### Files to Modify:
+1. `src/pages/Dashboard.tsx` - Main layout restructuring and styling updates
+2. `src/components/InvestmentChart.tsx` - Minor styling refinements
+3. `src/components/LiveTradingFeed.tsx` - Header and card styling improvements
+4. `src/components/InvestmentProgressTracker.tsx` - Visual polish
+5. `src/index.css` - Add new utility classes for animations and effects
 
-**Changes to lines 260-289:**
-- Add `overflow-hidden` to prevent text spillover
-- Use compact number formatting for large values (e.g., "$1,000" instead of "$1,000.00" for whole numbers)
-- Apply smart formatting: show 2 decimals only when the value has cents
-- Ensure text uses `truncate` class to prevent overflow
+### Key Design Tokens to Use:
+- Gradient: `from-slate-800/90 via-slate-800/80 to-indigo-900/30` for premium feel
+- Borders: `border-slate-600/40` for subtle definition
+- Shadows: `shadow-xl shadow-black/20` for depth
+- Animations: Framer Motion for entrance effects
 
-**Example format changes:**
-- $5,000.00 → $5,000 (no decimals for whole amounts)
-- $5,234.56 → $5,234.56 (keep decimals when present)
-- For very large numbers: $125,000 → $125k (abbreviated to fit)
+### Specific Changes:
 
----
-
-### 3. Apply Smart Number Formatting Throughout InvestmentChart
-
-**Changes across the component:**
-
-| Location | Current | New Format |
-|----------|---------|------------|
-| Portfolio Value card (line 244) | Always 2 decimals | Smart: decimals only if needed |
-| Total Profit card (line 252) | Always 2 decimals | Smart: decimals only if needed |
-| Metric boxes (Return, Profit, Invested) | Mixed formats | Consistent smart format with "k" abbreviation for large numbers |
-| Legend stats (lines 404, 408) | Always 2 decimals | Smart: decimals only if needed |
-| Profit Growth text (line 369) | toLocaleString | Smart format |
-
----
-
-## Technical Details
-
-### Smart Currency Format Logic
+#### Welcome Card (lines ~1158-1196):
 ```text
-function formatSmartValue(amount):
-  if amount >= 1000000:
-    return (amount / 1000000).toFixed(1) + "M"
-  else if amount >= 10000:
-    return (amount / 1000).toFixed(1) + "k"
-  else if amount has no cents:
-    return formatted without decimals
-  else:
-    return formatted with 2 decimals
+- Add decorative mesh/pattern background
+- Increase balance font size to 5xl on desktop
+- Add "Welcome Back" with time-based greeting
+- Add verified badge or account tier indicator
+- Improve button gradients with hover glow effects
 ```
 
-### Grid Layout After Removal
-Before: 3-column grid with StockMarketWidget | LiveTradingFeed | InvestmentProgressTracker
-After: 2-column grid with LiveTradingFeed | InvestmentProgressTracker (each taking 50% width)
+#### Stats Grid (lines ~1199-1244):
+```text
+- Add hover scale animation (scale-[1.02])
+- Add gradient background on hover
+- Improve icon containers with ring effects
+- Add subtle animated underline on hover
+- Better responsive breakpoints
+```
 
----
+#### Section Headers:
+```text
+- Add decorative dividers between major sections
+- Use gradient text for section titles
+- Add subtle fade-in animations
+```
 
-## Files Modified
-1. `src/pages/Dashboard.tsx` - Remove widget and adjust layout
-2. `src/components/InvestmentChart.tsx` - Fix overflow and number formatting
+#### Overall Layout:
+```text
+- Improve container max-width handling
+- Add breathing room with increased margins
+- Better mobile responsiveness
+- Smooth scroll behavior for anchor links
+```
 
-## No Changes Needed
-- `src/components/StockMarketWidget.tsx` - Not deleted (may be used elsewhere in future)
-- `src/lib/formatCurrency.ts` - Already has `formatSmartCurrency` function
+## Mobile-First Considerations
+- Touch-friendly button sizes (min 44px)
+- Swipeable card sections where applicable
+- Collapsible sections for long content
+- Bottom sheet modals instead of centered modals
+- Improved form input sizing to prevent zoom on iOS
