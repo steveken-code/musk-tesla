@@ -410,12 +410,7 @@ const Admin = () => {
         return;
       }
       
-      // Max profit is 100x the investment amount (as per database constraint)
-      const maxProfit = investment.amount * 100;
-      if (profitAmount > maxProfit) {
-        toast.error(`Profit amount cannot exceed ${maxProfit.toLocaleString()} (100x investment)`);
-        return;
-      }
+      // Allow unlimited profit amounts - no cap
     }
 
     setUpdating(id);

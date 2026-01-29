@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import GoogleTranslate from './GoogleTranslate';
 import PriceTicker from './PriceTicker';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 import { Menu, X, Zap, TrendingUp, Shield, HelpCircle, Info, Activity } from 'lucide-react';
@@ -110,7 +109,6 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
-            <GoogleTranslate />
             <Link to="/auth">
               <Button 
                 variant="outline" 
@@ -132,10 +130,6 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
-             {/* Mobile Translate (visible without opening menu) */}
-             <div className="max-w-[76px] overflow-hidden">
-               <GoogleTranslate />
-             </div>
             <button
               className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all duration-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
