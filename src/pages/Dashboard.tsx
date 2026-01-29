@@ -32,6 +32,7 @@ import DashboardSectionHeader from '@/components/dashboard/DashboardSectionHeade
 import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
 import PopularStocksTable from '@/components/dashboard/PopularStocksTable';
 import ActionsPanel from '@/components/dashboard/ActionsPanel';
+import ReferralBonus from '@/components/dashboard/ReferralBonus';
 
 // StockMarketWidget removed from dashboard layout
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
@@ -1249,7 +1250,7 @@ const Dashboard = () => {
 
           {/* Right Column - Actions Panel (1/3) */}
           <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-32">
+            <div className="lg:sticky lg:top-32 space-y-4">
               <ActionsPanel
                 onInvestClick={() => {
                   document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
@@ -1259,6 +1260,9 @@ const Dashboard = () => {
                 onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
                 portfolioBalance={portfolioBalance}
               />
+              
+              {/* Referral Bonus Section */}
+              <ReferralBonus />
             </div>
           </div>
         </div>
