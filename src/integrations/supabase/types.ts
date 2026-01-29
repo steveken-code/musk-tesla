@@ -251,6 +251,42 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          bonus_amount: number
+          created_at: string
+          id: string
+          referral_code: string
+          referred_bonus: number
+          referred_user_id: string
+          referrer_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_amount?: number
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_bonus?: number
+          referred_user_id: string
+          referrer_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_amount?: number
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_bonus?: number
+          referred_user_id?: string
+          referrer_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_login_attempts: {
         Row: {
           created_at: string
