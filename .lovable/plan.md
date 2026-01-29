@@ -1,52 +1,123 @@
 
-# Referral Link Domain Fix & Component Cleanup
+
+# Rules Modal Scroll Fix & Complete Referral System Enhancement
 
 ## Overview
-This plan fixes the referral link to use the production domain `msktesla.net` instead of the Lovable preview URL, and simplifies the referral component for a cleaner, more professional appearance.
+This plan addresses all the user's concerns:
+1. Fix the rules modal scrolling issue
+2. Ensure HTTPS in referral links
+3. Send referral emails to BOTH referrer and referred user
+4. Show comprehensive referral tracking stats
+5. Referral bonus withdrawable only if user has invested
 
 ---
 
-## Current Issues
+## Current State Analysis
 
-1. **Wrong Domain in Referral Link**: Line 29 in `ReferralBonus.tsx` uses `window.location.origin` which shows the Lovable preview URL (e.g., `https://a300af12-49e6-4e0a-9481-dc894f791671.lovableproject.com`)
-2. **Link Too Long**: The referral link display shows the full URL which looks unprofessional
+### Issues Found:
+1. **Rules Modal**: Already has `ScrollArea` but may not be working properly on mobile - needs explicit overflow handling
+2. **HTTPS**: Link already uses `https://msktesla.net` (confirmed in code) - this is correct
+3. **Referral Emails**: Currently only sends to the referrer - need to also send welcome email to referred user
+4. **Referral Stats**: Stats display exists but needs enhancement with withdrawal eligibility
+5. **Withdrawal Restriction**: Need to add logic to check if user has active/completed investment before allowing referral bonus withdrawal
 
 ---
 
 ## Changes Summary
 
-### 1. Use Production Domain for Referral Links
-**File:** `src/components/dashboard/ReferralBonus.tsx`
+### 1. Fix Rules Modal Scrolling
+**File:** `src/components/dashboard/ActionsPanel.tsx`
 
-**Change:**
+**Problem:** The `ScrollArea` may not be properly scrolling on some mobile browsers
+
+**Solution:**
+- Add explicit `overflow-y-auto` as fallback
+- Ensure proper viewport height calculation
+- Add touch-friendly scrolling with `-webkit-overflow-scrolling: touch`
+
 ```tsx
-// Before (line 29)
-const referralLink = `${window.location.origin}/auth?ref=${referralCode}`;
-
-// After - Use the production domain directly
-const PRODUCTION_DOMAIN = 'https://msktesla.net';
-const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
+<DialogContent className="sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col p-0">
+  <ScrollArea className="flex-1 overflow-y-auto px-4 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+    {/* Rules content */}
+  </ScrollArea>
+</DialogContent>
 ```
 
-This ensures:
-- Users always copy the correct production link
-- The share functionality uses the correct domain
-- Friends who click the link go to `msktesla.net`, not the preview URL
+---
+
+### 2. Send Referral Email to BOTH Users
+**File:** `supabase/functions/send-referral-notification/index.ts`
+
+**Enhancement:**
+- Add new email type `'welcome_referred'` for the referred user
+- Send welcome email with $100 bonus info to the new user
+- Send notification to referrer about the new signup
+
+**New Email for Referred User:**
+```typescript
+// When someone signs up with a referral code, send them a welcome email
+type: 'welcome_referred' -> Sends to the NEW user
+  - Subject: "Welcome! You've Earned a $100 Referral Bonus"
+  - Content: Congratulations on joining, your $100 bonus will be credited when you invest
+```
+
+**File:** `src/contexts/AuthContext.tsx`
+
+**Update:**
+- After creating referral record, also send welcome email to the referred user
+- Send notification to the referrer
 
 ---
 
-### 2. Simplify Referral Display
-Make the referral section more compact and professional:
+### 3. Enhance Referral Stats Display with Withdrawal Eligibility
+**File:** `src/components/dashboard/ReferralBonus.tsx`
 
-**Changes:**
-- Show shorter, cleaner referral code display (e.g., `msktesla.net/auth?ref=ABC12345`)
-- Remove some visual clutter while keeping the electric-blue styling
-- Ensure the component is more compact for the sidebar
+**New Features:**
+- Check if user has an active/completed investment
+- Show "Withdrawable" vs "Pending" status for bonus
+- Display clear message: "Invest to unlock your referral bonus"
+- Add visual indicator for withdrawal eligibility
+
+**UI Update:**
+```text
++------------------------------------------------+
+|  Refer & Earn                                   |
+|  $500 per referral                              |
+|-------------------------------------------------|
+|  Your Referrals  |  Total Earned | Withdrawable |
+|       3          |    $1,500     |    $1,000    |
+|  (2 paid, 1 pending)              (1 pending)   |
+|-------------------------------------------------|
+|  ⚠️ Invest to withdraw referral bonus           |
+|-------------------------------------------------|
+|  [msktesla.net/auth?ref=ABC12345]        [Copy] |
+|  [Share with Friends]                           |
++------------------------------------------------+
+```
 
 ---
 
-### 3. Verify Rules Modal is Scrollable
-The rules modal already has `ScrollArea` with `max-h-[85vh]` - this is working correctly.
+### 4. Add Withdrawal Eligibility Check
+**File:** `src/components/dashboard/ReferralBonus.tsx`
+
+**Logic:**
+1. Fetch user's investments from database
+2. Check if any investment has status 'active' or 'completed'
+3. If no investment: Show warning "Invest to unlock your referral bonus withdrawal"
+4. If invested: Show "Bonus ready to withdraw"
+
+**Code:**
+```tsx
+// Check if user has invested
+const { data: investments } = await supabase
+  .from('investments')
+  .select('status')
+  .eq('user_id', user.id)
+  .in('status', ['active', 'completed']);
+
+const hasInvested = investments && investments.length > 0;
+const withdrawableBonus = hasInvested ? stats.totalBonus : 0;
+```
 
 ---
 
@@ -54,29 +125,96 @@ The rules modal already has `ScrollArea` with `max-h-[85vh]` - this is working c
 
 | File | Changes |
 |------|---------|
-| `src/components/dashboard/ReferralBonus.tsx` | Change domain to `msktesla.net`, simplify display |
+| `src/components/dashboard/ActionsPanel.tsx` | Fix ScrollArea with explicit overflow handling |
+| `src/components/dashboard/ReferralBonus.tsx` | Add investment check, show withdrawal eligibility |
+| `src/contexts/AuthContext.tsx` | Send referral email to BOTH referrer and referred user |
+| `supabase/functions/send-referral-notification/index.ts` | Add `welcome_referred` email type for new users |
 
 ---
 
-## Technical Implementation
+## Technical Implementation Details
+
+### Edge Function Update (send-referral-notification)
+
+Add new email type for referred users:
+```typescript
+interface ReferralNotificationRequest {
+  referralEmail: string;
+  referredUserName: string;
+  referredUserEmail: string;
+  type: 'signup' | 'investment_active' | 'welcome_referred';
+  referrerName?: string;
+  investmentAmount?: number;
+}
+
+// New case for referred user welcome email
+if (type === 'welcome_referred') {
+  subject = '🎁 Welcome! You\'ve Earned a $100 Referral Bonus';
+  htmlContent = `...Welcome to Tesla Investment Platform! 
+    You signed up using a referral code and earned a $100 bonus!
+    Make your first investment to unlock your bonus...`;
+  // Send to referredUserEmail instead of referralEmail
+}
+```
+
+### AuthContext Update
+
+```typescript
+// After creating referral record, send emails to BOTH users
+if (referrerUserId && referrerUserId !== data.user!.id) {
+  // Create referral record
+  await supabase.from('referrals').insert({...});
+  
+  // Send notification to REFERRER
+  await supabase.functions.invoke('send-referral-notification', {
+    body: { type: 'signup', referralEmail: referrerEmail, ... }
+  });
+  
+  // Send welcome email to REFERRED user
+  await supabase.functions.invoke('send-referral-notification', {
+    body: { type: 'welcome_referred', referredUserEmail: email, ... }
+  });
+}
+```
+
+### ReferralBonus Component Update
 
 ```tsx
-// ReferralBonus.tsx - Key changes
+// Add state for investment status
+const [hasInvested, setHasInvested] = useState(false);
 
-// Use production domain constant
-const PRODUCTION_DOMAIN = 'https://msktesla.net';
-const referralCode = user?.id?.slice(0, 8).toUpperCase() || 'TESLA500';
-const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
+// Fetch investment status
+useEffect(() => {
+  const checkInvestmentStatus = async () => {
+    const { data } = await supabase
+      .from('investments')
+      .select('id')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'completed'])
+      .limit(1);
+    
+    setHasInvested(data && data.length > 0);
+  };
+  checkInvestmentStatus();
+}, [user?.id]);
 
-// Display shorter version for UI
-const displayLink = `msktesla.net/auth?ref=${referralCode}`;
+// Show warning if not invested
+{!hasInvested && stats.totalBonus > 0 && (
+  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+    <p className="text-amber-500 text-sm">
+      ⚠️ Invest to unlock your ${stats.totalBonus} referral bonus for withdrawal
+    </p>
+  </div>
+)}
 ```
 
 ---
 
 ## Result After Changes
 
-1. **Correct Domain** - Referral links always point to `msktesla.net`
-2. **Professional Appearance** - Clean, short referral link display
-3. **Working Functionality** - Friends can click and sign up correctly
-4. **Electric Blue Styling** - Maintained with copy button and share feature
+1. **Scrollable Rules** - Modal scrolls smoothly on all devices with touch support
+2. **HTTPS Verified** - Links already use HTTPS (msktesla.net)
+3. **Dual Emails** - Both referrer AND referred user receive email notifications
+4. **Full Tracking** - Users see referral count, earnings, and withdrawal eligibility
+5. **Investment Gate** - Referral bonus can only be withdrawn after making an investment
+
