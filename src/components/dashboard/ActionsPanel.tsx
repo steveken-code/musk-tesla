@@ -1,15 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownToLine, ArrowUpFromLine, Wallet, MoreHorizontal, Sparkles, Star, Clock, TrendingUp } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Wallet, Sparkles, Star, TrendingUp, DollarSign, Percent, Clock, Users, Headphones, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { formatSmartCurrency } from '@/lib/formatCurrency';
-
-interface Transaction {
-  id: string;
-  type: 'buy' | 'sell' | 'deposit' | 'withdrawal';
-  amount: number;
-  date: string;
-  status: 'completed' | 'pending';
-}
 
 interface WatchlistItem {
   symbol: string;
@@ -21,24 +15,26 @@ interface ActionsPanelProps {
   onInvestClick: () => void;
   onWithdrawClick?: () => void;
   portfolioBalance: number;
-  recentTransactions?: Transaction[];
   watchlist?: WatchlistItem[];
 }
+
+// Investment platform rules
+const investmentRules = [
+  { icon: DollarSign, title: 'Minimum Investment', description: '$100 minimum to start investing' },
+  { icon: Percent, title: 'Weekly Returns', description: '7.5% weekly returns on your investment' },
+  { icon: Sparkles, title: 'Bonus Tier', description: 'Invest $500+ and earn an extra 5% bonus' },
+  { icon: Clock, title: 'Withdrawal Processing', description: 'Withdrawals processed within 24-48 hours' },
+  { icon: Users, title: 'One Active Investment', description: 'One active investment at a time per account' },
+  { icon: Headphones, title: '24/7 Support', description: 'Contact us anytime via WhatsApp or Telegram' },
+];
 
 const ActionsPanel = ({ 
   onInvestClick, 
   onWithdrawClick, 
   portfolioBalance,
-  recentTransactions = [],
   watchlist = []
 }: ActionsPanelProps) => {
-  
-  // Default transactions if none provided
-  const displayTransactions = recentTransactions.length > 0 ? recentTransactions : [
-    { id: '1', type: 'deposit' as const, amount: 500, date: '2 hours ago', status: 'completed' as const },
-    { id: '2', type: 'buy' as const, amount: 250, date: 'Yesterday', status: 'completed' as const },
-    { id: '3', type: 'withdrawal' as const, amount: 100, date: '3 days ago', status: 'pending' as const },
-  ];
+  const [showRules, setShowRules] = useState(false);
 
   // Default watchlist
   const displayWatchlist = watchlist.length > 0 ? watchlist : [
@@ -102,54 +98,63 @@ const ActionsPanel = ({
           </div>
           <h4 className="text-sm font-bold text-white mb-1">Tesla Stock Bonus!</h4>
           <p className="text-xs text-white/70 mb-3">Invest $500+ and earn extra 5% bonus returns</p>
-          <button className="text-xs font-medium text-white underline underline-offset-2 hover:no-underline">
+          <button 
+            onClick={() => setShowRules(true)}
+            className="text-xs font-medium text-white underline underline-offset-2 hover:no-underline transition-all"
+          >
             See rules →
           </button>
         </div>
       </motion.div>
 
-      {/* Recent Transactions */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 p-4"
-      >
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-muted-foreground" />
-          Recent Activity
-        </h3>
-        
-        <div className="space-y-2">
-          {displayTransactions.slice(0, 3).map((tx) => (
-            <div 
-              key={tx.id} 
-              className="flex items-center justify-between py-2 border-b border-border/30 last:border-0"
-            >
-              <div className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                  tx.type === 'deposit' || tx.type === 'buy' ? 'bg-green-500/20' : 'bg-orange-500/20'
-                }`}>
-                  {tx.type === 'deposit' || tx.type === 'buy' ? (
-                    <ArrowDownToLine className="w-3.5 h-3.5 text-green-500" />
-                  ) : (
-                    <ArrowUpFromLine className="w-3.5 h-3.5 text-orange-500" />
-                  )}
+      {/* Investment Rules Modal */}
+      <Dialog open={showRules} onOpenChange={setShowRules}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <div className="p-1.5 rounded-lg bg-electric-blue/10">
+                <CheckCircle className="w-5 h-5 text-electric-blue" />
+              </div>
+              Investment Rules
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Follow these guidelines for a successful investment experience.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 mt-4">
+            {investmentRules.map((rule, index) => (
+              <motion.div
+                key={rule.title}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border/30"
+              >
+                <div className="p-1.5 rounded-md bg-electric-blue/10 shrink-0">
+                  <rule.icon className="w-4 h-4 text-electric-blue" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-foreground capitalize">{tx.type}</p>
-                  <p className="text-[10px] text-muted-foreground">{tx.date}</p>
+                  <p className="text-sm font-medium text-foreground">{rule.title}</p>
+                  <p className="text-xs text-muted-foreground">{rule.description}</p>
                 </div>
-              </div>
-              <span className={`text-xs font-semibold ${
-                tx.type === 'deposit' || tx.type === 'buy' ? 'text-green-500' : 'text-foreground'
-              }`}>
-                {tx.type === 'deposit' || tx.type === 'buy' ? '+' : '-'}{formatSmartCurrency(tx.amount)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <Button 
+              onClick={() => {
+                setShowRules(false);
+                onInvestClick();
+              }}
+              className="w-full bg-gradient-to-r from-electric-blue to-electric-blue/80 hover:from-electric-blue/90 hover:to-electric-blue/70"
+            >
+              Start Investing Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Watchlist */}
       <motion.div
