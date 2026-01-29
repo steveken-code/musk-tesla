@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowDownToLine, ArrowUpFromLine, Wallet, Sparkles, Star, TrendingUp, DollarSign, Percent, Clock, Users, Headphones, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatSmartCurrency } from '@/lib/formatCurrency';
 
 interface WatchlistItem {
@@ -107,48 +108,53 @@ const ActionsPanel = ({
         </div>
       </motion.div>
 
-      {/* Investment Rules Modal */}
+      {/* Investment Rules Modal - Scrollable & Responsive */}
       <Dialog open={showRules} onOpenChange={setShowRules}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0 bg-card border-border">
+          {/* Fixed Header */}
+          <DialogHeader className="p-4 sm:p-6 pb-2 shrink-0 border-b border-border/30">
             <DialogTitle className="flex items-center gap-2 text-foreground">
               <div className="p-1.5 rounded-lg bg-electric-blue/10">
                 <CheckCircle className="w-5 h-5 text-electric-blue" />
               </div>
               Investment Rules
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-muted-foreground text-sm">
               Follow these guidelines for a successful investment experience.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-3 mt-4">
-            {investmentRules.map((rule, index) => (
-              <motion.div
-                key={rule.title}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border/30"
-              >
-                <div className="p-1.5 rounded-md bg-electric-blue/10 shrink-0">
-                  <rule.icon className="w-4 h-4 text-electric-blue" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{rule.title}</p>
-                  <p className="text-xs text-muted-foreground">{rule.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Scrollable Content */}
+          <ScrollArea className="flex-1 px-4 sm:px-6">
+            <div className="space-y-3 py-4">
+              {investmentRules.map((rule, index) => (
+                <motion.div
+                  key={rule.title}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border/30 min-h-[52px]"
+                >
+                  <div className="p-1.5 sm:p-2 rounded-md bg-electric-blue/10 shrink-0">
+                    <rule.icon className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">{rule.title}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{rule.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </ScrollArea>
           
-          <div className="mt-4 pt-4 border-t border-border/50">
+          {/* Fixed Footer */}
+          <div className="p-4 sm:p-6 pt-4 border-t border-border/50 shrink-0">
             <Button 
               onClick={() => {
                 setShowRules(false);
                 onInvestClick();
               }}
-              className="w-full bg-gradient-to-r from-electric-blue to-electric-blue/80 hover:from-electric-blue/90 hover:to-electric-blue/70"
+              className="w-full h-11 sm:h-12 bg-gradient-to-r from-electric-blue to-electric-blue/80 hover:from-electric-blue/90 hover:to-electric-blue/70 text-sm sm:text-base"
             >
               Start Investing Now
             </Button>

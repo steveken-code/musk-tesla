@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sendWelcomeEmail(data.user!.id, email, fullName);
       }, 0);
 
-      // If referral code is provided and valid, save to profile and send notification
+      // If referral code is provided and valid, save to profile and create referral record
       if (canonicalReferralCode) {
         setTimeout(async () => {
           try {
@@ -159,6 +159,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .from('profiles')
               .update({ referral_code: canonicalReferralCode })
               .eq('user_id', data.user!.id);
+
+            // Find the referrer's user ID from their referral code
+            // The referral code is the first 8 characters of the referrer's user ID (uppercase)
+            const referrerCodePattern = canonicalReferralCode.replace('-', '').toLowerCase();
+            
+            // Query profiles to find users whose ID starts with this pattern
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id')
+              .limit(100);
+            
+            let referrerUserId: string | null = null;
+            if (profiles) {
+              for (const profile of profiles) {
+                if (profile.user_id.slice(0, 8).toLowerCase() === referrerCodePattern) {
+                  referrerUserId = profile.user_id;
+                  break;
+                }
+              }
+            }
+
+            // Create referral tracking record if we found the referrer
+            if (referrerUserId && referrerUserId !== data.user!.id) {
+              await supabase
+                .from('referrals')
+                .insert({
+                  referrer_user_id: referrerUserId,
+                  referred_user_id: data.user!.id,
+                  referral_code: canonicalReferralCode,
+                  status: 'pending',
+                  bonus_amount: 500,
+                  referred_bonus: 100
+                });
+              console.log('Referral tracking record created');
+            }
 
             // Get referral settings to find the notification email
             const { data: settingsData } = await supabase
