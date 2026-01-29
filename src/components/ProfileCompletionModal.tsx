@@ -86,7 +86,8 @@ const ProfileCompletionModal = ({
         .from('avatars')
         .getPublicUrl(fileName);
 
-      return publicUrl;
+      // Add cache-busting query parameter to ensure new image is loaded
+      return `${publicUrl}?t=${Date.now()}`;
     } catch (error: any) {
       console.error('Avatar upload error:', error);
       toast.error('Failed to upload avatar');
