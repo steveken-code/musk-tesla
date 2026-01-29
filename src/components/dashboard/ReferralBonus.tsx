@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Gift, Copy, Check, Users, DollarSign, Share2, TrendingUp, Loader2 } from 'lucide-react';
+import { Gift, Copy, Check, Users, DollarSign, Share2, TrendingUp, Loader2, AlertTriangle, CheckCircle2, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,7 @@ interface ReferralStats {
   paidReferrals: number;
   pendingReferrals: number;
   totalBonus: number;
+  pendingBonus: number;
 }
 
 const ReferralBonus = () => {
@@ -21,8 +22,10 @@ const ReferralBonus = () => {
     paidReferrals: 0,
     pendingReferrals: 0,
     totalBonus: 0,
+    pendingBonus: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [hasInvested, setHasInvested] = useState(false);
 
   // Generate unique referral link based on user ID - always use production domain
   const PRODUCTION_DOMAIN = 'https://msktesla.net';
@@ -30,39 +33,54 @@ const ReferralBonus = () => {
   const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
   const displayLink = `msktesla.net/auth?ref=${referralCode}`;
 
-  // Fetch referral stats from database
+  // Fetch referral stats and investment status from database
   useEffect(() => {
-    const fetchReferralStats = async () => {
+    const fetchData = async () => {
       if (!user?.id) {
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from('referrals')
-          .select('status, bonus_amount')
-          .eq('referrer_user_id', user.id);
+        // Fetch referrals and investments in parallel
+        const [referralsResult, investmentsResult] = await Promise.all([
+          supabase
+            .from('referrals')
+            .select('status, bonus_amount')
+            .eq('referrer_user_id', user.id),
+          supabase
+            .from('investments')
+            .select('id, status')
+            .eq('user_id', user.id)
+            .in('status', ['active', 'completed'])
+            .limit(1)
+        ]);
 
-        if (error) {
-          console.error('Error fetching referrals:', error);
-          setLoading(false);
-          return;
+        // Process referrals
+        if (!referralsResult.error) {
+          const referrals = referralsResult.data || [];
+          const paidReferrals = referrals.filter(r => r.status === 'paid').length;
+          const pendingReferrals = referrals.filter(r => r.status === 'pending' || r.status === 'eligible').length;
+          const paidBonus = referrals
+            .filter(r => r.status === 'paid')
+            .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
+          const pendingBonus = referrals
+            .filter(r => r.status === 'pending' || r.status === 'eligible')
+            .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
+
+          setStats({
+            totalReferrals: referrals.length,
+            paidReferrals,
+            pendingReferrals,
+            totalBonus: paidBonus,
+            pendingBonus,
+          });
         }
 
-        const referrals = data || [];
-        const paidReferrals = referrals.filter(r => r.status === 'paid').length;
-        const pendingReferrals = referrals.filter(r => r.status === 'pending' || r.status === 'eligible').length;
-        const totalBonus = referrals
-          .filter(r => r.status === 'paid')
-          .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
-
-        setStats({
-          totalReferrals: referrals.length,
-          paidReferrals,
-          pendingReferrals,
-          totalBonus,
-        });
+        // Check investment status
+        if (!investmentsResult.error) {
+          setHasInvested(investmentsResult.data && investmentsResult.data.length > 0);
+        }
       } catch (err) {
         console.error('Error:', err);
       } finally {
@@ -70,7 +88,7 @@ const ReferralBonus = () => {
       }
     };
 
-    fetchReferralStats();
+    fetchData();
   }, [user?.id]);
 
   const handleCopy = async () => {
@@ -84,11 +102,9 @@ const ReferralBonus = () => {
     }
   };
 
-  const benefits = [
-    { icon: DollarSign, text: '$500 bonus per referral' },
-    { icon: Users, text: 'No limit on referrals' },
-    { icon: Gift, text: 'Friend gets $100 bonus' },
-  ];
+  // Calculate withdrawable amount
+  const withdrawableBonus = hasInvested ? stats.totalBonus : 0;
+  const totalEarnings = stats.totalBonus + stats.pendingBonus;
 
   return (
     <motion.div
@@ -113,67 +129,111 @@ const ReferralBonus = () => {
           </div>
         </div>
 
-        {/* Referral Stats Grid */}
+        {/* Referral Stats Grid - Enhanced with withdrawal eligibility */}
         {loading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="w-5 h-5 text-electric-blue animate-spin" />
           </div>
         ) : stats.totalReferrals > 0 ? (
-          <div className="grid grid-cols-2 gap-3 mb-4 p-3 rounded-lg bg-electric-blue/5 border border-electric-blue/20">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Users className="w-3.5 h-3.5 text-electric-blue" />
-                <span className="text-xs text-muted-foreground">Your Referrals</span>
+          <div className="mb-4 space-y-3">
+            {/* Stats Row */}
+            <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-electric-blue/5 border border-electric-blue/20">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Users className="w-3 h-3 text-electric-blue" />
+                </div>
+                <p className="text-lg sm:text-xl font-bold text-electric-blue">{stats.totalReferrals}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Referrals</p>
               </div>
-              <p className="text-xl sm:text-2xl font-bold text-electric-blue">{stats.totalReferrals}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                ({stats.paidReferrals} paid, {stats.pendingReferrals} pending)
-              </p>
+              <div className="text-center border-x border-electric-blue/20">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                </div>
+                <p className="text-lg sm:text-xl font-bold text-green-500">${totalEarnings.toLocaleString()}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Total Earned</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Wallet className="w-3 h-3 text-amber-500" />
+                </div>
+                <p className="text-lg sm:text-xl font-bold text-amber-500">${withdrawableBonus.toLocaleString()}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Withdrawable</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <TrendingUp className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-xs text-muted-foreground">Total Bonus</span>
+
+            {/* Status breakdown */}
+            <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-green-500" />
+                {stats.paidReferrals} paid
+              </span>
+              <span className="flex items-center gap-1">
+                <Loader2 className="w-3 h-3 text-amber-500" />
+                {stats.pendingReferrals} pending
+              </span>
+            </div>
+
+            {/* Investment requirement warning */}
+            {!hasInvested && totalEarnings > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30"
+              >
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-[11px] sm:text-xs text-amber-500/90">
+                  <span className="font-semibold">Invest to unlock withdrawal.</span> Your ${totalEarnings.toLocaleString()} bonus will be withdrawable after you make your first investment.
+                </p>
+              </motion.div>
+            )}
+
+            {/* Ready to withdraw indicator */}
+            {hasInvested && withdrawableBonus > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 p-2.5 rounded-lg bg-green-500/10 border border-green-500/30"
+              >
+                <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                <p className="text-[11px] sm:text-xs text-green-500/90">
+                  <span className="font-semibold">${withdrawableBonus.toLocaleString()}</span> ready for withdrawal
+                </p>
+              </motion.div>
+            )}
+          </div>
+        ) : (
+          /* Bonus amount highlight - shown when no referrals yet */
+          <div className="mb-4 p-3 sm:p-4 rounded-lg bg-electric-blue/10 border border-electric-blue/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Earn per referral</p>
+                <p className="text-2xl sm:text-3xl font-bold text-electric-blue">$500</p>
               </div>
-              <p className="text-xl sm:text-2xl font-bold text-green-500">${stats.totalBonus.toLocaleString()}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">earned so far</p>
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                className="p-2 sm:p-3 rounded-full bg-electric-blue/20"
+              >
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-electric-blue" />
+              </motion.div>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Bonus amount highlight */}
-        <div className="mb-4 p-3 sm:p-4 rounded-lg bg-electric-blue/10 border border-electric-blue/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-1">Earn per referral</p>
-              <p className="text-2xl sm:text-3xl font-bold text-electric-blue">$500</p>
-            </div>
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="p-2 sm:p-3 rounded-full bg-electric-blue/20"
-            >
-              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-electric-blue" />
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Benefits list */}
-        <div className="space-y-2 mb-4">
-          {benefits.map((benefit, index) => (
-            <motion.div
-              key={benefit.text}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-2 text-xs sm:text-sm"
-            >
-              <div className="p-1 rounded-md bg-electric-blue/10">
-                <benefit.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-electric-blue" />
-              </div>
-              <span className="text-muted-foreground">{benefit.text}</span>
-            </motion.div>
-          ))}
+        {/* Benefits list - compact */}
+        <div className="flex flex-wrap gap-2 mb-4 text-[10px] sm:text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/30">
+            <DollarSign className="w-3 h-3 text-electric-blue" />
+            $500/referral
+          </span>
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/30">
+            <Gift className="w-3 h-3 text-electric-blue" />
+            Friend gets $100
+          </span>
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/30">
+            <Users className="w-3 h-3 text-electric-blue" />
+            Unlimited
+          </span>
         </div>
 
         {/* Referral link section */}
