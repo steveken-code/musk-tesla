@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowDownToLine, ArrowUpFromLine, Wallet, Sparkles, Star, TrendingUp, DollarSign, Percent, Clock, Users, Headphones, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { formatSmartCurrency } from '@/lib/formatCurrency';
 
 interface WatchlistItem {
@@ -124,30 +124,34 @@ const ActionsPanel = ({
             </DialogDescription>
           </DialogHeader>
           
-          {/* Scrollable Content - ScrollArea with min-h-0 for reliable mobile scrolling */}
-          <ScrollArea className="flex-1 min-h-0">
-            <div className="px-4 sm:px-6">
-              <div className="space-y-3 py-4">
-                {investmentRules.map((rule, index) => (
-                  <motion.div
-                    key={rule.title}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border/30"
-                  >
-                    <div className="p-1.5 sm:p-2 rounded-md bg-electric-blue/10 shrink-0">
-                      <rule.icon className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">{rule.title}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{rule.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+          {/* Scrollable Content - Use native overflow with max-height for reliable mobile scrolling */}
+          <div 
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6"
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              maxHeight: 'calc(85vh - 180px)' 
+            }}
+          >
+            <div className="space-y-3 py-4">
+              {investmentRules.map((rule, index) => (
+                <motion.div
+                  key={rule.title}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border/30"
+                >
+                  <div className="p-1.5 sm:p-2 rounded-md bg-electric-blue/10 shrink-0">
+                    <rule.icon className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">{rule.title}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{rule.description}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </ScrollArea>
+          </div>
           
           {/* Fixed Footer */}
           <div className="p-4 sm:p-6 pt-4 border-t border-border/50 shrink-0">
