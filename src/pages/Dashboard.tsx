@@ -1058,6 +1058,16 @@ const Dashboard = () => {
     }
   };
 
+  // Time-based greeting - must be before any early returns
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }, []);
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+
   if (authLoading || loading) {
     return (
       <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center animate-fade-in">
@@ -1068,16 +1078,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
-  
-  // Time-based greeting
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
