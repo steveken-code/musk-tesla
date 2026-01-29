@@ -139,15 +139,20 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
   };
 
   return (
-    <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl p-4 sm:p-5 h-full flex flex-col overflow-hidden">
+    <div className="bg-gradient-to-br from-card/80 via-card/70 to-card/60 backdrop-blur-xl border border-border/40 rounded-xl sm:rounded-2xl p-4 sm:p-5 h-full flex flex-col overflow-hidden shadow-xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-sm sm:text-base">Investment Progress</h3>
+      <div className="flex items-center justify-between mb-5 pb-3 border-b border-border/30">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm sm:text-base text-foreground">Investment Progress</h3>
+            <p className="text-[10px] text-muted-foreground">Track your investment journey</p>
+          </div>
         </div>
         {progressData.hasActiveInvestment && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium">
+          <span className="text-[10px] sm:text-xs px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 font-bold uppercase tracking-wide">
             Active
           </span>
         )}

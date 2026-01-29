@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,7 +12,7 @@ import {
   CheckCircle, XCircle, Loader2, ArrowLeft,
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
   CreditCard, Phone, Bitcoin, ChevronDown, X, History, Search,
-  Menu, Home, BarChart3, Settings, User
+  Menu, Home, BarChart3, Settings, User, Activity, PieChart
 } from 'lucide-react';
 import SupportButtons from '@/components/SupportButtons';
 import TeslaChart from '@/components/TeslaChart';
@@ -26,6 +26,9 @@ import LiveTradingFeed from '@/components/LiveTradingFeed';
 import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import WelcomeCard from '@/components/dashboard/WelcomeCard';
+import StatsGrid from '@/components/dashboard/StatsGrid';
+import DashboardSectionHeader from '@/components/dashboard/DashboardSectionHeader';
 
 // StockMarketWidget removed from dashboard layout
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
@@ -1067,10 +1070,23 @@ const Dashboard = () => {
   }
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+  
+  // Time-based greeting
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden overflow-y-auto">
-      <div className="absolute inset-0 bg-gradient-hero opacity-30 pointer-events-none" />
+      {/* Premium background pattern */}
+      <div className="fixed inset-0 bg-gradient-hero opacity-40 pointer-events-none" />
+      <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+        backgroundSize: '32px 32px'
+      }} />
       
       {/* Professional Sliding Sidebar */}
       <DashboardSidebar 
@@ -1084,9 +1100,11 @@ const Dashboard = () => {
         userAvatarUrl={profile?.avatar_url || undefined}
       />
 
-      {/* Header with animated menu */}
-      <header className="relative z-20 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0">
-        <div className="container mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
+      {/* Header with premium styling */}
+      <header className="relative z-20 border-b border-border/60 bg-card/90 backdrop-blur-xl sticky top-0 shadow-lg shadow-black/5">
+        {/* Subtle bottom glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="container mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile menu button with improved animation */}
             <button
@@ -1153,95 +1171,28 @@ const Dashboard = () => {
         <PriceTicker />
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-w-7xl overflow-x-hidden">
-        {/* Hero Balance Card - Like reference image */}
-        <div className="mb-4 sm:mb-6 bg-gradient-to-br from-slate-800/90 to-slate-900/90 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-600/50 animate-fade-in shadow-lg">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-muted-foreground text-xs sm:text-sm mb-1">{t('welcomeBack')},</p>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
-                {displayName}!
-              </h1>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div>
-              <p className="text-muted-foreground text-xs sm:text-sm mb-1">Available Balance</p>
-              <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-                ${portfolioBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 sm:flex-none h-10 px-5 text-sm font-semibold border-brand-purple/50 text-brand-purple hover:bg-brand-purple/10 hover:border-brand-purple transition-all"
-                onClick={() => {
-                  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Invest
-              </Button>
-              <Button 
-                size="sm" 
-                className="flex-1 sm:flex-none h-10 px-5 text-sm font-semibold bg-gradient-to-r from-brand-purple to-electric-blue hover:from-brand-purple/90 hover:to-electric-blue/90 text-white shadow-lg transition-all"
-                onClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
-                disabled={portfolioBalance <= 0}
-              >
-                Withdraw
-              </Button>
-            </div>
-          </div>
-        </div>
+      <main className="relative z-10 container mx-auto px-4 sm:px-6 py-5 sm:py-7 max-w-7xl overflow-x-hidden">
+        {/* Hero Welcome Card - New Premium Design */}
+        <WelcomeCard
+          displayName={displayName}
+          portfolioBalance={portfolioBalance}
+          greeting={greeting}
+          onInvestClick={() => {
+            document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
+          t={t}
+        />
 
-        {/* Stats Grid - Compact cards like reference */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10">
-                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-              </div>
-              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalInvested')}</span>
-            </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold">${formatCurrencyValue(totalInvested)}</p>
-          </div>
-          
-          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-green-500/30 transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/10">
-                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
-              </div>
-              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('totalProfit')}</span>
-            </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold text-green-500">${formatCurrencyValue(totalProfit)}</p>
-            {totalInvested > 0 && (
-              <p className="text-[10px] text-green-400 mt-0.5">↑ {((totalProfit / totalInvested) * 100).toFixed(1)}%</p>
-            )}
-          </div>
-          
-          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-yellow-500/30 transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-yellow-500/10">
-                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500" />
-              </div>
-              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('pending')}</span>
-            </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold">${formatCurrencyValue(pendingAmount)}</p>
-          </div>
-          
-          <div className="bg-card/90 border border-border rounded-xl p-3 sm:p-4 hover:border-secondary/30 transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-secondary/10">
-                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-secondary" />
-              </div>
-              <span className="text-muted-foreground text-[10px] sm:text-xs">{t('active')}</span>
-            </div>
-            <p className="text-base sm:text-lg md:text-xl font-bold">
-              {investments.filter(i => i.status === 'active').length}
-            </p>
-          </div>
-        </div>
+        {/* Stats Grid - Modernized with Animations */}
+        <StatsGrid
+          totalInvested={totalInvested}
+          totalProfit={totalProfit}
+          pendingAmount={pendingAmount}
+          activeCount={investments.filter(i => i.status === 'active').length}
+          formatValue={formatCurrencyValue}
+          t={t}
+        />
 
         {/* Active Withdrawal Status */}
         {withdrawals.length > 0 && withdrawals[0].status !== 'completed' && withdrawals[0].status !== 'approved' && (
@@ -1285,31 +1236,49 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Live Trading Feed & Investment Progress */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
-          <div className="h-[320px] sm:h-[340px]">
+        {/* Real-Time Activity Section */}
+        <DashboardSectionHeader 
+          title="Real-Time Activity" 
+          subtitle="Live trading updates and investment progress"
+          icon={Activity}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-10">
+          <div className="h-[320px] sm:h-[360px]">
             <LiveTradingFeed hasActiveInvestment={investments.some(i => i.status === 'active')} />
           </div>
-          <div className="h-[320px] sm:h-[340px]">
+          <div className="h-[320px] sm:h-[360px]">
             <InvestmentProgressTracker investments={investments} />
           </div>
         </div>
 
-        {/* Charts Section - Horizontal Layout */}
-        <div id="plans" className="mb-6 sm:mb-8">
+        {/* Market Analysis Section */}
+        <DashboardSectionHeader 
+          title="Performance Overview" 
+          subtitle="Market data and portfolio analytics"
+          icon={PieChart}
+        />
+        <div id="plans" className="mb-8 sm:mb-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
             <TeslaChart />
             <InvestmentChart investments={investments} />
           </div>
         </div>
 
-        <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-6 sm:mb-8 md:mb-10">
+        {/* Investment Section */}
+        <DashboardSectionHeader 
+          title="Make Your Move" 
+          subtitle="Invest or manage your portfolio"
+          icon={TrendingUp}
+        />
+        <div id="deposit" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:gap-8 mb-8 sm:mb-10">
           {/* New Investment Form */}
-          <div className="bg-card/90 border border-border rounded-xl p-4 sm:p-5 md:p-6">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 sm:p-5 md:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/10">
+                <DollarSign className="w-4 h-4 text-primary" />
+              </div>
               {t('makeNewInvestment')}
-            </h2>
+            </h3>
             
             {/* Show blocked message if active investment exists */}
             {investments.some(i => i.status === 'active' || i.status === 'pending') ? (
