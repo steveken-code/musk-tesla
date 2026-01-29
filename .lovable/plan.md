@@ -1,233 +1,186 @@
 
-
-# Dashboard Redesign: Modern Investment Platform UI
+# Dashboard Cleanup and Enhancement Plan
 
 ## Overview
-Redesign the dashboard to match the reference image's clean, modern financial platform aesthetic while using Tesla-themed stocks (TSLA, RIVN, TM, SPY, LCID) instead of cryptocurrencies. The design will focus on a clean layout without dot patterns, professional number formatting, and intuitive user experience.
+This plan addresses several improvements to make the dashboard cleaner and more interactive:
+1. Remove the Tesla Stock Performance chart (TeslaChart component)
+2. Remove the Recent Activity section from the ActionsPanel
+3. Make the "See rules" link functional with a modal showing platform rules
+4. Implement scroll-to-invest with electric blue highlight animation
+5. Make the Popular Stocks Table tabs (This Week, Price, Volume) fully dynamic and professional
 
 ---
 
-## Key Changes
+## Changes Summary
 
-### 1. Remove Decorative Dot Pattern
-**File:** `src/pages/Dashboard.tsx` (lines 1086-1089) and `src/components/dashboard/WelcomeCard.tsx` (lines 41-49)
+### 1. Remove Tesla Stock Performance Chart
+**File:** `src/pages/Dashboard.tsx` (lines 1282-1293)
 
-- Remove the radial gradient dot pattern from the main dashboard background
-- Remove the mesh SVG pattern from the WelcomeCard
-- Replace with subtle, clean gradient backgrounds
+**Current:** The "Performance Overview" section displays two charts side-by-side:
+- TeslaChart (Tesla Stock Performance)
+- InvestmentChart (Investment Performance)
 
----
+**Change:** Remove TeslaChart from the grid and make InvestmentChart full-width, keeping the section cleaner.
 
-### 2. Redesign Welcome/Balance Card (Inspired by Reference)
-**File:** `src/components/dashboard/WelcomeCard.tsx`
+### 2. Remove Recent Activity from Actions Panel
+**File:** `src/components/dashboard/ActionsPanel.tsx` (lines 111-152)
 
-**Current State:** Gradient card with mesh pattern and orbs
-**New Design:**
-- Clean, rounded card with subtle purple-to-blue gradient (Tesla theme adapted)
-- "Current value" label above the balance
-- Large, user-friendly balance display with proper formatting
-- "USDT" or currency indicator badge next to balance
-- Percentage change indicator (+$xxx this week)
-- Cleaner action buttons layout
+**Current:** Shows a "Recent Activity" card with transaction history
+**Change:** Remove the Recent Activity section entirely to reduce clutter. Keep:
+- Quick Actions (Invest/Withdraw buttons)
+- Promo Card (with See Rules functionality)
+- Watchlist
 
-**Key Elements from Reference:**
-```text
-+------------------------------------------+
-|  Current value                           |
-|  $5,723      [USDT ▼]     +$428.00      |
-|                           this week      |
-+------------------------------------------+
-```
+### 3. Activate "See Rules" Modal
+**File:** `src/components/dashboard/ActionsPanel.tsx`
 
----
+**Current:** The "See rules" button does nothing
+**Change:** Add a Dialog/Modal that shows Tesla Stock Platform investment rules when clicked:
+- Minimum investment: $100
+- Investment returns: 7.5% weekly
+- Bonus: 5% extra for $500+ investments
+- Withdrawal processing: 24-48 hours
+- One active investment at a time
+- Support contact information
 
-### 3. New "Investment Portfolio" Section
-**File:** Create new component `src/components/dashboard/InvestmentPortfolio.tsx`
+### 4. Scroll-to-Invest with Electric Blue Highlight
+**Files:** 
+- `src/components/dashboard/WelcomeCard.tsx`
+- `src/components/dashboard/ActionsPanel.tsx`
+- `src/pages/Dashboard.tsx`
 
-Replace the current StatsGrid with a card-based portfolio view showing stocks instead of crypto:
+**Current:** Clicking "Invest" scrolls to the form but with no visual indicator
+**Change:** 
+- When user clicks "Invest", scroll to the investment form
+- Apply a subtle electric-blue glow/ring animation around the investment form card
+- The glow should fade after 2-3 seconds
+- Not too bright - use `ring-electric-blue/30` or similar muted opacity
 
-| Stock | Total Shares | Total Return |
-|-------|--------------|--------------|
-| TSLA  | $2,456.89    | +0.86%       |
-| RIVN  | $1,241.45    | -10%         |
-| SPY   | $890.50      | +2.3%        |
-| LCID  | $445.20      | -5.2%        |
+**Implementation:**
+- Add state to track "highlight" mode
+- Pass callback to WelcomeCard and ActionsPanel
+- Apply conditional CSS class with animation
+- Auto-remove class after timeout
 
-**Design Features:**
-- Card for each stock with logo/icon
-- "Total Shares" value
-- "Total Return" percentage (green for positive, red for negative)
-- Clean rounded cards with subtle shadows
+### 5. Activate Dynamic Stock Table Tabs
+**File:** `src/components/dashboard/PopularStocksTable.tsx`
 
----
+**Current:** Tabs exist but sorting logic is basic
+**Change:** Enhance the tabs with:
+- **This Week:** Sort by absolute change percentage (biggest movers first)
+- **Price:** Sort by current price (highest to lowest)
+- **Volume:** Sort by trading volume (highest to lowest)
 
-### 4. New "Popular Stocks" Table Section
-**File:** Create new component `src/components/dashboard/PopularStocksTable.tsx`
-
-Display stocks in a professional table format like the reference:
-
-| Name | Market Cap | Volume | Chart | Trade |
-|------|------------|--------|-------|-------|
-| TSLA | $41.58T    | 189.3M | [mini-chart] | [Trade] |
-| SPY  | $26.58T    | 156.9M | [mini-chart] | [Trade] |
-| RIVN | $12.34T    | 78.5M  | [mini-chart] | [Trade] |
-
-**Features:**
-- Toggle between "This Week" / "Price" / "Chart" / "Trade" tabs
-- Stock icon/logo with name
-- Market cap and volume columns
-- Mini sparkline chart
-- Trade action button
+Also improve the table with:
+- Add subtle row hover animations
+- Add active tab indicator animation (animated underline)
+- Make mini-charts more dynamic (use actual stock color and trend direction)
+- Add a subtle shimmer effect on data refresh
+- Show "Live" indicator badge for real-time data
 
 ---
 
-### 5. Right Sidebar Actions Panel
-**File:** Create new component `src/components/dashboard/ActionsPanel.tsx`
+## Technical Implementation
 
-Inspired by reference image's right column:
+### Dashboard.tsx Changes
+```tsx
+// Remove TeslaChart import and usage
+// Add state for invest form highlight
+const [highlightInvestForm, setHighlightInvestForm] = useState(false);
 
-**Quick Actions Grid:**
-```text
-[Buy]  [Sell]  [Add Cash]  [More]
-```
-
-**Promo Card:**
-```text
-+------------------------+
-| Take a chance & win!   |
-| Special Tesla Offer    |
-| [See rules]            |
-+------------------------+
-```
-
-**Transactions List:**
-- Recent transaction items
-- Amount and date
-- Transaction type (Buy/Sell/Deposit)
-
-**Wishlist/Watchlist:**
-- Saved stocks to watch
-- Quick price indicators
-
----
-
-### 6. Smart Number Formatting Throughout
-**File:** Multiple files
-
-Implement user-friendly number formatting:
-- Large numbers: `$41.58T` (trillion), `$156.9M` (million), `189.3K` (thousand)
-- Whole numbers: No decimals ($1,500 not $1,500.00)
-- Percentages: One decimal (+2.5%)
-- Small decimals only when needed ($24.56)
-
-Helper function updates:
-```typescript
-// Format smart value for display
-const formatDisplayValue = (amount: number): string => {
-  if (amount >= 1_000_000_000_000) return `$${(amount / 1_000_000_000_000).toFixed(2)}T`;
-  if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(2)}B`;
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(2)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}K`;
-  return amount % 1 === 0 ? `$${amount.toLocaleString()}` : `$${amount.toFixed(2)}`;
+// Pass highlight handler to WelcomeCard and ActionsPanel
+const handleInvestClick = () => {
+  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+  setHighlightInvestForm(true);
+  setTimeout(() => setHighlightInvestForm(false), 2500);
 };
+
+// Apply highlight class to investment form container
+<div 
+  id="deposit" 
+  className={`... ${highlightInvestForm ? 'ring-2 ring-electric-blue/40 animate-pulse-subtle' : ''}`}
+>
+```
+
+### ActionsPanel.tsx Changes
+```tsx
+// Add Dialog import
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+// Add state for rules modal
+const [showRules, setShowRules] = useState(false);
+
+// Rules modal content with professional styling
+<Dialog open={showRules} onOpenChange={setShowRules}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Investment Rules</DialogTitle>
+    </DialogHeader>
+    {/* Rule items with icons */}
+  </DialogContent>
+</Dialog>
+```
+
+### PopularStocksTable.tsx Enhancements
+```tsx
+// Add visual active tab indicator with animation
+<motion.div 
+  className="absolute bottom-0 h-0.5 bg-electric-blue"
+  layoutId="activeTab"
+  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+/>
+
+// Add row hover scale animation
+<motion.tr whileHover={{ scale: 1.01 }}>
+
+// Dynamic mini-chart based on trend direction
+const trendDirection = stock.changePercent >= 0 ? 'up' : 'down';
+// Generate bars that trend upward or downward based on stock direction
 ```
 
 ---
 
-### 7. Clean Layout Grid Structure
-**File:** `src/pages/Dashboard.tsx`
+## Files to Modify
 
-New layout structure matching reference:
-
-```text
-+----------------------------------------+------------------+
-|            Balance Card                |   Actions Panel  |
-|                                        |   [Quick Actions]|
-+----------------------------------------+                  |
-|        Investment Portfolio (4 cards)  |   [Transactions] |
-+----------------------------------------+                  |
-|        Popular Stocks Table            |   [Wishlist]     |
-+----------------------------------------+------------------+
-|  Charts Section (Tesla + Investment)                      |
-+-----------------------------------------------------------+
-|  Investment Form  |  Investment History                   |
-+-----------------------------------------------------------+
-```
+| File | Changes |
+|------|---------|
+| `src/pages/Dashboard.tsx` | Remove TeslaChart, add highlight state and handler |
+| `src/components/dashboard/ActionsPanel.tsx` | Remove Recent Activity, add Rules modal |
+| `src/components/dashboard/PopularStocksTable.tsx` | Enhance tabs, add animations, improve sorting |
+| `src/components/dashboard/WelcomeCard.tsx` | Minor update to use new invest handler |
+| `src/index.css` | Add subtle animation utilities for highlight effect |
 
 ---
 
-### 8. Tesla-Themed Color Palette Refinement
-**File:** `src/index.css`
+## Visual Specifications
 
-Maintain Tesla red as accent while using cleaner purple/blue tones for cards:
-- Primary accent: Tesla Red for CTAs
-- Card backgrounds: Subtle slate gradients (no dots)
-- Purple highlight for balance cards (matching reference)
-- Clean white/light text on dark backgrounds
-
----
-
-## Technical Implementation Details
-
-### Files to Create:
-1. `src/components/dashboard/InvestmentPortfolio.tsx` - Stock portfolio cards
-2. `src/components/dashboard/PopularStocksTable.tsx` - Stocks table with mini charts
-3. `src/components/dashboard/ActionsPanel.tsx` - Right sidebar with quick actions
-4. `src/components/dashboard/TransactionsList.tsx` - Recent transactions list
-
-### Files to Modify:
-1. `src/pages/Dashboard.tsx` - Main layout restructure
-2. `src/components/dashboard/WelcomeCard.tsx` - Cleaner balance display
-3. `src/components/dashboard/StatsGrid.tsx` - Remove or repurpose
-4. `src/lib/formatCurrency.ts` - Add abbreviated format function
-5. `src/index.css` - Add new utility classes for clean cards
-
-### Stock Data Integration:
-Use existing `useStockPrices` hook to populate:
-- TSLA, RIVN, SPY, LCID, TM prices
-- Change percentages
-- Volume data (from Finnhub API)
-
----
-
-## Visual Design Specifications
-
-### Card Styling:
+### Electric Blue Highlight (Not Too Bright)
 ```css
-/* Clean card without dots */
-.dashboard-card-clean {
-  background: linear-gradient(135deg, hsl(222 39% 13%) 0%, hsl(222 35% 16%) 100%);
-  border: 1px solid hsl(222 30% 22%);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+/* Subtle glow effect */
+.invest-form-highlight {
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.3), 
+              0 0 20px rgba(66, 153, 225, 0.15);
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5); }
+  100% { box-shadow: 0 0 0 2px rgba(66, 153, 225, 0); }
 }
 ```
 
-### Balance Card Gradient:
-```css
-/* Purple accent gradient like reference */
-.balance-card {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-  border-radius: 20px;
-}
-```
-
-### Number Typography:
-- Balance: `text-4xl font-bold tracking-tight`
-- Stats: `text-xl font-semibold`
-- Labels: `text-sm text-muted-foreground`
+### Rules Modal Content
+- Clean, card-based layout
+- Icons for each rule (DollarSign, Percent, Clock, etc.)
+- Tesla-themed but professional
+- Clear call-to-action to start investing
 
 ---
 
-## Summary of Changes
+## Result After Changes
 
-| Section | Before | After |
-|---------|--------|-------|
-| Background | Dot pattern | Clean gradient |
-| Balance Card | Mesh pattern + orbs | Clean purple gradient |
-| Stats | 4-card grid | Portfolio cards with stocks |
-| Activity | Trading feed | Popular Stocks table |
-| Layout | Full-width sections | 2/3 + 1/3 sidebar |
-| Numbers | Mixed formats | Smart abbreviated format |
-| Theme | Heavy patterns | Minimal, professional |
-
+The dashboard will be:
+1. **Cleaner** - No duplicate stock chart, less clutter in sidebar
+2. **More Interactive** - Functional rules modal, visual feedback on invest click
+3. **More Professional** - Dynamic stock data with animated tabs
+4. **Better UX** - Clear visual guidance when user clicks Invest button
