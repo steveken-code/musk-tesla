@@ -1,77 +1,82 @@
 
-# Auto-Populate Referral Code from URL
 
-## Overview
-When a user clicks a referral link like `msktesla.net/auth?ref=B503E502` or `msktesla.net/auth?ref=TATY-8492`, the Auth page will automatically:
-1. Extract the referral code from the URL
-2. Switch to the signup form (since referrals are for new users)
-3. Pre-fill the referral code field with the code from the URL
+# Dashboard Enhancements Plan
 
-## Current Behavior
-- Referral code field is empty by default
-- Users must manually type or paste the referral code
-- TATY-8492 already works as an always-valid code in the validation logic
+## Issues to Fix
+
+### 1. Volume Always Shows 0
+**Root Cause**: In `supabase/functions/stock-prices/index.ts`, volume is hardcoded to `0`. The Finnhub `/quote` endpoint doesn't include volume - it only provides price data.
+
+### 2. Stats Cards Need Better Animations
+**Current**: Basic fade-in animations in StatsGrid
+**Needed**: Dynamic counting numbers, glowing effects, enhanced hover states
+
+---
 
 ## Changes Required
 
-### File: `src/pages/Auth.tsx`
+### File 1: `supabase/functions/stock-prices/index.ts`
 
-**1. Import `useSearchParams` from react-router-dom**
-Add the hook to read URL query parameters.
+Add volume fetching from Finnhub's candle endpoint:
 
-**2. Add URL parameter detection in useEffect**
 ```typescript
-// Extract referral code from URL on page load
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const refCode = params.get('ref');
-  
-  if (refCode) {
-    // Pre-fill the referral code field
-    setReferralCode(refCode.toUpperCase());
-    // Switch to signup mode (referrals are for new users)
-    setIsLogin(false);
-  }
-}, []);
+// Fetch daily candle data which includes volume
+const now = Math.floor(Date.now() / 1000);
+const from = now - 86400; // 24 hours ago
+
+const candleRes = await fetch(
+  `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${now}&token=${apiKey}`
+);
+const candleData = await candleRes.json();
+const volume = candleData.v?.[candleData.v.length - 1] || 0;
 ```
 
-**3. No changes to TATY-8492 handling**
-The built-in referral code `TATY-8492` continues to work as before in `AuthContext.tsx` (lines 62-77). The normalization logic strips dashes and validates both:
-- `TATY-8492` → normalized to `TATY8492` → valid
-- `TATY8492` → valid
-- Any user UUID-based code like `B503E502` → validated against referrals table
+### File 2: `src/components/dashboard/StatsGrid.tsx`
 
-## User Experience Flow
+Enhance with dynamic animations:
 
-```text
-User clicks: msktesla.net/auth?ref=B503E502
-                    ↓
-        Auth page loads
-                    ↓
-    URL parameter detected: ref=B503E502
-                    ↓
-    ┌─────────────────────────────────┐
-    │  1. Switch to "Create Account"  │
-    │  2. Pre-fill code: B503E502     │
-    └─────────────────────────────────┘
-                    ↓
-    User just fills name, email, password
-                    ↓
-        Submits → Signup with referral
+**Add AnimatedCounter component:**
+```typescript
+const AnimatedCounter = ({ end, duration = 1500, prefix = "", decimals = 0, isVisible }) => {
+  const [count, setCount] = useState(0);
+  // requestAnimationFrame-based smooth counting
+  // Eased animation for professional feel
+};
 ```
 
-## Technical Details
+**Enhanced card effects:**
+- Gradient border glow on hover
+- Icon scale and pulse animation
+- Staggered entrance timing
+- Counting number animation for values
 
-| Aspect | Implementation |
-|--------|----------------|
-| URL parsing | `new URLSearchParams(window.location.search)` |
-| Parameter name | `ref` (matches existing referral link format) |
-| Case handling | Convert to uppercase automatically |
-| Mode switch | Set `isLogin` to `false` when ref param present |
-| Validation | Existing logic in AuthContext handles all codes |
+---
 
-## Summary
-- Single file change: `src/pages/Auth.tsx`
-- Add one new `useEffect` to detect and apply URL parameter
-- TATY-8492 and all personal referral codes continue working unchanged
-- Better UX: users clicking referral links don't need to type the code manually
+## Visual Result
+
+| Element | Before | After |
+|---------|--------|-------|
+| Volume | `0` for all stocks | Real data: `189.3M`, `45.2M` |
+| Stats values | Static numbers | Animated counting on scroll |
+| Card hover | Basic | Glowing border + icon animation |
+| Card entrance | Simple fade | Staggered with scale effect |
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `supabase/functions/stock-prices/index.ts` | Add volume fetching from candle API |
+| `src/components/dashboard/StatsGrid.tsx` | Add counting animations and enhanced effects |
+
+---
+
+## Balance Format - NO CHANGE NEEDED ✓
+
+The current `formatSmartCurrency` already works correctly:
+- `$1,000` → displays as `$1,000`
+- `$1,150.78` → displays as `$1,150.78`
+
+This is the professional behavior you want, so WelcomeCard stays unchanged.
+
