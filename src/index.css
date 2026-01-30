@@ -455,27 +455,3 @@
   }
 }
 
-/* Hide Google Translate default UI - use custom LanguageSelector instead */
-.goog-te-banner-frame {
-  display: none !important;
-}
-
-body {
-  top: 0 !important;
-}
-
-.skiptranslate {
-  display: none !important;
-}
-
-.goog-te-spinner-pos {
-  display: none !important;
-}
-
-/* Keep the hidden combo box accessible for programmatic control */
-#google_translate_element {
-  position: absolute !important;
-  left: -9999px !important;
-  top: -9999px !important;
-  visibility: hidden !important;
-}
