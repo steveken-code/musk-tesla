@@ -1,190 +1,215 @@
 
-
-# Comprehensive Fix Plan: Referral System, Email Notifications, Admin Features & Crypto UI
+# Comprehensive Fix Plan: Referral System, Email Notifications & Tracking
 
 ## Issues Identified
 
-### 1. Referral Code Auto-Fill Issue
-**Current Behavior**: When a user clicks a referral link (`?ref=CODE`), the code is automatically filled in and the form switches to signup mode.
-**Problem**: The user wants the referral link to **NOT** auto-fill the code. The referred person should manually enter or have it detected only after they click the link.
-**Clarification Needed**: Should clicking the link switch to signup mode but leave the field empty for the user to enter manually? Or should the code still be pre-filled but the issue is something else?
+### 1. Referral Records Not Being Created (Critical Issue)
+**Root Cause Found**: The referral INSERT RLS policy only allows inserts where `auth.uid() = referred_user_id`, meaning only the NEW user can insert a referral record. However, in `AuthContext.tsx`, the referral record is being inserted IMMEDIATELY after signup - but at that point, the new user doesn't have a valid session yet (they just signed up and haven't verified/logged in).
 
-### 2. Referral Tracking Not Working
-**Current Behavior**: The referral tracking logic in `AuthContext.tsx` (lines 163-196) tries to find the referrer by matching the first 8 characters of user IDs.
-**Root Cause**: The query fetches ALL profiles and loops through them, which is inefficient and may fail if:
-- The referrer's code is `TATY-8492` (hardcoded) which doesn't match any user ID pattern
-- The pattern matching logic fails for certain UUID formats
+**Evidence**: 
+- The `referrals` table is EMPTY (query returned `[]`)
+- The INSERT policy: `WITH CHECK (auth.uid() = referred_user_id)` - requires the inserting user to be authenticated as the referred user
+- After `supabase.auth.signUp()`, the user doesn't have a valid session yet
 
-**Fix**: Improve the referral lookup logic to:
-- Store referral codes differently (use the user's generated referral code in the referrals table)
-- Query profiles more efficiently using pattern matching
-
-### 3. No Referral Tracking Card
-**Current Status**: `ReferralBonus.tsx` shows total referrals and earnings but the user wants a clearer tracking box showing:
-- Total people referred
-- How many have invested (activated)
-- How many are pending
-- Earnings breakdown
-
-**File**: `src/components/dashboard/ReferralBonus.tsx` - Needs enhancement to show individual referral tracking
-
-### 4. Emails Not Sending
-**Symptoms**: No recent email logs for welcome, activation, or withdrawal emails
-**Root Cause Investigation**: The edge functions are deployed but may have issues with:
-- Resend API key configuration
-- FROM_EMAIL domain verification
-- Edge function errors not being logged properly
-
-**Fix**: Check and ensure email functions are working. Add more robust error handling and logging.
-
-### 5. Admin Profit Input - Decimal Support
-**Current Behavior**: The profit input uses `type="text"` and `inputMode="decimal"` which allows decimals, but the onChange handler only allows digits and periods:
+### 2. Referrer Lookup Logic is Flawed
+**Current Logic** (lines 163-181 in AuthContext.tsx):
 ```typescript
-const value = e.target.value.replace(/[^0-9.]/g, '');
-handleProfitChange(investment.id, value);
-```
-**Status**: This ALREADY supports decimals like `554.89`. The issue might be validation elsewhere or UI display.
+// Current approach: Fetch ALL profiles, loop through them
+const { data: profiles } = await supabase
+  .from('profiles')
+  .select('user_id')
+  .limit(100);  // Only fetches 100 profiles!
 
-**Verification**: The profit input at line 1801-1809 already accepts decimal values. Need to confirm the database and API also accept them.
-
-### 6. Currency Formatting for Balance
-**User Requirement**: 
-- `$1,000` stays as `$1,000` (whole number)
-- `$25,965.34` displays as `$25,965.34` (with decimals when needed)
-**Current Status**: `formatSmartCurrency` already does this correctly. No change needed.
-
-### 7. Country Selector Issues
-**Current Status**: `InvestmentCountrySelector.tsx` appears well-structured with:
-- Flat alphabetical list
-- Mobile drawer support
-- Search functionality
-**Need to verify**: If the component is rendering correctly and translations are working
-
-### 8. Crypto Payment Details - Missing Translations
-**Current Behavior**: The component uses `t('walletAddress')`, `t('amountToSend')`, `t('cryptoWarning')`, `t('howToPayCrypto')`, etc.
-**Problem**: These translation keys may not be defined in `LanguageContext.tsx`, causing fallback text to show.
-**Translations Found**: Some are defined (like `walletCopied`), but others like `walletAddress`, `amountToSend`, `cryptoWarning`, `howToPayCrypto`, `cryptoStep1-4` need to be verified.
-
----
-
-## Proposed Changes
-
-### File 1: `src/pages/Auth.tsx`
-**Change**: Remove auto-fill behavior for referral code from URL
-- Keep the code parameter detection for tracking purposes
-- Switch to signup mode when `?ref=` is present
-- But do NOT pre-fill the referral code field
-
-```typescript
-// Current (line 48-57):
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const refCode = params.get('ref');
-  
-  if (refCode) {
-    setReferralCode(refCode.toUpperCase()); // Remove this line
-    setIsLogin(false);
+for (const profile of profiles) {
+  if (profile.user_id.slice(0, 8).toLowerCase() === referrerCodePattern) {
+    referrerUserId = profile.user_id;
+    break;
   }
-}, []);
+}
 ```
 
-### File 2: `src/contexts/AuthContext.tsx`
-**Change**: Fix referral tracking to properly create referral records
-- The current logic queries all profiles which is inefficient
-- Add better logging for referral creation
-- Ensure TATY-8492 referrals are tracked to the admin's notification email
+**Problems**:
+- Only fetches 100 profiles (what if the referrer is user #101+?)
+- Inefficient O(n) search through all profiles
+- `TATY-8492` normalized to `taty8492` won't match any user ID pattern
 
-### File 3: `src/components/dashboard/ReferralBonus.tsx`
-**Enhance**: Add a clearer referral tracking section
-- Show a list/table of individual referrals with status (pending, active, paid)
-- Show who signed up and whether they've invested yet
-- More prominent display of tracking data
+### 3. Email Edge Functions Not Logging
+**Status**: Edge functions return success (`200 OK`) but no logs appear
+**Investigation**: The `send-welcome-email` function works when tested directly (returned `{"success": true, "message": "Welcome email queued"}`)
 
-### File 4: `src/contexts/LanguageContext.tsx`
-**Add Missing Translations**:
+The emails might actually be sending, but the issue is likely:
+- The referral record isn't created, so referral emails never get triggered
+- If a user doesn't have a valid `referrer_user_id`, no email is sent
+
+### 4. ReferralBonus Dashboard Shows Empty
+**Root Cause**: Since no referral records exist in the database, the component correctly shows nothing. The query works fine:
 ```typescript
-// Crypto Payment translations
-'walletAddress': 'USDT Wallet Address',
-'amountToSend': 'Amount to Send',
-'cryptoWarning': 'Please ensure only USDT is deposited via this address. Other currencies will not be credited.',
-'howToPayCrypto': 'How to Make USDT Payment:',
-'cryptoStep1': 'Copy the USDT wallet address above',
-'cryptoStep2': 'Open your crypto wallet app (Trust Wallet, Binance, etc.)',
-'cryptoStep3': 'Send the exact amount using TRON (TRC20) network',
-'cryptoStep4': 'Take a screenshot and send via WhatsApp for confirmation',
-'network': 'Network',
-'important': 'Important',
+supabase
+  .from('referrals')
+  .select('id, referred_user_id, status, bonus_amount, created_at')
+  .eq('referrer_user_id', user.id)  // This returns empty because no records exist
 ```
-
-### File 5: `src/components/CryptoPaymentDetails.tsx`
-**Enhance UI**: Make the component more professional
-- Better visual hierarchy for wallet address
-- Clearer step-by-step instructions
-- More prominent warning message
-- Professional styling for all elements
-
-### File 6: Email Edge Functions
-**Debug & Fix**: Verify email sending works
-- Check `supabase/functions/send-welcome-email/index.ts`
-- Add better error logging
-- Verify Resend API key is working
-- Test email delivery
 
 ---
 
-## Technical Implementation Details
+## Solution Architecture
 
-### Referral Code Detection (Without Auto-Fill)
-```typescript
-// Auth.tsx - Updated useEffect
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const refCode = params.get('ref');
+### Solution 1: Fix Referral Record Creation (Database Migration)
+
+Create a database function and trigger to automatically create referral records when a new user signs up with a referral code:
+
+```sql
+-- Create a function that runs as SECURITY DEFINER (bypasses RLS)
+CREATE OR REPLACE FUNCTION public.handle_referral_signup()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+  v_referral_code text;
+  v_referrer_id uuid;
+BEGIN
+  -- Get the referral code from the new profile
+  v_referral_code := NEW.referral_code;
   
-  if (refCode) {
-    // Only switch to signup mode, don't pre-fill the code
-    // User must enter the code manually for confirmation
-    setIsLogin(false);
-  }
-}, []);
+  -- Exit if no referral code
+  IF v_referral_code IS NULL OR v_referral_code = '' THEN
+    RETURN NEW;
+  END IF;
+  
+  -- Normalize the code (remove dashes, uppercase)
+  v_referral_code := UPPER(REPLACE(v_referral_code, '-', ''));
+  
+  -- Find the referrer by matching their user_id prefix
+  SELECT user_id INTO v_referrer_id
+  FROM profiles
+  WHERE UPPER(LEFT(user_id::text, 8)) = v_referral_code
+    AND user_id != NEW.user_id
+  LIMIT 1;
+  
+  -- If found, create the referral record
+  IF v_referrer_id IS NOT NULL THEN
+    INSERT INTO referrals (
+      referrer_user_id,
+      referred_user_id,
+      referral_code,
+      status,
+      bonus_amount,
+      referred_bonus
+    ) VALUES (
+      v_referrer_id,
+      NEW.user_id,
+      NEW.referral_code,
+      'pending',
+      500,
+      100
+    ) ON CONFLICT DO NOTHING;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Create trigger on profiles table
+CREATE TRIGGER on_profile_referral_signup
+  AFTER INSERT OR UPDATE OF referral_code ON profiles
+  FOR EACH ROW
+  WHEN (NEW.referral_code IS NOT NULL AND NEW.referral_code != '')
+  EXECUTE FUNCTION handle_referral_signup();
 ```
 
-### Enhanced Referral Tracking
-The current referral lookup has issues:
-1. It queries ALL profiles (inefficient)
-2. It tries to match by first 8 characters of user ID
-3. TATY-8492 doesn't match any user ID pattern
+### Solution 2: Simplify AuthContext Referral Logic
 
-**Solution**: Store the referrer code directly in the referral record and look it up differently.
+Remove the complex referrer lookup from `AuthContext.tsx` since the database trigger handles it:
 
-### Crypto Payment UI Improvements
-- Larger, bolder wallet address display
-- Color-coded steps with icons
-- More visible warning box
-- Professional gradient backgrounds
+| Line Range | Current | New |
+|------------|---------|-----|
+| 155-196 | Complex profile fetching + referral insert | Just update profile with referral_code |
+
+```typescript
+// Simplified: Just save the referral code to profile
+// The database trigger handles creating the referral record
+if (canonicalReferralCode) {
+  setTimeout(async () => {
+    try {
+      await supabase
+        .from('profiles')
+        .update({ referral_code: canonicalReferralCode })
+        .eq('user_id', data.user!.id);
+      
+      console.log('Referral code saved to profile - trigger will create referral record');
+      
+      // Send notifications (these still work directly)
+      // ... notification logic stays the same
+    } catch (err) {
+      console.error('Error saving referral code:', err);
+    }
+  }, 500);
+}
+```
+
+### Solution 3: Fix Referral Email Trigger
+
+Update the Admin panel's investment activation to properly send referral notification emails when an investment is activated:
+
+In `Admin.tsx`, when activating an investment:
+1. Query the `referrals` table for the investor
+2. Find the referrer's email from their profile
+3. Send the `investment_active` notification
+4. Update referral status from `pending` to `active`
 
 ---
 
-## Summary of Files to Modify
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/Auth.tsx` | Remove referral code auto-fill |
-| `src/contexts/AuthContext.tsx` | Fix referral tracking logic |
-| `src/components/dashboard/ReferralBonus.tsx` | Add referral tracking table |
-| `src/contexts/LanguageContext.tsx` | Add missing crypto translations |
-| `src/components/CryptoPaymentDetails.tsx` | Enhance UI and add professional styling |
-| Email Edge Functions | Debug and fix email delivery |
+| **Database Migration** | Add `handle_referral_signup()` function and trigger |
+| `src/contexts/AuthContext.tsx` | Simplify referral logic - remove profile fetching/insert |
+| `src/pages/Admin.tsx` | Add referral status update + email on investment activation |
 
 ---
 
-## Questions Before Implementation
+## Technical Flow After Fix
 
-1. **Referral Code Auto-Fill**: Should clicking the referral link:
-   - (A) Switch to signup mode but leave referral field empty?
-   - (B) Switch to signup mode AND pre-fill the code but make it editable?
+```text
+User A shares link: msktesla.net/auth?ref=B503E502
+                          ↓
+User B clicks link → Auth page switches to signup mode
+                          ↓
+User B enters code manually (or auto-filled from URL)
+                          ↓
+SignUp → Profile created with referral_code = 'B503E502'
+                          ↓
+[DATABASE TRIGGER FIRES]
+  → Finds User A by matching ID prefix 'B503E502...'
+  → Creates referral record: {referrer: A, referred: B, status: 'pending'}
+                          ↓
+[EMAIL SENT]
+  → User A gets "New referral signup" email
+  → User B gets "Welcome bonus" email
+                          ↓
+User B makes investment → Admin activates it
+                          ↓
+[ADMIN PANEL]
+  → Updates referral status to 'active'
+  → Sends "Investment activated" email to User A
+                          ↓
+User A dashboard shows:
+  - 1 referral (User B)
+  - Status: Active
+  - Bonus: $500
+```
 
-2. **Email Testing**: Would you like me to test the email functions to identify the specific issue?
+---
 
-3. **TATY-8492 Tracking**: Should referrals using this code be tracked to a specific admin user or just to the notification email in settings?
+## Summary
 
+The core issue is that referral records are never created because the RLS policy blocks the insert. The fix uses a `SECURITY DEFINER` database trigger that runs with elevated privileges to create the referral record automatically when a user profile is created with a referral code.
+
+This approach is:
+- **Reliable**: Database triggers are guaranteed to run
+- **Secure**: SECURITY DEFINER is appropriate for system-level operations
+- **Efficient**: Single SQL query finds the referrer by ID prefix
+- **Scalable**: Works regardless of how many profiles exist
