@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 // Language code mapping to Google Translate codes
 const googleLangMap: Record<string, string> = {
+  // Original languages
   'en': 'en',
   'de': 'de',
   'fr': 'fr',
@@ -30,6 +31,38 @@ const googleLangMap: Record<string, string> = {
   'ar': 'ar',
   'tr': 'tr',
   'ru': 'ru',
+  // NEW: Southeast Asia & Pacific
+  'id': 'id',
+  'ms': 'ms',
+  'tl': 'tl',
+  'my': 'my',
+  // NEW: South Asia
+  'bn': 'bn',
+  'ta': 'ta',
+  'te': 'te',
+  'ur': 'ur',
+  'ne': 'ne',
+  // NEW: Middle East & Africa
+  'he': 'iw',  // Google uses 'iw' for Hebrew
+  'fa': 'fa',
+  'sw': 'sw',
+  'af': 'af',
+  // NEW: Eastern Europe & Central Asia
+  'uk': 'uk',
+  'bg': 'bg',
+  'hr': 'hr',
+  'sr': 'sr',
+  'lt': 'lt',
+  'lv': 'lv',
+  'ka': 'ka',
+  'az': 'az',
+  'kk': 'kk',
+  'uz': 'uz',
+  // NEW: Traditional Chinese
+  'zh-TW': 'zh-TW',
+  // NEW: Regional European
+  'ca': 'ca',
+  'eu': 'eu',
 };
 
 const STORAGE_KEY = 'google-translate-language';

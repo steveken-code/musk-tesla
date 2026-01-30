@@ -13,6 +13,7 @@ interface Language {
 }
 
 const languages: Language[] = [
+  // Original languages
   { code: 'en', flag: '🇺🇸', name: 'English', nativeName: 'English' },
   { code: 'de', flag: '🇩🇪', name: 'German', nativeName: 'Deutsch' },
   { code: 'fr', flag: '🇫🇷', name: 'French', nativeName: 'Français' },
@@ -32,7 +33,7 @@ const languages: Language[] = [
   { code: 'no', flag: '🇳🇴', name: 'Norwegian', nativeName: 'Norsk' },
   { code: 'da', flag: '🇩🇰', name: 'Danish', nativeName: 'Dansk' },
   { code: 'fi', flag: '🇫🇮', name: 'Finnish', nativeName: 'Suomi' },
-  { code: 'zh', flag: '🇨🇳', name: 'Chinese', nativeName: '中文' },
+  { code: 'zh', flag: '🇨🇳', name: 'Chinese (Simplified)', nativeName: '简体中文' },
   { code: 'ja', flag: '🇯🇵', name: 'Japanese', nativeName: '日本語' },
   { code: 'ko', flag: '🇰🇷', name: 'Korean', nativeName: '한국어' },
   { code: 'hi', flag: '🇮🇳', name: 'Hindi', nativeName: 'हिंदी' },
@@ -41,6 +42,38 @@ const languages: Language[] = [
   { code: 'ar', flag: '🇸🇦', name: 'Arabic', nativeName: 'العربية' },
   { code: 'tr', flag: '🇹🇷', name: 'Turkish', nativeName: 'Türkçe' },
   { code: 'ru', flag: '🇷🇺', name: 'Russian', nativeName: 'Русский' },
+  // NEW: Traditional Chinese
+  { code: 'zh-TW', flag: '🇹🇼', name: 'Chinese (Traditional)', nativeName: '繁體中文' },
+  // NEW: Southeast Asia & Pacific
+  { code: 'id', flag: '🇮🇩', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
+  { code: 'ms', flag: '🇲🇾', name: 'Malay', nativeName: 'Bahasa Melayu' },
+  { code: 'tl', flag: '🇵🇭', name: 'Filipino', nativeName: 'Tagalog' },
+  { code: 'my', flag: '🇲🇲', name: 'Burmese', nativeName: 'မြန်မာ' },
+  // NEW: South Asia
+  { code: 'bn', flag: '🇧🇩', name: 'Bengali', nativeName: 'বাংলা' },
+  { code: 'ta', flag: '🇮🇳', name: 'Tamil', nativeName: 'தமிழ்' },
+  { code: 'te', flag: '🇮🇳', name: 'Telugu', nativeName: 'తెలుగు' },
+  { code: 'ur', flag: '🇵🇰', name: 'Urdu', nativeName: 'اردو' },
+  { code: 'ne', flag: '🇳🇵', name: 'Nepali', nativeName: 'नेपाली' },
+  // NEW: Middle East & Africa
+  { code: 'he', flag: '🇮🇱', name: 'Hebrew', nativeName: 'עברית' },
+  { code: 'fa', flag: '🇮🇷', name: 'Persian', nativeName: 'فارسی' },
+  { code: 'sw', flag: '🇰🇪', name: 'Swahili', nativeName: 'Kiswahili' },
+  { code: 'af', flag: '🇿🇦', name: 'Afrikaans', nativeName: 'Afrikaans' },
+  // NEW: Eastern Europe & Central Asia
+  { code: 'uk', flag: '🇺🇦', name: 'Ukrainian', nativeName: 'Українська' },
+  { code: 'bg', flag: '🇧🇬', name: 'Bulgarian', nativeName: 'Български' },
+  { code: 'hr', flag: '🇭🇷', name: 'Croatian', nativeName: 'Hrvatski' },
+  { code: 'sr', flag: '🇷🇸', name: 'Serbian', nativeName: 'Српски' },
+  { code: 'lt', flag: '🇱🇹', name: 'Lithuanian', nativeName: 'Lietuvių' },
+  { code: 'lv', flag: '🇱🇻', name: 'Latvian', nativeName: 'Latviešu' },
+  { code: 'ka', flag: '🇬🇪', name: 'Georgian', nativeName: 'ქართული' },
+  { code: 'az', flag: '🇦🇿', name: 'Azerbaijani', nativeName: 'Azərbaycan' },
+  { code: 'kk', flag: '🇰🇿', name: 'Kazakh', nativeName: 'Қазақ' },
+  { code: 'uz', flag: '🇺🇿', name: 'Uzbek', nativeName: "O'zbek" },
+  // NEW: Regional European
+  { code: 'ca', flag: '🇪🇸', name: 'Catalan', nativeName: 'Català' },
+  { code: 'eu', flag: '🇪🇸', name: 'Basque', nativeName: 'Euskara' },
 ];
 
 const LanguageSelector = () => {
