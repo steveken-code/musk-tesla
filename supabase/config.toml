@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.send-trade-closed]
 verify_jwt = false
+
+[functions.translate-content]
+verify_jwt = false
