@@ -448,10 +448,8 @@ const englishTranslations: Record<string, string> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('app-language');
-    return (saved as Language) || 'en';
-  });
+  // Always default to English - clear any old language preferences
+  const [language, setLanguageState] = useState<Language>('en');
   const [dbTranslations, setDbTranslations] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
