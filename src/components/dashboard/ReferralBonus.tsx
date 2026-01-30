@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Gift, Copy, Check, Users, DollarSign, Share2, TrendingUp, Loader2, AlertTriangle, CheckCircle2, Wallet } from 'lucide-react';
+import { Gift, Copy, Check, Users, DollarSign, Share2, TrendingUp, Loader2, AlertTriangle, CheckCircle2, Wallet, Clock, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,8 +10,21 @@ interface ReferralStats {
   totalReferrals: number;
   paidReferrals: number;
   pendingReferrals: number;
+  activeReferrals: number;
   totalBonus: number;
   pendingBonus: number;
+}
+
+interface ReferralRecord {
+  id: string;
+  referred_user_id: string;
+  status: string;
+  bonus_amount: number;
+  created_at: string;
+  profile?: {
+    full_name: string | null;
+    email: string | null;
+  };
 }
 
 const ReferralBonus = () => {
@@ -21,9 +34,11 @@ const ReferralBonus = () => {
     totalReferrals: 0,
     paidReferrals: 0,
     pendingReferrals: 0,
+    activeReferrals: 0,
     totalBonus: 0,
     pendingBonus: 0,
   });
+  const [referralRecords, setReferralRecords] = useState<ReferralRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasInvested, setHasInvested] = useState(false);
 
@@ -46,8 +61,9 @@ const ReferralBonus = () => {
         const [referralsResult, investmentsResult] = await Promise.all([
           supabase
             .from('referrals')
-            .select('status, bonus_amount')
-            .eq('referrer_user_id', user.id),
+            .select('id, referred_user_id, status, bonus_amount, created_at')
+            .eq('referrer_user_id', user.id)
+            .order('created_at', { ascending: false }),
           supabase
             .from('investments')
             .select('id, status')
@@ -57,21 +73,49 @@ const ReferralBonus = () => {
         ]);
 
         // Process referrals
-        if (!referralsResult.error) {
-          const referrals = referralsResult.data || [];
+        if (!referralsResult.error && referralsResult.data) {
+          const referrals = referralsResult.data;
+          
+          // Get profiles for referred users
+          const referredUserIds = referrals.map(r => r.referred_user_id);
+          let profileMap = new Map<string, { full_name: string | null; email: string | null }>();
+          
+          if (referredUserIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, full_name, email')
+              .in('user_id', referredUserIds);
+            
+            if (profiles) {
+              profiles.forEach(p => {
+                profileMap.set(p.user_id, { full_name: p.full_name, email: p.email });
+              });
+            }
+          }
+          
+          // Enrich referral records with profile data
+          const enrichedRecords: ReferralRecord[] = referrals.map(r => ({
+            ...r,
+            profile: profileMap.get(r.referred_user_id),
+          }));
+          
+          setReferralRecords(enrichedRecords);
+          
           const paidReferrals = referrals.filter(r => r.status === 'paid').length;
-          const pendingReferrals = referrals.filter(r => r.status === 'pending' || r.status === 'eligible').length;
+          const pendingReferrals = referrals.filter(r => r.status === 'pending').length;
+          const activeReferrals = referrals.filter(r => r.status === 'active' || r.status === 'eligible').length;
           const paidBonus = referrals
             .filter(r => r.status === 'paid')
             .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
           const pendingBonus = referrals
-            .filter(r => r.status === 'pending' || r.status === 'eligible')
+            .filter(r => r.status === 'pending' || r.status === 'active' || r.status === 'eligible')
             .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
 
           setStats({
             totalReferrals: referrals.length,
             paidReferrals,
             pendingReferrals,
+            activeReferrals,
             totalBonus: paidBonus,
             pendingBonus,
           });
@@ -105,6 +149,25 @@ const ReferralBonus = () => {
   // Calculate withdrawable amount
   const withdrawableBonus = hasInvested ? stats.totalBonus : 0;
   const totalEarnings = stats.totalBonus + stats.pendingBonus;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-green-500/20 text-green-400 border border-green-500/30">Paid</span>;
+      case 'active':
+      case 'eligible':
+        return <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-electric-blue/20 text-electric-blue border border-electric-blue/30">Active</span>;
+      case 'pending':
+      default:
+        return <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">Pending</span>;
+    }
+  };
+
+  const getUserDisplay = (record: ReferralRecord) => {
+    if (record.profile?.full_name) return record.profile.full_name;
+    if (record.profile?.email) return record.profile.email.split('@')[0];
+    return `User ${record.referred_user_id.slice(0, 6)}...`;
+  };
 
   return (
     <motion.div
@@ -168,10 +231,52 @@ const ReferralBonus = () => {
                 {stats.paidReferrals} paid
               </span>
               <span className="flex items-center gap-1">
-                <Loader2 className="w-3 h-3 text-amber-500" />
+                <CheckCircle2 className="w-3 h-3 text-electric-blue" />
+                {stats.activeReferrals} active
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3 text-amber-500" />
                 {stats.pendingReferrals} pending
               </span>
             </div>
+
+            {/* Referral Tracking Table */}
+            {referralRecords.length > 0 && (
+              <div className="mt-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <UserPlus className="w-4 h-4 text-electric-blue" />
+                  <h4 className="text-xs font-semibold text-foreground">Your Referrals</h4>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {referralRecords.slice(0, 5).map((record) => (
+                    <div key={record.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-700/30 border border-slate-600/30">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-slate-600/50 flex items-center justify-center text-xs font-medium text-foreground">
+                          {getUserDisplay(record).charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-foreground truncate max-w-[100px] sm:max-w-[150px]">
+                            {getUserDisplay(record)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(record.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-green-400">${record.bonus_amount || 500}</span>
+                        {getStatusBadge(record.status)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {referralRecords.length > 5 && (
+                  <p className="text-[10px] text-muted-foreground text-center mt-2">
+                    +{referralRecords.length - 5} more referrals
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Investment requirement warning */}
             {!hasInvested && totalEarnings > 0 && (

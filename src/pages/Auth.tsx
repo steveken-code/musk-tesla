@@ -45,13 +45,13 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  // Auto-populate referral code from URL parameter
+  // Detect referral link and switch to signup mode (but do NOT auto-fill the code)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
     
     if (refCode) {
-      setReferralCode(refCode.toUpperCase());
+      // Only switch to signup mode - user must manually enter the code
       setIsLogin(false);
     }
   }, []);

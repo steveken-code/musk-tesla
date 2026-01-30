@@ -389,6 +389,16 @@ const englishTranslations: Record<string, string> = {
   'cryptoInstructions': 'After sending payment, please send your transaction hash via WhatsApp for verification.',
   'transactionHash': 'Transaction Hash',
   'enterTransactionHash': 'Enter your transaction hash',
+  'walletAddress': 'USDT Wallet Address',
+  'amountToSend': 'Amount to Send',
+  'network': 'Network',
+  'important': 'Important',
+  'cryptoWarning': 'Please ensure only USDT is deposited via this address using the correct network. Any other cryptocurrency sent will NOT be credited to your account.',
+  'howToPayCrypto': 'How to Make USDT Payment:',
+  'cryptoStep1': 'Copy the USDT wallet address shown above',
+  'cryptoStep2': 'Open your crypto wallet (Trust Wallet, Binance, Coinbase, etc.) and select USDT',
+  'cryptoStep3': 'Send the exact amount using TRON (TRC20) network - verify this before confirming!',
+  'cryptoStep4': 'Take a screenshot of the completed transaction and send it via WhatsApp for confirmation',
   
   // Email Verification
   'verifyYourEmail': 'Verify Your Email',
