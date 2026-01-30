@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th' | 'hu' | 'cs' | 'el' | 'pl' | 'ro' | 'da' | 'et' | 'fi' | 'nl' | 'no' | 'sk' | 'sl' | 'sv';
+type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'zh-TW' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th' | 'hu' | 'cs' | 'el' | 'pl' | 'ro' | 'da' | 'et' | 'fi' | 'nl' | 'no' | 'sk' | 'sl' | 'sv' | 'id' | 'ms' | 'tl' | 'my' | 'bn' | 'ta' | 'te' | 'ur' | 'ne' | 'he' | 'fa' | 'sw' | 'af' | 'uk' | 'bg' | 'hr' | 'sr' | 'lt' | 'lv' | 'ka' | 'az' | 'kk' | 'uz' | 'ca' | 'eu';
 
 interface LanguageContextType {
   language: Language;
@@ -1418,6 +1418,33 @@ const translations: Record<Language, Record<string, string>> = {
     'network': 'Rețea', 'walletAddress': 'Adresa portofelului USDT', 'important': 'Important',
     'referralCode': 'Cod de recomandare', 'optional': 'opțional',
   },
+  // NEW LANGUAGES - These use Google Translate, so minimal translations needed (fallback to English)
+  'zh-TW': {},
+  id: {},
+  ms: {},
+  tl: {},
+  my: {},
+  bn: {},
+  ta: {},
+  te: {},
+  ur: {},
+  ne: {},
+  he: {},
+  fa: {},
+  sw: {},
+  af: {},
+  uk: {},
+  bg: {},
+  hr: {},
+  sr: {},
+  lt: {},
+  lv: {},
+  ka: {},
+  az: {},
+  kk: {},
+  uz: {},
+  ca: {},
+  eu: {},
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
