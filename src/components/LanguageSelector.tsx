@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useGoogleTranslate } from '@/hooks/useGoogleTranslate';
 import { Button } from '@/components/ui/button';
-import { Globe, ChevronDown, Check, X, Search } from 'lucide-react';
+import { Globe, ChevronDown, Check, X, Search, Loader2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface Language {
@@ -45,13 +45,21 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const { language, setLanguage } = useLanguage();
-  const { setLanguage: setGoogleTranslate, isReady } = useGoogleTranslate();
+  const { setLanguage: setGoogleTranslate, isReady, isTranslating, getSavedLanguage } = useGoogleTranslate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  
+  // Sync with saved language on mount
+  useEffect(() => {
+    const savedLang = getSavedLanguage();
+    if (savedLang && savedLang !== language) {
+      setLanguage(savedLang as any);
+    }
+  }, []);
   
   const currentLang = languages.find(l => l.code === language) || languages[0];
 
@@ -65,13 +73,6 @@ const LanguageSelector = () => {
       lang.code.toLowerCase().includes(query)
     );
   }, [searchQuery]);
-
-  // Trigger Google Translate on mount if language is not English
-  useEffect(() => {
-    if (language !== 'en' && isReady) {
-      setGoogleTranslate(language);
-    }
-  }, [isReady, language, setGoogleTranslate]);
 
   // Focus search input when dropdown opens
   useEffect(() => {
@@ -152,8 +153,13 @@ const LanguageSelector = () => {
         size="sm" 
         className="gap-2 min-w-[90px] border-border/50 hover:border-electric-blue/50 hover:bg-muted/50 transition-all duration-300"
         onClick={() => setShowDropdown(!showDropdown)}
+        disabled={isTranslating}
       >
-        <Globe className="w-4 h-4 text-electric-blue" />
+        {isTranslating ? (
+          <Loader2 className="w-4 h-4 text-electric-blue animate-spin" />
+        ) : (
+          <Globe className="w-4 h-4 text-electric-blue" />
+        )}
         <span className="hidden sm:inline font-medium">{currentLang.code.toUpperCase()}</span>
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
       </Button>
