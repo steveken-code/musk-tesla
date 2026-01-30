@@ -1,68 +1,59 @@
 
 
-# Remove Built-in Translator - Keep Browser Translation
+# Add Electric Blue Highlight to Investment Form
 
 ## Overview
-Remove the custom Google Translate widget integration and language selector from the app. Users will rely on their browser's built-in translation feature (Chrome, Firefox, Edge, Safari all have this) which works automatically without any blockage.
+When users click "Invest" or "Deposit" buttons, the "Make New Investment" card will display a prominent Tesla electric blue glow effect, making it easy to identify the investment form quickly.
 
-## What Gets Removed
+## Current Behavior
+- **ActionsPanel (sidebar)**: Clicking "Invest" scrolls to form AND triggers highlight
+- **WelcomeCard (main balance card)**: Clicking "Invest" only scrolls - NO highlight
 
-| Component | File | Action |
-|-----------|------|--------|
-| LanguageSelector | `src/components/LanguageSelector.tsx` | Delete file |
-| useGoogleTranslate hook | `src/hooks/useGoogleTranslate.ts` | Delete file |
-| Google Translate CSS | `src/index.css` | Remove lines 458-481 |
-| LanguageSelector import | `src/components/Navbar.tsx` | Remove import and component usage |
-| Reset to English button | `src/components/Footer.tsx` | Remove button |
+## Changes Required
 
-## What Remains
+### 1. Update WelcomeCard Component
+Add the highlight trigger to the WelcomeCard's "Invest" button click handler.
 
-| Feature | Status |
-|---------|--------|
-| SEO language routes (`/de`, `/fr`, etc.) | Kept - database translations still work |
-| `<html lang="">` attribute | Kept - helps browsers detect page language |
-| hreflang tags | Kept - SEO benefits maintained |
-| Pre-translated content | Kept - serves from database for top 10 languages |
+**File:** `src/components/dashboard/WelcomeCard.tsx`
 
-## How Browser Translation Works After This Change
+- Add a new prop `onHighlightInvest` callback
+- Trigger this callback when user clicks "Invest"
 
-1. User visits your site (e.g., English content)
-2. Browser detects `<html lang="en">` attribute
-3. If user's browser is set to another language, browser offers to translate
-4. User clicks "Translate" in browser's address bar
-5. Page is translated automatically
+### 2. Update Dashboard Integration
+Pass the highlight function from Dashboard to WelcomeCard.
 
-## Files Changed
+**File:** `src/pages/Dashboard.tsx`
 
-### 1. Delete Files
-- `src/components/LanguageSelector.tsx`
-- `src/hooks/useGoogleTranslate.ts`
+- Modify the WelcomeCard's `onInvestClick` to also trigger `setHighlightInvestForm(true)`
+- Add the timeout to remove highlight after 2.5 seconds (matching existing behavior)
 
-### 2. Modify `src/components/Navbar.tsx`
-Remove:
-- Import of LanguageSelector
-- Both usages of `<LanguageSelector />` (desktop and mobile)
+## Visual Effect
+The investment form will show:
+- **Electric blue ring**: `ring-2 ring-electric-blue/40`
+- **Blue border accent**: `border-electric-blue/30`
+- **Soft blue glow**: `shadow-[0_0_30px_rgba(59,130,246,0.15)]`
+- **Duration**: 2.5 seconds fade out
 
-### 3. Modify `src/components/Footer.tsx`
-Remove:
-- The "Reset to English" button (lines 159-171)
+## Technical Details
 
-### 4. Modify `src/index.css`
-Remove Google Translate hiding CSS (lines 458-481):
-```css
-/* These will be removed */
-.goog-te-banner-frame { ... }
-.skiptranslate { ... }
-.goog-te-spinner-pos { ... }
-#google_translate_element { ... }
+### Dashboard.tsx Changes (Line ~1185)
+```typescript
+onInvestClick={() => {
+  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+  setHighlightInvestForm(true);
+  setTimeout(() => setHighlightInvestForm(false), 2500);
+}}
 ```
 
-## Result
+### No Changes Needed
+- The investment form card already has the conditional highlight styling (line 1310)
+- The `highlightInvestForm` state already exists (line 616)
+- The electric blue color is already defined in Tailwind config
 
-After implementation:
-- Cleaner codebase (2 files removed, 3 files simplified)
-- No custom translation UI in navbar
-- Users can use Chrome/Firefox/Edge/Safari's built-in "Translate this page" feature
-- SEO routes (`/de`, `/fr`, etc.) still serve pre-translated content for search engines
-- Zero interference with browser translation
+## Summary
+| Component | Before | After |
+|-----------|--------|-------|
+| WelcomeCard "Invest" | Scroll only | Scroll + Blue Glow |
+| ActionsPanel "Invest" | Scroll + Blue Glow | No change |
+| Investment Form | Already styled | No change |
 
