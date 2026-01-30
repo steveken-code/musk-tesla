@@ -1184,6 +1184,8 @@ const Dashboard = () => {
               greeting={greeting}
               onInvestClick={() => {
                 document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+                setHighlightInvestForm(true);
+                setTimeout(() => setHighlightInvestForm(false), 2500);
               }}
               onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
               t={t}
