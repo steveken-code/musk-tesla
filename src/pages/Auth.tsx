@@ -45,6 +45,17 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  // Auto-populate referral code from URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    
+    if (refCode) {
+      setReferralCode(refCode.toUpperCase());
+      setIsLogin(false);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
