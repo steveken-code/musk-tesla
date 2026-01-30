@@ -123,6 +123,11 @@ interface Profile {
   avatar_url: string | null;
 }
 
+interface ReferredBonusData {
+  amount: number;
+  status: string;
+}
+
 const USD_TO_RUB = 96.5;
 
 // localStorage keys for form persistence
@@ -610,6 +615,11 @@ const Dashboard = () => {
   const [processingWithdrawal, setProcessingWithdrawal] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  
+  // Referral bonus state - for referred user's $100 bonus
+  const [referredBonus, setReferredBonus] = useState<ReferredBonusData | null>(null);
+  // Referrer bonus state - for user who referred others ($500 per referral)
+  const [referrerBonusTotal, setReferrerBonusTotal] = useState(0);
   const [countrySearch, setCountrySearch] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -720,7 +730,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [investmentsRes, profileRes, withdrawalsRes] = await Promise.all([
+      const [investmentsRes, profileRes, withdrawalsRes, referredBonusRes, referrerBonusRes] = await Promise.all([
         supabase
           .from('investments')
           .select('*')
@@ -735,7 +745,18 @@ const Dashboard = () => {
           .from('withdrawals')
           .select('*')
           .eq('user_id', user!.id)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
+        // Check if current user was referred (to get their $100 bonus)
+        supabase
+          .from('referrals')
+          .select('referred_bonus, status')
+          .eq('referred_user_id', user!.id)
+          .maybeSingle(),
+        // Get referrer bonuses (for users who referred others)
+        supabase
+          .from('referrals')
+          .select('bonus_amount, status')
+          .eq('referrer_user_id', user!.id)
       ]);
 
       if (investmentsRes.data) {
@@ -749,6 +770,22 @@ const Dashboard = () => {
         // Profile completion is now optional - users can update anytime via header/sidebar
       }
       if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data as Withdrawal[]);
+      
+      // Set referred bonus (the $100 the user received for signing up with a code)
+      if (referredBonusRes.data) {
+        setReferredBonus({
+          amount: referredBonusRes.data.referred_bonus || 100,
+          status: referredBonusRes.data.status || 'pending'
+        });
+      }
+      
+      // Calculate total referrer bonus ($500 per paid referral)
+      if (referrerBonusRes.data) {
+        const paidReferralBonus = referrerBonusRes.data
+          .filter(r => r.status === 'paid')
+          .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
+        setReferrerBonusTotal(paidReferralBonus);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -1043,11 +1080,26 @@ const Dashboard = () => {
     .filter(w => w.status === 'pending' || w.status === 'on_hold')
     .reduce((sum, w) => sum + Number(w.amount), 0);
   
+  // Check if user has any active/completed investment (required to unlock referral bonuses)
+  const hasInvested = investments.some(i => i.status === 'active' || i.status === 'completed');
+  
+  // Calculate withdrawable referral bonuses
+  // Referrer bonus: $500 per paid referral (only withdrawable if user has invested)
+  const referrerBonusWithdrawable = hasInvested ? referrerBonusTotal : 0;
+  // Referred bonus: $100 signup bonus (only withdrawable if user has invested AND status is 'active' or 'paid')
+  const referredBonusWithdrawable = hasInvested && referredBonus && (referredBonus.status === 'active' || referredBonus.status === 'paid') 
+    ? referredBonus.amount 
+    : 0;
+  
   // Available for withdrawal:
   // - If completed: full portfolio (investment + profit) from completed investments
   // - If ongoing: only profit from active investments
+  // - Plus referral bonuses (both referrer and referred)
   // - Subtract already withdrawn amounts and pending withdrawals
-  const availableForWithdrawal = Math.max(0, completedInvestmentTotal + activeProfit - totalWithdrawn - pendingWithdrawals);
+  const availableForWithdrawal = Math.max(0, 
+    completedInvestmentTotal + activeProfit + referrerBonusWithdrawable + referredBonusWithdrawable 
+    - totalWithdrawn - pendingWithdrawals
+  );
   
   // Portfolio balance = Total Investment + Total Profit - Already Withdrawn (for display)
   const portfolioBalance = Math.max(0, totalInvested + totalProfit - totalWithdrawn);

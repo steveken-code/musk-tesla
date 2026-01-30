@@ -15,6 +15,12 @@ interface ReferralStats {
   pendingBonus: number;
 }
 
+interface ReferredBonusInfo {
+  id: string;
+  referred_bonus: number;
+  status: string;
+}
+
 interface ReferralRecord {
   id: string;
   referred_user_id: string;
@@ -41,6 +47,7 @@ const ReferralBonus = () => {
   const [referralRecords, setReferralRecords] = useState<ReferralRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasInvested, setHasInvested] = useState(false);
+  const [wasReferred, setWasReferred] = useState<ReferredBonusInfo | null>(null);
 
   // Generate unique referral link based on user ID - always use production domain
   const PRODUCTION_DOMAIN = 'https://msktesla.net';
@@ -57,8 +64,8 @@ const ReferralBonus = () => {
       }
 
       try {
-        // Fetch referrals and investments in parallel
-        const [referralsResult, investmentsResult] = await Promise.all([
+        // Fetch referrals, investments, and check if user was referred in parallel
+        const [referralsResult, investmentsResult, wasReferredResult] = await Promise.all([
           supabase
             .from('referrals')
             .select('id, referred_user_id, status, bonus_amount, created_at')
@@ -69,7 +76,13 @@ const ReferralBonus = () => {
             .select('id, status')
             .eq('user_id', user.id)
             .in('status', ['active', 'completed'])
-            .limit(1)
+            .limit(1),
+          // Check if current user was referred by someone (to show their $100 bonus)
+          supabase
+            .from('referrals')
+            .select('id, referred_bonus, status')
+            .eq('referred_user_id', user.id)
+            .maybeSingle()
         ]);
 
         // Process referrals
@@ -124,6 +137,11 @@ const ReferralBonus = () => {
         // Check investment status
         if (!investmentsResult.error) {
           setHasInvested(investmentsResult.data && investmentsResult.data.length > 0);
+        }
+        
+        // Check if user was referred (received a signup bonus)
+        if (!wasReferredResult.error && wasReferredResult.data) {
+          setWasReferred(wasReferredResult.data);
         }
       } catch (err) {
         console.error('Error:', err);
@@ -181,6 +199,36 @@ const ReferralBonus = () => {
       <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-electric-blue/5 rounded-full blur-2xl" />
 
       <div className="relative z-10">
+        {/* Show welcome bonus if user was referred */}
+        {wasReferred && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-green-500/20">
+                <Gift className="w-4 h-4 text-green-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-green-400">
+                  Welcome Bonus: ${wasReferred.referred_bonus || 100}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {wasReferred.status === 'active' || wasReferred.status === 'paid' 
+                    ? '✓ Ready to withdraw' 
+                    : hasInvested 
+                      ? 'Bonus unlocked! Processing...'
+                      : 'Invest to unlock this bonus'}
+                </p>
+              </div>
+              {(wasReferred.status === 'active' || wasReferred.status === 'paid') && (
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 sm:p-2.5 rounded-xl bg-electric-blue/20 ring-1 ring-electric-blue/30">
