@@ -1,288 +1,210 @@
 
 
-# Complete Language Selector Redesign with Google Translate Integration
+# Language Selector Enhancements
 
 ## Overview
-Redesign the language selector with a professional search bar interface and integrate Google Translate API to dynamically translate ALL content on the page when a language is selected.
+Enhance the language selector with keyboard navigation, ensure localStorage persistence triggers Google Translate on page load, and update all red (primary) styling to Tesla Electric Blue for consistency with the design standards.
 
 ---
 
-## Current State Analysis
+## Issues Identified
 
-| Component | Current Status |
-|-----------|----------------|
-| `LanguageSelector.tsx` | 28 languages, region-grouped, no search bar |
-| `LanguageContext.tsx` | 1479 lines of hardcoded translations - limited coverage |
-| Google Translate API | Not integrated |
-| Content Coverage | Only specific keys translated, not all page content |
-
-**Key Issue:** The current system only translates specific text keys (like buttons, labels), NOT the entire page content like testimonials, descriptions, dynamic data, etc.
-
----
-
-## Solution: Google Translate Widget Integration
-
-Instead of calling a paid Google Translate API (which requires API keys and has costs), we'll integrate the **free Google Translate Widget** that translates the entire page instantly.
-
-**Benefits:**
-- Translates ALL content including dynamic text
-- No API key needed
-- No per-character costs
-- Works on entire DOM
-- Professional and reliable
-- Same technology Google uses on websites
+| Issue | Current State | Required Change |
+|-------|---------------|-----------------|
+| Keyboard Navigation | Not implemented | Add arrow key support |
+| Persistence on Reload | Language saved but Google Translate not triggered | Trigger Google Translate on mount if language != 'en' |
+| Red Styling | Uses `text-primary` (Tesla Red) | Change to `text-electric-blue` |
 
 ---
 
 ## Changes Summary
 
-### 1. Redesign LanguageSelector Component
+### 1. Add Keyboard Navigation
 **File:** `src/components/LanguageSelector.tsx`
 
-**New Features:**
-- Search bar with magnifying glass icon
-- Filtered language list based on search query
-- Flat list design (no collapsible regions)
-- Professional styling with smooth animations
-- "Powered by Google Translate" badge
-- Keyboard accessible with arrow navigation
+Add state for tracking the focused index and keyboard event handlers:
 
-**UI Design:**
-```text
-+----------------------------------+
-|  🌐 Select Language         [X] |
-|  +----------------------------+ |
-|  | 🔍 Search languages...     | |
-|  +----------------------------+ |
-|  +----------------------------+ |
-|  | 🇺🇸 English            ✓  | |
-|  | 🇫🇷 Français               | |
-|  | 🇩🇪 Deutsch                | |
-|  | 🇪🇸 Español                | |
-|  | 🇷🇺 Русский                | |
-|  | ... (filtered results)     | |
-|  +----------------------------+ |
-|  Powered by Google Translate    |
-+----------------------------------+
-```
+```tsx
+const [focusedIndex, setFocusedIndex] = useState(-1);
 
----
-
-### 2. Integrate Google Translate Widget
-**File:** `index.html` + new hook
-
-**How It Works:**
-1. Load Google Translate script in index.html
-2. Create a hidden Google Translate element
-3. When user selects a language, trigger the Google Translate change
-4. Google Translate translates the ENTIRE page automatically
-
-**Implementation:**
-```html
-<!-- index.html - Add Google Translate script -->
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      autoDisplay: false,
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
+// Add to the existing useEffect for keydown handling
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    setShowDropdown(false);
+    setSearchQuery('');
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setFocusedIndex(prev => 
+      prev < filteredLanguages.length - 1 ? prev + 1 : 0
+    );
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setFocusedIndex(prev => 
+      prev > 0 ? prev - 1 : filteredLanguages.length - 1
+    );
+  } else if (e.key === 'Enter' && focusedIndex >= 0) {
+    e.preventDefault();
+    handleSelect(filteredLanguages[focusedIndex].code);
   }
-</script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-<!-- Hidden element for Google Translate -->
-<div id="google_translate_element" style="display: none;"></div>
-```
-
----
-
-### 3. Create Google Translate Hook
-**New File:** `src/hooks/useGoogleTranslate.ts`
-
-```typescript
-// Hook to programmatically change Google Translate language
-export const useGoogleTranslate = () => {
-  const setLanguage = (langCode: string) => {
-    // Map our language codes to Google Translate codes
-    const googleLangMap: Record<string, string> = {
-      'en': 'en',
-      'ru': 'ru',
-      'fr': 'fr',
-      'de': 'de',
-      'es': 'es',
-      // ... all 28+ languages
-    };
-    
-    // Trigger Google Translate
-    const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-    if (gtCombo) {
-      gtCombo.value = googleLangMap[langCode] || langCode;
-      gtCombo.dispatchEvent(new Event('change'));
-    }
-  };
-
-  return { setLanguage };
 };
 ```
 
+Add auto-scroll for focused item and visual focus indicator.
+
 ---
 
-### 4. Hide Google Translate UI (Use Custom UI Only)
-**File:** `src/index.css`
+### 2. Trigger Google Translate on Page Load
+**File:** `src/components/LanguageSelector.tsx`
 
-Add CSS to hide Google's default translation bar while keeping functionality:
-```css
-/* Hide Google Translate bar - we use our own UI */
-.goog-te-banner-frame { display: none !important; }
-body { top: 0 !important; }
-.skiptranslate { display: none !important; }
-.goog-te-spinner-pos { display: none !important; }
+Add useEffect to trigger Google Translate when component mounts if the stored language is not English:
+
+```tsx
+// Trigger Google Translate on mount if language is not English
+useEffect(() => {
+  if (language !== 'en') {
+    // Small delay to ensure Google Translate is ready
+    const timeout = setTimeout(() => {
+      setGoogleTranslate(language);
+    }, 1500);
+    return () => clearTimeout(timeout);
+  }
+}, []); // Run only on mount
 ```
 
 ---
 
-## Files to Modify/Create
+### 3. Change Red to Electric Blue
+**File:** `src/components/LanguageSelector.tsx`
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/LanguageSelector.tsx` | Modify | Complete redesign with search bar |
-| `src/hooks/useGoogleTranslate.ts` | Create | Hook for Google Translate control |
-| `index.html` | Modify | Add Google Translate script |
-| `src/index.css` | Modify | Hide Google Translate UI elements |
+Update all `primary` color references to `electric-blue`:
+
+| Line | Current | Updated |
+|------|---------|---------|
+| 110 | `text-primary` | `text-electric-blue` |
+| 131 | `text-primary` | `text-electric-blue` |
+| 152 | `focus:ring-primary/50 focus:border-primary/50` | `focus:ring-electric-blue/50 focus:border-electric-blue/50` |
+| 174 | `bg-primary/10 border-l-primary` | `bg-electric-blue/10 border-l-electric-blue` |
+| 180 | `text-primary` | `text-electric-blue` |
+| 186 | `text-primary` | `text-electric-blue` |
 
 ---
 
-## Technical Implementation Details
+## Files to Modify
 
-### LanguageSelector.tsx Redesign
+| File | Changes |
+|------|---------|
+| `src/components/LanguageSelector.tsx` | Add keyboard navigation, persistence trigger, change red to electric-blue |
+
+---
+
+## Technical Implementation
+
+### Complete Updated LanguageSelector Structure
 
 ```tsx
 const LanguageSelector = () => {
   const { language, setLanguage } = useLanguage();
-  const { setLanguage: setGoogleTranslate } = useGoogleTranslate();
+  const { setLanguage: setGoogleTranslate, isReady } = useGoogleTranslate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   
-  // Filter languages based on search
-  const filteredLanguages = useMemo(() => {
-    if (!searchQuery.trim()) return languages;
-    const query = searchQuery.toLowerCase();
-    return languages.filter(lang => 
-      lang.label.toLowerCase().includes(query) ||
-      lang.name.toLowerCase().includes(query) ||
-      lang.code.toLowerCase().includes(query)
-    );
+  // Trigger Google Translate on mount if language is not English
+  useEffect(() => {
+    if (language !== 'en' && isReady) {
+      setGoogleTranslate(language);
+    }
+  }, [isReady]);
+
+  // Reset focused index when search changes
+  useEffect(() => {
+    setFocusedIndex(-1);
   }, [searchQuery]);
 
-  const handleSelect = (code: string) => {
-    setLanguage(code as any);
-    setGoogleTranslate(code); // Trigger full page translation
-    setShowDropdown(false);
-    setSearchQuery('');
-  };
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!showDropdown) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          setShowDropdown(false);
+          setSearchQuery('');
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setFocusedIndex(prev => 
+            prev < filteredLanguages.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setFocusedIndex(prev => 
+            prev > 0 ? prev - 1 : filteredLanguages.length - 1
+          );
+          break;
+        case 'Enter':
+          if (focusedIndex >= 0 && focusedIndex < filteredLanguages.length) {
+            e.preventDefault();
+            handleSelect(filteredLanguages[focusedIndex].code);
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showDropdown, focusedIndex, filteredLanguages]);
+
+  // Auto-scroll focused item into view
+  useEffect(() => {
+    if (focusedIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('button');
+      items[focusedIndex]?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [focusedIndex]);
 
   return (
-    <div className="relative">
-      <Button onClick={() => setShowDropdown(!showDropdown)}>
-        <Globe /> {currentLang?.code.toUpperCase()}
-      </Button>
-
-      {showDropdown && createPortal(
-        <div className="fixed inset-0 z-[9999]">
-          {/* Overlay */}
-          <div onClick={() => setShowDropdown(false)} />
-          
-          {/* Dropdown */}
-          <div className="dropdown-panel">
-            {/* Header */}
-            <div className="header">
-              <Globe /> Select Language
-              <button onClick={() => setShowDropdown(false)}><X /></button>
-            </div>
-            
-            {/* Search Bar */}
-            <div className="search-container">
-              <Search className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search languages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')}><X /></button>
-              )}
-            </div>
-            
-            {/* Language List */}
-            <div className="language-list">
-              {filteredLanguages.map(lang => (
-                <button 
-                  key={lang.code}
-                  onClick={() => handleSelect(lang.code)}
-                  className={language === lang.code ? 'selected' : ''}
-                >
-                  <span>{lang.label.split(' ')[0]}</span>
-                  <span>{lang.label.split(' ').slice(1).join(' ')}</span>
-                  {language === lang.code && <Check />}
-                </button>
-              ))}
-              
-              {filteredLanguages.length === 0 && (
-                <div className="no-results">
-                  No languages found for "{searchQuery}"
-                </div>
-              )}
-            </div>
-            
-            {/* Footer */}
-            <div className="footer">
-              <span>Powered by Google Translate</span>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
+    // Component JSX with electric-blue styling
   );
 };
 ```
 
 ---
 
-## What Gets Translated
+## Visual Changes
 
-| Content Type | Current System | With Google Translate |
-|--------------|----------------|----------------------|
-| Navigation labels | Yes | Yes |
-| Button text | Yes | Yes |
-| Form labels | Yes | Yes |
-| Testimonials | No | Yes |
-| Dynamic content | No | Yes |
-| Error messages | Partial | Yes |
-| Tooltips | No | Yes |
-| ALL visible text | No | Yes |
+### Before (Red/Primary)
+- Globe icon: Red
+- Selected language highlight: Red border, red text
+- Search focus ring: Red
+- Checkmark: Red
+
+### After (Electric Blue)
+- Globe icon: Electric Blue
+- Selected language highlight: Electric Blue border, blue text
+- Search focus ring: Electric Blue
+- Checkmark: Electric Blue
+- Focused item (keyboard): Ring highlight in Electric Blue
 
 ---
 
-## Languages Supported (28+)
+## Accessibility Improvements
 
-The selector will include all current languages with proper search:
-- Europe & Americas: English, German, French, Spanish, Italian, Dutch, Portuguese, Polish, Czech, Slovak, Hungarian, Romanian, Greek, Slovenian, Estonian
-- Nordic: Swedish, Norwegian, Danish, Finnish
-- Asia: Chinese, Japanese, Korean, Hindi, Thai, Vietnamese
-- Middle East & Russia: Arabic, Turkish, Russian
+1. **Arrow Key Navigation**: Users can navigate the language list with Up/Down arrows
+2. **Enter to Select**: Press Enter to select the focused language
+3. **Escape to Close**: Press Escape to close the dropdown
+4. **Focus Visible**: Keyboard-focused items have a visible ring indicator
+5. **Auto-scroll**: Focused items automatically scroll into view
 
 ---
 
 ## Result After Changes
 
-1. **Professional Search Bar** - Users can quickly find their language by typing
-2. **Full Page Translation** - ALL content translates instantly using Google Translate
-3. **Clean Custom UI** - Google's default bar hidden, using our custom dropdown
-4. **Seamless Experience** - Select language once, entire site translates
-5. **No API Costs** - Uses free Google Translate widget
-6. **Persistent Selection** - Language choice saved in localStorage
+1. **Keyboard Accessible** - Full arrow key navigation with visual focus indicator
+2. **Persistent Selection** - Language choice triggers Google Translate on page reload
+3. **Consistent Styling** - All accents use Tesla Electric Blue instead of red
+4. **Professional UX** - Matches the dashboard's electric-blue visual standard
 
