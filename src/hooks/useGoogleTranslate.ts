@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 // Language code mapping to Google Translate codes
 const googleLangMap: Record<string, string> = {
-  // Original languages
   'en': 'en',
   'de': 'de',
   'fr': 'fr',
@@ -31,23 +30,19 @@ const googleLangMap: Record<string, string> = {
   'ar': 'ar',
   'tr': 'tr',
   'ru': 'ru',
-  // NEW: Southeast Asia & Pacific
   'id': 'id',
   'ms': 'ms',
   'tl': 'tl',
   'my': 'my',
-  // NEW: South Asia
   'bn': 'bn',
   'ta': 'ta',
   'te': 'te',
   'ur': 'ur',
   'ne': 'ne',
-  // NEW: Middle East & Africa
-  'he': 'iw',  // Google uses 'iw' for Hebrew
+  'he': 'iw',
   'fa': 'fa',
   'sw': 'sw',
   'af': 'af',
-  // NEW: Eastern Europe & Central Asia
   'uk': 'uk',
   'bg': 'bg',
   'hr': 'hr',
@@ -58,9 +53,7 @@ const googleLangMap: Record<string, string> = {
   'az': 'az',
   'kk': 'kk',
   'uz': 'uz',
-  // NEW: Traditional Chinese
   'zh-TW': 'zh-TW',
-  // NEW: Regional European
   'ca': 'ca',
   'eu': 'eu',
 };
@@ -70,11 +63,32 @@ const STORAGE_KEY = 'google-translate-language';
 export const useGoogleTranslate = () => {
   const [isReady, setIsReady] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
+  const hasRestoredRef = useRef(false);
+
+  // Trigger translation with the Google Translate widget
+  const triggerTranslation = useCallback((langCode: string) => {
+    const googleCode = googleLangMap[langCode] || langCode;
+    const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    
+    if (gtCombo) {
+      setIsTranslating(true);
+      gtCombo.value = googleCode;
+      gtCombo.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      setTimeout(() => {
+        setIsTranslating(false);
+      }, 2500);
+      return true;
+    }
+    return false;
+  }, []);
 
   // Check if Google Translate widget is ready
   useEffect(() => {
     const checkReady = () => {
       const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      const gtFrame = document.querySelector('.goog-te-menu-frame');
+      
       if (gtCombo) {
         setIsReady(true);
         return true;
@@ -82,20 +96,19 @@ export const useGoogleTranslate = () => {
       return false;
     };
 
-    // Check immediately
     if (checkReady()) return;
 
-    // Poll for Google Translate to be ready with longer timeout
+    // Poll more frequently for widget readiness
     const interval = setInterval(() => {
       if (checkReady()) {
         clearInterval(interval);
       }
-    }, 300);
+    }, 200);
 
-    // Cleanup after 15 seconds
+    // Extend timeout to 20 seconds
     const timeout = setTimeout(() => {
       clearInterval(interval);
-    }, 15000);
+    }, 20000);
 
     return () => {
       clearInterval(interval);
@@ -105,29 +118,31 @@ export const useGoogleTranslate = () => {
 
   // Restore language on mount when Google Translate is ready
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || hasRestoredRef.current) return;
 
     const savedLang = localStorage.getItem(STORAGE_KEY);
     if (savedLang && savedLang !== 'en') {
-      // Give Google Translate time to fully initialize
+      hasRestoredRef.current = true;
+      
+      // Wait longer for React to fully render all content (2 seconds)
       const timeout = setTimeout(() => {
-        const googleCode = googleLangMap[savedLang] || savedLang;
-        const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-        if (gtCombo) {
-          setIsTranslating(true);
-          gtCombo.value = googleCode;
-          gtCombo.dispatchEvent(new Event('change', { bubbles: true }));
-          
-          // Wait for translation to complete
-          setTimeout(() => {
-            setIsTranslating(false);
-          }, 2000);
-        }
-      }, 1000);
+        triggerTranslation(savedLang);
+      }, 2000);
 
       return () => clearTimeout(timeout);
     }
-  }, [isReady]);
+  }, [isReady, triggerTranslation]);
+
+  // Re-trigger translation for dynamic content (call after route changes or new content loads)
+  const retriggerTranslation = useCallback(() => {
+    const savedLang = localStorage.getItem(STORAGE_KEY);
+    if (savedLang && savedLang !== 'en') {
+      // Small delay to allow DOM updates
+      setTimeout(() => {
+        triggerTranslation(savedLang);
+      }, 500);
+    }
+  }, [triggerTranslation]);
 
   const setLanguage = useCallback((langCode: string) => {
     const googleCode = googleLangMap[langCode] || langCode;
@@ -166,13 +181,11 @@ export const useGoogleTranslate = () => {
     // Set the new language
     setIsTranslating(true);
     
-    // Try to find and trigger Google Translate combo
     const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (gtCombo) {
       gtCombo.value = googleCode;
       gtCombo.dispatchEvent(new Event('change', { bubbles: true }));
       
-      // Wait for translation to complete
       setTimeout(() => {
         setIsTranslating(false);
       }, 2500);
@@ -203,6 +216,7 @@ export const useGoogleTranslate = () => {
 
   const resetToOriginal = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    hasRestoredRef.current = false;
     
     // Clear translation cookies
     document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -227,5 +241,12 @@ export const useGoogleTranslate = () => {
     return localStorage.getItem(STORAGE_KEY) || 'en';
   }, []);
 
-  return { setLanguage, resetToOriginal, isReady, isTranslating, getSavedLanguage };
+  return { 
+    setLanguage, 
+    resetToOriginal, 
+    isReady, 
+    isTranslating, 
+    getSavedLanguage,
+    retriggerTranslation 
+  };
 };
