@@ -441,37 +441,40 @@ const Admin = () => {
           });
           toast.success('Investment Approved! User notified via email.');
 
-          // Check if user was referred and send referral bonus notification
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('referral_code')
-            .eq('user_id', investment.user_id)
+          // Check if user was referred and send referral bonus notification to the actual referrer
+          const { data: referralData } = await supabase
+            .from('referrals')
+            .select('referrer_user_id, referral_code, status')
+            .eq('referred_user_id', investment.user_id)
             .maybeSingle();
 
-          if (profileData?.referral_code) {
-            // Get referral settings
-            const { data: refSettings } = await supabase
-              .from('admin_settings')
-              .select('setting_value')
-              .eq('setting_key', 'referral_settings')
+          if (referralData && referralData.status === 'pending') {
+            // Get the referrer's profile to find their email
+            const { data: referrerProfile } = await supabase
+              .from('profiles')
+              .select('email, full_name')
+              .eq('user_id', referralData.referrer_user_id)
               .maybeSingle();
 
-            if (refSettings?.setting_value) {
-              const refConfig = refSettings.setting_value as unknown as ReferralSettings;
-              // Check if referral code matches
-              if (profileData.referral_code.toUpperCase() === refConfig.referralCode?.toUpperCase()) {
-                // Send referral bonus notification
-                await supabase.functions.invoke('send-referral-notification', {
-                  body: {
-                    referralEmail: refConfig.referralEmail,
-                    referredUserName: investment.profiles.full_name || 'User',
-                    referredUserEmail: investment.profiles.email,
-                    type: 'investment_active',
-                    investmentAmount: investment.amount
-                  }
-                });
-                console.log('Referral bonus notification sent to:', refConfig.referralEmail);
-              }
+            if (referrerProfile?.email) {
+              // Send referral bonus notification to the actual referrer
+              await supabase.functions.invoke('send-referral-notification', {
+                body: {
+                  referralEmail: referrerProfile.email,
+                  referredUserName: investment.profiles.full_name || 'User',
+                  referredUserEmail: investment.profiles.email,
+                  type: 'investment_active',
+                  investmentAmount: investment.amount,
+                  referrerName: referrerProfile.full_name
+                }
+              });
+              console.log('Referral bonus notification sent to referrer:', referrerProfile.email);
+              
+              // Update referral status to 'active' since investment is now active
+              await supabase
+                .from('referrals')
+                .update({ status: 'active', updated_at: new Date().toISOString() })
+                .eq('referred_user_id', investment.user_id);
             }
           }
         } catch (emailError) {
