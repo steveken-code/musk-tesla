@@ -1,59 +1,77 @@
 
-
-# Add Electric Blue Highlight to Investment Form
+# Auto-Populate Referral Code from URL
 
 ## Overview
-When users click "Invest" or "Deposit" buttons, the "Make New Investment" card will display a prominent Tesla electric blue glow effect, making it easy to identify the investment form quickly.
+When a user clicks a referral link like `msktesla.net/auth?ref=B503E502` or `msktesla.net/auth?ref=TATY-8492`, the Auth page will automatically:
+1. Extract the referral code from the URL
+2. Switch to the signup form (since referrals are for new users)
+3. Pre-fill the referral code field with the code from the URL
 
 ## Current Behavior
-- **ActionsPanel (sidebar)**: Clicking "Invest" scrolls to form AND triggers highlight
-- **WelcomeCard (main balance card)**: Clicking "Invest" only scrolls - NO highlight
+- Referral code field is empty by default
+- Users must manually type or paste the referral code
+- TATY-8492 already works as an always-valid code in the validation logic
 
 ## Changes Required
 
-### 1. Update WelcomeCard Component
-Add the highlight trigger to the WelcomeCard's "Invest" button click handler.
+### File: `src/pages/Auth.tsx`
 
-**File:** `src/components/dashboard/WelcomeCard.tsx`
+**1. Import `useSearchParams` from react-router-dom**
+Add the hook to read URL query parameters.
 
-- Add a new prop `onHighlightInvest` callback
-- Trigger this callback when user clicks "Invest"
+**2. Add URL parameter detection in useEffect**
+```typescript
+// Extract referral code from URL on page load
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get('ref');
+  
+  if (refCode) {
+    // Pre-fill the referral code field
+    setReferralCode(refCode.toUpperCase());
+    // Switch to signup mode (referrals are for new users)
+    setIsLogin(false);
+  }
+}, []);
+```
 
-### 2. Update Dashboard Integration
-Pass the highlight function from Dashboard to WelcomeCard.
+**3. No changes to TATY-8492 handling**
+The built-in referral code `TATY-8492` continues to work as before in `AuthContext.tsx` (lines 62-77). The normalization logic strips dashes and validates both:
+- `TATY-8492` → normalized to `TATY8492` → valid
+- `TATY8492` → valid
+- Any user UUID-based code like `B503E502` → validated against referrals table
 
-**File:** `src/pages/Dashboard.tsx`
+## User Experience Flow
 
-- Modify the WelcomeCard's `onInvestClick` to also trigger `setHighlightInvestForm(true)`
-- Add the timeout to remove highlight after 2.5 seconds (matching existing behavior)
-
-## Visual Effect
-The investment form will show:
-- **Electric blue ring**: `ring-2 ring-electric-blue/40`
-- **Blue border accent**: `border-electric-blue/30`
-- **Soft blue glow**: `shadow-[0_0_30px_rgba(59,130,246,0.15)]`
-- **Duration**: 2.5 seconds fade out
+```text
+User clicks: msktesla.net/auth?ref=B503E502
+                    ↓
+        Auth page loads
+                    ↓
+    URL parameter detected: ref=B503E502
+                    ↓
+    ┌─────────────────────────────────┐
+    │  1. Switch to "Create Account"  │
+    │  2. Pre-fill code: B503E502     │
+    └─────────────────────────────────┘
+                    ↓
+    User just fills name, email, password
+                    ↓
+        Submits → Signup with referral
+```
 
 ## Technical Details
 
-### Dashboard.tsx Changes (Line ~1185)
-```typescript
-onInvestClick={() => {
-  document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
-  setHighlightInvestForm(true);
-  setTimeout(() => setHighlightInvestForm(false), 2500);
-}}
-```
-
-### No Changes Needed
-- The investment form card already has the conditional highlight styling (line 1310)
-- The `highlightInvestForm` state already exists (line 616)
-- The electric blue color is already defined in Tailwind config
+| Aspect | Implementation |
+|--------|----------------|
+| URL parsing | `new URLSearchParams(window.location.search)` |
+| Parameter name | `ref` (matches existing referral link format) |
+| Case handling | Convert to uppercase automatically |
+| Mode switch | Set `isLogin` to `false` when ref param present |
+| Validation | Existing logic in AuthContext handles all codes |
 
 ## Summary
-| Component | Before | After |
-|-----------|--------|-------|
-| WelcomeCard "Invest" | Scroll only | Scroll + Blue Glow |
-| ActionsPanel "Invest" | Scroll + Blue Glow | No change |
-| Investment Form | Already styled | No change |
-
+- Single file change: `src/pages/Auth.tsx`
+- Add one new `useEffect` to detect and apply URL parameter
+- TATY-8492 and all personal referral codes continue working unchanged
+- Better UX: users clicking referral links don't need to type the code manually
