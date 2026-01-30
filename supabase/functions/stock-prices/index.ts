@@ -29,6 +29,16 @@ interface FinnhubQuote {
   t: number;  // Timestamp
 }
 
+interface FinnhubCandle {
+  v: number[];  // Volume array
+  c: number[];  // Close prices
+  h: number[];  // High prices
+  l: number[];  // Low prices
+  o: number[];  // Open prices
+  t: number[];  // Timestamps
+  s: string;    // Status
+}
+
 const stockInfo: Record<string, string> = {
   'TSLA': 'Tesla, Inc.',
   'SPY': 'S&P 500 ETF',
@@ -46,7 +56,7 @@ const symbols = Object.keys(stockInfo);
 // Simple in-memory cache to avoid rate limits
 let cachedData: { stocks: StockQuote[]; lastUpdated: string; marketStatus: string } | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 60000; // 60 seconds cache - increased to avoid rate limiting
+const CACHE_DURATION = 60000; // 60 seconds cache
 
 // Helper function to delay execution
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -75,6 +85,35 @@ function getMarketStatus(): string {
   if (timeValue >= 960 && timeValue < 1200) return 'after-hours';
   
   return 'closed';
+}
+
+async function fetchVolumeData(symbol: string, apiKey: string): Promise<number> {
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - 86400; // 24 hours ago
+    
+    const response = await fetch(
+      `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${now}&token=${apiKey}`
+    );
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch volume for ${symbol}: ${response.status}`);
+      return 0;
+    }
+    
+    const data: FinnhubCandle = await response.json();
+    
+    // Check if we got valid candle data
+    if (data.s === 'no_data' || !data.v || data.v.length === 0) {
+      return 0;
+    }
+    
+    // Return the most recent volume
+    return data.v[data.v.length - 1] || 0;
+  } catch (error) {
+    console.error(`Error fetching volume for ${symbol}:`, error);
+    return 0;
+  }
 }
 
 serve(async (req) => {
@@ -111,13 +150,13 @@ serve(async (req) => {
     // Fetch sequentially with delays to avoid rate limiting (Finnhub free tier: 60 calls/min)
     for (const symbol of symbols) {
       try {
-        const response = await fetch(
+        // Fetch quote data
+        const quoteResponse = await fetch(
           `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${finnhubApiKey}`
         );
         
-        if (response.status === 429) {
+        if (quoteResponse.status === 429) {
           console.warn(`Rate limited on ${symbol}, using cached data`);
-          // If we hit rate limit and have cache, return it
           if (cachedData) {
             return new Response(
               JSON.stringify(cachedData),
@@ -127,33 +166,39 @@ serve(async (req) => {
           break;
         }
         
-        if (!response.ok) {
-          console.error(`Failed to fetch ${symbol}: ${response.status}`);
+        if (!quoteResponse.ok) {
+          console.error(`Failed to fetch ${symbol}: ${quoteResponse.status}`);
           continue;
         }
         
-        const data: FinnhubQuote = await response.json();
+        const quoteData: FinnhubQuote = await quoteResponse.json();
         
         // Check if we got valid data
-        if (data.c === 0 && data.pc === 0) {
+        if (quoteData.c === 0 && quoteData.pc === 0) {
           console.warn(`No data available for ${symbol}`);
           continue;
         }
+
+        // Add delay before volume request
+        await delay(100);
+        
+        // Fetch volume data from candle endpoint
+        const volume = await fetchVolumeData(symbol, finnhubApiKey);
         
         stocks.push({
           symbol,
           name: stockInfo[symbol],
-          price: data.c,
-          change: data.d,
-          changePercent: data.dp,
-          volume: 0,
-          high: data.h,
-          low: data.l,
-          open: data.o,
-          previousClose: data.pc,
+          price: quoteData.c,
+          change: quoteData.d,
+          changePercent: quoteData.dp,
+          volume,
+          high: quoteData.h,
+          low: quoteData.l,
+          open: quoteData.o,
+          previousClose: quoteData.pc,
         });
 
-        // Add delay between requests to avoid rate limiting (150ms = ~6 req/sec, well under 60/min)
+        // Add delay between requests to avoid rate limiting
         await delay(150);
       } catch (error) {
         console.error(`Error fetching ${symbol}:`, error);
@@ -171,7 +216,7 @@ serve(async (req) => {
       cachedData = responseData;
       cacheTimestamp = now;
 
-      console.log(`Successfully fetched ${stocks.length} stock quotes`);
+      console.log(`Successfully fetched ${stocks.length} stock quotes with volume data`);
 
       return new Response(
         JSON.stringify(responseData),
