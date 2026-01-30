@@ -45,11 +45,13 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const { language, setLanguage } = useLanguage();
-  const { setLanguage: setGoogleTranslate } = useGoogleTranslate();
+  const { setLanguage: setGoogleTranslate, isReady } = useGoogleTranslate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   
   const currentLang = languages.find(l => l.code === language) || languages[0];
 
@@ -64,27 +66,71 @@ const LanguageSelector = () => {
     );
   }, [searchQuery]);
 
+  // Trigger Google Translate on mount if language is not English
+  useEffect(() => {
+    if (language !== 'en' && isReady) {
+      setGoogleTranslate(language);
+    }
+  }, [isReady, language, setGoogleTranslate]);
+
   // Focus search input when dropdown opens
   useEffect(() => {
     if (showDropdown && searchInputRef.current) {
       setTimeout(() => searchInputRef.current?.focus(), 100);
     }
+    // Reset focused index when dropdown opens/closes
+    if (!showDropdown) {
+      setFocusedIndex(-1);
+    }
   }, [showDropdown]);
 
-  // Close dropdown on escape key
+  // Reset focused index when search changes
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [searchQuery]);
+
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowDropdown(false);
-        setSearchQuery('');
+      if (!showDropdown) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          setShowDropdown(false);
+          setSearchQuery('');
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setFocusedIndex(prev => 
+            prev < filteredLanguages.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setFocusedIndex(prev => 
+            prev > 0 ? prev - 1 : filteredLanguages.length - 1
+          );
+          break;
+        case 'Enter':
+          if (focusedIndex >= 0 && focusedIndex < filteredLanguages.length) {
+            e.preventDefault();
+            handleSelect(filteredLanguages[focusedIndex].code);
+          }
+          break;
       }
     };
 
-    if (showDropdown) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showDropdown, focusedIndex, filteredLanguages]);
+
+  // Auto-scroll focused item into view
+  useEffect(() => {
+    if (focusedIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('button');
+      items[focusedIndex]?.scrollIntoView({ block: 'nearest' });
     }
-  }, [showDropdown]);
+  }, [focusedIndex]);
 
   const handleSelect = (code: string) => {
     setLanguage(code as any);
@@ -104,10 +150,10 @@ const LanguageSelector = () => {
         ref={buttonRef}
         variant="outline" 
         size="sm" 
-        className="gap-2 min-w-[90px] border-border/50 hover:border-primary/50 hover:bg-muted/50 transition-all duration-300"
+        className="gap-2 min-w-[90px] border-border/50 hover:border-electric-blue/50 hover:bg-muted/50 transition-all duration-300"
         onClick={() => setShowDropdown(!showDropdown)}
       >
-        <Globe className="w-4 h-4 text-primary" />
+        <Globe className="w-4 h-4 text-electric-blue" />
         <span className="hidden sm:inline font-medium">{currentLang.code.toUpperCase()}</span>
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
       </Button>
@@ -128,7 +174,7 @@ const LanguageSelector = () => {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-muted/50 border-b border-border">
               <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-primary" />
+                <Globe className="w-5 h-5 text-electric-blue" />
                 <span className="font-semibold text-foreground">Select Language</span>
               </div>
               <button
@@ -149,7 +195,7 @@ const LanguageSelector = () => {
                   placeholder="Search languages..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-muted/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -163,27 +209,29 @@ const LanguageSelector = () => {
             </div>
 
             {/* Language List */}
-            <div className="overflow-y-auto" style={{ maxHeight: '320px' }}>
+            <div ref={listRef} className="overflow-y-auto" style={{ maxHeight: '320px' }}>
               {filteredLanguages.length > 0 ? (
-                filteredLanguages.map((lang) => (
+                filteredLanguages.map((lang, index) => (
                   <button
                     key={lang.code}
                     onClick={() => handleSelect(lang.code)}
                     className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-200 ${
                       language === lang.code
-                        ? 'bg-primary/10 border-l-2 border-l-primary'
+                        ? 'bg-electric-blue/10 border-l-2 border-l-electric-blue'
+                        : focusedIndex === index
+                        ? 'bg-muted/70 border-l-2 border-l-electric-blue/50'
                         : 'hover:bg-muted/50 border-l-2 border-l-transparent'
                     }`}
                   >
                     <span className="text-2xl">{lang.flag}</span>
                     <div className="flex-1 text-left">
-                      <div className={`font-medium ${language === lang.code ? 'text-primary' : 'text-foreground'}`}>
+                      <div className={`font-medium ${language === lang.code ? 'text-electric-blue' : 'text-foreground'}`}>
                         {lang.nativeName}
                       </div>
                       <div className="text-xs text-muted-foreground">{lang.name}</div>
                     </div>
                     {language === lang.code && (
-                      <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      <Check className="w-4 h-4 text-electric-blue flex-shrink-0" />
                     )}
                   </button>
                 ))
