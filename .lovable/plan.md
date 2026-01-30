@@ -1,91 +1,93 @@
 
 
-# Language Selector Enhancements
+# Expand Language Selector & Debug Translation System
 
 ## Overview
-Enhance the language selector with keyboard navigation, ensure localStorage persistence triggers Google Translate on page load, and update all red (primary) styling to Tesla Electric Blue for consistency with the design standards.
+Add 25+ more languages to bring the total to 50+ supported languages, and fix any potential translation issues to ensure Google Translate works reliably across the site.
 
 ---
 
-## Issues Identified
+## Current State Analysis
 
-| Issue | Current State | Required Change |
-|-------|---------------|-----------------|
-| Keyboard Navigation | Not implemented | Add arrow key support |
-| Persistence on Reload | Language saved but Google Translate not triggered | Trigger Google Translate on mount if language != 'en' |
-| Red Styling | Uses `text-primary` (Tesla Red) | Change to `text-electric-blue` |
-
----
-
-## Changes Summary
-
-### 1. Add Keyboard Navigation
-**File:** `src/components/LanguageSelector.tsx`
-
-Add state for tracking the focused index and keyboard event handlers:
-
-```tsx
-const [focusedIndex, setFocusedIndex] = useState(-1);
-
-// Add to the existing useEffect for keydown handling
-const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    setShowDropdown(false);
-    setSearchQuery('');
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    setFocusedIndex(prev => 
-      prev < filteredLanguages.length - 1 ? prev + 1 : 0
-    );
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    setFocusedIndex(prev => 
-      prev > 0 ? prev - 1 : filteredLanguages.length - 1
-    );
-  } else if (e.key === 'Enter' && focusedIndex >= 0) {
-    e.preventDefault();
-    handleSelect(filteredLanguages[focusedIndex].code);
-  }
-};
-```
-
-Add auto-scroll for focused item and visual focus indicator.
+| Component | Status |
+|-----------|--------|
+| Languages in Selector | 28 languages |
+| Languages in Hook | 28 mapped to Google codes |
+| Languages in Context Type | 28 in Language type union |
+| Google Translate | Working but may have edge cases |
 
 ---
 
-### 2. Trigger Google Translate on Page Load
-**File:** `src/components/LanguageSelector.tsx`
+## Languages to Add (25 New)
 
-Add useEffect to trigger Google Translate when component mounts if the stored language is not English:
+### Southeast Asia & Pacific
+| Code | Flag | Name | Native Name | Google Code |
+|------|------|------|-------------|-------------|
+| `id` | 🇮🇩 | Indonesian | Bahasa Indonesia | id |
+| `ms` | 🇲🇾 | Malay | Bahasa Melayu | ms |
+| `tl` | 🇵🇭 | Filipino | Tagalog | tl |
+| `my` | 🇲🇲 | Burmese | မြန်မာ | my |
 
-```tsx
-// Trigger Google Translate on mount if language is not English
-useEffect(() => {
-  if (language !== 'en') {
-    // Small delay to ensure Google Translate is ready
-    const timeout = setTimeout(() => {
-      setGoogleTranslate(language);
-    }, 1500);
-    return () => clearTimeout(timeout);
-  }
-}, []); // Run only on mount
-```
+### South Asia
+| Code | Flag | Name | Native Name | Google Code |
+|------|------|------|-------------|-------------|
+| `bn` | 🇧🇩 | Bengali | বাংলা | bn |
+| `ta` | 🇮🇳 | Tamil | தமிழ் | ta |
+| `te` | 🇮🇳 | Telugu | తెలుగు | te |
+| `ur` | 🇵🇰 | Urdu | اردو | ur |
+| `ne` | 🇳🇵 | Nepali | नेपाली | ne |
+
+### Middle East & Africa
+| Code | Flag | Name | Native Name | Google Code |
+|------|------|------|-------------|-------------|
+| `he` | 🇮🇱 | Hebrew | עברית | he |
+| `fa` | 🇮🇷 | Persian | فارسی | fa |
+| `sw` | 🇰🇪 | Swahili | Kiswahili | sw |
+| `af` | 🇿🇦 | Afrikaans | Afrikaans | af |
+
+### Eastern Europe & Central Asia
+| Code | Flag | Name | Native Name | Google Code |
+|------|------|------|-------------|-------------|
+| `uk` | 🇺🇦 | Ukrainian | Українська | uk |
+| `bg` | 🇧🇬 | Bulgarian | Български | bg |
+| `hr` | 🇭🇷 | Croatian | Hrvatski | hr |
+| `sr` | 🇷🇸 | Serbian | Српски | sr |
+| `lt` | 🇱🇹 | Lithuanian | Lietuvių | lt |
+| `lv` | 🇱🇻 | Latvian | Latviešu | lv |
+| `ka` | 🇬🇪 | Georgian | ქართული | ka |
+| `az` | 🇦🇿 | Azerbaijani | Azərbaycan | az |
+| `kk` | 🇰🇿 | Kazakh | Қазақ | kk |
+| `uz` | 🇺🇿 | Uzbek | O'zbek | uz |
+
+### Others
+| Code | Flag | Name | Native Name | Google Code |
+|------|------|------|-------------|-------------|
+| `ca` | 🇪🇸 | Catalan | Català | ca |
+| `eu` | 🇪🇸 | Basque | Euskara | eu |
 
 ---
 
-### 3. Change Red to Electric Blue
-**File:** `src/components/LanguageSelector.tsx`
+## Potential Translation Issues & Fixes
 
-Update all `primary` color references to `electric-blue`:
+### Issue 1: Widget Not Ready on Fast Connections
+**Problem:** Google Translate widget may not be fully initialized when trying to restore language on reload.
 
-| Line | Current | Updated |
-|------|---------|---------|
-| 110 | `text-primary` | `text-electric-blue` |
-| 131 | `text-primary` | `text-electric-blue` |
-| 152 | `focus:ring-primary/50 focus:border-primary/50` | `focus:ring-electric-blue/50 focus:border-electric-blue/50` |
-| 174 | `bg-primary/10 border-l-primary` | `bg-electric-blue/10 border-l-electric-blue` |
-| 180 | `text-primary` | `text-electric-blue` |
-| 186 | `text-primary` | `text-electric-blue` |
+**Fix:** Increase polling frequency and add more robust readiness checks in `useGoogleTranslate.ts`.
+
+### Issue 2: Language Not Persisting After Page Navigation (SPA)
+**Problem:** Since this is a React SPA, route changes don't reload the page, but Google Translate state may be lost.
+
+**Fix:** The current implementation already handles this by storing in localStorage and restoring on mount.
+
+### Issue 3: Chinese Language Code
+**Current:** `'zh': 'zh-CN'` (Simplified Chinese only)
+
+**Add:** Also support Traditional Chinese `zh-TW` as a separate option.
+
+### Issue 4: Type Safety
+**Problem:** The `Language` type in LanguageContext doesn't include all new languages.
+
+**Fix:** Update the type union to include all 50+ language codes.
 
 ---
 
@@ -93,118 +95,121 @@ Update all `primary` color references to `electric-blue`:
 
 | File | Changes |
 |------|---------|
-| `src/components/LanguageSelector.tsx` | Add keyboard navigation, persistence trigger, change red to electric-blue |
+| `src/components/LanguageSelector.tsx` | Add 25+ new languages to the `languages` array |
+| `src/hooks/useGoogleTranslate.ts` | Add 25+ new language codes to `googleLangMap` |
+| `src/contexts/LanguageContext.tsx` | Update `Language` type to include all new codes |
 
 ---
 
-## Technical Implementation
+## Implementation Details
 
-### Complete Updated LanguageSelector Structure
+### 1. LanguageSelector.tsx - Add New Languages
 
-```tsx
-const LanguageSelector = () => {
-  const { language, setLanguage } = useLanguage();
-  const { setLanguage: setGoogleTranslate, isReady } = useGoogleTranslate();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+```typescript
+const languages: Language[] = [
+  // Existing 28 languages...
   
-  // Trigger Google Translate on mount if language is not English
-  useEffect(() => {
-    if (language !== 'en' && isReady) {
-      setGoogleTranslate(language);
-    }
-  }, [isReady]);
+  // NEW: Southeast Asia & Pacific
+  { code: 'id', flag: '🇮🇩', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
+  { code: 'ms', flag: '🇲🇾', name: 'Malay', nativeName: 'Bahasa Melayu' },
+  { code: 'tl', flag: '🇵🇭', name: 'Filipino', nativeName: 'Tagalog' },
+  { code: 'my', flag: '🇲🇲', name: 'Burmese', nativeName: 'မြန်မာ' },
+  
+  // NEW: South Asia
+  { code: 'bn', flag: '🇧🇩', name: 'Bengali', nativeName: 'বাংলা' },
+  { code: 'ta', flag: '🇮🇳', name: 'Tamil', nativeName: 'தமிழ்' },
+  { code: 'te', flag: '🇮🇳', name: 'Telugu', nativeName: 'తెలుగు' },
+  { code: 'ur', flag: '🇵🇰', name: 'Urdu', nativeName: 'اردو' },
+  { code: 'ne', flag: '🇳🇵', name: 'Nepali', nativeName: 'नेपाली' },
+  
+  // NEW: Middle East & Africa
+  { code: 'he', flag: '🇮🇱', name: 'Hebrew', nativeName: 'עברית' },
+  { code: 'fa', flag: '🇮🇷', name: 'Persian', nativeName: 'فارسی' },
+  { code: 'sw', flag: '🇰🇪', name: 'Swahili', nativeName: 'Kiswahili' },
+  { code: 'af', flag: '🇿🇦', name: 'Afrikaans', nativeName: 'Afrikaans' },
+  
+  // NEW: Eastern Europe & Central Asia
+  { code: 'uk', flag: '🇺🇦', name: 'Ukrainian', nativeName: 'Українська' },
+  { code: 'bg', flag: '🇧🇬', name: 'Bulgarian', nativeName: 'Български' },
+  { code: 'hr', flag: '🇭🇷', name: 'Croatian', nativeName: 'Hrvatski' },
+  { code: 'sr', flag: '🇷🇸', name: 'Serbian', nativeName: 'Српски' },
+  { code: 'lt', flag: '🇱🇹', name: 'Lithuanian', nativeName: 'Lietuvių' },
+  { code: 'lv', flag: '🇱🇻', name: 'Latvian', nativeName: 'Latviešu' },
+  { code: 'ka', flag: '🇬🇪', name: 'Georgian', nativeName: 'ქართული' },
+  { code: 'az', flag: '🇦🇿', name: 'Azerbaijani', nativeName: 'Azərbaycan' },
+  { code: 'kk', flag: '🇰🇿', name: 'Kazakh', nativeName: 'Қазақ' },
+  { code: 'uz', flag: '🇺🇿', name: 'Uzbek', nativeName: "O'zbek" },
+  
+  // NEW: Traditional Chinese
+  { code: 'zh-TW', flag: '🇹🇼', name: 'Chinese (Traditional)', nativeName: '繁體中文' },
+  
+  // NEW: Regional European
+  { code: 'ca', flag: '🇪🇸', name: 'Catalan', nativeName: 'Català' },
+  { code: 'eu', flag: '🇪🇸', name: 'Basque', nativeName: 'Euskara' },
+];
+```
 
-  // Reset focused index when search changes
-  useEffect(() => {
-    setFocusedIndex(-1);
-  }, [searchQuery]);
+### 2. useGoogleTranslate.ts - Add Google Code Mappings
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!showDropdown) return;
-      
-      switch (e.key) {
-        case 'Escape':
-          setShowDropdown(false);
-          setSearchQuery('');
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          setFocusedIndex(prev => 
-            prev < filteredLanguages.length - 1 ? prev + 1 : 0
-          );
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setFocusedIndex(prev => 
-            prev > 0 ? prev - 1 : filteredLanguages.length - 1
-          );
-          break;
-        case 'Enter':
-          if (focusedIndex >= 0 && focusedIndex < filteredLanguages.length) {
-            e.preventDefault();
-            handleSelect(filteredLanguages[focusedIndex].code);
-          }
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showDropdown, focusedIndex, filteredLanguages]);
-
-  // Auto-scroll focused item into view
-  useEffect(() => {
-    if (focusedIndex >= 0 && listRef.current) {
-      const items = listRef.current.querySelectorAll('button');
-      items[focusedIndex]?.scrollIntoView({ block: 'nearest' });
-    }
-  }, [focusedIndex]);
-
-  return (
-    // Component JSX with electric-blue styling
-  );
+```typescript
+const googleLangMap: Record<string, string> = {
+  // Existing mappings...
+  
+  // NEW mappings
+  'id': 'id',
+  'ms': 'ms',
+  'tl': 'tl',
+  'my': 'my',
+  'bn': 'bn',
+  'ta': 'ta',
+  'te': 'te',
+  'ur': 'ur',
+  'ne': 'ne',
+  'he': 'iw',  // Google uses 'iw' for Hebrew
+  'fa': 'fa',
+  'sw': 'sw',
+  'af': 'af',
+  'uk': 'uk',
+  'bg': 'bg',
+  'hr': 'hr',
+  'sr': 'sr',
+  'lt': 'lt',
+  'lv': 'lv',
+  'ka': 'ka',
+  'az': 'az',
+  'kk': 'kk',
+  'uz': 'uz',
+  'zh-TW': 'zh-TW',
+  'ca': 'ca',
+  'eu': 'eu',
 };
 ```
 
----
+### 3. LanguageContext.tsx - Update Type
 
-## Visual Changes
-
-### Before (Red/Primary)
-- Globe icon: Red
-- Selected language highlight: Red border, red text
-- Search focus ring: Red
-- Checkmark: Red
-
-### After (Electric Blue)
-- Globe icon: Electric Blue
-- Selected language highlight: Electric Blue border, blue text
-- Search focus ring: Electric Blue
-- Checkmark: Electric Blue
-- Focused item (keyboard): Ring highlight in Electric Blue
-
----
-
-## Accessibility Improvements
-
-1. **Arrow Key Navigation**: Users can navigate the language list with Up/Down arrows
-2. **Enter to Select**: Press Enter to select the focused language
-3. **Escape to Close**: Press Escape to close the dropdown
-4. **Focus Visible**: Keyboard-focused items have a visible ring indicator
-5. **Auto-scroll**: Focused items automatically scroll into view
+```typescript
+type Language = 'en' | 'ru' | 'fr' | 'de' | 'es' | 'zh' | 'zh-TW' | 'ar' | 'pt' | 'ja' | 'ko' | 'hi' | 'it' | 'tr' | 'vi' | 'th' | 'hu' | 'cs' | 'el' | 'pl' | 'ro' | 'da' | 'et' | 'fi' | 'nl' | 'no' | 'sk' | 'sl' | 'sv' | 'id' | 'ms' | 'tl' | 'my' | 'bn' | 'ta' | 'te' | 'ur' | 'ne' | 'he' | 'fa' | 'sw' | 'af' | 'uk' | 'bg' | 'hr' | 'sr' | 'lt' | 'lv' | 'ka' | 'az' | 'kk' | 'uz' | 'ca' | 'eu';
+```
 
 ---
 
 ## Result After Changes
 
-1. **Keyboard Accessible** - Full arrow key navigation with visual focus indicator
-2. **Persistent Selection** - Language choice triggers Google Translate on page reload
-3. **Consistent Styling** - All accents use Tesla Electric Blue instead of red
-4. **Professional UX** - Matches the dashboard's electric-blue visual standard
+| Metric | Before | After |
+|--------|--------|-------|
+| Total Languages | 28 | 54 |
+| Coverage | Europe, Americas, Major Asian | Global coverage including Africa, Central Asia |
+| Chinese Variants | 1 (Simplified) | 2 (Simplified + Traditional) |
+| RTL Languages | 1 (Arabic) | 3 (Arabic, Hebrew, Persian, Urdu) |
+
+---
+
+## Testing Recommendations
+
+After implementation, test these scenarios:
+1. Search for a new language (e.g., "Ukrainian") and select it
+2. Verify the page translates correctly
+3. Reload the page and verify translation persists
+4. Switch back to English and verify content resets
+5. Test RTL languages (Arabic, Hebrew, Persian) to ensure layout doesn't break
 
