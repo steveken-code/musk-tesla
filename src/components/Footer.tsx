@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Mail, Phone, MapPin, Shield, FileText, Scale, Building, ArrowRight, Twitter, Linkedin, Youtube, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Shield, FileText, Scale, Building, ArrowRight, Twitter, Linkedin, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 
@@ -156,19 +156,6 @@ const Footer = () => {
               </div>
             </div>
             
-            {/* Language Reset Link */}
-            <button
-              onClick={() => {
-                // Remove Google Translate cookies and reload
-                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.lovable.app;';
-                window.location.reload();
-              }}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-electric-blue transition-colors"
-            >
-              <Globe className="w-4 h-4" />
-              Reset to English
-            </button>
             
             <div className="text-center md:text-right">
               <p className="text-sm text-slate-400">
