@@ -38,11 +38,6 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
           className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain animate-logo-pulse"
         />
       </div>
-      
-      {/* TESLA Wordmark */}
-      <span className="mt-8 text-sm sm:text-base lg:text-lg font-light tracking-[0.3em] sm:tracking-[0.4em] lg:tracking-[0.5em] text-white/80 animate-wordmark-fade">
-        TESLA
-      </span>
     </div>
   );
 };
