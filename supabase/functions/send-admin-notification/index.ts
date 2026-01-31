@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIP, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 declare const EdgeRuntime: {
   waitUntil: (promise: Promise<any>) => void;
@@ -9,6 +10,13 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+// Rate limit configuration
+const RATE_LIMIT_USER_MAX = 5;      // 5 requests per user per hour
+const RATE_LIMIT_USER_WINDOW = 3600; // 1 hour
+const RATE_LIMIT_IP_MAX = 10;        // 10 requests per IP per hour
+const RATE_LIMIT_IP_WINDOW = 3600;   // 1 hour
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
@@ -68,7 +76,7 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
     return { success: false, error: "No valid admin emails" };
   }
 
-  console.log(`Sending notification to ${adminEmails.length} admin(s):`, adminEmails);
+  console.log(`Sending notification to ${adminEmails.length} admin(s)`);
 
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -90,6 +98,27 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
   const headerColor = isInvestment ? "#16a34a" : "#7c3aed";
   const statusColor = isInvestment ? "#22c55e" : "#fbbf24";
   const statusText = isInvestment ? "PENDING ACTIVATION" : "PENDING APPROVAL";
+
+  // Sanitize user inputs for email HTML
+  const sanitizedUserName = (userName || 'N/A')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .substring(0, 100);
+  
+  const sanitizedUserEmail = userEmail
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .substring(0, 254);
+
+  const sanitizedDetails = details 
+    ? details
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .substring(0, 500)
+    : null;
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -144,7 +173,7 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">User Name</td>
-                              <td style="color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${userName || 'N/A'}</td>
+                              <td style="color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${sanitizedUserName}</td>
                             </tr>
                           </table>
                         </td>
@@ -154,7 +183,7 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">User Email</td>
-                              <td style="color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${userEmail}</td>
+                              <td style="color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${sanitizedUserEmail}</td>
                             </tr>
                           </table>
                         </td>
@@ -191,11 +220,11 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
                           </table>
                         </td>
                       </tr>
-                      ${details ? `
+                      ${sanitizedDetails ? `
                       <tr>
                         <td style="padding: 14px 0; border-top: 1px solid #e5e7eb;">
                           <p style="color: #6b7280; font-size: 14px; font-weight: 500; margin: 0 0 8px;">Additional Details</p>
-                          <p style="color: #1f2937; font-size: 14px; margin: 0; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">${details}</p>
+                          <p style="color: #1f2937; font-size: 14px; margin: 0; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">${sanitizedDetails}</p>
                         </td>
                       </tr>
                       ` : ''}
@@ -241,7 +270,7 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: adminEmails,
-      subject: `Admin Alert: ${typeLabel} - ${formattedAmount} from ${userName || userEmail}`,
+      subject: `Admin Alert: ${typeLabel} - ${formattedAmount} from ${sanitizedUserName}`,
       headers: {
         "X-Mailer": "Tesla Stock Platform",
       },
@@ -252,11 +281,11 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
   if (!res.ok) {
     const errorData = await res.text();
     console.error("Resend API error:", errorData);
-    return { success: false, error: errorData };
+    return { success: false, error: "Failed to send notification" };
   }
 
   const result = await res.json();
-  console.log("Admin notification sent successfully:", result);
+  console.log("Admin notification sent successfully");
   return { success: true, data: result };
 }
 
@@ -273,14 +302,93 @@ serve(async (req) => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
+    // Authentication check - require valid user session
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Verify the user's JWT token
+    const supabaseUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
+
+    if (authError || !user) {
+      console.log('Invalid user session:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Rate limiting by user ID
+    const userLimit = checkRateLimit(
+      `admin-notify:user:${user.id}`,
+      RATE_LIMIT_USER_MAX,
+      RATE_LIMIT_USER_WINDOW
+    );
+
+    if (!userLimit.allowed) {
+      console.log(`Rate limit exceeded for user: ${user.id}`);
+      return rateLimitResponse(userLimit.retryAfter, corsHeaders);
+    }
+
+    // Rate limiting by IP as secondary protection
+    const clientIP = getClientIP(req);
+    const ipLimit = checkRateLimit(
+      `admin-notify:ip:${clientIP}`,
+      RATE_LIMIT_IP_MAX,
+      RATE_LIMIT_IP_WINDOW
+    );
+
+    if (!ipLimit.allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      return rateLimitResponse(ipLimit.retryAfter, corsHeaders);
+    }
+
     const requestData: AdminNotificationRequest = await req.json();
 
+    // Validate required fields
     if (!requestData.type || !requestData.userEmail || !requestData.amount) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: type, userEmail, amount" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
+
+    // Validate type is one of allowed values
+    if (!['investment', 'withdrawal'].includes(requestData.type)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid type. Must be 'investment' or 'withdrawal'" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Validate amount is a positive number within reasonable bounds
+    const amount = Number(requestData.amount);
+    if (isNaN(amount) || amount <= 0 || amount > 100000000) {
+      return new Response(
+        JSON.stringify({ error: "Invalid amount" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify the userEmail matches the authenticated user's email
+    if (user.email && requestData.userEmail.toLowerCase() !== user.email.toLowerCase()) {
+      console.log(`Email mismatch: request=${requestData.userEmail}, user=${user.email}`);
+      return new Response(
+        JSON.stringify({ error: "Email mismatch" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log(`Authenticated user ${user.id} (${user.email}) sending admin notification`);
 
     // Send in background for fast response
     EdgeRuntime.waitUntil(sendAdminNotification(requestData));
