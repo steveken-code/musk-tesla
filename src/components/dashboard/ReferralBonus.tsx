@@ -192,11 +192,11 @@ const ReferralBonus = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative overflow-hidden rounded-xl border border-electric-blue/30 bg-gradient-to-br from-slate-800/90 via-slate-900/95 to-slate-950/90 p-4 sm:p-6"
+      className="relative overflow-hidden rounded-lg sm:rounded-xl border border-electric-blue/30 bg-gradient-to-br from-slate-800/90 via-slate-900/95 to-slate-950/90 p-3 sm:p-4 md:p-6"
     >
       {/* Background glow effect */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-electric-blue/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-electric-blue/5 rounded-full blur-2xl" />
+      <div className="absolute -top-16 sm:-top-20 -right-16 sm:-right-20 w-32 sm:w-40 h-32 sm:h-40 bg-electric-blue/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-8 sm:-bottom-10 -left-8 sm:-left-10 w-24 sm:w-32 h-24 sm:h-32 bg-electric-blue/5 rounded-full blur-2xl" />
 
       <div className="relative z-10">
         {/* Show welcome bonus if user was referred */}
@@ -204,17 +204,17 @@ const ReferralBonus = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30"
+            className="mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-green-500/10 border border-green-500/30"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-full bg-green-500/20">
-                <Gift className="w-4 h-4 text-green-500" />
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 rounded-full bg-green-500/20 shrink-0">
+                <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-green-400">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-green-400">
                   Welcome Bonus: ${wasReferred.referred_bonus || 100}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">
                   {wasReferred.status === 'active' || wasReferred.status === 'paid' 
                     ? '✓ Ready to withdraw' 
                     : hasInvested 
@@ -223,67 +223,67 @@ const ReferralBonus = () => {
                 </p>
               </div>
               {(wasReferred.status === 'active' || wasReferred.status === 'paid') && (
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0" />
               )}
             </div>
           </motion.div>
         )}
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 sm:p-2.5 rounded-xl bg-electric-blue/20 ring-1 ring-electric-blue/30">
-            <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div className="p-1.5 sm:p-2 md:p-2.5 rounded-lg sm:rounded-xl bg-electric-blue/20 ring-1 ring-electric-blue/30 shrink-0">
+            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-electric-blue" />
           </div>
-          <div>
-            <h3 className="text-base sm:text-lg font-bold text-foreground">Refer & Earn</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Invite friends, earn rewards</p>
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate">Refer & Earn</h3>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">Invite friends, earn rewards</p>
           </div>
         </div>
 
         {/* Referral Stats Grid - Enhanced with withdrawal eligibility */}
         {loading ? (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-5 h-5 text-electric-blue animate-spin" />
+          <div className="flex items-center justify-center py-3 sm:py-4">
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue animate-spin" />
           </div>
         ) : stats.totalReferrals > 0 ? (
-          <div className="mb-4 space-y-3">
+          <div className="mb-3 sm:mb-4 space-y-2 sm:space-y-3">
             {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-electric-blue/5 border border-electric-blue/20">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 p-2 sm:p-3 rounded-lg bg-electric-blue/5 border border-electric-blue/20">
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <Users className="w-3 h-3 text-electric-blue" />
+                <div className="flex items-center justify-center gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
+                  <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-electric-blue" />
                 </div>
-                <p className="text-lg sm:text-xl font-bold text-electric-blue">{stats.totalReferrals}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Referrals</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-electric-blue">{stats.totalReferrals}</p>
+                <p className="text-[8px] sm:text-[9px] md:text-[10px] text-muted-foreground">Referrals</p>
               </div>
               <div className="text-center border-x border-electric-blue/20">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <TrendingUp className="w-3 h-3 text-green-500" />
+                <div className="flex items-center justify-center gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
+                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-500" />
                 </div>
-                <p className="text-lg sm:text-xl font-bold text-green-500">${totalEarnings.toLocaleString()}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Total Earned</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-green-500">${totalEarnings.toLocaleString()}</p>
+                <p className="text-[8px] sm:text-[9px] md:text-[10px] text-muted-foreground">Earned</p>
               </div>
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <Wallet className="w-3 h-3 text-amber-500" />
+                <div className="flex items-center justify-center gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
+                  <Wallet className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500" />
                 </div>
-                <p className="text-lg sm:text-xl font-bold text-amber-500">${withdrawableBonus.toLocaleString()}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground">Withdrawable</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-amber-500">${withdrawableBonus.toLocaleString()}</p>
+                <p className="text-[8px] sm:text-[9px] md:text-[10px] text-muted-foreground">Withdrawable</p>
               </div>
             </div>
 
             {/* Status breakdown */}
-            <div className="flex items-center justify-center gap-4 text-[10px] sm:text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-green-500" />
+            <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 text-[9px] sm:text-[10px] md:text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-0.5 sm:gap-1">
+                <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-500" />
                 {stats.paidReferrals} paid
               </span>
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-electric-blue" />
+              <span className="flex items-center gap-0.5 sm:gap-1">
+                <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-electric-blue" />
                 {stats.activeReferrals} active
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-amber-500" />
+              <span className="flex items-center gap-0.5 sm:gap-1">
+                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500" />
                 {stats.pendingReferrals} pending
               </span>
             </div>

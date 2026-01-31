@@ -29,43 +29,43 @@ const WelcomeCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="mb-6"
+      className="mb-4 sm:mb-6"
     >
       {/* Greeting */}
-      <div className="mb-4">
-        <p className="text-muted-foreground text-sm">{greeting},</p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+      <div className="mb-3 sm:mb-4">
+        <p className="text-muted-foreground text-xs sm:text-sm">{greeting},</p>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground tracking-tight truncate">
           {displayName}
         </h1>
       </div>
 
       {/* Balance Card - Clean purple gradient like reference */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-4 sm:p-5 md:p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-3 sm:p-4 md:p-5 lg:p-6 shadow-xl">
         {/* Subtle decorative circles */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/10 rounded-full blur-lg" />
+        <div className="absolute -top-10 -right-10 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-xl" />
+        <div className="absolute -bottom-8 -left-8 w-20 sm:w-24 h-20 sm:h-24 bg-white/10 rounded-full blur-lg" />
         
         <div className="relative z-10">
           {/* Current Value Label */}
-          <p className="text-white/70 text-xs sm:text-sm mb-1">Current value</p>
+          <p className="text-white/70 text-[10px] sm:text-xs md:text-sm mb-0.5 sm:mb-1">Current value</p>
           
           {/* Balance Row */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4">
-            <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
+          <div className="flex flex-col gap-2 sm:gap-3 md:flex-row md:items-end md:justify-between md:gap-4">
+            <div className="flex items-baseline gap-1.5 sm:gap-2 md:gap-3 flex-wrap min-w-0">
               {/* Main Balance */}
               <motion.span 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
-                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight"
+                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight truncate"
               >
                 {formatSmartCurrency(portfolioBalance)}
               </motion.span>
               
               {/* Currency Badge */}
-              <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-lg">
-                <span className="text-[10px] sm:text-xs font-medium text-white">USD</span>
-                <ChevronDown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/70" />
+              <div className="flex items-center gap-0.5 sm:gap-1 px-1 sm:px-1.5 md:px-2 py-0.5 bg-white/20 rounded-md sm:rounded-lg shrink-0">
+                <span className="text-[8px] sm:text-[10px] md:text-xs font-medium text-white">USD</span>
+                <ChevronDown className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-white/70" />
               </div>
             </div>
             
@@ -75,33 +75,33 @@ const WelcomeCard = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-left sm:text-right"
+                className="text-left md:text-right shrink-0"
               >
-                <p className="text-base sm:text-lg font-semibold text-green-300">
+                <p className="text-sm sm:text-base md:text-lg font-semibold text-green-300">
                   +{weeklyChangeFormatted}
                 </p>
-                <p className="text-[10px] sm:text-xs text-white/60">this week</p>
+                <p className="text-[9px] sm:text-[10px] md:text-xs text-white/60">this week</p>
               </motion.div>
             )}
           </div>
           
-          {/* Action Buttons - Stack on very small screens */}
-          <div className="flex flex-col xs:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
+          {/* Action Buttons - Stack on very small screens, side by side on xs+ */}
+          <div className="flex flex-col xs:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 md:mt-6">
             <Button 
               size="lg" 
-              className="flex-1 h-10 sm:h-11 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm font-semibold transition-all text-sm sm:text-base min-w-0"
+              className="flex-1 h-9 xs:h-10 sm:h-11 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm font-semibold transition-all text-xs sm:text-sm md:text-base min-w-0"
               onClick={onInvestClick}
             >
-              <ArrowDownToLine className="w-4 h-4 mr-1.5 sm:mr-2 shrink-0" />
+              <ArrowDownToLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 md:mr-2 shrink-0" />
               <span className="truncate">Invest</span>
             </Button>
             <Button 
               size="lg" 
-              className="flex-1 h-10 sm:h-11 bg-white text-purple-700 hover:bg-white/90 border-0 font-semibold shadow-lg transition-all text-sm sm:text-base min-w-0"
+              className="flex-1 h-9 xs:h-10 sm:h-11 bg-white text-purple-700 hover:bg-white/90 border-0 font-semibold shadow-lg transition-all text-xs sm:text-sm md:text-base min-w-0 disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={onWithdrawClick}
               disabled={portfolioBalance <= 0}
             >
-              <ArrowUpFromLine className="w-4 h-4 mr-1.5 sm:mr-2 shrink-0" />
+              <ArrowUpFromLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 md:mr-2 shrink-0" />
               <span className="truncate">Withdraw</span>
             </Button>
           </div>
