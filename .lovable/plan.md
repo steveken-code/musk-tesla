@@ -1,48 +1,51 @@
 
-# Update Social Sharing Meta Tags - Remove Lovable Branding
 
-## Problem
+# Fix Lovable Branding - Replace Favicon & Force WhatsApp Refresh
 
-When users share links to msktesla.net on social media (Facebook, Twitter, WhatsApp, LinkedIn), the preview shows:
-- **Missing og:image** - No branded preview image appears
-- **Lovable Twitter handle** (`@Lovable`) - Unprofessional for your brand
-- **Missing og:url** - Social platforms can't properly identify the page
+## Problem Identified
 
-This makes shared links look unprofessional and off-brand.
+| Issue | Location | Status |
+|-------|----------|--------|
+| Favicon shows Lovable heart | Browser tab, Android home screen | **Needs fix** |
+| WhatsApp preview shows old data | Link preview card | **Cached - needs refresh** |
+| og:image meta tag | index.html | Already fixed |
+| twitter:image meta tag | index.html | Already fixed |
 
 ---
 
 ## Solution
 
-Update the `index.html` to include proper Tesla Investment branding for social sharing:
+### Part 1: Replace Favicon with Tesla Logo
 
-### Changes to `index.html`
+The current `public/favicon.ico` is still the Lovable heart. We need to replace it with a Tesla logo.
 
-| Current | Updated |
-|---------|---------|
-| `twitter:site` = "@Lovable" | `twitter:site` = "@Tesla" (or remove) |
-| No `og:image` | Add Tesla hero image for previews |
-| No `og:url` | Add canonical URL |
-| No `twitter:image` | Add matching Twitter preview image |
-
-### Meta Tags to Add/Update
-
+**Change in `index.html`:**
 ```html
-<!-- Open Graph Image for Facebook, LinkedIn, WhatsApp -->
-<meta property="og:image" content="https://msktesla.net/tesla-hero.jpg" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://msktesla.net/" />
+<!-- Current (Lovable favicon via external URL) -->
+<link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/...">
 
-<!-- Twitter Card Image -->
-<meta name="twitter:image" content="https://msktesla.net/tesla-hero.jpg" />
-<meta name="twitter:site" content="@Tesla" />
+<!-- New (Tesla logo from project assets) -->
+<link rel="icon" type="image/png" href="/tesla-favicon.png">
 ```
 
-### File Operations
+**File Operations:**
+1. Copy `src/assets/tesla-logo.png` to `public/tesla-favicon.png`
+2. Update `index.html` to point to the local Tesla favicon
 
-1. **Copy hero image to public folder** - Move `tesla-hero.jpg` to `/public/` so it's accessible at the root URL
-2. **Update index.html** - Add the proper Open Graph and Twitter Card meta tags
+### Part 2: Force WhatsApp Cache Refresh
+
+WhatsApp caches link previews for 7-30 days. To force an immediate refresh, you need to:
+
+1. **Add a cache-busting parameter to the og:image URL** (temporary trick):
+   ```html
+   <meta property="og:image" content="https://msktesla.net/tesla-hero.jpg?v=2" />
+   ```
+
+2. **After publishing**, share this exact link in WhatsApp to test:
+   ```
+   https://msktesla.net/?v=2
+   ```
+   The query parameter forces WhatsApp to fetch fresh metadata.
 
 ---
 
@@ -50,20 +53,40 @@ Update the `index.html` to include proper Tesla Investment branding for social s
 
 | Step | Action |
 |------|--------|
-| 1 | Copy `src/assets/tesla-hero.jpg` to `public/tesla-hero.jpg` |
-| 2 | Add `og:image` meta tag pointing to `/tesla-hero.jpg` |
-| 3 | Add `og:image:width` (1200) and `og:image:height` (630) |
-| 4 | Add `og:url` with `https://msktesla.net/` |
-| 5 | Update `twitter:site` from `@Lovable` to `@Tesla` |
-| 6 | Add `twitter:image` meta tag |
+| 1 | Copy `src/assets/tesla-logo.png` to `public/tesla-favicon.png` |
+| 2 | Update favicon link in `index.html` to use local Tesla logo |
+| 3 | Add cache-busting `?v=2` parameter to og:image and twitter:image URLs |
+| 4 | Publish the site |
+| 5 | Test by sharing `https://msktesla.net/?v=2` in WhatsApp |
+
+---
+
+## File Changes
+
+### `index.html`
+
+**Favicon update (line ~48):**
+```html
+<!-- Replace external Lovable favicon with Tesla logo -->
+<link rel="icon" type="image/png" href="/tesla-favicon.png">
+```
+
+**Cache-busting for images (lines ~35-40):**
+```html
+<meta property="og:image" content="https://msktesla.net/tesla-hero.jpg?v=2" />
+<meta name="twitter:image" content="https://msktesla.net/tesla-hero.jpg?v=2" />
+```
 
 ---
 
 ## Result
 
-After these changes, when someone shares your link on social media:
+After these changes:
 
-- **Facebook/LinkedIn**: Shows Tesla hero image with your title and description
-- **Twitter/X**: Shows large image card with Tesla branding
-- **WhatsApp**: Shows professional preview with image
-- **No Lovable branding** anywhere in the share preview
+| Element | Before | After |
+|---------|--------|-------|
+| Browser tab icon | Lovable heart | Tesla "T" logo |
+| Android home screen | Lovable heart | Tesla "T" logo |
+| WhatsApp preview | Cached old data | Fresh Tesla hero image |
+| Share appearance | Unprofessional | Professional Tesla branding |
+
