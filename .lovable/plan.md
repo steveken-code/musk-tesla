@@ -1,302 +1,288 @@
 
 
-# Comprehensive Dashboard and Referral System Enhancement Plan
+# Professional Referral System and User Display Enhancements
 
 ## Overview
 
-This plan addresses end-to-end testing of the referral flow, ensures accurate balance and withdrawal calculations, and delivers professional UI/UX improvements across all screen sizes.
+This plan addresses multiple improvements to make the referral system more professional and user-friendly:
+1. Display user's name and email properly in admin panel
+2. Auto-fill the name field in profile form from signup data
+3. Shorten and professionalize the referral link (use `/signup` instead of `/auth`)
+4. Remove the admin referral code configuration (make it automatic based on user ID)
+5. Ensure strict referral code validation from the link
 
 ---
 
-## Current State Analysis
+## Current Issues Identified
 
-### Referral System Flow (How It Currently Works)
+### Issue 1: Admin Panel User Display
+The admin panel already fetches profiles with `full_name` and `email` (lines 362-389 in Admin.tsx). The display logic uses a helper function that correctly shows the user's name, email prefix, or truncated user ID as fallback. This is working correctly.
 
-```text
-1. User A → Dashboard → ReferralBonus component → Copies link: msktesla.net/auth?ref=B503E502
-2. User B → Clicks link → Auth page switches to signup mode
-3. User B → Enters email, password, name, and MANUALLY types referral code
-4. Signup → Profile created with referral_code field
-5. Database trigger (handle_referral_signup) → Creates referral record:
-   - referrer_user_id: User A
-   - referred_user_id: User B
-   - bonus_amount: $500 (for A)
-   - referred_bonus: $100 (for B)
-   - status: 'pending'
-6. User B dashboard shows: "Welcome Bonus $100" banner + "Invest to unlock" message
-7. User B invests → Admin activates → Referral status changes to 'active'
-8. Both bonuses become withdrawable (included in availableForWithdrawal)
-```
+### Issue 2: Auto-Fill Name in Profile Form
+Currently, the ProfileCompletionModal receives `currentName` as a prop and initializes the state with it (line 29). However, when a user signs up with their name, it's stored in `auth.users.user_metadata.full_name`. The profile table should be auto-populated with this name via a database trigger.
 
-### Current Calculation Logic (Lines 1050-1106 in Dashboard.tsx)
+**Current behavior:**
+- User signs up with "John Doe" as their name
+- Name is stored in `auth.users.user_metadata.full_name`
+- Profile is created but `full_name` may not be copied over
 
-```typescript
-// Portfolio balance includes investment + profit - withdrawn
-const portfolioBalance = totalInvested + totalProfit - totalWithdrawn;
+### Issue 3: Referral Link Format
+Current referral link: `msktesla.net/auth?ref=B503E502`
+Desired referral link: `msktesla.net/signup?ref=B503E502`
 
-// Available for withdrawal = 
-//   completedInvestments + activeProfit + referralBonuses - withdrawn - pending
-const availableForWithdrawal = Math.max(0,
-  completedInvestmentTotal + activeProfit + 
-  referrerBonusWithdrawable + referredBonusWithdrawable 
-  - totalWithdrawn - pendingWithdrawals
-);
-```
+This requires:
+1. Adding a `/signup` route that redirects to `/auth` in signup mode
+2. Updating the ReferralBonus component to generate the new link format
 
-### Issues Identified
+### Issue 4: Remove Admin Referral Code Configuration
+The current system has a configurable referral code in admin settings that users must manually match. This is redundant because:
+- Each user has a unique referral code based on their user ID prefix
+- The code in the URL should automatically validate against the referrer's user ID
 
-| Issue | Current State | Required Fix |
-|-------|---------------|--------------|
-| **Referral records empty** | Query returns `[]` | Database trigger may not be firing - need to verify trigger exists |
-| **xs breakpoint missing** | Tailwind default doesn't include `xs` | Add custom `xs: 475px` breakpoint for better mobile control |
-| **WelcomeCard buttons** | Stack logic uses undefined `xs:flex-row` | Fix after adding xs breakpoint |
-| **Stats grid on small mobile** | 2-column layout may be cramped | Improve spacing and font sizes |
-| **Referral bonus not in portfolio balance** | `portfolioBalance` excludes bonuses | Consider including for accurate display |
+**Current validation flow (problematic):**
+1. User clicks link with `?ref=B503E502`
+2. System checks if this matches admin-configured code (TATY-8492)
+3. This doesn't make sense - the code is user-specific!
+
+**Correct validation flow:**
+1. User clicks link with `?ref=B503E502`
+2. System validates that a user with ID starting with `b503e502` exists
+3. No need for admin-configured code
+
+### Issue 5: Strict Referral Code Validation
+The referral code in the URL must exactly match a valid user ID prefix. If a user types the wrong code manually, it should fail validation.
 
 ---
 
-## Part 1: Referral System Verification & Fixes
+## Implementation Plan
 
-### 1.1 Verify Database Trigger
+### Part 1: Add `/signup` Route Alias
 
-The `handle_referral_signup` trigger should create referral records automatically. Since the referrals table is empty, the trigger may not be working. We need to verify:
+**File: `src/App.tsx`**
 
-1. Trigger exists on profiles table
-2. Trigger is fired on INSERT and UPDATE of referral_code
-3. Trigger correctly matches referrer by user_id prefix
-
-### 1.2 Auth Page Enhancement
-
-Improve the referral code input experience:
-
-**File: `src/pages/Auth.tsx`**
-
-| Change | Description |
-|--------|-------------|
-| Auto-fill referral code from URL | When `?ref=CODE` is present, pre-fill the input |
-| Add visual indicator | Show green checkmark when valid code detected |
-| Better input styling | Match the professional design |
+Add a new route that renders the Auth component in signup mode:
 
 ```typescript
-// Line ~49-57: Update to auto-fill the code
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const refCode = params.get('ref');
+// Add import for Signup alias
+import Signup from "./pages/Signup";
+
+// In routes:
+<Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+```
+
+**New File: `src/pages/Signup.tsx`**
+
+Create a simple wrapper that redirects to Auth with signup mode:
+
+```typescript
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+const Signup = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  if (refCode) {
-    setIsLogin(false);
-    setReferralCode(refCode.toUpperCase()); // Auto-fill the code
-  }
-}, []);
+  useEffect(() => {
+    // Preserve query params (including ?ref=CODE)
+    navigate(`/auth${location.search}`, { replace: true });
+  }, [navigate, location.search]);
+  
+  return null;
+};
+
+export default Signup;
 ```
 
----
-
-## Part 2: Balance Calculation Improvements
-
-### 2.1 Ensure Bonuses Are Properly Included
-
-The current calculation is correct but needs verification that:
-
-1. `referredBonus` state is fetched properly for the current user
-2. `referrerBonusTotal` sums all paid referrals correctly  
-3. Bonuses only unlock after `hasInvested = true`
-
-### 2.2 Portfolio Balance Display Clarity
-
-Add a breakdown showing what's included:
-
-**WelcomeCard Enhancement:**
-- Show "Current Value" (portfolio balance)
-- Add tooltip or info icon explaining the balance composition
-- Clearly indicate when referral bonuses are included
-
-### 2.3 Investment Closure Withdrawal Logic
-
-When investment status = 'completed':
-- Full investment amount withdrawable
-- Full profit withdrawable
-- Referral bonuses withdrawable (if invested)
-
-**Current logic is correct** (lines 1064-1067):
-```typescript
-const completedInvestmentTotal = investments
-  .filter(i => i.status === 'completed')
-  .reduce((sum, i) => sum + Number(i.amount) + Number(i.profit_amount || 0), 0);
-```
-
----
-
-## Part 3: UI/UX Professional Enhancements
-
-### 3.1 Add Custom XS Breakpoint
-
-**File: `tailwind.config.ts`**
-
-Add custom screen breakpoints for finer mobile control:
-
-```typescript
-screens: {
-  'xs': '475px',  // Extra small devices
-  'sm': '640px',
-  'md': '768px', 
-  'lg': '1024px',
-  'xl': '1280px',
-  '2xl': '1536px',
-}
-```
-
-### 3.2 WelcomeCard Mobile Optimization
-
-**File: `src/components/dashboard/WelcomeCard.tsx`**
-
-| Element | Current | Improved |
-|---------|---------|----------|
-| Balance font | `text-3xl sm:text-4xl md:text-5xl` | Add line-height, better tracking |
-| Button row | `flex-col xs:flex-row` | Works after adding xs breakpoint |
-| Card padding | `p-4 sm:p-5 md:p-6` | Already good |
-| Weekly change | May overflow on small screens | Add `text-sm sm:text-lg` |
-
-Additional improvements:
-- Add subtle pulse animation on balance for visual polish
-- Improve disabled button styling for Withdraw when balance is 0
-- Better visual hierarchy with label above balance
-
-### 3.3 Stats Grid Responsiveness
-
-**File: `src/components/dashboard/StatsGrid.tsx`**
-
-Improvements:
-- Reduce icon sizes on mobile: `w-3 h-3 sm:w-4 sm:h-4`
-- Smaller padding on mobile: `p-3 sm:p-4`
-- Better number formatting for large values
-- Add subtle hover effects for engagement
-
-### 3.4 ReferralBonus Component Polish
+### Part 2: Update Referral Link in ReferralBonus Component
 
 **File: `src/components/dashboard/ReferralBonus.tsx`**
 
-Improvements:
-- Better visual hierarchy for the Welcome Bonus banner
-- Clearer status indicators (Pending → Active → Paid flow)
-- Add progress-style visual for bonus unlock status
-- Improve referral link copy experience with haptic feedback
+Change lines 53-56:
 
-### 3.5 Investment Portfolio Cards
+```typescript
+// Current:
+const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
+const displayLink = `msktesla.net/auth?ref=${referralCode}`;
 
-**File: `src/components/dashboard/InvestmentPortfolio.tsx`**
+// Updated to use "signup" for cleaner look:
+const referralLink = `${PRODUCTION_DOMAIN}/signup?ref=${referralCode}`;
+const displayLink = `msktesla.net/signup?ref=${referralCode}`;
+```
 
-Improvements:
-- Add subtle borders on hover
-- Better mobile grid (already `grid-cols-2 lg:grid-cols-4`)
-- Improve price display formatting
+### Part 3: Update Referral Code Validation Logic
 
-### 3.6 PopularStocksTable Mobile
+**File: `src/contexts/AuthContext.tsx`**
 
-**File: `src/components/dashboard/PopularStocksTable.tsx`**
+Replace the current validation logic (lines 66-135) with a simpler, more professional approach:
 
-Improvements:
-- Already hides Market Cap on mobile (`hidden sm:table-cell`)
-- Consider horizontal scroll indicator for very small screens
-- Improve touch targets for tab switching
+Current problem: The system validates against a hardcoded `TATY-8492` or admin-configured code.
 
-### 3.7 Prominent Referral Banner Enhancement
+New approach:
+1. If a referral code is provided, validate it matches a real user's ID prefix
+2. Remove dependency on admin-configured referral codes
+3. The database trigger `handle_referral_signup` already handles creating the referral record
 
-**File: `src/pages/Dashboard.tsx`** (lines 1247-1287)
+```typescript
+const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
+  let validReferrerUserId: string | null = null;
+  
+  // Validate referral code by checking if a user with this ID prefix exists
+  if (referralCode && referralCode.trim()) {
+    const normalizedCode = referralCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    // Query profiles to find a user whose user_id starts with this code (case-insensitive)
+    const { data: matchingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .ilike('user_id', `${normalizedCode.toLowerCase()}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    if (profileError || !matchingProfile) {
+      return { error: { message: 'Invalid referral code. Please check the link and try again.' } };
+    }
+    
+    validReferrerUserId = matchingProfile.user_id;
+  }
+  
+  // Proceed with signup...
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/dashboard`,
+      data: { 
+        full_name: fullName, 
+        referral_code: referralCode?.trim().toUpperCase() || null,
+        referrer_user_id: validReferrerUserId 
+      }
+    }
+  });
+  
+  // ... rest of the signup logic
+};
+```
 
-The existing banner for referred users who haven't invested is good. Enhance with:
-- Stronger visual prominence (larger icon, bolder text)
-- Countdown-style urgency (optional)
-- Direct scroll + highlight to investment form
+### Part 4: Remove Admin Referral Code Configuration Section
+
+**File: `src/pages/Admin.tsx`**
+
+Remove or hide the Referral Settings section (lines 1306-1344). The referral code should be automatic based on user IDs, not manually configured.
+
+**Option A (Recommended):** Keep only the notification email field
+- Remove the referral code input
+- Keep the email field for notifications
+- Update the description to explain the automatic referral system
+
+**Option B:** Remove the entire section
+- Remove lines 1306-1344
+- Remove the `ReferralSettings` interface and related state
+- Remove `handleSaveReferralSettings` function
+
+Since the email is still useful for notifications, we'll go with Option A:
+
+```typescript
+{/* Referral Settings Section */}
+<div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
+  <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+    <Gift className="w-5 h-5 text-purple-500" />
+    {t('referralSettings') || 'Referral Notification Settings'}
+  </h2>
+  <div className="space-y-2">
+    <Label className="text-slate-300 text-sm font-semibold">
+      {t('referralEmail') || 'Notification Email'}
+    </Label>
+    <Input
+      type="email"
+      value={referralSettings.referralEmail}
+      onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
+      className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold"
+      placeholder="email@example.com"
+    />
+  </div>
+  <p className="text-xs text-slate-400 mt-3">
+    <strong>Referral codes are automatic.</strong> Each user gets a unique referral link based on their account ID. 
+    When someone signs up using a referral link and their investment is activated, you'll receive a notification at this email.
+  </p>
+  <Button onClick={handleSaveReferralSettings} className="mt-4 bg-purple-600 hover:bg-purple-700" disabled={savingReferral}>
+    {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+    Save Notification Settings
+  </Button>
+</div>
+```
+
+### Part 5: Ensure Name Auto-Fills in Profile
+
+The signup process stores `full_name` in `user_metadata`. We need to ensure this is copied to the profiles table.
+
+**File: `src/contexts/AuthContext.tsx`**
+
+After successful signup, explicitly update the profile with the name:
+
+```typescript
+// After signup succeeds
+if (!error && data?.user) {
+  // Ensure profile has the name from signup
+  setTimeout(async () => {
+    await supabase
+      .from('profiles')
+      .update({ full_name: fullName })
+      .eq('user_id', data.user!.id);
+  }, 500);
+  
+  // ... rest of the code
+}
+```
+
+Alternatively, if there's already a database trigger that creates profiles on signup, ensure it copies the `raw_user_meta_data.full_name` to the profile.
 
 ---
 
-## Part 4: Responsive Design System
+## Summary of Changes
 
-### 4.1 Breakpoint Strategy
+| File | Change |
+|------|--------|
+| `src/App.tsx` | Add `/signup` route |
+| `src/pages/Signup.tsx` | New file - redirect to Auth with query params |
+| `src/components/dashboard/ReferralBonus.tsx` | Update link to use `/signup` |
+| `src/contexts/AuthContext.tsx` | Simplify referral validation to check user ID prefix |
+| `src/pages/Admin.tsx` | Remove referral code field, keep only notification email |
 
-| Breakpoint | Width | Target Devices |
-|------------|-------|----------------|
-| Default | 0-474px | Small phones (iPhone SE, older Androids) |
-| xs | 475px+ | Standard phones (Galaxy S series) |
-| sm | 640px+ | Large phones, small tablets |
-| md | 768px+ | Tablets (iPad) |
-| lg | 1024px+ | Laptops, landscape tablets |
-| xl | 1280px+ | Desktops |
+---
 
-### 4.2 Component-Specific Responsive Rules
+## Technical Flow After Changes
 
-**WelcomeCard:**
-```
-Default (0-474px): Stack buttons, smaller text
-xs (475px+): Side-by-side buttons, larger balance
-sm (640px+): Full-size design
-```
-
-**StatsGrid:**
-```
-Default: 2-column grid, compact cards
-lg (1024px+): 4-column grid, larger cards
-```
-
-**ActionsPanel:**
-```
-Default: Part of main flow
-lg (1024px+): Sticky sidebar position
+```text
+Referral Flow:
+1. User A dashboard → ReferralBonus → Link: msktesla.net/signup?ref=B503E502
+2. User B clicks link → /signup redirects to /auth?ref=B503E502
+3. Auth page auto-switches to signup mode, auto-fills referral code
+4. User B signs up with name, email, password
+5. Validation: Check if any user_id starts with 'b503e502'
+6. ✓ Match found → User A's ID starts with b503e502
+7. Signup succeeds → Profile created with full_name from form
+8. Database trigger creates referral record linking A → B
+9. Notifications sent to both users
 ```
 
 ---
 
-## Part 5: Professional Polish Details
+## Validation Logic Summary
 
-### 5.1 Typography Improvements
-
-- Use consistent font weights (400 for body, 500 for labels, 700 for headings)
-- Better line-height for readability
-- Improve contrast ratios for accessibility
-
-### 5.2 Animation Refinements
-
-- Consistent `duration-300` for hover states
-- Smooth scroll behavior for anchor links
-- Subtle scale effects on interactive elements
-
-### 5.3 Color Consistency
-
-- Green for positive actions (withdraw, profit, active)
-- Amber/Yellow for pending states
-- Electric-blue for primary CTAs
-- Tesla-red for brand identity
-
-### 5.4 Touch Target Optimization
-
-- Minimum 44px height for all buttons
-- Adequate spacing between tappable elements
-- Clear visual feedback on touch
+| Code Entered | Validation | Result |
+|--------------|------------|--------|
+| `B503E502` | User with ID `b503e502-xxxx-xxxx-xxxx-xxxxxxxxxxxx` exists | ✓ Valid |
+| `B503E502` (typed wrong) | No user with matching ID prefix | ✗ Invalid |
+| `RANDOM123` | No user with matching ID prefix | ✗ Invalid |
+| Empty | No validation needed | ✓ Proceeds without referral |
 
 ---
 
-## Implementation Checklist
+## Expected Outcomes
 
-| Task | Priority | File(s) |
-|------|----------|---------|
-| Add xs breakpoint to Tailwind | High | `tailwind.config.ts` |
-| Auto-fill referral code from URL | High | `src/pages/Auth.tsx` |
-| Enhance WelcomeCard responsiveness | High | `src/components/dashboard/WelcomeCard.tsx` |
-| Polish ReferralBonus component | Medium | `src/components/dashboard/ReferralBonus.tsx` |
-| Improve StatsGrid mobile layout | Medium | `src/components/dashboard/StatsGrid.tsx` |
-| Verify database trigger works | High | Database migration check |
-| Add balance breakdown tooltip | Low | `src/components/dashboard/WelcomeCard.tsx` |
-| Refine touch targets | Medium | Multiple components |
-
----
-
-## Expected Outcome
-
-After implementation:
-1. **Referral flow works end-to-end**: Signup with code creates referral record
-2. **Balance calculations are accurate**: All bonuses properly included when eligible
-3. **Dashboard is 100% responsive**: Looks professional on all devices from 320px to 2560px
-4. **Withdrawal logic is clear**: Users understand what they can withdraw and when
-5. **UI is polished**: Consistent animations, colors, and typography throughout
+1. **Professional referral links**: `msktesla.net/signup?ref=CODE` instead of `/auth`
+2. **Automatic referral codes**: No manual configuration needed in admin
+3. **Strict validation**: Referral codes only work when they match a real user's ID
+4. **User names display correctly**: In admin panel and pre-filled in profile forms
+5. **Simplified admin panel**: Removed redundant referral code field
 
