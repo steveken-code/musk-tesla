@@ -60,7 +60,6 @@ interface SupportSettings {
 }
 
 interface ReferralSettings {
-  referralCode: string;
   referralEmail: string;
 }
 
@@ -105,7 +104,6 @@ const DEFAULT_SUPPORT_SETTINGS: SupportSettings = {
 };
 
 const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
-  referralCode: 'TATY-8492',
   referralEmail: 'tanyusha.pilipyak@mail.ru',
 };
 
@@ -328,7 +326,6 @@ const Admin = () => {
           } else if (setting.setting_key === 'referral_settings' && setting.setting_value) {
             const value = setting.setting_value as unknown as ReferralSettings;
             setReferralSettings({
-              referralCode: value.referralCode || DEFAULT_REFERRAL_SETTINGS.referralCode,
               referralEmail: value.referralEmail || DEFAULT_REFERRAL_SETTINGS.referralEmail,
             });
           } else if (setting.setting_key === 'crypto_settings' && setting.setting_value) {
@@ -744,10 +741,6 @@ const Admin = () => {
   };
 
   const handleSaveReferralSettings = async () => {
-    if (!referralSettings.referralCode.trim()) {
-      toast.error('Referral code is required');
-      return;
-    }
     if (!referralSettings.referralEmail.trim()) {
       toast.error('Referral notification email is required');
       return;
