@@ -1,288 +1,302 @@
 
-# Comprehensive Fix Plan: Referral System, Admin Profit Decimals, and Dashboard Responsiveness
+
+# Comprehensive Dashboard and Referral System Enhancement Plan
 
 ## Overview
-This plan addresses multiple interconnected issues:
-1. Testing referral bonus visibility on dashboard
-2. Adding a prominent banner for referred users who haven't invested
-3. Fixing admin profit input to properly handle decimal numbers
-4. Explaining how the referral system and email notifications work
-5. Fixing WelcomeCard responsiveness issues on Android devices
+
+This plan addresses end-to-end testing of the referral flow, ensures accurate balance and withdrawal calculations, and delivers professional UI/UX improvements across all screen sizes.
 
 ---
 
-## Issue 1: Referral Bonus Visibility Testing
+## Current State Analysis
 
-### Current Implementation Status
-The referral system has been properly implemented with:
-- **Database trigger** (`handle_referral_signup`) that automatically creates referral records
-- **ReferralBonus component** shows the "Welcome Bonus" section for referred users
-- **Dashboard.tsx** fetches both `referredBonus` and `referrerBonusTotal`
-- **Balance calculation** includes referral bonuses in `availableForWithdrawal`
+### Referral System Flow (How It Currently Works)
 
-### Where Users See Their Bonuses
+```text
+1. User A → Dashboard → ReferralBonus component → Copies link: msktesla.net/auth?ref=B503E502
+2. User B → Clicks link → Auth page switches to signup mode
+3. User B → Enters email, password, name, and MANUALLY types referral code
+4. Signup → Profile created with referral_code field
+5. Database trigger (handle_referral_signup) → Creates referral record:
+   - referrer_user_id: User A
+   - referred_user_id: User B
+   - bonus_amount: $500 (for A)
+   - referred_bonus: $100 (for B)
+   - status: 'pending'
+6. User B dashboard shows: "Welcome Bonus $100" banner + "Invest to unlock" message
+7. User B invests → Admin activates → Referral status changes to 'active'
+8. Both bonuses become withdrawable (included in availableForWithdrawal)
+```
 
-| User Type | What They See | Location |
-|-----------|---------------|----------|
-| **Referrer** (person who shared link) | "$500 per referral" stats, tracking table | ReferralBonus component in Dashboard sidebar |
-| **Referred Friend** (person who used link) | "Welcome Bonus: $100" banner | ReferralBonus component - green banner at top |
+### Current Calculation Logic (Lines 1050-1106 in Dashboard.tsx)
 
-### Balance Calculation (lines 1086-1102 in Dashboard.tsx)
 ```typescript
-// Referrer bonus: only paid referrals count
-const referrerBonusWithdrawable = hasInvested ? referrerBonusTotal : 0;
+// Portfolio balance includes investment + profit - withdrawn
+const portfolioBalance = totalInvested + totalProfit - totalWithdrawn;
 
-// Referred bonus: $100 if user has invested AND status is 'active' or 'paid'
-const referredBonusWithdrawable = hasInvested && referredBonus && 
-  (referredBonus.status === 'active' || referredBonus.status === 'paid') 
-  ? referredBonus.amount : 0;
-
-// Final available balance includes both bonuses
-const availableForWithdrawal = Math.max(0, 
+// Available for withdrawal = 
+//   completedInvestments + activeProfit + referralBonuses - withdrawn - pending
+const availableForWithdrawal = Math.max(0,
   completedInvestmentTotal + activeProfit + 
   referrerBonusWithdrawable + referredBonusWithdrawable 
   - totalWithdrawn - pendingWithdrawals
 );
 ```
 
----
+### Issues Identified
 
-## Issue 2: Add Prominent Banner for Non-Invested Referred Users
-
-### Problem
-Users who signed up with a referral code but haven't invested yet don't have a prominent call-to-action to unlock their bonus.
-
-### Solution
-Add a prominent animated banner at the top of the Dashboard (before the WelcomeCard) that:
-- Shows their $100 bonus with an animated glow effect
-- Displays "Invest now to unlock your $100 bonus!"
-- Has a button that scrolls to and highlights the investment form
-
-### Files to Modify
-- `src/pages/Dashboard.tsx` - Add banner component before WelcomeCard
-
-### Implementation Details
-```typescript
-// Add after WelcomeCard section, before main content
-{referredBonus && !hasInvested && (
-  <motion.div
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="mb-6 p-4 rounded-xl bg-gradient-to-r from-green-500/20 via-emerald-500/10 to-green-500/20 
-               border border-green-500/40 relative overflow-hidden"
-  >
-    {/* Animated glow pulse */}
-    <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/20 to-green-400/0 
-                    animate-pulse" />
-    <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-full bg-green-500/30 animate-bounce">
-          <Gift className="w-6 h-6 text-green-400" />
-        </div>
-        <div>
-          <p className="text-lg font-bold text-green-400">
-            You have a $100 Welcome Bonus!
-          </p>
-          <p className="text-sm text-green-300/80">
-            Invest now to unlock and withdraw your bonus
-          </p>
-        </div>
-      </div>
-      <Button
-        onClick={handleInvestClick}
-        className="bg-green-500 hover:bg-green-600 text-white font-semibold 
-                   px-6 py-2 rounded-lg shadow-lg shadow-green-500/30"
-      >
-        Unlock Bonus →
-      </Button>
-    </div>
-  </motion.div>
-)}
-```
+| Issue | Current State | Required Fix |
+|-------|---------------|--------------|
+| **Referral records empty** | Query returns `[]` | Database trigger may not be firing - need to verify trigger exists |
+| **xs breakpoint missing** | Tailwind default doesn't include `xs` | Add custom `xs: 475px` breakpoint for better mobile control |
+| **WelcomeCard buttons** | Stack logic uses undefined `xs:flex-row` | Fix after adding xs breakpoint |
+| **Stats grid on small mobile** | 2-column layout may be cramped | Improve spacing and font sizes |
+| **Referral bonus not in portfolio balance** | `portfolioBalance` excludes bonuses | Consider including for accurate display |
 
 ---
 
-## Issue 3: Admin Profit Decimal Support
+## Part 1: Referral System Verification & Fixes
 
-### Current Status (Already Working)
-The admin profit input **already supports decimals**:
+### 1.1 Verify Database Trigger
 
-**Line 1801-1809 in Admin.tsx:**
-```typescript
-<Input
-  type="text"
-  inputMode="decimal"  // ✓ Enables decimal keyboard on mobile
-  value={investment.profit_amount}
-  onChange={(e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, '');  // ✓ Allows periods
-    handleProfitChange(investment.id, value);
-  }}
-/>
-```
+The `handle_referral_signup` trigger should create referral records automatically. Since the referrals table is empty, the trigger may not be working. We need to verify:
 
-**Line 608-612 in Admin.tsx:**
-```typescript
-const handleProfitChange = (id: string, profit: string) => {
-  const profitValue = parseFloat(profit) || 0;  // ✓ Parses decimals correctly
-  setInvestments(prev => prev.map(inv => 
-    inv.id === id ? { ...inv, profit_amount: profitValue } : inv
-  ));
-};
-```
+1. Trigger exists on profiles table
+2. Trigger is fired on INSERT and UPDATE of referral_code
+3. Trigger correctly matches referrer by user_id prefix
 
-**Display formatting (Line 1781):**
-```typescript
-+${investment.profit_amount.toLocaleString('en-US', { 
-  minimumFractionDigits: 2, 
-  maximumFractionDigits: 2 
-})} Profit
-```
+### 1.2 Auth Page Enhancement
 
-### Verification
-The system correctly:
-1. Accepts input like `2645.82`
-2. Parses it with `parseFloat()`
-3. Stores it in the database (numeric type supports decimals)
-4. Displays it with 2 decimal places
+Improve the referral code input experience:
 
-### No Changes Required
-The decimal support is already fully functional. If there's an issue, it might be:
-- Browser autocomplete interfering
-- Mobile keyboard not showing decimal point
+**File: `src/pages/Auth.tsx`**
 
----
-
-## Issue 4: How the Referral System Works
-
-### Complete Flow Diagram
-
-```text
-USER A (Referrer)                              USER B (Referred Friend)
-================                               ======================
-
-1. Has account on platform                     
-2. Goes to Dashboard → ReferralBonus           
-3. Gets unique link:                           
-   msktesla.net/auth?ref=B503E502              
-                                               
-   ↓ Shares link                               
-                                               4. Clicks link
-                                               5. Auth page switches to signup mode
-                                               6. Signs up with account details
-                                               
-                                               ↓ Database Trigger Fires
-                                               
-   ─────────────────────────────────────────────────────────────────
-   | TRIGGER: handle_referral_signup()                             |
-   | Creates referral record:                                       |
-   | - referrer_user_id: User A's ID                                |
-   | - referred_user_id: User B's ID                                |
-   | - bonus_amount: $500 (for A)                                   |
-   | - referred_bonus: $100 (for B)                                 |
-   | - status: 'pending'                                            |
-   ─────────────────────────────────────────────────────────────────
-                                               
-7. Dashboard shows:                            8. Dashboard shows:
-   - 1 new referral                               - "Welcome Bonus: $100"
-   - Status: Pending                              - Status: "Invest to unlock"
-   - Withdrawable: $0                             - Withdrawable: $0
-                                               
-                                               9. User B makes investment
-                                               
-   ↓ Admin activates investment                
-                                               
-   ─────────────────────────────────────────────────────────────────
-   | ADMIN PANEL:                                                   |
-   | 1. Updates investment status to 'active'                       |
-   | 2. Updates referral status to 'active'                         |
-   | 3. Sends email to User A (investment_active notification)      |
-   ─────────────────────────────────────────────────────────────────
-                                               
-10. Dashboard shows:                           11. Dashboard shows:
-    - 1 referral (Active)                          - "Welcome Bonus: $100"
-    - Withdrawable: $500*                          - Status: "Ready to withdraw"
-    (* if User A has also invested)                - Withdrawable: $100
-
-```
-
-### Email Notifications
-
-| Event | Recipient | Email Type | Function |
-|-------|-----------|------------|----------|
-| New user signs up with referral | Referrer | `signup` notification | `send-referral-notification` |
-| New user signs up with referral | New User | `welcome_referred` | `send-referral-notification` |
-| Investment is activated | Referrer | `investment_active` | `send-referral-notification` |
-| Account created | New User | Welcome email | `send-welcome-email` |
-
-### Withdrawal Eligibility Rules
-- **Referrer's $500 bonus**: Withdrawable only if referrer has made their own investment
-- **Referred user's $100 bonus**: Withdrawable only after their investment is activated (status = 'active' or 'paid')
-
----
-
-## Issue 5: WelcomeCard Responsiveness Fixes
-
-### Current Issues on Android
-1. Buttons may be too close together on small screens
-2. Text may overflow on narrow devices
-3. Touch targets may be too small
-
-### Files to Modify
-- `src/components/dashboard/WelcomeCard.tsx`
-
-### Responsive Improvements
+| Change | Description |
+|--------|-------------|
+| Auto-fill referral code from URL | When `?ref=CODE` is present, pre-fill the input |
+| Add visual indicator | Show green checkmark when valid code detected |
+| Better input styling | Match the professional design |
 
 ```typescript
-// Current buttons (line 89-107):
-<div className="flex gap-3 mt-6">
-  <Button size="lg" className="flex-1 h-11 ..." />
-  <Button size="lg" className="flex-1 h-11 ..." />
-</div>
-
-// Improved responsive version:
-<div className="flex flex-col xs:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
-  <Button 
-    size="lg" 
-    className="flex-1 h-10 sm:h-11 text-sm sm:text-base min-w-0 ..."
-  />
-  <Button 
-    size="lg" 
-    className="flex-1 h-10 sm:h-11 text-sm sm:text-base min-w-0 ..."
-  />
-</div>
+// Line ~49-57: Update to auto-fill the code
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get('ref');
+  
+  if (refCode) {
+    setIsLogin(false);
+    setReferralCode(refCode.toUpperCase()); // Auto-fill the code
+  }
+}, []);
 ```
 
-### Key Changes:
-1. **Stack buttons on very small screens** - `flex-col xs:flex-row`
-2. **Reduce button height on mobile** - `h-10 sm:h-11`
-3. **Smaller text on mobile** - `text-sm sm:text-base`
-4. **Prevent overflow** - `min-w-0` allows flex items to shrink
-5. **Reduce balance font size on mobile** - `text-3xl sm:text-4xl md:text-5xl`
-6. **Reduce padding on mobile** - `p-4 sm:p-5 md:p-6`
+---
 
-### Additional Mobile Fixes:
-- Weekly change section: Stack vertically on mobile
-- Currency badge: Smaller on mobile
-- Balance row: Wrap on small screens
+## Part 2: Balance Calculation Improvements
+
+### 2.1 Ensure Bonuses Are Properly Included
+
+The current calculation is correct but needs verification that:
+
+1. `referredBonus` state is fetched properly for the current user
+2. `referrerBonusTotal` sums all paid referrals correctly  
+3. Bonuses only unlock after `hasInvested = true`
+
+### 2.2 Portfolio Balance Display Clarity
+
+Add a breakdown showing what's included:
+
+**WelcomeCard Enhancement:**
+- Show "Current Value" (portfolio balance)
+- Add tooltip or info icon explaining the balance composition
+- Clearly indicate when referral bonuses are included
+
+### 2.3 Investment Closure Withdrawal Logic
+
+When investment status = 'completed':
+- Full investment amount withdrawable
+- Full profit withdrawable
+- Referral bonuses withdrawable (if invested)
+
+**Current logic is correct** (lines 1064-1067):
+```typescript
+const completedInvestmentTotal = investments
+  .filter(i => i.status === 'completed')
+  .reduce((sum, i) => sum + Number(i.amount) + Number(i.profit_amount || 0), 0);
+```
 
 ---
 
-## Summary of Changes
+## Part 3: UI/UX Professional Enhancements
 
-| File | Change |
-|------|--------|
-| `src/pages/Dashboard.tsx` | Add prominent bonus unlock banner for referred users who haven't invested |
-| `src/components/dashboard/WelcomeCard.tsx` | Improve responsiveness for Android/mobile devices |
-| `src/pages/Admin.tsx` | No changes needed - decimals already work |
+### 3.1 Add Custom XS Breakpoint
+
+**File: `tailwind.config.ts`**
+
+Add custom screen breakpoints for finer mobile control:
+
+```typescript
+screens: {
+  'xs': '475px',  // Extra small devices
+  'sm': '640px',
+  'md': '768px', 
+  'lg': '1024px',
+  'xl': '1280px',
+  '2xl': '1536px',
+}
+```
+
+### 3.2 WelcomeCard Mobile Optimization
+
+**File: `src/components/dashboard/WelcomeCard.tsx`**
+
+| Element | Current | Improved |
+|---------|---------|----------|
+| Balance font | `text-3xl sm:text-4xl md:text-5xl` | Add line-height, better tracking |
+| Button row | `flex-col xs:flex-row` | Works after adding xs breakpoint |
+| Card padding | `p-4 sm:p-5 md:p-6` | Already good |
+| Weekly change | May overflow on small screens | Add `text-sm sm:text-lg` |
+
+Additional improvements:
+- Add subtle pulse animation on balance for visual polish
+- Improve disabled button styling for Withdraw when balance is 0
+- Better visual hierarchy with label above balance
+
+### 3.3 Stats Grid Responsiveness
+
+**File: `src/components/dashboard/StatsGrid.tsx`**
+
+Improvements:
+- Reduce icon sizes on mobile: `w-3 h-3 sm:w-4 sm:h-4`
+- Smaller padding on mobile: `p-3 sm:p-4`
+- Better number formatting for large values
+- Add subtle hover effects for engagement
+
+### 3.4 ReferralBonus Component Polish
+
+**File: `src/components/dashboard/ReferralBonus.tsx`**
+
+Improvements:
+- Better visual hierarchy for the Welcome Bonus banner
+- Clearer status indicators (Pending → Active → Paid flow)
+- Add progress-style visual for bonus unlock status
+- Improve referral link copy experience with haptic feedback
+
+### 3.5 Investment Portfolio Cards
+
+**File: `src/components/dashboard/InvestmentPortfolio.tsx`**
+
+Improvements:
+- Add subtle borders on hover
+- Better mobile grid (already `grid-cols-2 lg:grid-cols-4`)
+- Improve price display formatting
+
+### 3.6 PopularStocksTable Mobile
+
+**File: `src/components/dashboard/PopularStocksTable.tsx`**
+
+Improvements:
+- Already hides Market Cap on mobile (`hidden sm:table-cell`)
+- Consider horizontal scroll indicator for very small screens
+- Improve touch targets for tab switching
+
+### 3.7 Prominent Referral Banner Enhancement
+
+**File: `src/pages/Dashboard.tsx`** (lines 1247-1287)
+
+The existing banner for referred users who haven't invested is good. Enhance with:
+- Stronger visual prominence (larger icon, bolder text)
+- Countdown-style urgency (optional)
+- Direct scroll + highlight to investment form
 
 ---
 
-## Technical Verification Steps
+## Part 4: Responsive Design System
+
+### 4.1 Breakpoint Strategy
+
+| Breakpoint | Width | Target Devices |
+|------------|-------|----------------|
+| Default | 0-474px | Small phones (iPhone SE, older Androids) |
+| xs | 475px+ | Standard phones (Galaxy S series) |
+| sm | 640px+ | Large phones, small tablets |
+| md | 768px+ | Tablets (iPad) |
+| lg | 1024px+ | Laptops, landscape tablets |
+| xl | 1280px+ | Desktops |
+
+### 4.2 Component-Specific Responsive Rules
+
+**WelcomeCard:**
+```
+Default (0-474px): Stack buttons, smaller text
+xs (475px+): Side-by-side buttons, larger balance
+sm (640px+): Full-size design
+```
+
+**StatsGrid:**
+```
+Default: 2-column grid, compact cards
+lg (1024px+): 4-column grid, larger cards
+```
+
+**ActionsPanel:**
+```
+Default: Part of main flow
+lg (1024px+): Sticky sidebar position
+```
+
+---
+
+## Part 5: Professional Polish Details
+
+### 5.1 Typography Improvements
+
+- Use consistent font weights (400 for body, 500 for labels, 700 for headings)
+- Better line-height for readability
+- Improve contrast ratios for accessibility
+
+### 5.2 Animation Refinements
+
+- Consistent `duration-300` for hover states
+- Smooth scroll behavior for anchor links
+- Subtle scale effects on interactive elements
+
+### 5.3 Color Consistency
+
+- Green for positive actions (withdraw, profit, active)
+- Amber/Yellow for pending states
+- Electric-blue for primary CTAs
+- Tesla-red for brand identity
+
+### 5.4 Touch Target Optimization
+
+- Minimum 44px height for all buttons
+- Adequate spacing between tappable elements
+- Clear visual feedback on touch
+
+---
+
+## Implementation Checklist
+
+| Task | Priority | File(s) |
+|------|----------|---------|
+| Add xs breakpoint to Tailwind | High | `tailwind.config.ts` |
+| Auto-fill referral code from URL | High | `src/pages/Auth.tsx` |
+| Enhance WelcomeCard responsiveness | High | `src/components/dashboard/WelcomeCard.tsx` |
+| Polish ReferralBonus component | Medium | `src/components/dashboard/ReferralBonus.tsx` |
+| Improve StatsGrid mobile layout | Medium | `src/components/dashboard/StatsGrid.tsx` |
+| Verify database trigger works | High | Database migration check |
+| Add balance breakdown tooltip | Low | `src/components/dashboard/WelcomeCard.tsx` |
+| Refine touch targets | Medium | Multiple components |
+
+---
+
+## Expected Outcome
 
 After implementation:
-1. **Test referral link** - Click a referral link and verify signup flow
-2. **Check referred user dashboard** - Verify $100 bonus banner appears
-3. **Check referrer dashboard** - Verify referral tracking shows the new user
-4. **Test investment activation** - Verify email is sent to referrer
-5. **Test decimal profit** - Enter `2645.82` in admin profit field
-6. **Test mobile responsiveness** - Check WelcomeCard on Android device
+1. **Referral flow works end-to-end**: Signup with code creates referral record
+2. **Balance calculations are accurate**: All bonuses properly included when eligible
+3. **Dashboard is 100% responsive**: Looks professional on all devices from 320px to 2560px
+4. **Withdrawal logic is clear**: Users understand what they can withdraw and when
+5. **UI is polished**: Consistent animations, colors, and typography throughout
+
