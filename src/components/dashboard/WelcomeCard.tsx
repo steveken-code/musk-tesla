@@ -29,7 +29,7 @@ const WelcomeCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="mb-4 sm:mb-6"
+      className="mb-5 sm:mb-6 md:mb-8"
     >
       {/* Greeting */}
       <div className="mb-3 sm:mb-4">
@@ -40,14 +40,14 @@ const WelcomeCard = ({
       </div>
 
       {/* Balance Card - Clean purple gradient like reference */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-3 sm:p-4 md:p-5 lg:p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 p-4 sm:p-5 md:p-6 lg:p-8 shadow-xl">
         {/* Subtle decorative circles */}
         <div className="absolute -top-10 -right-10 w-24 sm:w-32 h-24 sm:h-32 bg-white/10 rounded-full blur-xl" />
         <div className="absolute -bottom-8 -left-8 w-20 sm:w-24 h-20 sm:h-24 bg-white/10 rounded-full blur-lg" />
         
         <div className="relative z-10">
           {/* Current Value Label */}
-          <p className="text-white/70 text-[10px] sm:text-xs md:text-sm mb-0.5 sm:mb-1">Current value</p>
+          <p className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-1.5">Current value</p>
           
           {/* Balance Row */}
           <div className="flex flex-col gap-2 sm:gap-3 md:flex-row md:items-end md:justify-between md:gap-4">
@@ -86,22 +86,22 @@ const WelcomeCard = ({
           </div>
           
           {/* Action Buttons - Stack on very small screens, side by side on xs+ */}
-          <div className="flex flex-col xs:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 md:mt-6">
+          <div className="flex flex-col xs:flex-row gap-3 xs:gap-4 mt-4 sm:mt-5 md:mt-6">
             <Button 
               size="lg" 
-              className="flex-1 h-9 xs:h-10 sm:h-11 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm font-semibold transition-all text-xs sm:text-sm md:text-base min-w-0"
+              className="flex-1 h-10 xs:h-11 sm:h-12 px-4 sm:px-5 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm font-semibold transition-all duration-200 text-sm sm:text-base min-w-0 rounded-xl"
               onClick={onInvestClick}
             >
-              <ArrowDownToLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 md:mr-2 shrink-0" />
+              <ArrowDownToLine className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
               <span className="truncate">Invest</span>
             </Button>
             <Button 
               size="lg" 
-              className="flex-1 h-9 xs:h-10 sm:h-11 bg-white text-purple-700 hover:bg-white/90 border-0 font-semibold shadow-lg transition-all text-xs sm:text-sm md:text-base min-w-0 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex-1 h-10 xs:h-11 sm:h-12 px-4 sm:px-5 bg-white text-purple-700 hover:bg-white/95 hover:scale-[1.02] border-0 font-semibold shadow-xl transition-all duration-200 text-sm sm:text-base min-w-0 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
               onClick={onWithdrawClick}
               disabled={portfolioBalance <= 0}
             >
-              <ArrowUpFromLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 md:mr-2 shrink-0" />
+              <ArrowUpFromLine className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
               <span className="truncate">Withdraw</span>
             </Button>
           </div>
