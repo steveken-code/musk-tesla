@@ -118,31 +118,31 @@ const StatCard = ({ icon: Icon, label, value, numericValue, subValue, color, ind
         stiffness: 100,
         damping: 15
       }}
-      whileHover={{ scale: 1.03, y: -4 }}
-      className={`group relative bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3.5 sm:p-4 transition-all duration-300 cursor-default ${colors.hoverBorder} hover:shadow-xl ${colors.glowColor}`}
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={`group relative bg-card/80 backdrop-blur-sm border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 transition-all duration-300 cursor-default ${colors.hoverBorder} hover:shadow-xl ${colors.glowColor}`}
     >
       {/* Gradient overlay on hover */}
-      <div className={`absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} pointer-events-none`} />
+      <div className={`absolute inset-0 rounded-lg sm:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} pointer-events-none`} />
       
       {/* Subtle shimmer effect */}
-      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 rounded-lg sm:rounded-xl overflow-hidden pointer-events-none">
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
           <div className="absolute inset-[-100%] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 group-hover:translate-x-[200%] transition-transform duration-1000 ease-out" />
         </div>
       </div>
       
       <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5">
           <motion.div 
-            className={`p-2 rounded-lg ${colors.bg} ring-1 ring-inset ring-white/5`}
+            className={`p-1.5 sm:p-2 rounded-md sm:rounded-lg ${colors.bg} ring-1 ring-inset ring-white/5`}
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <Icon className={`w-4 h-4 ${colors.iconColor}`} />
+            <Icon className={`w-3 h-3 sm:w-4 sm:h-4 ${colors.iconColor}`} />
           </motion.div>
-          <span className="text-muted-foreground text-[10px] sm:text-xs font-medium">{label}</span>
+          <span className="text-muted-foreground text-[9px] sm:text-[10px] md:text-xs font-medium truncate">{label}</span>
         </div>
-        <p className={`text-lg sm:text-xl md:text-2xl font-bold ${color === 'green' ? 'text-green-500' : 'text-foreground'}`}>
+        <p className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold truncate ${color === 'green' ? 'text-green-500' : 'text-foreground'}`}>
           {shouldAnimate ? (
             <AnimatedCounter 
               end={numericValue} 
@@ -158,7 +158,7 @@ const StatCard = ({ icon: Icon, label, value, numericValue, subValue, color, ind
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 + (index * 0.1), duration: 0.4 }}
-            className="text-[10px] text-green-400 mt-0.5 font-medium"
+            className="text-[9px] sm:text-[10px] text-green-400 mt-0.5 font-medium"
           >
             {subValue}
           </motion.p>
@@ -222,7 +222,7 @@ const StatsGrid = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-5 sm:mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-2.5 sm:gap-3 mb-4 sm:mb-5 md:mb-6">
       {stats.map((stat, index) => (
         <StatCard key={stat.label} {...stat} index={index} />
       ))}
