@@ -12,8 +12,9 @@ import {
   CheckCircle, XCircle, Loader2, ArrowLeft,
   Wallet, Globe, AlertCircle, Mail, RefreshCw,
   CreditCard, Phone, Bitcoin, ChevronDown, X, History, Search,
-  Menu, Home, BarChart3, Settings, User, Activity, PieChart
+  Menu, Home, BarChart3, Settings, User, Activity, PieChart, Gift
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import SupportButtons from '@/components/SupportButtons';
 // TeslaChart removed from dashboard layout
 import InvestmentChart from '@/components/InvestmentChart';
@@ -1242,6 +1243,48 @@ const Dashboard = () => {
               onWithdrawClick={portfolioBalance > 0 ? handleWithdrawStart : undefined}
               t={t}
             />
+
+            {/* Prominent Banner for Referred Users Who Haven't Invested */}
+            {referredBonus && !hasInvested && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="p-4 sm:p-5 rounded-xl bg-gradient-to-r from-green-500/20 via-emerald-500/10 to-green-500/20 
+                           border border-green-500/40 relative overflow-hidden"
+              >
+                {/* Animated glow pulse */}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/20 to-green-400/0 animate-pulse" />
+                
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-center sm:text-left">
+                    <div className="p-2 rounded-full bg-green-500/30 animate-bounce shrink-0">
+                      <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-base sm:text-lg font-bold text-green-400">
+                        You have a ${referredBonus.amount} Welcome Bonus!
+                      </p>
+                      <p className="text-xs sm:text-sm text-green-300/80">
+                        Invest now to unlock and withdraw your bonus
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      document.querySelector('#deposit')?.scrollIntoView({ behavior: 'smooth' });
+                      setHighlightInvestForm(true);
+                      setTimeout(() => setHighlightInvestForm(false), 2500);
+                    }}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold 
+                               px-4 sm:px-6 py-2 rounded-lg shadow-lg shadow-green-500/30 
+                               w-full sm:w-auto whitespace-nowrap"
+                  >
+                    Unlock Bonus →
+                  </Button>
+                </div>
+              </motion.div>
+            )}
 
             {/* Investment Portfolio Cards */}
             <InvestmentPortfolio />
