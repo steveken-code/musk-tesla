@@ -175,6 +175,40 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        "logo-pulse": {
+          "0%, 100%": { 
+            opacity: "0.9",
+            transform: "scale(1)"
+          },
+          "50%": { 
+            opacity: "1",
+            transform: "scale(1.05)"
+          }
+        },
+        "logo-glow-inner": {
+          "0%, 100%": { 
+            boxShadow: "0 0 40px 15px rgba(232, 33, 39, 0.25)",
+            opacity: "0.5"
+          },
+          "50%": { 
+            boxShadow: "0 0 70px 30px rgba(232, 33, 39, 0.5)",
+            opacity: "0.9"
+          }
+        },
+        "logo-glow-outer": {
+          "0%, 100%": { 
+            boxShadow: "0 0 60px 25px rgba(232, 33, 39, 0.15)",
+            opacity: "0.3"
+          },
+          "50%": { 
+            boxShadow: "0 0 100px 50px rgba(232, 33, 39, 0.35)",
+            opacity: "0.7"
+          }
+        },
+        "wordmark-fade": {
+          "0%, 100%": { opacity: "0.6" },
+          "50%": { opacity: "0.9" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -190,6 +224,10 @@ export default {
         "shimmer": "shimmer 2s linear infinite",
         "spin-slow": "spin-slow 20s linear infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        "logo-pulse": "logo-pulse 2s ease-in-out infinite",
+        "logo-glow-inner": "logo-glow-inner 2s ease-in-out infinite",
+        "logo-glow-outer": "logo-glow-outer 2.5s ease-in-out infinite",
+        "wordmark-fade": "wordmark-fade 2s ease-in-out infinite",
       },
     },
   },
