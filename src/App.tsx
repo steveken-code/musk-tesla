@@ -12,6 +12,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { LanguageRouteHandler } from "@/components/LanguageRouteHandler";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Signup from "./pages/Signup";
 import AdminLogin from "./pages/AdminLogin";
 import AdminForgotPassword from "./pages/AdminForgotPassword";
 import AdminResetPassword from "./pages/AdminResetPassword";
@@ -36,6 +37,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<PageTransition><Index /></PageTransition>} />
       <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
       <Route path="/admin-login" element={<PageTransition><AdminLogin /></PageTransition>} />
       <Route path="/admin-forgot-password" element={<PageTransition><AdminForgotPassword /></PageTransition>} />
       <Route path="/admin-reset-password" element={<PageTransition><AdminResetPassword /></PageTransition>} />
@@ -79,6 +81,7 @@ const AnimatedRoutes = () => {
           {/* Default English routes (no prefix) */}
           <Route path="/" element={<PageTransition><Index /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+          <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
           <Route path="/admin-login" element={<PageTransition><AdminLogin /></PageTransition>} />
           <Route path="/admin-forgot-password" element={<PageTransition><AdminForgotPassword /></PageTransition>} />
           <Route path="/admin-reset-password" element={<PageTransition><AdminResetPassword /></PageTransition>} />

@@ -52,8 +52,8 @@ const ReferralBonus = () => {
   // Generate unique referral link based on user ID - always use production domain
   const PRODUCTION_DOMAIN = 'https://msktesla.net';
   const referralCode = user?.id?.slice(0, 8).toUpperCase() || 'TESLA500';
-  const referralLink = `${PRODUCTION_DOMAIN}/auth?ref=${referralCode}`;
-  const displayLink = `msktesla.net/auth?ref=${referralCode}`;
+  const referralLink = `${PRODUCTION_DOMAIN}/signup?ref=${referralCode}`;
+  const displayLink = `msktesla.net/signup?ref=${referralCode}`;
 
   // Fetch referral stats and investment status from database
   useEffect(() => {

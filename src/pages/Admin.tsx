@@ -1303,35 +1303,25 @@ const Admin = () => {
           </Button>
         </div>
 
-        {/* Referral Settings Section */}
+        {/* Referral Notification Settings Section */}
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
             <Gift className="w-5 h-5 text-purple-500" />
-            {t('referralSettings') || 'Referral Settings'}
+            {t('referralSettings') || 'Referral Notification Settings'}
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label className="text-slate-300 text-sm font-semibold">{t('referralCode') || 'Referral Code'}</Label>
-              <Input
-                value={referralSettings.referralCode}
-                onChange={(e) => setReferralSettings(prev => ({ ...prev, referralCode: e.target.value.toUpperCase() }))}
-                className="bg-white border-2 border-slate-300 [color:#000000_!important] font-mono text-base font-semibold placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12"
-                placeholder="TATY-8492"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-300 text-sm font-semibold">{t('referralEmail') || 'Notification Email'}</Label>
-              <Input
-                type="email"
-                value={referralSettings.referralEmail}
-                onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
-                className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12"
-                placeholder="email@example.com"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label className="text-slate-300 text-sm font-semibold">{t('referralEmail') || 'Notification Email'}</Label>
+            <Input
+              type="email"
+              value={referralSettings.referralEmail}
+              onChange={(e) => setReferralSettings(prev => ({ ...prev, referralEmail: e.target.value }))}
+              className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500/20 h-12"
+              placeholder="email@example.com"
+            />
           </div>
           <p className="text-xs text-slate-400 mt-3">
-            When a user signs up with this referral code and their investment is activated, a notification will be sent to this email immediately.
+            <span className="font-semibold text-purple-400">Referral codes are automatic.</span> Each user gets a unique referral link based on their account ID (e.g., <code className="bg-slate-700 px-1 rounded">msktesla.net/signup?ref=ABC12345</code>). 
+            When someone signs up using a referral link and their investment is activated, you'll receive a notification at this email.
           </p>
           <Button
             onClick={handleSaveReferralSettings}
@@ -1339,7 +1329,7 @@ const Admin = () => {
             disabled={savingReferral}
           >
             {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {t('saveReferralSettings') || 'Save Referral Settings'}
+            {t('saveReferralSettings') || 'Save Notification Settings'}
           </Button>
         </div>
 
