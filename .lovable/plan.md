@@ -1,115 +1,69 @@
 
+# Update Social Sharing Meta Tags - Remove Lovable Branding
 
-# Enhance Dashboard WelcomeCard Responsiveness
+## Problem
 
-## Overview
+When users share links to msktesla.net on social media (Facebook, Twitter, WhatsApp, LinkedIn), the preview shows:
+- **Missing og:image** - No branded preview image appears
+- **Lovable Twitter handle** (`@Lovable`) - Unprofessional for your brand
+- **Missing og:url** - Social platforms can't properly identify the page
 
-You've noticed that the Invest and Withdraw buttons in the dashboard's balance card feel cramped and don't look as polished across different screen sizes. I'll improve the spacing, button sizing, and overall responsiveness to create a more professional, breathable layout.
-
----
-
-## Current Issues
-
-| Problem | Impact |
-|---------|--------|
-| Buttons are too compact on small screens | Feels cramped, hard to tap on mobile |
-| Insufficient padding inside the balance card | Layout feels tight |
-| Button text may truncate awkwardly | Unprofessional appearance |
-| Gap between buttons is too narrow | Buttons feel crowded together |
+This makes shared links look unprofessional and off-brand.
 
 ---
 
-## Changes
+## Solution
 
-### 1. Improved Button Spacing & Sizing
+Update the `index.html` to include proper Tesla Investment branding for social sharing:
 
-**Current buttons:**
-- Height: `h-9` (36px) on mobile, `h-10` on xs, `h-11` on sm
-- Gap: `gap-2` on mobile, `gap-3` on sm
+### Changes to `index.html`
 
-**New buttons:**
-- Height: `h-10` (40px) minimum, scaling up to `h-12` (48px) on larger screens
-- Gap: `gap-3` on mobile, `gap-4` on larger screens
-- Better horizontal padding: `px-4` minimum for breathing room
-- Rounded corners: `rounded-xl` for a more modern look
+| Current | Updated |
+|---------|---------|
+| `twitter:site` = "@Lovable" | `twitter:site` = "@Tesla" (or remove) |
+| No `og:image` | Add Tesla hero image for previews |
+| No `og:url` | Add canonical URL |
+| No `twitter:image` | Add matching Twitter preview image |
 
-### 2. Enhanced Balance Card Container
+### Meta Tags to Add/Update
 
-**Improvements:**
-- Increase internal padding from `p-3` to `p-4` on mobile
-- Scale up to `p-6` on sm and `p-8` on md/lg
-- Better margin spacing at bottom `mb-5 sm:mb-6 md:mb-8`
-- Improved border radius `rounded-2xl sm:rounded-3xl`
+```html
+<!-- Open Graph Image for Facebook, LinkedIn, WhatsApp -->
+<meta property="og:image" content="https://msktesla.net/tesla-hero.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://msktesla.net/" />
 
-### 3. Better Typography Scaling
-
-- Balance text: Smoother scale from `text-3xl` to `text-5xl`
-- "Current value" label: Better visibility with `text-xs` minimum
-- Weekly change: Cleaner alignment on all screens
-
-### 4. Button Layout Improvements
-
-- Always stack buttons on very small screens (under 360px)
-- Side-by-side layout from `xs` (475px) breakpoint
-- Equal width buttons with `flex-1` and minimum width protection
-- Better touch targets (44px+ height for accessibility)
-
----
-
-## File Changes
-
-### `src/components/dashboard/WelcomeCard.tsx`
-
-```text
-Key changes:
-
-1. Container padding:
-   - p-4 sm:p-5 md:p-6 lg:p-8 (increased from p-3 sm:p-4 md:p-5)
-
-2. Border radius:
-   - rounded-2xl sm:rounded-3xl (smoother curves)
-
-3. Button container:
-   - gap-3 xs:gap-4 (more space between buttons)
-   - mt-4 sm:mt-5 md:mt-6 (better top margin)
-
-4. Invest Button:
-   - h-10 xs:h-11 sm:h-12 (larger tap targets)
-   - px-4 sm:px-5 (more horizontal padding)
-   - rounded-xl (more rounded corners)
-   - Larger icons: w-4 h-4 sm:w-5 sm:h-5
-
-5. Withdraw Button:
-   - Same sizing improvements as Invest
-   - Better shadow: shadow-xl for depth
-   - Hover effect: scale-[1.02] for feedback
-
-6. Bottom margin:
-   - mb-5 sm:mb-6 md:mb-8 (breathing room below)
+<!-- Twitter Card Image -->
+<meta name="twitter:image" content="https://msktesla.net/tesla-hero.jpg" />
+<meta name="twitter:site" content="@Tesla" />
 ```
 
----
+### File Operations
 
-## Visual Comparison
-
-### Before
-- Buttons: Small, cramped, minimal padding
-- Card: Tight internal spacing
-- Feel: Cluttered on mobile
-
-### After
-- Buttons: Spacious, easy to tap, professional
-- Card: Generous padding, breathable layout
-- Feel: Premium, polished trading app aesthetic
+1. **Copy hero image to public folder** - Move `tesla-hero.jpg` to `/public/` so it's accessible at the root URL
+2. **Update index.html** - Add the proper Open Graph and Twitter Card meta tags
 
 ---
 
-## Technical Details
+## Implementation Steps
 
-The changes use the existing custom `xs: 475px` breakpoint from your Tailwind config for fine-grained mobile control. All modifications follow the established design system with:
+| Step | Action |
+|------|--------|
+| 1 | Copy `src/assets/tesla-hero.jpg` to `public/tesla-hero.jpg` |
+| 2 | Add `og:image` meta tag pointing to `/tesla-hero.jpg` |
+| 3 | Add `og:image:width` (1200) and `og:image:height` (630) |
+| 4 | Add `og:url` with `https://msktesla.net/` |
+| 5 | Update `twitter:site` from `@Lovable` to `@Tesla` |
+| 6 | Add `twitter:image` meta tag |
 
-- Smooth responsive scaling using Tailwind breakpoints
-- Consistent with the purple gradient aesthetic
-- Accessible touch targets (44px+ minimum)
-- Proper backdrop blur and shadow effects
+---
 
+## Result
+
+After these changes, when someone shares your link on social media:
+
+- **Facebook/LinkedIn**: Shows Tesla hero image with your title and description
+- **Twitter/X**: Shows large image card with Tesla branding
+- **WhatsApp**: Shows professional preview with image
+- **No Lovable branding** anywhere in the share preview
