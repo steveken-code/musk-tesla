@@ -13,11 +13,11 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
     // Fade in after mount
     const showTimer = setTimeout(() => setIsVisible(true), 50);
     
-    // Exit after 2s display
+    // Exit after 2.5s display (slower, more cinematic)
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
       setTimeout(onComplete, 500);
-    }, 2000);
+    }, 2500);
 
     return () => {
       clearTimeout(showTimer);
@@ -31,16 +31,19 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
         isExiting ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Ambient Red Glow Background */}
+      {/* Ambient Red Glow Background - Dual Layer */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <div className="w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.15)_0%,transparent_70%)] blur-2xl animate-logo-glow-ultra" />
+        {/* Primary Glow - Intense center */}
+        <div className="w-[400px] h-[400px] sm:w-[550px] sm:h-[550px] lg:w-[700px] lg:h-[700px] rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.25)_0%,rgba(232,33,39,0.08)_40%,transparent_60%)] blur-2xl animate-logo-glow-ultra" />
+        {/* Secondary Glow - Wider ambient spread */}
+        <div className="absolute w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] lg:w-[900px] lg:h-[900px] rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.1)_0%,transparent_50%)] blur-3xl opacity-60" />
       </div>
       
       {/* Tesla Logo + Wordmark - LARGE */}
       <img 
         src={teslaPreloader} 
         alt="Tesla" 
-        className={`relative z-10 w-48 sm:w-64 lg:w-80 object-contain drop-shadow-[0_0_80px_rgba(232,33,39,0.4)] transition-all duration-700 ease-out ${
+        className={`relative z-10 w-48 sm:w-64 lg:w-80 object-contain drop-shadow-[0_0_120px_rgba(232,33,39,0.5)] transition-all duration-700 ease-out ${
           isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
         }`}
       />
