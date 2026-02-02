@@ -177,37 +177,45 @@ export default {
         },
         "logo-pulse": {
           "0%, 100%": { 
-            opacity: "0.9",
-            transform: "scale(1)"
+            opacity: "0.85",
+            transform: "scale(1)",
+            filter: "brightness(1)"
           },
           "50%": { 
             opacity: "1",
-            transform: "scale(1.05)"
+            transform: "scale(1.03)",
+            filter: "brightness(1.1)"
           }
         },
         "logo-glow-inner": {
           "0%, 100%": { 
-            boxShadow: "0 0 40px 15px rgba(232, 33, 39, 0.25)",
-            opacity: "0.5"
+            boxShadow: "0 0 30px 12px rgba(232, 33, 39, 0.3)",
+            opacity: "0.6"
           },
           "50%": { 
-            boxShadow: "0 0 70px 30px rgba(232, 33, 39, 0.5)",
-            opacity: "0.9"
+            boxShadow: "0 0 50px 25px rgba(232, 33, 39, 0.55)",
+            opacity: "0.95"
           }
         },
         "logo-glow-outer": {
           "0%, 100%": { 
-            boxShadow: "0 0 60px 25px rgba(232, 33, 39, 0.15)",
-            opacity: "0.3"
+            boxShadow: "0 0 50px 20px rgba(232, 33, 39, 0.2)",
+            opacity: "0.4"
           },
           "50%": { 
-            boxShadow: "0 0 100px 50px rgba(232, 33, 39, 0.35)",
-            opacity: "0.7"
+            boxShadow: "0 0 80px 40px rgba(232, 33, 39, 0.4)",
+            opacity: "0.8"
           }
         },
-        "wordmark-fade": {
-          "0%, 100%": { opacity: "0.6" },
-          "50%": { opacity: "0.9" }
+        "logo-glow-ultra": {
+          "0%, 100%": { 
+            boxShadow: "0 0 70px 30px rgba(232, 33, 39, 0.1)",
+            opacity: "0.25"
+          },
+          "50%": { 
+            boxShadow: "0 0 120px 60px rgba(232, 33, 39, 0.25)",
+            opacity: "0.6"
+          }
         },
       },
       animation: {
@@ -224,10 +232,10 @@ export default {
         "shimmer": "shimmer 2s linear infinite",
         "spin-slow": "spin-slow 20s linear infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
-        "logo-pulse": "logo-pulse 2s ease-in-out infinite",
-        "logo-glow-inner": "logo-glow-inner 2s ease-in-out infinite",
-        "logo-glow-outer": "logo-glow-outer 2.5s ease-in-out infinite",
-        "wordmark-fade": "wordmark-fade 2s ease-in-out infinite",
+        "logo-pulse": "logo-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "logo-glow-inner": "logo-glow-inner 2s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "logo-glow-outer": "logo-glow-outer 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+        "logo-glow-ultra": "logo-glow-ultra 3s cubic-bezier(0.4, 0, 0.2, 1) infinite",
       },
     },
   },

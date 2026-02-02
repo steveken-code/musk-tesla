@@ -453,5 +453,22 @@
   .border-glow:hover::before {
     opacity: 1;
   }
+
+  /* Hide scrollbar utility for clean UI */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Smooth card hover transitions */
+  .card-hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card-hover-lift:hover {
+    @apply -translate-y-1 shadow-xl;
+  }
 }
 

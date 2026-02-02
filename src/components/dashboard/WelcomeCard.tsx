@@ -85,24 +85,24 @@ const WelcomeCard = ({
             )}
           </div>
           
-          {/* Action Buttons - Stack on very small screens, side by side on xs+ */}
-          <div className="flex flex-col xs:flex-row gap-3 xs:gap-4 mt-4 sm:mt-5 md:mt-6">
+          {/* Action Buttons - Refined sizing with max-width constraints */}
+          <div className="flex flex-col xs:flex-row gap-3 sm:gap-4 mt-5 sm:mt-6 md:mt-8 justify-center">
             <Button 
               size="lg" 
-              className="flex-1 h-10 xs:h-11 sm:h-12 px-4 sm:px-5 bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm font-semibold transition-all duration-200 text-sm sm:text-base min-w-0 rounded-xl"
+              className="h-11 sm:h-12 px-6 sm:px-8 max-w-[180px] w-full xs:w-auto bg-white/20 hover:bg-white/30 hover:scale-[1.02] text-white border-0 backdrop-blur-sm font-semibold transition-all duration-300 text-sm sm:text-base rounded-lg shadow-lg"
               onClick={onInvestClick}
             >
               <ArrowDownToLine className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
-              <span className="truncate">Invest</span>
+              <span>Invest</span>
             </Button>
             <Button 
               size="lg" 
-              className="flex-1 h-10 xs:h-11 sm:h-12 px-4 sm:px-5 bg-white text-purple-700 hover:bg-white/95 hover:scale-[1.02] border-0 font-semibold shadow-xl transition-all duration-200 text-sm sm:text-base min-w-0 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="h-11 sm:h-12 px-6 sm:px-8 max-w-[180px] w-full xs:w-auto bg-white text-purple-700 hover:bg-white/95 hover:scale-[1.02] border-0 font-semibold shadow-xl transition-all duration-300 text-sm sm:text-base rounded-lg disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
               onClick={onWithdrawClick}
               disabled={portfolioBalance <= 0}
             >
               <ArrowUpFromLine className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
-              <span className="truncate">Withdraw</span>
+              <span>Withdraw</span>
             </Button>
           </div>
         </div>

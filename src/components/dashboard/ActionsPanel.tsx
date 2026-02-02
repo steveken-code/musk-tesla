@@ -58,15 +58,15 @@ const ActionsPanel = ({
           Quick Actions
         </h3>
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={onInvestClick}
-            className="h-12 flex flex-col gap-1 border-electric-blue/30 hover:bg-electric-blue/10 hover:border-electric-blue/50"
+            className="h-11 flex flex-col gap-1 border-electric-blue/30 hover:bg-electric-blue/10 hover:border-electric-blue/50 hover:scale-[1.02] transition-all duration-200 rounded-lg"
           >
             <ArrowDownToLine className="w-4 h-4 text-electric-blue" />
-            <span className="text-xs">Invest</span>
+            <span className="text-xs font-medium">Invest</span>
           </Button>
           
           <Button
@@ -74,10 +74,10 @@ const ActionsPanel = ({
             size="sm"
             onClick={onWithdrawClick}
             disabled={portfolioBalance <= 0}
-            className="h-12 flex flex-col gap-1 border-green-500/30 hover:bg-green-500/10 hover:border-green-500/50 disabled:opacity-50"
+            className="h-11 flex flex-col gap-1 border-green-500/30 hover:bg-green-500/10 hover:border-green-500/50 hover:scale-[1.02] transition-all duration-200 rounded-lg disabled:opacity-50 disabled:hover:scale-100"
           >
             <ArrowUpFromLine className="w-4 h-4 text-green-500" />
-            <span className="text-xs">Withdraw</span>
+            <span className="text-xs font-medium">Withdraw</span>
           </Button>
         </div>
       </motion.div>
