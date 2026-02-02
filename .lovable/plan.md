@@ -1,79 +1,77 @@
 
 
-# Fix Referral Bonus Withdrawal Calculation
+# Synchronize Portfolio Balance with Referral Bonuses
 
-## Problem Identified
+## Problem
 
-Your $500 referrer bonus and Igor 2's $100 welcome bonus are not appearing in the "Available for Withdrawal" balance because of a status check mismatch:
+Currently there's a mismatch between the two main balance displays:
 
-| User | Bonus | Referral Status | Expected | Current Result |
-|------|-------|-----------------|----------|----------------|
-| Eric (you) | $500 referrer | `active` | Withdrawable | **Not counted** |
-| Igor 2 | $100 welcome | `active` | Withdrawable | Works correctly |
+| Display | Includes Referral Bonus? |
+|---------|-------------------------|
+| **Current Value** (purple card) | No |
+| **Available for Withdrawal** | Yes |
 
-**Root Cause:** The Dashboard.tsx code only counts referrals with `status === 'paid'`, but when a referred friend activates their investment, the status becomes `'active'` (not `'paid'`).
+This causes confusion - if you have $60,000 in investments/profits plus $500 referral bonus:
+- Current Value shows: **$60,000**
+- Available for Withdrawal shows: **$60,500**
 
----
+These should match when all funds are withdrawable.
 
 ## Solution
 
-Update the referrer bonus calculation to include `'active'` status referrals (not just `'paid'`).
+Add referral bonuses to the portfolio balance calculation so both values stay synchronized.
 
 ### File: `src/pages/Dashboard.tsx`
 
-**Line ~809 - Fix the referrer bonus filter:**
+**Line ~1133 - Update portfolio balance calculation:**
 
 ```typescript
-// BEFORE: Only counts 'paid'
-const paidReferralBonus = referrerBonusRes.data
-  .filter(r => r.status === 'paid')
-  .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
+// BEFORE: Doesn't include referral bonuses
+const portfolioBalance = Math.max(0, totalInvested + totalProfit - totalWithdrawn);
 
-// AFTER: Count 'active' AND 'paid' (both are withdrawable)
-const paidReferralBonus = referrerBonusRes.data
-  .filter(r => r.status === 'active' || r.status === 'paid')
-  .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
+// AFTER: Include referral bonuses for accurate total
+const portfolioBalance = Math.max(0, 
+  totalInvested + totalProfit + referrerBonusWithdrawable + referredBonusWithdrawable - totalWithdrawn
+);
 ```
 
----
+## Result After Fix
 
-## How the Math Works After Fix
-
-### For Eric (referrer):
+### For Eric (you):
 | Source | Amount |
 |--------|--------|
-| Completed Investment | $2,000 |
-| Investment Dividend | $58,000 |
-| Referrer Bonus (Igor 2) | $500 |
-| **Total Available** | **$60,500** |
+| Investments + Profits | $60,000 |
+| Referrer Bonus | $500 |
+| **Current Value** | **$60,500** |
+| **Available for Withdrawal** | **$60,500** |
 
-### For Igor 2 (referred):
+### For Igor 2:
 | Source | Amount |
 |--------|--------|
-| Active Investment Profit | $50,000,000.58 |
+| Investment Profit | $50,000,000.58 |
 | Welcome Bonus | $100 |
-| **Total Available** | **$50,000,100.58** |
+| **Current Value** | **$50,000,100.58** |
+| **Available for Withdrawal** | **$50,000,100.58** |
 
----
+## Why This Makes Sense
+
+1. **Consistency** - Both numbers now represent your true total value
+2. **User Clarity** - No confusion about "missing" bonus money
+3. **Accuracy** - The referral bonus IS real money you can withdraw, so it should appear in your total
 
 ## Technical Details
 
-The referral status lifecycle:
-1. `pending` - Friend signed up but hasn't invested yet
-2. `active` - Friend's investment was activated → **Bonus becomes withdrawable**
-3. `paid` - Bonus was withdrawn (optional final state)
-
-The fix ensures that once a friend's investment goes active, both bonuses are immediately available:
-- Referrer's $500 (if referrer has also invested)
-- Friend's $100 (automatically, since their investment is active)
-
----
+The calculation order:
+1. `referrerBonusWithdrawable` is only > 0 when user has invested AND referrals are active/paid
+2. `referredBonusWithdrawable` is only > 0 when user has invested AND their referral status is active/paid
+3. Both are already correctly calculated earlier in the code
+4. We just need to add them to the portfolio balance display
 
 ## Files to Change
 
 | File | Change |
 |------|--------|
-| `src/pages/Dashboard.tsx` | Include `'active'` status in referrer bonus calculation |
+| `src/pages/Dashboard.tsx` | Add referral bonuses to `portfolioBalance` calculation |
 
-This is a one-line fix that will correctly add the $500 + $100 to the respective users' withdrawable balances.
+This is a single-line change that will synchronize both balance displays.
 
