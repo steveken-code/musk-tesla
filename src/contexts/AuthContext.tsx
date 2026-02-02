@@ -175,28 +175,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, 0);
 
       // Update profile with full name and referral code if provided
+      // Uses UPSERT to ensure the profile row exists and has the referral code
       // The database trigger (handle_referral_signup) will automatically create the referral record
       setTimeout(async () => {
         try {
-          // Update profile with the full name and referral code
-          // This ensures the name is available for display in admin panel
-          const updateData: { full_name: string; referral_code?: string } = { 
-            full_name: fullName 
+          // Use upsert instead of update to guarantee the profile exists
+          // This fixes the race condition where the profile might not exist yet
+          const upsertData: { user_id: string; full_name: string; email: string; referral_code?: string } = {
+            user_id: data.user!.id,
+            full_name: fullName,
+            email: email,
           };
           
           if (canonicalReferralCode) {
-            updateData.referral_code = canonicalReferralCode;
+            upsertData.referral_code = canonicalReferralCode;
           }
           
           const { error: profileError } = await supabase
             .from('profiles')
-            .update(updateData)
-            .eq('user_id', data.user!.id);
+            .upsert(upsertData, { onConflict: 'user_id' });
 
           if (profileError) {
-            console.error('Error updating profile:', profileError);
+            console.error('Error upserting profile:', profileError);
+            // Retry once after a short delay if first attempt fails
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const { error: retryError } = await supabase
+              .from('profiles')
+              .upsert(upsertData, { onConflict: 'user_id' });
+            if (retryError) {
+              console.error('Retry failed:', retryError);
+            } else {
+              console.log('Profile upserted on retry with name and referral code');
+            }
           } else {
-            console.log('Profile updated with name and referral code');
+            console.log('Profile upserted with name and referral code:', canonicalReferralCode);
           }
 
           // Only send referral notifications if there's a referral code

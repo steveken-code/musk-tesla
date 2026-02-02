@@ -133,7 +133,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [email],
-      subject: `You earned $${profitAmount.toLocaleString()} profit`,
+      subject: `Dividend Credited: $${profitAmount.toLocaleString()}`,
       headers: {
         "X-Mailer": "Tesla Stock Platform",
       },
@@ -188,7 +188,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <!-- Profit Amount Display -->
                   <tr>
                     <td style="padding: 0 50px 25px; text-align: center;">
-                      <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Profit Added</p>
+                      <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 10px 0;">Dividend Credited</p>
                       <p style="color: #16a34a; font-size: 52px; font-weight: 800; margin: 0;">+$${profitAmount.toLocaleString()}</p>
                     </td>
                   </tr>
