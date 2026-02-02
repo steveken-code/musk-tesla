@@ -155,6 +155,10 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
             </span>
             <span className="pt-1">{t('cryptoStep4') || 'Take a screenshot of the completed transaction and send it via WhatsApp for confirmation'}</span>
           </li>
+          <li className="flex items-start gap-3">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-teal-500/30 to-teal-600/20 text-teal-400 text-xs font-bold flex items-center justify-center ring-1 ring-teal-500/30">5</span>
+            <span className="pt-1 font-medium text-teal-400">{t('cryptoStep5') || 'After receiving WhatsApp confirmation, click "Submit Investment Request" to complete your investment'}</span>
+          </li>
         </ol>
       </div>
 
