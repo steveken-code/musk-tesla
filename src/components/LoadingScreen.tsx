@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import teslaLogo from '@/assets/tesla-loading-logo.png';
+import teslaPreloader from '@/assets/tesla-preloader.png';
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -7,15 +7,22 @@ interface LoadingScreenProps {
 
 const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [isExiting, setIsExiting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Optimized 1.8s display + 0.5s fade for snappier feel
-    const timer = setTimeout(() => {
+    // Fade in after mount
+    const showTimer = setTimeout(() => setIsVisible(true), 50);
+    
+    // Exit after 2s display
+    const exitTimer = setTimeout(() => {
       setIsExiting(true);
       setTimeout(onComplete, 500);
-    }, 1800);
+    }, 2000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(exitTimer);
+    };
   }, [onComplete]);
 
   return (
@@ -24,24 +31,19 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
         isExiting ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Logo Container with 3-Layer Premium Glow */}
-      <div className="relative flex items-center justify-center">
-        {/* Ultra Outer Glow - Slowest, largest breathing ring */}
-        <div className="absolute w-40 h-40 sm:w-52 sm:h-52 lg:w-64 lg:h-64 rounded-full animate-logo-glow-ultra" />
-        
-        {/* Outer Glow Layer - Slower, larger pulse */}
-        <div className="absolute w-32 h-32 sm:w-44 sm:h-44 lg:w-52 lg:h-52 rounded-full animate-logo-glow-outer" />
-        
-        {/* Inner Glow Layer - Faster, tighter pulse */}
-        <div className="absolute w-24 h-24 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-full animate-logo-glow-inner" />
-        
-        {/* Tesla Logo - Premium sizing */}
-        <img 
-          src={teslaLogo} 
-          alt="Tesla" 
-          className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain animate-logo-pulse drop-shadow-[0_0_20px_rgba(232,33,39,0.4)]"
-        />
+      {/* Ambient Red Glow Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <div className="w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.15)_0%,transparent_70%)] blur-2xl animate-logo-glow-ultra" />
       </div>
+      
+      {/* Tesla Logo + Wordmark - LARGE */}
+      <img 
+        src={teslaPreloader} 
+        alt="Tesla" 
+        className={`relative z-10 w-48 sm:w-64 lg:w-80 object-contain drop-shadow-[0_0_80px_rgba(232,33,39,0.4)] transition-all duration-700 ease-out ${
+          isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
+      />
     </div>
   );
 };
