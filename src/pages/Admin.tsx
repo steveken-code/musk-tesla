@@ -212,6 +212,12 @@ const Admin = () => {
   
   // Search/filter state for admin
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  
+  // Manual referral creation state
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  const [manualReferrerEmail, setManualReferrerEmail] = useState('');
+  const [manualReferredEmail, setManualReferredEmail] = useState('');
+  const [creatingReferral, setCreatingReferral] = useState(false);
 
   // Check admin role via database
   useEffect(() => {
@@ -994,6 +1000,96 @@ const Admin = () => {
     return styles[status] || styles.pending;
   };
 
+  // Create manual referral function
+  const handleCreateManualReferral = async () => {
+    if (!manualReferrerEmail.trim() || !manualReferredEmail.trim()) {
+      toast.error('Please enter both referrer and referred user emails');
+      return;
+    }
+
+    setCreatingReferral(true);
+    try {
+      // Find both users by email
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name')
+        .in('email', [manualReferrerEmail.trim().toLowerCase(), manualReferredEmail.trim().toLowerCase()]);
+
+      if (profilesError) throw profilesError;
+
+      const referrerProfile = profiles?.find(p => p.email?.toLowerCase() === manualReferrerEmail.trim().toLowerCase());
+      const referredProfile = profiles?.find(p => p.email?.toLowerCase() === manualReferredEmail.trim().toLowerCase());
+
+      if (!referrerProfile) {
+        toast.error('Referrer user not found. Make sure they have signed up.');
+        return;
+      }
+      if (!referredProfile) {
+        toast.error('Referred user not found. Make sure they have signed up.');
+        return;
+      }
+      if (referrerProfile.user_id === referredProfile.user_id) {
+        toast.error('Users cannot refer themselves');
+        return;
+      }
+
+      // Check if referral already exists
+      const { data: existingReferral } = await supabase
+        .from('referrals')
+        .select('id')
+        .eq('referred_user_id', referredProfile.user_id)
+        .maybeSingle();
+
+      if (existingReferral) {
+        toast.error('This user has already been referred by someone');
+        return;
+      }
+
+      // Generate referral code from referrer's user_id
+      const referralCode = referrerProfile.user_id.slice(0, 8).toUpperCase();
+
+      // Check if referred user has an active investment
+      const { data: investmentData } = await supabase
+        .from('investments')
+        .select('id, status')
+        .eq('user_id', referredProfile.user_id)
+        .in('status', ['active', 'completed'])
+        .limit(1);
+
+      const hasActiveInvestment = investmentData && investmentData.length > 0;
+
+      // Create the referral record
+      const { error: createError } = await supabase
+        .from('referrals')
+        .insert({
+          referrer_user_id: referrerProfile.user_id,
+          referred_user_id: referredProfile.user_id,
+          referral_code: referralCode,
+          status: hasActiveInvestment ? 'active' : 'pending',
+          bonus_amount: 500,
+          referred_bonus: 100,
+        });
+
+      if (createError) throw createError;
+
+      // Update the referred user's profile with the referral code
+      await supabase
+        .from('profiles')
+        .update({ referral_code: referralCode })
+        .eq('user_id', referredProfile.user_id);
+
+      toast.success(`Referral created! ${referrerProfile.full_name || referrerProfile.email} → ${referredProfile.full_name || referredProfile.email}`);
+      setShowReferralModal(false);
+      setManualReferrerEmail('');
+      setManualReferredEmail('');
+    } catch (error) {
+      console.error('Error creating manual referral:', error);
+      toast.error('Failed to create referral');
+    } finally {
+      setCreatingReferral(false);
+    }
+  };
+
   // Loading state
   if (authLoading || checkingRole) {
     return (
@@ -1300,9 +1396,11 @@ const Admin = () => {
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
             <Gift className="w-5 h-5 text-purple-500" />
-            {t('referralSettings') || 'Referral Notification Settings'}
+            {t('referralSettings') || 'Referral Settings'}
           </h2>
-          <div className="space-y-2">
+          
+          {/* Notification Email */}
+          <div className="space-y-2 mb-6">
             <Label className="text-slate-300 text-sm font-semibold">{t('referralEmail') || 'Notification Email'}</Label>
             <Input
               type="email"
@@ -1312,19 +1410,117 @@ const Admin = () => {
               placeholder="email@example.com"
             />
           </div>
-          <p className="text-xs text-slate-400 mt-3">
+          <p className="text-xs text-slate-400 mb-4">
             <span className="font-semibold text-purple-400">Referral codes are automatic.</span> Each user gets a unique referral link based on their account ID (e.g., <code className="bg-slate-700 px-1 rounded">msktesla.net/signup?ref=ABC12345</code>). 
             When someone signs up using a referral link and their investment is activated, you'll receive a notification at this email.
           </p>
-          <Button
-            onClick={handleSaveReferralSettings}
-            className="mt-4 bg-purple-600 hover:bg-purple-700"
-            disabled={savingReferral}
-          >
-            {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {t('saveReferralSettings') || 'Save Notification Settings'}
-          </Button>
+          
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={handleSaveReferralSettings}
+              className="bg-purple-600 hover:bg-purple-700"
+              disabled={savingReferral}
+            >
+              {savingReferral ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {t('saveReferralSettings') || 'Save Notification Settings'}
+            </Button>
+            
+            <Button
+              onClick={() => setShowReferralModal(true)}
+              variant="outline"
+              className="border-purple-500 text-purple-400 hover:bg-purple-500/10"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Create Manual Referral
+            </Button>
+          </div>
         </div>
+
+        {/* Manual Referral Modal */}
+        {showReferralModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md">
+              <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-purple-500/20">
+                    <Users className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-white">Create Manual Referral</h3>
+                    <p className="text-xs text-slate-400">Link existing users as referrer → referred</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowReferralModal(false)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              
+              <div className="p-4 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-300 text-sm font-semibold">Referrer Email (gets $500)</Label>
+                  <Input
+                    type="email"
+                    value={manualReferrerEmail}
+                    onChange={(e) => setManualReferrerEmail(e.target.value)}
+                    className="bg-white border-2 border-slate-300 [color:#000000_!important] placeholder:text-slate-500 h-12"
+                    placeholder="referrer@email.com"
+                  />
+                </div>
+                
+                <div className="flex justify-center">
+                  <div className="px-3 py-1 bg-purple-500/20 rounded-full text-purple-400 text-xs font-semibold">
+                    ↓ REFERRED ↓
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-slate-300 text-sm font-semibold">Referred User Email (gets $100)</Label>
+                  <Input
+                    type="email"
+                    value={manualReferredEmail}
+                    onChange={(e) => setManualReferredEmail(e.target.value)}
+                    className="bg-white border-2 border-slate-300 [color:#000000_!important] placeholder:text-slate-500 h-12"
+                    placeholder="referred@email.com"
+                  />
+                </div>
+                
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-xs text-amber-400">
+                    <AlertCircle className="w-3 h-3 inline mr-1" />
+                    Both users must already have accounts. The referral bonus will be applied based on their investment status.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 p-4 border-t border-slate-700">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowReferralModal(false)}
+                  className="flex-1 border-slate-600 text-slate-300"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateManualReferral}
+                  disabled={creatingReferral}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                >
+                  {creatingReferral ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Gift className="w-4 h-4 mr-2" />
+                  )}
+                  Create Referral
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Crypto Wallet Settings Section - For International Users */}
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
