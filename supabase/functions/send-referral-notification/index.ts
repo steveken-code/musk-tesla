@@ -88,8 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
                       </p>
                       <div style="background: #1e293b; border-radius: 12px; padding: 24px; margin: 20px 0; border: 1px solid #334155;">
                         <p style="color: #94a3b8; margin: 0 0 10px; font-size: 14px;">Referred User Details:</p>
-                        <p style="color: #ffffff; margin: 0 0 8px; font-size: 18px; font-weight: bold;">${referredUserName}</p>
-                        <p style="color: #60a5fa; margin: 0; font-size: 16px;">${referredUserEmail}</p>
+                        <p style="color: #ffffff; margin: 0; font-size: 18px; font-weight: bold;">${referredUserName}</p>
                       </div>
                       <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 20px 0 0;">
                         You will receive your referral bonus once this user's investment is confirmed and activated.
@@ -138,7 +137,6 @@ const handler = async (req: Request): Promise<Response> => {
                       <div style="background: #1e293b; border-radius: 12px; padding: 24px; margin: 20px 0; border: 1px solid #334155;">
                         <p style="color: #94a3b8; margin: 0 0 10px; font-size: 14px;">Investment Details:</p>
                         <p style="color: #ffffff; margin: 0 0 8px; font-size: 18px; font-weight: bold;">User: ${referredUserName}</p>
-                        <p style="color: #60a5fa; margin: 0 0 8px; font-size: 16px;">Email: ${referredUserEmail}</p>
                         ${investmentAmount ? `<p style="color: #22c55e; margin: 0; font-size: 24px; font-weight: bold;">Investment: $${investmentAmount.toLocaleString()}</p>` : ''}
                       </div>
                       <p style="color: #22c55e; font-size: 18px; font-weight: bold; text-align: center; margin: 30px 0;">
