@@ -1,127 +1,79 @@
 
-# Fix Referral Display - Show Friend Names & Photos
+
+# Fix Referral Bonus Withdrawal Calculation
 
 ## Problem Identified
 
-The referral tracking table shows "User 28e0bc..." instead of "Igor 2" because of **Row-Level Security (RLS)** restrictions:
+Your $500 referrer bonus and Igor 2's $100 welcome bonus are not appearing in the "Available for Withdrawal" balance because of a status check mismatch:
 
-| Policy | Effect |
-|--------|--------|
-| `Users can view own profile` | Users can only see their own profile row |
-| **Result** | When you try to fetch Igor 2's profile, RLS blocks it |
+| User | Bonus | Referral Status | Expected | Current Result |
+|------|-------|-----------------|----------|----------------|
+| Eric (you) | $500 referrer | `active` | Withdrawable | **Not counted** |
+| Igor 2 | $100 welcome | `active` | Withdrawable | Works correctly |
 
-The database has "Igor 2" with a photo, but you can't access it due to security policies.
+**Root Cause:** The Dashboard.tsx code only counts referrals with `status === 'paid'`, but when a referred friend activates their investment, the status becomes `'active'` (not `'paid'`).
+
+---
 
 ## Solution
 
-Create a **secure view** that exposes only the minimum public profile info (name + avatar) needed for referral displays, without exposing sensitive data like email or phone.
+Update the referrer bonus calculation to include `'active'` status referrals (not just `'paid'`).
 
-## Implementation Plan
+### File: `src/pages/Dashboard.tsx`
 
-### Step 1: Create Public Referral Profile View
+**Line ~809 - Fix the referrer bonus filter:**
 
-Create a SQL migration to add a secure view:
+```typescript
+// BEFORE: Only counts 'paid'
+const paidReferralBonus = referrerBonusRes.data
+  .filter(r => r.status === 'paid')
+  .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
 
-```sql
--- Create a view for public referral profile display
--- Only exposes name and avatar, no PII like email/phone
-CREATE VIEW public.referral_profiles AS
-SELECT 
-  user_id,
-  full_name,
-  avatar_url
-FROM public.profiles;
-
--- Enable RLS bypass via view (security invoker off means it uses definer's permissions)
--- The view will be readable by authenticated users for referral display purposes
+// AFTER: Count 'active' AND 'paid' (both are withdrawable)
+const paidReferralBonus = referrerBonusRes.data
+  .filter(r => r.status === 'active' || r.status === 'paid')
+  .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
 ```
 
-Then add an RLS policy to allow reading from this view for referral purposes.
+---
 
-### Step 2: Alternative - Add RLS Policy for Referral Access
+## How the Math Works After Fix
 
-Add a new RLS policy that allows users to view profiles of people they have referred:
+### For Eric (referrer):
+| Source | Amount |
+|--------|--------|
+| Completed Investment | $2,000 |
+| Investment Dividend | $58,000 |
+| Referrer Bonus (Igor 2) | $500 |
+| **Total Available** | **$60,500** |
 
-```sql
--- Allow users to view profiles of users they referred
-CREATE POLICY "Users can view referred user profiles"
-  ON public.profiles FOR SELECT
-  USING (
-    auth.uid() IS NOT NULL AND
-    EXISTS (
-      SELECT 1 FROM public.referrals
-      WHERE referrer_user_id = auth.uid()
-      AND referred_user_id = profiles.user_id
-    )
-  );
-```
+### For Igor 2 (referred):
+| Source | Amount |
+|--------|--------|
+| Active Investment Profit | $50,000,000.58 |
+| Welcome Bonus | $100 |
+| **Total Available** | **$50,000,100.58** |
 
-This is the **recommended approach** - minimal, secure, and targeted.
+---
 
-### Step 3: Update ReferralBonus Component for Better Display
+## Technical Details
 
-Enhance the referral cards with:
+The referral status lifecycle:
+1. `pending` - Friend signed up but hasn't invested yet
+2. `active` - Friend's investment was activated → **Bonus becomes withdrawable**
+3. `paid` - Bonus was withdrawn (optional final state)
 
-1. **Larger avatars** - w-10 h-10 instead of w-8 h-8
-2. **Premium styling** - Gradient borders, hover effects
-3. **Better fallback** - Colorful initials when no photo
-4. **Animation** - Stagger animation for each referral card
+The fix ensures that once a friend's investment goes active, both bonuses are immediately available:
+- Referrer's $500 (if referrer has also invested)
+- Friend's $100 (automatically, since their investment is active)
 
-```tsx
-// Enhanced referral card
-<motion.div
-  initial={{ opacity: 0, x: -10 }}
-  animate={{ opacity: 1, x: 0 }}
-  transition={{ delay: index * 0.1 }}
-  className="flex items-center justify-between p-3 rounded-xl 
-    bg-gradient-to-r from-slate-800/80 to-slate-700/50 
-    border border-electric-blue/20 hover:border-electric-blue/40 
-    transition-all duration-300"
->
-  {/* Avatar with ring effect */}
-  {record.profile?.avatar_url ? (
-    <img 
-      src={record.profile.avatar_url} 
-      alt={name}
-      className="w-10 h-10 rounded-full object-cover 
-        ring-2 ring-electric-blue/50 ring-offset-2 ring-offset-slate-800"
-    />
-  ) : (
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-electric-blue to-blue-600 
-      flex items-center justify-center text-sm font-bold text-white shadow-lg">
-      {name.charAt(0).toUpperCase()}
-    </div>
-  )}
-  
-  {/* Name with better typography */}
-  <p className="text-sm font-semibold text-foreground">{name}</p>
-</motion.div>
-```
+---
 
-## Visual Enhancement
-
-```text
-Current:                      Enhanced:
-┌─────────────────────┐       ┌─────────────────────────────┐
-│ [○] User 28e0bc...  │  →    │ [📷 Igor 2 Photo]           │
-│     2/2/2026        │       │                             │
-│        $500 Active  │       │  Igor 2           $500      │
-└─────────────────────┘       │  Feb 2, 2026       Active   │
-                              │  ─────────────────────────  │
-                              │  ⭐ Premium Card Style      │
-                              └─────────────────────────────┘
-```
-
-## Files Changed
+## Files to Change
 
 | File | Change |
 |------|--------|
-| Database Migration | Add RLS policy for referral profile access |
-| `src/components/dashboard/ReferralBonus.tsx` | Enhanced card design with animations |
+| `src/pages/Dashboard.tsx` | Include `'active'` status in referrer bonus calculation |
 
-## Result
+This is a one-line fix that will correctly add the $500 + $100 to the respective users' withdrawable balances.
 
-- **Igor 2's name and photo** will display properly
-- **Premium card styling** makes referrals look cool
-- **Secure** - only exposes name/avatar to referrers, not email/phone
-- **Responsive** - looks great on all screen sizes
