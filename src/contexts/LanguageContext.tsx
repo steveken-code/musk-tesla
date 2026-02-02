@@ -399,6 +399,7 @@ const englishTranslations: Record<string, string> = {
   'cryptoStep2': 'Open your crypto wallet (Trust Wallet, Binance, Coinbase, etc.) and select USDT',
   'cryptoStep3': 'Send the exact amount using TRON (TRC20) network - verify this before confirming!',
   'cryptoStep4': 'Take a screenshot of the completed transaction and send it via WhatsApp for confirmation',
+  'cryptoStep5': 'Click "Submit Investment Request" to complete your investment',
   
   // Email Verification
   'verifyYourEmail': 'Verify Your Email',
