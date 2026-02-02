@@ -71,28 +71,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Validating referral code:', { 
           original: referralCode, 
-          normalized: normalizedCode,
-          queryPattern: `${normalizedCode.toLowerCase()}%`
+          normalized: normalizedCode
         });
         
-        const { data: matchingProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .filter('user_id::text', 'ilike', `${normalizedCode.toLowerCase()}%`)
-          .limit(1)
-          .maybeSingle();
+        // Use RPC function for server-side UUID-to-text validation
+        const { data: referrerId, error: rpcError } = await supabase
+          .rpc('validate_referral_code', { p_code: normalizedCode });
         
-        if (profileError) {
-          console.error('Referral code query error:', profileError);
+        if (rpcError) {
+          console.error('Referral code query error:', rpcError);
           return { error: { message: 'Error validating referral code. Please try again.' } };
         }
         
-        if (!matchingProfile) {
+        if (!referrerId) {
           console.log('Referral code not found:', normalizedCode);
           return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
         }
         
-        validReferrerUserId = matchingProfile.user_id;
+        validReferrerUserId = referrerId;
         canonicalReferralCode = normalizedCode;
         console.log('Referral code validated:', { code: normalizedCode, referrer: validReferrerUserId });
       } catch (err) {
