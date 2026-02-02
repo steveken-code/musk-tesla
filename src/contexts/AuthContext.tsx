@@ -67,17 +67,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const normalizedCode = normalizeReferralCode(referralCode);
       
       // Query profiles to find a user whose user_id starts with this code (case-insensitive)
+      // Uses explicit UUID::text cast since user_id is UUID type in PostgreSQL
       try {
+        console.log('Validating referral code:', { 
+          original: referralCode, 
+          normalized: normalizedCode,
+          queryPattern: `${normalizedCode.toLowerCase()}%`
+        });
+        
         const { data: matchingProfile, error: profileError } = await supabase
           .from('profiles')
           .select('user_id')
-          .ilike('user_id', `${normalizedCode.toLowerCase()}%`)
+          .filter('user_id::text', 'ilike', `${normalizedCode.toLowerCase()}%`)
           .limit(1)
           .maybeSingle();
         
-        if (profileError || !matchingProfile) {
-          console.log('Referral code validation failed:', { normalizedCode, error: profileError });
-          return { error: { message: 'Invalid referral code. Please check the link and try again.' } };
+        if (profileError) {
+          console.error('Referral code query error:', profileError);
+          return { error: { message: 'Error validating referral code. Please try again.' } };
+        }
+        
+        if (!matchingProfile) {
+          console.log('Referral code not found:', normalizedCode);
+          return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
         }
         
         validReferrerUserId = matchingProfile.user_id;
