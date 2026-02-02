@@ -803,10 +803,10 @@ const Dashboard = () => {
         });
       }
       
-      // Calculate total referrer bonus ($500 per paid referral)
+      // Calculate total referrer bonus ($500 per active/paid referral)
       if (referrerBonusRes.data) {
         const paidReferralBonus = referrerBonusRes.data
-          .filter(r => r.status === 'paid')
+          .filter(r => r.status === 'active' || r.status === 'paid')
           .reduce((sum, r) => sum + (r.bonus_amount || 500), 0);
         setReferrerBonusTotal(paidReferralBonus);
       }
