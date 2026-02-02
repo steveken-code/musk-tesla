@@ -1,224 +1,141 @@
 
-# Professional Tesla Platform Enhancement Plan
+# Fix Referral Code Validation - Invalid Referral Code Error
 
-## Overview
+## Root Cause Analysis
 
-This plan addresses multiple areas to create a more professional, Tesla-branded experience across the entire platform.
+The referral validation is failing because of a UUID type mismatch in the database query.
+
+### Current Flow
+
+```text
+User clicks: msktesla.net/signup?ref=E1659FF6
+                    ↓
+Auth page extracts code → "E1659FF6"
+                    ↓
+normalizeReferralCode() → "E1659FF6" (uppercase, no special chars)
+                    ↓
+Query: .ilike('user_id', 'e1659ff6%')
+                    ↓
+❌ FAILS - user_id is UUID type, not text!
+```
+
+### The Problem
+
+| Component | Issue |
+|-----------|-------|
+| `user_id` column | UUID type in PostgreSQL |
+| `.ilike()` method | Expects text column, can't pattern-match UUID |
+| Result | Query returns no matches → "Invalid referral code" error |
+
+### SQL Proof
+```sql
+-- This works (with explicit cast):
+SELECT user_id FROM profiles WHERE user_id::text ILIKE 'e1659ff6%' ✅
+
+-- This is what Supabase JS generates (no cast):
+SELECT user_id FROM profiles WHERE user_id ILIKE 'e1659ff6%' ❌
+```
 
 ---
 
-## 1. Loading Screen Enhancement (Super Professional)
+## Solution
 
-### Current State
-The loading screen has a basic pulse glow effect but lacks the premium automotive-grade feel.
-
-### Improvements
-
-| Enhancement | Description |
-|-------------|-------------|
-| Multi-layer breathing effect | Add 3 concentric glow rings with staggered timing |
-| Smoother animation curves | Use `cubic-bezier(0.4, 0, 0.2, 1)` for natural breathing |
-| Reduced display time | Optimize to 1.8s display + 0.5s fade (faster perceived load) |
-| Better scaling | Improve responsive sizing across all devices |
+Replace the `.ilike()` query with a raw SQL filter that explicitly casts UUID to text.
 
 ### Technical Changes
 
-**File: `src/components/LoadingScreen.tsx`**
-- Reduce timer from 2s to 1.8s for snappier feel
-- Add third glow layer for depth
-- Improve logo sizing and container spacing
+**File: `src/contexts/AuthContext.tsx`**
 
-**File: `tailwind.config.ts`**
-- Refine keyframe timing with smoother easing
-- Add `logo-glow-ultra` keyframe for outermost layer
-- Adjust opacity and scale ranges for subtler effect
-
----
-
-## 2. Dashboard Button UI/UX Improvements
-
-### Current Issues
-- Invest/Withdraw buttons in WelcomeCard have excessive horizontal length on desktop
-- Button padding could be more refined
-- Mobile button spacing needs optimization
-
-### Design Changes
-
-| Element | Before | After |
-|---------|--------|-------|
-| Button max-width | Full width | `max-w-xs` on each button |
-| Button height | h-10 to h-12 | h-11 uniform across breakpoints |
-| Container | Side-by-side full | Centered with gap-4 |
-| Border radius | rounded-xl | rounded-lg for mature look |
-| Hover effect | Basic | Subtle scale(1.02) + shadow |
-
-### Files to Modify
-
-**File: `src/components/dashboard/WelcomeCard.tsx`**
-- Add `max-w-[180px]` constraint to buttons
-- Center button container with `justify-center`
-- Refine padding from `px-4 sm:px-5` to `px-5 sm:px-6`
-- Add subtle shadow on hover
-
-**File: `src/components/dashboard/ActionsPanel.tsx`**
-- Adjust Quick Actions button heights to h-10 uniform
-- Improve hover transitions
-
----
-
-## 3. Admin Profit Decimal Support
-
-### Current State
-Admin can set profits but the input may only accept whole numbers visually.
-
-### Technical Fix
-
-**File: `src/pages/Admin.tsx`**
-- Ensure profit input accepts decimals with `step="0.01"`
-- Update `handleProfitChange` to properly parse decimals
-- Display profits with 2 decimal places in the admin UI
-
-### Input Change
-```tsx
-<Input
-  type="number"
-  step="0.01"
-  min="0"
-  value={inv.profit_amount}
-  onChange={(e) => handleProfitChange(inv.id, e.target.value)}
-/>
-```
-
----
-
-## 4. Balance & Currency Display with Decimals
-
-### Current State
-Some values display as whole numbers, losing precision.
-
-### Standard Implementation
-
-All financial values should use the existing `formatCurrencyValue` function from `src/lib/formatCurrency.ts` which already handles 2 decimal places.
-
-### Files to Update
-
-| File | Location | Change |
-|------|----------|--------|
-| `StatsGrid.tsx` | AnimatedCounter | Show 2 decimals for monetary values |
-| `Dashboard.tsx` | Profit notifications | Format with decimals |
-| `InvestmentProgressTracker.tsx` | Total earnings | Already using `toLocaleString` - add decimal precision |
-| `WelcomeCard.tsx` | Portfolio balance | Already using `formatSmartCurrency` - good |
-
-### StatsGrid AnimatedCounter Update
-```tsx
-// Update formattedValue logic
-const formattedValue = isMonetary 
-  ? count.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  : (decimals > 0 
-      ? count.toFixed(decimals)
-      : Math.round(count).toLocaleString());
-```
-
----
-
-## 5. Calculation Accuracy Improvements
-
-### Current Logic Review
-The portfolio balance and withdrawal calculations in Dashboard.tsx are correct but need consistent decimal handling.
-
-### Key Calculations (Lines 1051-1106)
+Change from:
 ```typescript
-// Already correctly sums:
-totalInvested = investments.filter(active/completed).reduce(sum + Number(amount))
-totalProfit = investments.reduce(sum + Number(profit_amount || 0))
-portfolioBalance = totalInvested + totalProfit - totalWithdrawn
-availableForWithdrawal = completedTotal + activeProfit + bonuses - withdrawn - pending
+const { data: matchingProfile, error: profileError } = await supabase
+  .from('profiles')
+  .select('user_id')
+  .ilike('user_id', `${normalizedCode.toLowerCase()}%`)
+  .limit(1)
+  .maybeSingle();
 ```
 
-### Improvement
-- Use `Number().toFixed(2)` before display
-- Add explicit `parseFloat` for form inputs
+Change to:
+```typescript
+const { data: matchingProfile, error: profileError } = await supabase
+  .from('profiles')
+  .select('user_id')
+  .filter('user_id::text', 'ilike', `${normalizedCode.toLowerCase()}%`)
+  .limit(1)
+  .maybeSingle();
+```
+
+The `.filter()` method allows raw SQL operators and type casting, which properly converts the UUID to text before the pattern match.
 
 ---
 
-## 6. Responsive Design Polish
+## Additional Improvements
 
-### Areas to Improve
+### 1. Better Error Logging
+Add detailed logging to help debug future issues:
+```typescript
+console.log('Validating referral code:', { 
+  original: referralCode, 
+  normalized: normalizedCode,
+  queryPattern: `${normalizedCode.toLowerCase()}%`
+});
+```
 
-| Component | Mobile Issue | Fix |
-|-----------|--------------|-----|
-| WelcomeCard buttons | Stack spacing | `gap-3` on xs, `gap-4` on larger |
-| StatsGrid cards | Text truncation | Reduce font sizes on small screens |
-| InvestmentProgressTracker | Scrollbar visible | Hide scrollbar with webkit styles |
-| Admin profit input | Number input small | Increase height and font size |
+### 2. Graceful Fallback for Empty Referral
+If user provides a referral code but we can't validate it, we could:
+- Option A: Block signup with error (current behavior - strict)
+- Option B: Allow signup without referral bonus (lenient)
 
-### CSS Additions (`src/index.css`)
-```css
-/* Hide scrollbar for progress tracker */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+We'll keep Option A (strict) since users expect the bonus.
+
+### 3. Clear Error Message
+Update error message to be more helpful:
+```typescript
+return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
 ```
 
 ---
 
-## 7. Overall Professional Polish
-
-### Visual Consistency
-
-| Element | Enhancement |
-|---------|-------------|
-| Card shadows | Standardize to `shadow-xl` on hover |
-| Border radius | Use `rounded-xl` for cards, `rounded-lg` for buttons |
-| Transition duration | Standardize to `duration-300` |
-| Backdrop blur | Use `backdrop-blur-xl` consistently |
-
-### Animation Refinements
-- Loading screen: 3-layer glow with 2s, 2.5s, 3s cycles
-- Button hovers: `scale(1.02)` with `duration-200`
-- Card entrances: Staggered with `delay-100` increments
-
----
-
-## Files to Modify Summary
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/components/LoadingScreen.tsx` | Enhanced glow layers, timing |
-| `tailwind.config.ts` | New keyframes, refined animations |
-| `src/components/dashboard/WelcomeCard.tsx` | Button sizing, max-width, mature styling |
-| `src/components/dashboard/ActionsPanel.tsx` | Button refinements |
-| `src/components/dashboard/StatsGrid.tsx` | Decimal support in AnimatedCounter |
-| `src/pages/Admin.tsx` | Profit input accepts decimals |
-| `src/pages/Dashboard.tsx` | Decimal formatting in displays |
-| `src/components/InvestmentProgressTracker.tsx` | Decimal earnings display |
-| `src/index.css` | Scrollbar hiding, polish utilities |
+| `src/contexts/AuthContext.tsx` | Fix UUID matching query with `.filter()` |
 
 ---
 
-## Expected Results
+## After Fix: Expected Flow
+
+```text
+User clicks: msktesla.net/signup?ref=E1659FF6
+                    ↓
+Auth page extracts code → "E1659FF6" (auto-fills field)
+                    ↓
+User fills name, email, password → clicks Create Account
+                    ↓
+normalizeReferralCode() → "E1659FF6"
+                    ↓
+Query: .filter('user_id::text', 'ilike', 'e1659ff6%')
+                    ↓
+✅ MATCHES user_id = e1659ff6-b867-4d54-9ca9-40a94feb8067
+                    ↓
+Account created with referral bonus tracked!
+                    ↓
+Emails sent to referrer and new user
+```
+
+---
+
+## Testing Checklist
 
 After implementation:
-
-| Area | Improvement |
-|------|-------------|
-| Loading screen | Premium Tesla automotive-grade animation |
-| Dashboard buttons | Refined, mature trading platform aesthetic |
-| Admin profits | Full decimal support (e.g., $3,582.94) |
-| Balances | Consistent 2-decimal precision throughout |
-| Calculations | Accurate to the cent |
-| Responsiveness | Clean across all screen sizes |
-
----
-
-## Implementation Order
-
-1. Loading screen enhancements (high visual impact)
-2. Admin decimal profit support (functional fix)
-3. Currency display decimals (consistency)
-4. Button UI/UX improvements (polish)
-5. Responsive refinements (final touches)
+1. Copy a user's referral link from dashboard (e.g., `msktesla.net/signup?ref=E1659FF6`)
+2. Open in incognito/private browser
+3. Verify code auto-fills in the referral code field
+4. Complete signup with new email
+5. Verify:
+   - Account created successfully
+   - Referral record created in database
+   - Welcome bonus email sent to new user
+   - Referral notification sent to admin email
