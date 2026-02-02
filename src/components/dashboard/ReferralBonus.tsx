@@ -19,6 +19,13 @@ interface ReferredBonusInfo {
   id: string;
   referred_bonus: number;
   status: string;
+  referrer_user_id: string;
+}
+
+interface ReferrerInfo {
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
 }
 
 interface ReferralRecord {
@@ -30,6 +37,7 @@ interface ReferralRecord {
   profile?: {
     full_name: string | null;
     email: string | null;
+    avatar_url: string | null;
   };
 }
 
@@ -48,6 +56,7 @@ const ReferralBonus = () => {
   const [loading, setLoading] = useState(true);
   const [hasInvested, setHasInvested] = useState(false);
   const [wasReferred, setWasReferred] = useState<ReferredBonusInfo | null>(null);
+  const [referrerInfo, setReferrerInfo] = useState<ReferrerInfo | null>(null);
 
   // Generate unique referral link based on user ID - always use production domain
   const PRODUCTION_DOMAIN = 'https://msktesla.net';
@@ -80,7 +89,7 @@ const ReferralBonus = () => {
           // Check if current user was referred by someone (to show their $100 bonus)
           supabase
             .from('referrals')
-            .select('id, referred_bonus, status')
+            .select('id, referred_bonus, status, referrer_user_id')
             .eq('referred_user_id', user.id)
             .maybeSingle()
         ]);
@@ -91,17 +100,17 @@ const ReferralBonus = () => {
           
           // Get profiles for referred users
           const referredUserIds = referrals.map(r => r.referred_user_id);
-          let profileMap = new Map<string, { full_name: string | null; email: string | null }>();
+          let profileMap = new Map<string, { full_name: string | null; email: string | null; avatar_url: string | null }>();
           
           if (referredUserIds.length > 0) {
             const { data: profiles } = await supabase
               .from('profiles')
-              .select('user_id, full_name, email')
+              .select('user_id, full_name, email, avatar_url')
               .in('user_id', referredUserIds);
             
             if (profiles) {
               profiles.forEach(p => {
-                profileMap.set(p.user_id, { full_name: p.full_name, email: p.email });
+                profileMap.set(p.user_id, { full_name: p.full_name, email: p.email, avatar_url: p.avatar_url });
               });
             }
           }
@@ -142,6 +151,17 @@ const ReferralBonus = () => {
         // Check if user was referred (received a signup bonus)
         if (!wasReferredResult.error && wasReferredResult.data) {
           setWasReferred(wasReferredResult.data);
+          
+          // Fetch referrer's profile to show who referred this user
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('full_name, email, avatar_url')
+            .eq('user_id', wasReferredResult.data.referrer_user_id)
+            .maybeSingle();
+          
+          if (referrerProfile) {
+            setReferrerInfo(referrerProfile);
+          }
         }
       } catch (err) {
         console.error('Error:', err);
@@ -221,6 +241,25 @@ const ReferralBonus = () => {
                       ? 'Bonus unlocked! Processing...'
                       : 'Invest to unlock this bonus'}
                 </p>
+                {/* Show who referred this user */}
+                {referrerInfo && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {referrerInfo.avatar_url ? (
+                      <img 
+                        src={referrerInfo.avatar_url} 
+                        alt={referrerInfo.full_name || 'Referrer'} 
+                        className="w-4 h-4 rounded-full object-cover ring-1 ring-green-500/30"
+                      />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full bg-green-500/30 flex items-center justify-center text-[8px] font-medium text-green-400">
+                        {(referrerInfo.full_name || referrerInfo.email || 'F').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-[10px] text-green-400/80">
+                      Referred by {referrerInfo.full_name || referrerInfo.email?.split('@')[0] || 'Friend'}
+                    </span>
+                  </div>
+                )}
               </div>
               {(wasReferred.status === 'active' || wasReferred.status === 'paid') && (
                 <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0" />
@@ -299,9 +338,17 @@ const ReferralBonus = () => {
                   {referralRecords.slice(0, 5).map((record) => (
                     <div key={record.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-700/30 border border-slate-600/30">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-slate-600/50 flex items-center justify-center text-xs font-medium text-foreground">
-                          {getUserDisplay(record).charAt(0).toUpperCase()}
-                        </div>
+                        {record.profile?.avatar_url ? (
+                          <img 
+                            src={record.profile.avatar_url} 
+                            alt={getUserDisplay(record)}
+                            className="w-8 h-8 rounded-full object-cover ring-2 ring-electric-blue/30"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-slate-600/50 flex items-center justify-center text-xs font-medium text-foreground">
+                            {getUserDisplay(record).charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <p className="text-xs font-medium text-foreground truncate max-w-[100px] sm:max-w-[150px]">
                             {getUserDisplay(record)}
