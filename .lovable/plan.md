@@ -1,86 +1,127 @@
 
+# Fix Referral Display - Show Friend Names & Photos
 
-# Loading Screen Enhancement - Premium Timing & Glow
+## Problem Identified
 
-## Requested Changes
+The referral tracking table shows "User 28e0bc..." instead of "Igor 2" because of **Row-Level Security (RLS)** restrictions:
 
-1. **Slower timing**: Increase display duration from 2s to 2.5s
-2. **More intense glow**: Enhance the red ambient glow for a more dramatic effect
-3. **Premium polish**: Ensure it looks stunning on all screen sizes
+| Policy | Effect |
+|--------|--------|
+| `Users can view own profile` | Users can only see their own profile row |
+| **Result** | When you try to fetch Igor 2's profile, RLS blocks it |
 
-## Implementation
+The database has "Igor 2" with a photo, but you can't access it due to security policies.
 
-### File: `src/components/LoadingScreen.tsx`
+## Solution
 
-#### 1. Timing Adjustment
-Change the exit timer from 2000ms to 2500ms:
-```typescript
-// Before
-}, 2000);
+Create a **secure view** that exposes only the minimum public profile info (name + avatar) needed for referral displays, without exposing sensitive data like email or phone.
 
-// After
-}, 2500);
+## Implementation Plan
+
+### Step 1: Create Public Referral Profile View
+
+Create a SQL migration to add a secure view:
+
+```sql
+-- Create a view for public referral profile display
+-- Only exposes name and avatar, no PII like email/phone
+CREATE VIEW public.referral_profiles AS
+SELECT 
+  user_id,
+  full_name,
+  avatar_url
+FROM public.profiles;
+
+-- Enable RLS bypass via view (security invoker off means it uses definer's permissions)
+-- The view will be readable by authenticated users for referral display purposes
 ```
 
-#### 2. Enhanced Glow Intensity
+Then add an RLS policy to allow reading from this view for referral purposes.
 
-**Ambient Background Glow** - Make it larger and more visible:
-```typescript
-// Before: 15% opacity, 70% fade
-bg-[radial-gradient(circle,rgba(232,33,39,0.15)_0%,transparent_70%)]
+### Step 2: Alternative - Add RLS Policy for Referral Access
 
-// After: 25% opacity, 60% fade, larger sizes
-bg-[radial-gradient(circle,rgba(232,33,39,0.25)_0%,rgba(232,33,39,0.08)_40%,transparent_60%)]
+Add a new RLS policy that allows users to view profiles of people they have referred:
+
+```sql
+-- Allow users to view profiles of users they referred
+CREATE POLICY "Users can view referred user profiles"
+  ON public.profiles FOR SELECT
+  USING (
+    auth.uid() IS NOT NULL AND
+    EXISTS (
+      SELECT 1 FROM public.referrals
+      WHERE referrer_user_id = auth.uid()
+      AND referred_user_id = profiles.user_id
+    )
+  );
 ```
 
-**Logo Drop Shadow** - More prominent glow:
-```typescript
-// Before: 80px blur, 40% opacity
-drop-shadow-[0_0_80px_rgba(232,33,39,0.4)]
+This is the **recommended approach** - minimal, secure, and targeted.
 
-// After: 120px blur, 50% opacity
-drop-shadow-[0_0_120px_rgba(232,33,39,0.5)]
-```
+### Step 3: Update ReferralBonus Component for Better Display
 
-**Glow Container Sizes** - Larger for more dramatic effect:
-```typescript
-// Before
-w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px]
+Enhance the referral cards with:
 
-// After - 50% larger
-w-[400px] h-[400px] sm:w-[550px] sm:h-[550px] lg:w-[700px] lg:h-[700px]
-```
+1. **Larger avatars** - w-10 h-10 instead of w-8 h-8
+2. **Premium styling** - Gradient borders, hover effects
+3. **Better fallback** - Colorful initials when no photo
+4. **Animation** - Stagger animation for each referral card
 
-#### 3. Additional Premium Polish
-
-Add a subtle second glow layer for depth:
 ```tsx
-{/* Primary Glow - Intense center */}
-<div className="w-[400px] h-[400px] sm:w-[550px] sm:h-[550px] lg:w-[700px] lg:h-[700px] 
-  rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.25)_0%,rgba(232,33,39,0.08)_40%,transparent_60%)] 
-  blur-2xl animate-logo-glow-ultra" />
-
-{/* Secondary Glow - Wider ambient spread */}
-<div className="absolute w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] lg:w-[900px] lg:h-[900px] 
-  rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.1)_0%,transparent_50%)] 
-  blur-3xl opacity-60" />
+// Enhanced referral card
+<motion.div
+  initial={{ opacity: 0, x: -10 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ delay: index * 0.1 }}
+  className="flex items-center justify-between p-3 rounded-xl 
+    bg-gradient-to-r from-slate-800/80 to-slate-700/50 
+    border border-electric-blue/20 hover:border-electric-blue/40 
+    transition-all duration-300"
+>
+  {/* Avatar with ring effect */}
+  {record.profile?.avatar_url ? (
+    <img 
+      src={record.profile.avatar_url} 
+      alt={name}
+      className="w-10 h-10 rounded-full object-cover 
+        ring-2 ring-electric-blue/50 ring-offset-2 ring-offset-slate-800"
+    />
+  ) : (
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-electric-blue to-blue-600 
+      flex items-center justify-center text-sm font-bold text-white shadow-lg">
+      {name.charAt(0).toUpperCase()}
+    </div>
+  )}
+  
+  {/* Name with better typography */}
+  <p className="text-sm font-semibold text-foreground">{name}</p>
+</motion.div>
 ```
 
-## Visual Comparison
+## Visual Enhancement
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Display time | 2.0 seconds | 2.5 seconds |
-| Glow opacity | 15% center | 25% center + 8% mid |
-| Glow size | 300-500px | 400-700px (primary) + 500-900px (ambient) |
-| Drop shadow | 80px @ 40% | 120px @ 50% |
-| Layers | 1 glow layer | 2 glow layers for depth |
+```text
+Current:                      Enhanced:
+┌─────────────────────┐       ┌─────────────────────────────┐
+│ [○] User 28e0bc...  │  →    │ [📷 Igor 2 Photo]           │
+│     2/2/2026        │       │                             │
+│        $500 Active  │       │  Igor 2           $500      │
+└─────────────────────┘       │  Feb 2, 2026       Active   │
+                              │  ─────────────────────────  │
+                              │  ⭐ Premium Card Style      │
+                              └─────────────────────────────┘
+```
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| Database Migration | Add RLS policy for referral profile access |
+| `src/components/dashboard/ReferralBonus.tsx` | Enhanced card design with animations |
 
 ## Result
 
-- **Slower, more cinematic** entrance and exit
-- **Richer red glow** that fills more of the screen
-- **Dual-layer glow** creates premium depth effect
-- **Responsive sizing** looks great on mobile, tablet, and desktop
-- **Clean background** - pure black with no distracting elements
-
+- **Igor 2's name and photo** will display properly
+- **Premium card styling** makes referrals look cool
+- **Secure** - only exposes name/avatar to referrers, not email/phone
+- **Responsive** - looks great on all screen sizes
