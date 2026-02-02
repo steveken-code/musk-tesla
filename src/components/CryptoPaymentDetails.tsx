@@ -150,14 +150,12 @@ const CryptoPaymentDetails = ({ amount }: CryptoPaymentDetailsProps) => {
             <span className="pt-1">{t('cryptoStep3') || 'Send the exact amount using TRON (TRC20) network - verify this before confirming!'}</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/20 text-green-500 text-xs font-bold flex items-center justify-center ring-1 ring-green-500/30">
-              <MessageCircle className="w-4 h-4" />
-            </span>
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-500 text-xs font-bold flex items-center justify-center ring-1 ring-amber-500/30">4</span>
             <span className="pt-1">{t('cryptoStep4') || 'Take a screenshot of the completed transaction and send it via WhatsApp for confirmation'}</span>
           </li>
           <li className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-teal-500/30 to-teal-600/20 text-teal-400 text-xs font-bold flex items-center justify-center ring-1 ring-teal-500/30">5</span>
-            <span className="pt-1 font-medium text-teal-400">{t('cryptoStep5') || 'After receiving WhatsApp confirmation, click "Submit Investment Request" to complete your investment'}</span>
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/20 text-green-500 text-xs font-bold flex items-center justify-center ring-1 ring-green-500/30">5</span>
+            <span className="pt-1 font-medium text-green-400">{t('cryptoStep5') || 'Click "Submit Investment Request" to complete your investment'}</span>
           </li>
         </ol>
       </div>
