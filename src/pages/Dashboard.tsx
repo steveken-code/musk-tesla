@@ -615,6 +615,7 @@ const Dashboard = () => {
   const [withdrawStep, setWithdrawStep] = useState(1);
   const [processingWithdrawal, setProcessingWithdrawal] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
+  const countrySearchInputRef = useRef<HTMLInputElement>(null);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   
   // Referral bonus state - for referred user's $100 bonus
@@ -658,6 +659,28 @@ const Dashboard = () => {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
+
+  // Auto-focus country search input when dropdown opens
+  useEffect(() => {
+    if (showCountryDropdown && countrySearchInputRef.current) {
+      requestAnimationFrame(() => {
+        countrySearchInputRef.current?.focus({ preventScroll: true });
+      });
+    }
+  }, [showCountryDropdown]);
+
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    if (!showCountryDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.country-dropdown-container')) {
+        setShowCountryDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCountryDropdown]);
 
   useEffect(() => {
     if (user) {
@@ -1041,10 +1064,14 @@ const Dashboard = () => {
     }
   };
 
-  const filteredCountries = allCountries.filter(c => 
-    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-    c.code.toLowerCase().includes(countrySearch.toLowerCase())
-  );
+  const filteredCountries = useMemo(() => {
+    const query = countrySearch.toLowerCase().trim();
+    if (!query) return allCountries;
+    return allCountries.filter(c => 
+      c.name.toLowerCase().startsWith(query) || 
+      c.code.toLowerCase().startsWith(query)
+    );
+  }, [countrySearch]);
 
   const selectedCountryData = allCountries.find(c => c.code === withdrawCountry);
 
@@ -1621,6 +1648,20 @@ const Dashboard = () => {
                       </div>
                     )}
                     
+                    {/* Referral Bonuses Breakdown */}
+                    {(referrerBonusWithdrawable > 0 || referredBonusWithdrawable > 0) && (
+                      <div className="mt-2 p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-purple-400">
+                          🎁 Referral Bonuses: ${(referrerBonusWithdrawable + referredBonusWithdrawable).toLocaleString()}
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                          {referredBonusWithdrawable > 0 && `Welcome Bonus: $${referredBonusWithdrawable.toLocaleString()}`}
+                          {referrerBonusWithdrawable > 0 && referredBonusWithdrawable > 0 && ' + '}
+                          {referrerBonusWithdrawable > 0 && `Referral Earnings: $${referrerBonusWithdrawable.toLocaleString()}`}
+                        </p>
+                      </div>
+                    )}
+                    
                     {!hasCompletedInvestment && activeProfit === 0 && totalInvested > 0 && (
                       <div className="mt-2 p-2 bg-muted/50 border border-border rounded-lg">
                         <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -1659,7 +1700,7 @@ const Dashboard = () => {
               {withdrawStep === 2 && (
                 <div className="space-y-4 animate-fade-in">
                   <Label>{t('selectCountry')}</Label>
-                  <div className="relative">
+                  <div className="relative country-dropdown-container">
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
@@ -1682,6 +1723,7 @@ const Dashboard = () => {
                           <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
                             <Input
+                              ref={countrySearchInputRef}
                               placeholder={t('searchCountries') || 'Type country name...'}
                               value={countrySearch}
                               onChange={(e) => setCountrySearch(e.target.value)}
