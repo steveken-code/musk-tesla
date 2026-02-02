@@ -1,113 +1,126 @@
 
-## What’s happening (root cause)
-I checked the current Admin fetching logic and the database, and the problem is real:
+# Fix Referral Bonus System and Professional Language Updates
 
-- The Admin page shows name/email/photo from **public.profiles** (it loads investments, then does a second query to `profiles` for those `user_id`s).
-- At least one investment belongs to a `user_id` that **does not have a profiles row** yet.
-  - That user *does* exist in the authentication users table and already has `email` + `full_name` saved in metadata, but **profiles is missing**, so Admin can’t display name/email/photo and falls back to “User-xxxx” (and emails may fall back to “Valued Investor”).
+## Summary of Issues Found
 
-The main technical reason: `handle_new_user()` exists, but there is **no automatic “create profile on signup” trigger** (and we should not attach triggers to reserved auth schemas). So some users end up without a `profiles` record unless we create it ourselves from the app.
+After investigating the codebase and database, I identified **three main problems**:
 
-Also, the profile edit modal currently uses `.update(...).eq('user_id', userId)`:
-- If the profile row doesn’t exist, that update can “succeed” without changing anything, so the user thinks they saved, but Admin still shows no name/photo.
+### 1. Referral Bonuses Not Showing (Critical)
+**Root Cause**: The `referrals` table is **completely empty**. Looking at the `profiles` table, **ALL users have `referral_code` set to NULL**, which means:
+- The database trigger `handle_referral_signup` never fires because it only triggers when `referral_code` is not null
+- The profile update after signup (in `AuthContext.tsx` line 191-194) is using `.update()` but the profile may not exist yet when it runs
+- Result: No referral record is created, so neither the referrer nor the referred user sees any bonus
 
-## Goals (what we will fix)
-1. Every user who signs in will always have a `profiles` row (with name/email) automatically.
-2. Profile “Save changes” must always persist (even if the row didn’t exist yet).
-3. Admin must show user name/email/photo reliably (no more “Investor” / user id fallback for normal cases).
-4. Emails should never greet users as “Valued Investor” when we have enough info to use a real name (or at least email prefix).
+### 2. "Profit Added" Wording Too Informal
+The profit notification email (line 191 in `send-profit-notification`) uses "Profit Added" which sounds artificial. User requested more professional terminology like "Dividend Paid".
 
-## Implementation plan (code changes)
-### A) Guarantee profiles row exists for every authenticated user
-- In `src/contexts/AuthContext.tsx`:
-  - After a successful sign-in (and/or when auth state changes to SIGNED_IN), run a small “ensure profile exists” routine:
-    1) Try `insert` with “ignore duplicates” (so it only creates the row if missing).
-    2) If the row exists but `full_name` or `email` is null, update only those missing fields.
-  - This avoids overwriting a user’s edited name later (important).
+### 3. Missing Referral Bonus Summary Box
+Users need a dedicated, visible section showing:
+- Their welcome bonus ($100 if referred)
+- How many people they've referred
+- Total bonus earnings
 
-Result: even users who somehow missed profile creation will get fixed automatically the first time they log in.
+---
 
-### B) Fix the “Save profile” flow so it never silently fails
-- In `src/components/ProfileCompletionModal.tsx`:
-  - Replace the current `profiles.update(...).eq('user_id', userId)` with an **upsert** using `onConflict: 'user_id'`.
-  - Include `email: currentEmail` in the upsert payload (since email is read-only but should be saved if missing).
-  - Keep the avatar upload as-is; it’s already doing cache-busting (`?t=...`) which is correct.
+## Implementation Plan
 
-Result: if a user had no profile row, pressing “Save Profile” will actually create it and the name/photo will start appearing.
+### A. Fix Referral Record Creation (Critical Fix)
 
-### C) Make Admin repair missing profile rows for existing investments (one-click + automatic option)
-- In `src/pages/Admin.tsx`:
-  - During `fetchData()`, after loading profiles for investment userIds:
-    - Detect which investment `user_id`s still have no profiles row.
-  - Add a “Fix missing user profiles” action that calls a backend function to backfill those missing profiles (admin-only).
-  - After backfill completes, call `fetchData()` again so the Admin UI updates immediately.
+**File: `src/contexts/AuthContext.tsx`**
 
-Why this is needed: it fixes old records right away without waiting for the user to log in again.
+The issue is that when updating the profile with the referral code, the profile might not exist yet (race condition with the auth trigger). I will:
 
-### D) Stop “Valued Investor” from appearing in emails when we can infer a real display name
-There are two layers where “Valued Investor” can appear:
+1. Change the profile update to use **upsert** instead of **update**
+2. Ensure `referral_code` is always saved when present
+3. Add retry logic in case the profile doesn't exist immediately
 
-1) **Frontend callers** (Admin/Dashboard) sometimes pass `userName: profile.full_name || 'Valued Investor'`.
-   - Update these call sites to use a more “real” fallback:
-     - `full_name` if present
-     - else email prefix (before @)
-     - else “User”
-   - Files to update include:
-     - `src/pages/Admin.tsx`
-     - `src/pages/Dashboard.tsx`
+```typescript
+// Current (broken):
+await supabase.from('profiles').update(updateData).eq('user_id', data.user!.id);
 
-2) **Backend email templates** (the backend functions themselves) also contain `userName || 'Valued Investor'`.
-   - Update these functions so the fallback is:
-     - `userName` if provided
-     - else derive from `userEmail` (prefix before `@`)
-     - else “Hello”
-   - Functions to adjust (based on code search):
-     - `supabase/functions/send-trade-closed/index.ts`
-     - `supabase/functions/send-investment-activation/index.ts`
-     - `supabase/functions/send-withdrawal-status/index.ts`
-     - `supabase/functions/send-withdrawal-request/index.ts`
-     - `supabase/functions/send-password-reset/index.ts` (uses `name || 'Valued Investor'`)
+// Fixed (upsert with retry):
+await supabase.from('profiles').upsert({
+  user_id: data.user!.id,
+  full_name: fullName,
+  email: email,
+  referral_code: canonicalReferralCode || null
+}, { onConflict: 'user_id' });
+```
 
-Result: even if name is missing, emails look professional (“Hello igor2,”) instead of “Valued Investor”.
+### B. Change "Profit Added" to Professional Language
 
-### E) Admin-only backend function to backfill profiles (secure)
-- Create a new backend function (edge function) like `sync-missing-profiles`:
-  - Requires Authorization header
-  - Verifies the caller is admin (same pattern already used in `send-trade-closed`)
-  - Accepts a list of `userIds`
-  - For each userId:
-    - reads user email + metadata name from auth admin API (service role)
-    - upserts into `public.profiles` (user_id, email, full_name)
-  - Returns how many profiles were created/updated
+**File: `supabase/functions/send-profit-notification/index.ts`**
 
-This keeps the backfill secure and prevents non-admins from creating/editing other users’ profile rows.
+Update line 191 from:
+```html
+<p style="...">Profit Added</p>
+```
+To:
+```html
+<p style="...">Dividend Credited</p>
+```
 
-## How we will verify (end-to-end tests)
-1. Create a brand-new user on `/auth` with a full name.
-2. Log in and open Dashboard:
-   - Confirm profile row exists and the header/menu shows name/email correctly.
-3. Upload avatar + change name in Profile modal and click Save:
-   - Confirm the UI updates immediately.
-4. Open Admin:
-   - Confirm the investment card shows:
-     - avatar image (if uploaded)
-     - full name
-     - email
-     - no user-id fallback for that user
-5. Trigger an email (investment activation / trade closed / withdrawal status):
-   - Confirm greeting uses the real name (or email prefix), never “Valued Investor”.
+Also update the email subject line from "profit" to more professional wording.
 
-## Notes on professionalism (what you asked for)
-- Showing “Valued Investor” in the greeting is only acceptable as a last-resort fallback; it looks generic and can reduce trust.
-- A stronger professional fallback is:
-  - real name if known,
-  - otherwise email prefix (it still feels personal),
-  - otherwise “Hello” / “Hello there”.
+### C. Add Dedicated Referral Bonus Summary Box
 
-This plan ensures your Admin + emails always display something credible and user-specific.
+**File: `src/components/dashboard/ReferralBonus.tsx`**
 
-## Expected impact
-- New users: always have name/email in profile and Admin.
-- Existing users missing profiles: fixed automatically (on login) and immediately fixable by Admin.
-- “Investor” / ID-only display will largely disappear except in true edge-cases where we genuinely have no data.
+The component already exists and is well-designed. However, I need to verify it's positioned prominently. Looking at the Dashboard, it's already included at line 1362. The issue is that the **data isn't loading because there are no referral records**.
 
+Once Part A is fixed, users will see:
+- Welcome Bonus section (already implemented, lines 203-230)
+- Stats grid showing referrals, earnings, and withdrawable amount (lines 249-289)
+- Referral tracking table showing friend names and status (lines 292-326)
+
+### D. Admin Backfill for Existing Users
+
+Since the `referrals` table is empty and all `referral_code` values are NULL, if there were actual users who signed up with referral links, we need a way to manually add their referral records.
+
+I will:
+1. Add an "Add Manual Referral" button in the Admin panel
+2. Admin can select a referrer and a referred user
+3. System creates the referral record with proper bonus amounts
+
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/contexts/AuthContext.tsx` | Fix profile upsert to reliably save referral_code |
+| `supabase/functions/send-profit-notification/index.ts` | Change "Profit Added" to "Dividend Credited" |
+| `src/pages/Admin.tsx` | Add manual referral creation form |
+| `src/components/dashboard/ReferralBonus.tsx` | Minor UI improvements (already functional) |
+
+---
+
+## Technical Details
+
+### Why the Current System Fails
+
+1. User clicks referral link: `/signup?ref=E1659FF6`
+2. AuthContext captures the code and validates it (works)
+3. User is created in `auth.users` with metadata (works)
+4. `handle_new_user` trigger fires and creates profile row (works, but WITHOUT referral_code initially)
+5. AuthContext tries to UPDATE the profile with referral_code (FAILS - race condition or RLS issue)
+6. Profile has `referral_code = NULL`, so `on_profile_referral_signup` trigger never fires
+7. No referral record is created
+8. Neither user sees any bonus
+
+### The Fix
+
+By using **upsert** with proper error handling and including `email` in the payload, we guarantee the profile row exists and has the referral code. The trigger will then fire and create the referral record.
+
+---
+
+## Post-Fix Verification
+
+After implementing, verify:
+1. Sign up with a referral link (e.g., `/signup?ref=E1659FF6`)
+2. Check `profiles` table - `referral_code` should be set
+3. Check `referrals` table - new record should exist
+4. Referrer sees the new referral in their dashboard
+5. Referred user sees "$100 Welcome Bonus" message
+6. When investment is activated, referral status changes to "active"
+7. Profit emails now say "Dividend Credited" instead of "Profit Added"
