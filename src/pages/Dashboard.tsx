@@ -1129,8 +1129,11 @@ const Dashboard = () => {
     - totalWithdrawn - pendingWithdrawals
   );
   
-  // Portfolio balance = Total Investment + Total Profit - Already Withdrawn (for display)
-  const portfolioBalance = Math.max(0, totalInvested + totalProfit - totalWithdrawn);
+  // Portfolio balance = Total Investment + Total Profit + Referral Bonuses - Already Withdrawn (for display)
+  // Include referral bonuses so "Current Value" matches "Available for Withdrawal"
+  const portfolioBalance = Math.max(0, 
+    totalInvested + totalProfit + referrerBonusWithdrawable + referredBonusWithdrawable - totalWithdrawn
+  );
 
   const getStatusIcon = (status: string) => {
     switch (status) {
