@@ -18,12 +18,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Ensure profile exists for the user (creates if missing, updates if name/email is null)
+  const ensureProfileExists = async (user: User) => {
+    if (!user) return;
+    
+    try {
+      // First try to get existing profile
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const fullName = user.user_metadata?.full_name || null;
+      const email = user.email || null;
+
+      if (!existingProfile) {
+        // Profile doesn't exist - create it
+        await supabase.from('profiles').insert({
+          user_id: user.id,
+          email,
+          full_name: fullName,
+        });
+        console.log('Profile created for user:', user.id);
+      } else {
+        // Profile exists but may have missing fields - update only if needed
+        const needsUpdate = 
+          (!existingProfile.full_name && fullName) ||
+          (!existingProfile.email && email);
+        
+        if (needsUpdate) {
+          const updateData: { full_name?: string; email?: string } = {};
+          if (!existingProfile.full_name && fullName) updateData.full_name = fullName;
+          if (!existingProfile.email && email) updateData.email = email;
+          
+          await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('user_id', user.id);
+          console.log('Profile updated with missing fields for user:', user.id);
+        }
+      }
+    } catch (err) {
+      console.error('Error ensuring profile exists:', err);
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Ensure profile exists when user signs in
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Use setTimeout to avoid Supabase auth deadlock
+          setTimeout(() => {
+            ensureProfileExists(session.user);
+          }, 0);
+        }
       }
     );
 
@@ -31,6 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Also ensure profile exists on initial load if user is logged in
+      if (session?.user) {
+        setTimeout(() => {
+          ensureProfileExists(session.user);
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();

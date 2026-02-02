@@ -79,7 +79,7 @@ async function sendPasswordResetEmailTask({ email, name, resetLink }: PasswordRe
                     <td style="padding: 40px 50px 10px; text-align: center;">
                       <p style="margin: 0; color: #6b7280; font-size: 16px;">Hello,</p>
                       <h2 style="margin: 10px 0 0; color: #1e40af; font-size: 26px; font-weight: 700;">
-                        ${name || 'Valued Investor'}
+                        ${name || (email ? email.split('@')[0] : 'there')}
                       </h2>
                       <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 25px auto; border-radius: 2px;"></div>
                     </td>

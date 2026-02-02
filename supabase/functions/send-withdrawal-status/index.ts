@@ -257,7 +257,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <tr>
                 <td style="padding: 40px 50px 15px;">
                   <p style="margin: 0; color: #c4b5fd; font-size: 22px; font-weight: 700;">
-                    Hello ${userName || 'Valued Investor'},
+                    Hello ${userName || (userEmail ? userEmail.split('@')[0] : 'there')},
                   </p>
                 </td>
               </tr>

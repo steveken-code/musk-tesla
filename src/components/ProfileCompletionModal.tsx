@@ -110,14 +110,17 @@ const ProfileCompletionModal = ({
       // Upload avatar if selected
       const newAvatarUrl = await uploadAvatar();
 
-      // Update profile
+      // Use upsert to ensure profile is created if it doesn't exist
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: userId,
           full_name: fullName.trim(),
           avatar_url: newAvatarUrl,
-        })
-        .eq('user_id', userId);
+          email: currentEmail || null,
+        }, { 
+          onConflict: 'user_id',
+        });
 
       if (error) throw error;
 

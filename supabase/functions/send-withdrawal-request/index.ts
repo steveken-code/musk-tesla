@@ -90,7 +90,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               <tr>
                 <td style="padding: 30px 40px 10px;">
                   <p style="margin: 0; color: #c4b5fd; font-size: 18px; font-weight: 600;">
-                    Hello ${name || 'Valued Investor'},
+                    Hello ${name || (email ? email.split('@')[0] : 'there')},
                   </p>
                 </td>
               </tr>

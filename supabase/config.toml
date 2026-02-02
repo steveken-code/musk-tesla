@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.translate-content]
 verify_jwt = false
+
+[functions.sync-missing-profiles]
+verify_jwt = false
