@@ -335,22 +335,28 @@ const ReferralBonus = () => {
                   <h4 className="text-xs font-semibold text-foreground">Your Referrals</h4>
                 </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {referralRecords.slice(0, 5).map((record) => (
-                    <div key={record.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-700/30 border border-slate-600/30">
-                      <div className="flex items-center gap-2">
+                  {referralRecords.slice(0, 5).map((record, index) => (
+                    <motion.div 
+                      key={record.id} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-slate-800/80 to-slate-700/50 border border-electric-blue/20 hover:border-electric-blue/40 transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-3">
                         {record.profile?.avatar_url ? (
                           <img 
                             src={record.profile.avatar_url} 
                             alt={getUserDisplay(record)}
-                            className="w-8 h-8 rounded-full object-cover ring-2 ring-electric-blue/30"
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-electric-blue/50 ring-offset-2 ring-offset-slate-800"
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-slate-600/50 flex items-center justify-center text-xs font-medium text-foreground">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-electric-blue to-blue-600 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                             {getUserDisplay(record).charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <p className="text-xs font-medium text-foreground truncate max-w-[100px] sm:max-w-[150px]">
+                          <p className="text-sm font-semibold text-foreground truncate max-w-[100px] sm:max-w-[150px]">
                             {getUserDisplay(record)}
                           </p>
                           <p className="text-[10px] text-muted-foreground">
@@ -359,10 +365,10 @@ const ReferralBonus = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-green-400">${record.bonus_amount || 500}</span>
+                        <span className="text-sm font-bold text-green-400">${record.bonus_amount || 500}</span>
                         {getStatusBadge(record.status)}
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
                 {referralRecords.length > 5 && (
