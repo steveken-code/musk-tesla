@@ -484,7 +484,7 @@ const Admin = () => {
           await supabase.functions.invoke('send-trade-closed', {
             body: {
               userEmail: investment.profiles.email,
-              userName: investment.profiles.full_name || 'Valued Investor',
+              userName: investment.profiles.full_name || investment.profiles.email?.split('@')[0] || 'User',
               amount: investment.amount,
               profitAmount: investment.profit_amount || 0,
               investmentId: investment.id,
@@ -576,7 +576,7 @@ const Admin = () => {
           await supabase.functions.invoke('send-withdrawal-status', {
             body: {
               userEmail: withdrawal.profiles.email,
-              userName: withdrawal.profiles.full_name || 'Valued Investor',
+              userName: withdrawal.profiles.full_name || withdrawal.profiles.email?.split('@')[0] || 'User',
               amount: withdrawal.amount,
               status: status,
               holdMessage: holdMessage || withdrawal.hold_message,
