@@ -46,9 +46,12 @@ const AnimatedCounter = ({ end, duration = 1500, prefix = "", suffix = "", decim
     };
   }, [end, duration]);
 
-  const formattedValue = decimals > 0 
-    ? count.toFixed(decimals)
-    : Math.round(count).toLocaleString();
+  // For monetary values, always show 2 decimals; for others, use configured decimals
+  const formattedValue = prefix === "$" 
+    ? count.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : decimals > 0 
+      ? count.toFixed(decimals)
+      : Math.round(count).toLocaleString();
 
   return (
     <span>

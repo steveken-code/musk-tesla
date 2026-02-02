@@ -202,7 +202,7 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Total Earnings</span>
             <span className="text-sm font-bold text-green-400">
-              +${progressData.totalProfit.toLocaleString()}
+              +${progressData.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
