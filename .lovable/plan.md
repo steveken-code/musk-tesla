@@ -1,143 +1,86 @@
 
 
-# Professional Tesla Loading Screen Redesign
+# Loading Screen Enhancement - Premium Timing & Glow
 
-## Current vs. Desired
+## Requested Changes
 
-| Aspect | Current | Desired (Reference Images) |
-|--------|---------|---------------------------|
-| Logo | Small Tesla T only (w-16 to w-24) | **Large** Tesla T + "TESLA" wordmark |
-| Background | Black with glow rings | Pure black, clean |
-| Wordmark | None | "TESLA" text with signature letter spacing |
-| Size | Minimal | Fills significant vertical space |
-| Effect | Animated glow rings | Subtle red glow/ambient light |
-| Feel | Functional | Premium automotive-grade splash |
+1. **Slower timing**: Increase display duration from 2s to 2.5s
+2. **More intense glow**: Enhance the red ambient glow for a more dramatic effect
+3. **Premium polish**: Ensure it looks stunning on all screen sizes
 
 ## Implementation
 
-### Step 1: Copy the Professional Logo Asset
+### File: `src/components/LoadingScreen.tsx`
 
-Copy the clean transparent PNG (Tesla T + wordmark combined) to the project:
+#### 1. Timing Adjustment
+Change the exit timer from 2000ms to 2500ms:
+```typescript
+// Before
+}, 2000);
+
+// After
+}, 2500);
 ```
-user-uploads://new_tesla-removebg-preview_1-3.png → src/assets/tesla-preloader.png
+
+#### 2. Enhanced Glow Intensity
+
+**Ambient Background Glow** - Make it larger and more visible:
+```typescript
+// Before: 15% opacity, 70% fade
+bg-[radial-gradient(circle,rgba(232,33,39,0.15)_0%,transparent_70%)]
+
+// After: 25% opacity, 60% fade, larger sizes
+bg-[radial-gradient(circle,rgba(232,33,39,0.25)_0%,rgba(232,33,39,0.08)_40%,transparent_60%)]
 ```
 
-This logo already includes both the T symbol and "TESLA" wordmark in Tesla's signature red.
+**Logo Drop Shadow** - More prominent glow:
+```typescript
+// Before: 80px blur, 40% opacity
+drop-shadow-[0_0_80px_rgba(232,33,39,0.4)]
 
-### Step 2: Redesign LoadingScreen Component
+// After: 120px blur, 50% opacity
+drop-shadow-[0_0_120px_rgba(232,33,39,0.5)]
+```
 
-**File: `src/components/LoadingScreen.tsx`**
+**Glow Container Sizes** - Larger for more dramatic effect:
+```typescript
+// Before
+w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px]
 
-Replace the current small logo + glow rings with:
+// After - 50% larger
+w-[400px] h-[400px] sm:w-[550px] sm:h-[550px] lg:w-[700px] lg:h-[700px]
+```
 
-1. **Large centered logo** - The combined T + wordmark image scaled appropriately:
-   - Mobile: w-48 (192px wide)
-   - Tablet: w-64 (256px wide)
-   - Desktop: w-80 (320px wide)
+#### 3. Additional Premium Polish
 
-2. **Pure black background** - Clean, no distracting patterns
-
-3. **Subtle ambient glow** - Red glow emanating from behind the logo using drop-shadow
-
-4. **Smooth animations**:
-   - Fade-in on load
-   - Gentle pulse effect
-   - Fade-out on exit
-
-### Updated Component Code
-
+Add a subtle second glow layer for depth:
 ```tsx
-import { useEffect, useState } from 'react';
-import teslaPreloader from '@/assets/tesla-preloader.png';
+{/* Primary Glow - Intense center */}
+<div className="w-[400px] h-[400px] sm:w-[550px] sm:h-[550px] lg:w-[700px] lg:h-[700px] 
+  rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.25)_0%,rgba(232,33,39,0.08)_40%,transparent_60%)] 
+  blur-2xl animate-logo-glow-ultra" />
 
-interface LoadingScreenProps {
-  onComplete: () => void;
-}
-
-const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
-  const [isExiting, setIsExiting] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    // Fade in after mount
-    const showTimer = setTimeout(() => setIsVisible(true), 50);
-    
-    // Exit after 2s display
-    const exitTimer = setTimeout(() => {
-      setIsExiting(true);
-      setTimeout(onComplete, 500);
-    }, 2000);
-
-    return () => {
-      clearTimeout(showTimer);
-      clearTimeout(exitTimer);
-    };
-  }, [onComplete]);
-
-  return (
-    <div 
-      className={`fixed inset-0 z-[100] bg-black flex flex-col items-center 
-        justify-center transition-opacity duration-500 ease-out ${
-        isExiting ? 'opacity-0' : 'opacity-100'
-      }`}
-    >
-      {/* Ambient Red Glow Background */}
-      <div className="absolute inset-0 flex items-center justify-center 
-        pointer-events-none overflow-hidden">
-        <div className="w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] 
-          lg:w-[500px] lg:h-[500px] rounded-full 
-          bg-[radial-gradient(circle,rgba(232,33,39,0.15)_0%,transparent_70%)] 
-          blur-2xl animate-logo-glow-ultra" />
-      </div>
-      
-      {/* Tesla Logo + Wordmark - LARGE */}
-      <img 
-        src={teslaPreloader} 
-        alt="Tesla" 
-        className={`relative z-10 w-48 sm:w-64 lg:w-80 object-contain 
-          drop-shadow-[0_0_80px_rgba(232,33,39,0.4)]
-          transition-all duration-700 ease-out
-          ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-      />
-    </div>
-  );
-};
-
-export default LoadingScreen;
+{/* Secondary Glow - Wider ambient spread */}
+<div className="absolute w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] lg:w-[900px] lg:h-[900px] 
+  rounded-full bg-[radial-gradient(circle,rgba(232,33,39,0.1)_0%,transparent_50%)] 
+  blur-3xl opacity-60" />
 ```
 
-## Visual Result
+## Visual Comparison
 
-```text
-┌─────────────────────────────────────┐
-│                                     │
-│              (glow)                 │
-│                                     │
-│               ▓▓▓                   │
-│              █████                  │
-│             ███████      ← Large    │
-│            █████████       Tesla    │
-│           ███████████      Logo     │
-│                                     │
-│            T E S L A      ← Wordmark│
-│                                     │
-│                                     │
-└─────────────────────────────────────┘
-        Pure Black Background
-```
+| Aspect | Before | After |
+|--------|--------|-------|
+| Display time | 2.0 seconds | 2.5 seconds |
+| Glow opacity | 15% center | 25% center + 8% mid |
+| Glow size | 300-500px | 400-700px (primary) + 500-900px (ambient) |
+| Drop shadow | 80px @ 40% | 120px @ 50% |
+| Layers | 1 glow layer | 2 glow layers for depth |
 
-## Files Changed
+## Result
 
-| File | Change |
-|------|--------|
-| `src/assets/tesla-preloader.png` | New asset - copy user's clean logo PNG |
-| `src/components/LoadingScreen.tsx` | Complete redesign with large logo + wordmark |
-
-## Key Features
-
-- **Large, centered logo** - Dominates the screen like the reference
-- **Dark theme** - Pure black background matching Tesla's premium aesthetic
-- **Included wordmark** - "TESLA" is part of the logo image, authentic styling
-- **Subtle glow** - Red ambient light behind logo without distracting animations
-- **Smooth transitions** - Professional fade-in and fade-out
+- **Slower, more cinematic** entrance and exit
+- **Richer red glow** that fills more of the screen
+- **Dual-layer glow** creates premium depth effect
+- **Responsive sizing** looks great on mobile, tablet, and desktop
+- **Clean background** - pure black with no distracting elements
 
