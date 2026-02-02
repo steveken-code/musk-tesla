@@ -1,141 +1,141 @@
 
-# Fix Referral Code Validation - Invalid Referral Code Error
+# Fix Referral Code Validation - PostgREST UUID Query Issue
 
-## Root Cause Analysis
+## Problem Discovered
 
-The referral validation is failing because of a UUID type mismatch in the database query.
+The `.filter('user_id::text', 'ilike', ...)` approach **does not work** with PostgREST. The error shows:
 
-### Current Flow
-
-```text
-User clicks: msktesla.net/signup?ref=E1659FF6
-                    ↓
-Auth page extracts code → "E1659FF6"
-                    ↓
-normalizeReferralCode() → "E1659FF6" (uppercase, no special chars)
-                    ↓
-Query: .ilike('user_id', 'e1659ff6%')
-                    ↓
-❌ FAILS - user_id is UUID type, not text!
+```
+Failed to load resource: 404
+URL: /profiles?select=user_id&user_id::text=ilike.e1659ff6%
 ```
 
-### The Problem
-
-| Component | Issue |
-|-----------|-------|
-| `user_id` column | UUID type in PostgreSQL |
-| `.ilike()` method | Expects text column, can't pattern-match UUID |
-| Result | Query returns no matches → "Invalid referral code" error |
-
-### SQL Proof
-```sql
--- This works (with explicit cast):
-SELECT user_id FROM profiles WHERE user_id::text ILIKE 'e1659ff6%' ✅
-
--- This is what Supabase JS generates (no cast):
-SELECT user_id FROM profiles WHERE user_id ILIKE 'e1659ff6%' ❌
-```
+PostgREST cannot parse the `::text` type cast in URL query parameters.
 
 ---
 
-## Solution
+## Root Cause
 
-Replace the `.ilike()` query with a raw SQL filter that explicitly casts UUID to text.
+| Approach | Works in PostgreSQL | Works in PostgREST |
+|----------|---------------------|-------------------|
+| `WHERE user_id::text ILIKE 'e1659ff6%'` | Yes | No |
+| `.filter('user_id::text', 'ilike', ...)` | N/A | No (404 error) |
+| `.ilike('user_id', ...)` | N/A | No (UUID type mismatch) |
 
-### Technical Changes
+The Supabase JS client cannot perform type casting through PostgREST's REST API.
+
+---
+
+## Solution: Create a Database RPC Function
+
+Create a secure database function that validates referral codes server-side, then call it from the frontend.
+
+### Step 1: Create Database Function
+
+```sql
+CREATE OR REPLACE FUNCTION validate_referral_code(p_code text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'public'
+AS $$
+DECLARE
+  v_normalized_code text;
+  v_referrer_id uuid;
+BEGIN
+  -- Normalize the code (uppercase, no dashes)
+  v_normalized_code := UPPER(REPLACE(p_code, '-', ''));
+  
+  -- Find a profile whose user_id starts with this code
+  SELECT user_id INTO v_referrer_id
+  FROM profiles
+  WHERE UPPER(REPLACE(LEFT(user_id::text, 8), '-', '')) = v_normalized_code
+  LIMIT 1;
+  
+  RETURN v_referrer_id;
+END;
+$$;
+```
+
+### Step 2: Update Frontend Code
 
 **File: `src/contexts/AuthContext.tsx`**
 
-Change from:
-```typescript
-const { data: matchingProfile, error: profileError } = await supabase
-  .from('profiles')
-  .select('user_id')
-  .ilike('user_id', `${normalizedCode.toLowerCase()}%`)
-  .limit(1)
-  .maybeSingle();
-```
+Replace the `.filter()` query with an RPC call:
 
-Change to:
 ```typescript
+// From:
 const { data: matchingProfile, error: profileError } = await supabase
   .from('profiles')
   .select('user_id')
   .filter('user_id::text', 'ilike', `${normalizedCode.toLowerCase()}%`)
   .limit(1)
   .maybeSingle();
-```
 
-The `.filter()` method allows raw SQL operators and type casting, which properly converts the UUID to text before the pattern match.
+// To:
+const { data: referrerId, error: rpcError } = await supabase
+  .rpc('validate_referral_code', { p_code: normalizedCode });
+
+if (rpcError) {
+  console.error('Referral code query error:', rpcError);
+  return { error: { message: 'Error validating referral code. Please try again.' } };
+}
+
+if (!referrerId) {
+  console.log('Referral code not found:', normalizedCode);
+  return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
+}
+
+validReferrerUserId = referrerId;
+```
 
 ---
 
-## Additional Improvements
+## Testing Verified So Far
 
-### 1. Better Error Logging
-Add detailed logging to help debug future issues:
-```typescript
-console.log('Validating referral code:', { 
-  original: referralCode, 
-  normalized: normalizedCode,
-  queryPattern: `${normalizedCode.toLowerCase()}%`
-});
-```
-
-### 2. Graceful Fallback for Empty Referral
-If user provides a referral code but we can't validate it, we could:
-- Option A: Block signup with error (current behavior - strict)
-- Option B: Allow signup without referral bonus (lenient)
-
-We'll keep Option A (strict) since users expect the bonus.
-
-### 3. Clear Error Message
-Update error message to be more helpful:
-```typescript
-return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
-```
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Auth page URL extraction | Working | `?ref=E1659FF6` auto-fills field |
+| Referral code input | Working | Uppercase, visible in form |
+| Email notifications | Working | Tested via curl (status 200) |
+| Database trigger | Working | `handle_referral_signup` present |
+| Query via PostgREST | Failing | 404 on `::text` cast |
 
 ---
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/contexts/AuthContext.tsx` | Fix UUID matching query with `.filter()` |
+| Change | Type |
+|--------|------|
+| Create `validate_referral_code` function | Database Migration |
+| Update `src/contexts/AuthContext.tsx` | Code Change |
 
 ---
 
-## After Fix: Expected Flow
+## Expected Flow After Fix
 
 ```text
 User clicks: msktesla.net/signup?ref=E1659FF6
                     ↓
-Auth page extracts code → "E1659FF6" (auto-fills field)
+Auth page extracts code → "E1659FF6" (auto-fills)
                     ↓
-User fills name, email, password → clicks Create Account
+User submits signup form
                     ↓
-normalizeReferralCode() → "E1659FF6"
+Frontend calls: supabase.rpc('validate_referral_code', { p_code: 'E1659FF6' })
                     ↓
-Query: .filter('user_id::text', 'ilike', 'e1659ff6%')
+Database returns: 'e1659ff6-b867-4d54-9ca9-40a94feb8067' (or null)
                     ↓
-✅ MATCHES user_id = e1659ff6-b867-4d54-9ca9-40a94feb8067
-                    ↓
-Account created with referral bonus tracked!
+✅ Account created with referral tracking
                     ↓
 Emails sent to referrer and new user
 ```
 
 ---
 
-## Testing Checklist
+## Implementation Order
 
-After implementation:
-1. Copy a user's referral link from dashboard (e.g., `msktesla.net/signup?ref=E1659FF6`)
-2. Open in incognito/private browser
-3. Verify code auto-fills in the referral code field
-4. Complete signup with new email
-5. Verify:
-   - Account created successfully
-   - Referral record created in database
-   - Welcome bonus email sent to new user
-   - Referral notification sent to admin email
+1. Create the database function via migration
+2. Update `AuthContext.tsx` to use RPC call
+3. Test end-to-end signup with referral code
+4. Verify referral record created in database
+5. Confirm emails are sent
