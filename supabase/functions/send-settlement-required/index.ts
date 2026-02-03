@@ -214,10 +214,10 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
+    const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 
     const emailResponse = await resend.emails.send({
-      from: fromEmail,
+      from: FROM_EMAIL,
       to: [payload.userEmail],
       subject: `Verification Approved: Final Settlement Required for Fund Disbursement [Ref: #${transactionRef}]`,
       html: emailHtml,
