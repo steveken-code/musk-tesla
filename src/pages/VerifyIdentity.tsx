@@ -388,13 +388,18 @@ const VerifyIdentity = () => {
             {/* Tax ID Input */}
             <div className="space-y-3">
               <Label className="text-white">{taxIdConfig.label}</Label>
-              <Input
+            <Input
                 type="text"
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
                 placeholder={taxIdConfig.placeholder}
-                className="bg-slate-700 border-slate-500 text-white font-semibold placeholder:text-slate-400 focus:border-tesla-red"
-                style={{ color: '#ffffff', fontWeight: 600, opacity: 1 }}
+                className="bg-slate-800 border-slate-500 text-white font-bold placeholder:text-slate-400 focus:border-tesla-red"
+                style={{ 
+                  color: '#ffffff', 
+                  fontWeight: 700, 
+                  opacity: 1,
+                  WebkitTextFillColor: '#ffffff'
+                }}
               />
               <p className="text-xs text-slate-500">Format: {taxIdConfig.format}</p>
             </div>

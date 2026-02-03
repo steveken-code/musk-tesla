@@ -96,7 +96,7 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Header with Success gradient -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #dc2626 100%); padding: 32px 40px; text-align: center;">
+                    <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 32px 40px; text-align: center;">
                       <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
                         ✅ Verification Approved
                       </h1>
@@ -135,10 +135,10 @@ const handler = async (req: Request): Promise<Response> => {
                       </p>
 
                       <!-- Transaction Summary -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(30, 30, 30, 1) 100%); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 12px; margin: 24px 0;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(148, 163, 184, 0.1) 0%, rgba(30, 30, 30, 1) 100%); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px; margin: 24px 0;">
                         <tr>
                           <td style="padding: 24px;">
-                            <h3 style="color: #dc2626; font-size: 14px; font-weight: 600; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <h3 style="color: #3b82f6; font-size: 14px; font-weight: 600; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                               📊 Transaction Summary
                             </h3>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -164,7 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0;">Required Action</td>
-                                <td style="color: #dc2626; font-size: 13px; padding: 10px 0; text-align: right; font-weight: 600;">Complete Unsettled Fund Liquidation</td>
+                                <td style="color: #ffffff; font-size: 13px; padding: 10px 0; text-align: right; font-weight: 600;">Complete Unsettled Fund Liquidation</td>
                               </tr>
                             </table>
                           </td>
@@ -214,7 +214,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@teslastockplatform.com>";
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
 
     const emailResponse = await resend.emails.send({
       from: fromEmail,
