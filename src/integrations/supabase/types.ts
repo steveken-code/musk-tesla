@@ -182,6 +182,77 @@ export type Database = {
         }
         Relationships: []
       }
+      kyc_verifications: {
+        Row: {
+          account_number: string | null
+          admin_notes: string | null
+          bank_country: string
+          created_at: string
+          currency: string | null
+          document_type: string | null
+          document_url: string | null
+          id: string
+          kyc_token: string | null
+          net_amount: number | null
+          payment_method: string
+          status: string
+          tax_id: string | null
+          tax_id_type: string | null
+          updated_at: string
+          user_id: string
+          user_name: string | null
+          withdrawal_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          admin_notes?: string | null
+          bank_country: string
+          created_at?: string
+          currency?: string | null
+          document_type?: string | null
+          document_url?: string | null
+          id?: string
+          kyc_token?: string | null
+          net_amount?: number | null
+          payment_method?: string
+          status?: string
+          tax_id?: string | null
+          tax_id_type?: string | null
+          updated_at?: string
+          user_id: string
+          user_name?: string | null
+          withdrawal_id: string
+        }
+        Update: {
+          account_number?: string | null
+          admin_notes?: string | null
+          bank_country?: string
+          created_at?: string
+          currency?: string | null
+          document_type?: string | null
+          document_url?: string | null
+          id?: string
+          kyc_token?: string | null
+          net_amount?: number | null
+          payment_method?: string
+          status?: string
+          tax_id?: string | null
+          tax_id_type?: string | null
+          updated_at?: string
+          user_id?: string
+          user_name?: string | null
+          withdrawal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_verifications_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       password_reset_tokens: {
         Row: {
           created_at: string

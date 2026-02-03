@@ -22,6 +22,7 @@ import About from "./pages/About";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail";
+import VerifyIdentity from "./pages/VerifyIdentity";
 import TransactionHistory from "./pages/TransactionHistory";
 import LiveActivity from "./pages/LiveActivity";
 import NotFound from "./pages/NotFound";
@@ -47,6 +48,7 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
       <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
       <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
+      <Route path="/verify-identity" element={<PageTransition><VerifyIdentity /></PageTransition>} />
       <Route path="/transactions" element={<PageTransition><TransactionHistory /></PageTransition>} />
       <Route path="/live-activity" element={<PageTransition><LiveActivity /></PageTransition>} />
       <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
@@ -91,6 +93,7 @@ const AnimatedRoutes = () => {
           <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
           <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
           <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
+          <Route path="/verify-identity" element={<PageTransition><VerifyIdentity /></PageTransition>} />
           <Route path="/transactions" element={<PageTransition><TransactionHistory /></PageTransition>} />
           <Route path="/live-activity" element={<PageTransition><LiveActivity /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
