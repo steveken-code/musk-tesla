@@ -1,116 +1,101 @@
 
 
-# Fix KYC Verification Page - Logo Position & Singular Document Text
+# Remove Net Amount Arrows & Clarify Card Option
 
 ## Summary of Issues
 
-### 1. Tesla Logo Too Low & Too Small
-**Current (Line 287):**
+### 1. Net Amount Input Has Arrow Buttons
+**Problem:** The number input has browser-default increment/decrement arrow buttons that make typing difficult.
+
+**Location:** `src/components/admin/KYCManagementModal.tsx` (Lines 734-741)
+
+**Current:**
 ```tsx
-<img src={teslaLogo} alt="Tesla" className="h-12 mx-auto mb-4" />
+<Input
+  type="number"
+  value={netAmount}
+  onChange={(e) => setNetAmount(e.target.value)}
+  placeholder="Amount to disburse"
+  className="bg-slate-800 border-slate-600 text-white"
+/>
 ```
 
-**Problems:**
-- `h-12` (48px) is small for a header logo
-- Page has `py-12` padding that pushes everything down
-- Logo needs to be more prominent as the first element users see
+**Fix:** Change to `type="text"` with `inputMode="decimal"` and pattern validation:
+```tsx
+<Input
+  type="text"
+  inputMode="decimal"
+  value={netAmount}
+  onChange={(e) => {
+    // Allow only numbers and decimal point
+    const value = e.target.value.replace(/[^0-9.]/g, '');
+    setNetAmount(value);
+  }}
+  placeholder="Amount to disburse"
+  className="bg-slate-800 border-slate-600 text-white"
+/>
+```
 
-### 2. "Documents" Should Be "Document" (Singular)
-User only submits **ONE** document - either a Passport, National ID, or Driver's License.
+---
 
-**Locations to fix:**
+### 2. Card Number Box Explanation
 
-| Line | Current | Fixed |
-|------|---------|-------|
-| 213 | `'Your documents have been submitted successfully!'` | `'Your document has been submitted successfully!'` |
-| 263 | `Documents Submitted!` | `Document Submitted!` |
-| 265 | `Your identity verification documents have been submitted` | `Your identity verification document has been submitted` |
+**Purpose:** The Payment Method section (Bank Transfer / Card) determines what account information is collected for the disbursement.
+
+**Location:** Lines 664-706
+
+**Current Behavior:**
+- **Bank Transfer** selected → Account Number field shows IBAN/Account format based on country
+- **Card** selected → Account Number field would be for card number
+
+**Your Options:**
+
+| Option | Action |
+|--------|--------|
+| Keep it | Useful if some users want to receive funds to a debit card |
+| Remove Card button | If all withdrawals are bank transfers only |
+
+**Recommendation:** Remove the Card option since your withdrawal flow primarily uses bank transfers, phone (SBP), or crypto. Having Card as an option is confusing if you don't actually process card disbursements.
 
 ---
 
 ## Implementation Plan
 
-### Step 1: Fix Tesla Logo - Larger & Higher Position
-**File:** `src/pages/VerifyIdentity.tsx` (Lines 282-295)
+### Step 1: Remove Arrow Buttons from Net Amount
+**File:** `src/components/admin/KYCManagementModal.tsx` (Lines 734-741)
 
-**Changes:**
-1. Reduce top padding from `py-12` to `py-6` to move content higher
-2. Increase logo height from `h-12` to `h-16` (64px) for better visibility
-3. Add more spacing below logo with `mb-6` instead of `mb-4`
+Change the Input from `type="number"` to `type="text"` with:
+- `inputMode="decimal"` (shows numeric keyboard on mobile)
+- Filter input to allow only numbers and decimal point
+- This removes the arrow spinner completely
 
-**Before:**
+### Step 2: Remove Card Payment Option
+**File:** `src/components/admin/KYCManagementModal.tsx` (Lines 664-692)
+
+Remove the entire Card button (Lines 681-690):
 ```tsx
-<div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
-  <div className="max-w-2xl mx-auto">
-    {/* Header */}
-    <div className="text-center mb-8">
-      <img src={teslaLogo} alt="Tesla" className="h-12 mx-auto mb-4" />
+<Button
+  type="button"
+  variant={paymentMethod === 'card' ? 'default' : 'outline'}
+  size="sm"
+  onClick={() => setPaymentMethod('card')}
+  className={paymentMethod === 'card' ? 'bg-tesla-red' : 'border-slate-600'}
+>
+  <CreditCard className="w-4 h-4 mr-1" />
+  Card
+</Button>
 ```
 
-**After:**
-```tsx
-<div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-6 px-4">
-  <div className="max-w-2xl mx-auto">
-    {/* Header */}
-    <div className="text-center mb-8">
-      <img src={teslaLogo} alt="Tesla" className="h-16 mx-auto mb-6" />
-```
-
-### Step 2: Fix Toast Message (Singular)
-**File:** `src/pages/VerifyIdentity.tsx` (Line 213)
-
-**Before:**
-```tsx
-toast.success('Your documents have been submitted successfully!');
-```
-
-**After:**
-```tsx
-toast.success('Your document has been submitted successfully!');
-```
-
-### Step 3: Fix Success Page Title (Singular)
-**File:** `src/pages/VerifyIdentity.tsx` (Line 263)
-
-**Before:**
-```tsx
-<h1 className="text-2xl font-bold text-white mb-2">Documents Submitted!</h1>
-```
-
-**After:**
-```tsx
-<h1 className="text-2xl font-bold text-white mb-2">Document Submitted!</h1>
-```
-
-### Step 4: Fix Success Page Description (Singular)
-**File:** `src/pages/VerifyIdentity.tsx` (Lines 264-266)
-
-**Before:**
-```tsx
-<p className="text-slate-400 mb-6">
-  Your identity verification documents have been submitted successfully. Our compliance team will review them shortly.
-</p>
-```
-
-**After:**
-```tsx
-<p className="text-slate-400 mb-6">
-  Your identity verification document has been submitted successfully. Our compliance team will review it shortly.
-</p>
-```
+And simplify the Payment Method section since there's only one option.
 
 ---
 
-## Visual Summary
+## Visual Changes
 
 | Element | Before | After |
 |---------|--------|-------|
-| Page top padding | `py-12` (48px) | `py-6` (24px) - moves content up |
-| Logo height | `h-12` (48px) | `h-16` (64px) - larger logo |
-| Logo margin bottom | `mb-4` | `mb-6` - better spacing |
-| Success title | "Documents Submitted!" | "Document Submitted!" |
-| Success description | "documents have been submitted...review them" | "document has been submitted...review it" |
-| Toast message | "Your documents have been..." | "Your document has been..." |
+| Net Amount Input | Has arrow spinners | Plain text input, easier to type |
+| Payment Method | Bank Transfer + Card buttons | Bank Transfer only (or remove section entirely) |
 
 ---
 
@@ -118,5 +103,5 @@ toast.success('Your document has been submitted successfully!');
 
 | File | Changes |
 |------|---------|
-| `src/pages/VerifyIdentity.tsx` | Fix logo size/position, update all text from plural to singular |
+| `src/components/admin/KYCManagementModal.tsx` | Remove number input arrows, remove Card option |
 
