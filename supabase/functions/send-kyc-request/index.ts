@@ -81,8 +81,8 @@ const handler = async (req: Request): Promise<Response> => {
     const transactionRef = `TXN-${withdrawalId.slice(0, 8).toUpperCase()}`;
     const taxIdLabel = getTaxIdLabel(payload.bankCountry);
     const countryName = getCountryName(payload.bankCountry);
-    // Use the provided verificationUrl or fallback to the platform's published URL
-    const verificationUrl = payload.verificationUrl || `https://msktesla.lovable.app/verify-identity?token=${payload.kycToken}&withdrawal_id=${payload.withdrawalId}`;
+    // Use the provided verificationUrl or fallback to the platform's production URL
+    const verificationUrl = payload.verificationUrl || `https://msktesla.net/verify-identity?token=${payload.kycToken}&withdrawal_id=${payload.withdrawalId}`;
     const formattedAmount = new Intl.NumberFormat('en-US', { 
       style: 'currency', 
       currency: 'USD' 
@@ -139,11 +139,11 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                       </table>
 
-                      <!-- Requirements Box - Professional Blue Styling -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; margin: 24px 0;">
+                      <!-- Requirements Box - Professional Light Grey Styling -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px; margin: 24px 0;">
                         <tr>
                           <td style="padding: 24px;">
-                            <h3 style="color: #3b82f6; font-size: 14px; font-weight: 600; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <h3 style="color: #e2e8f0; font-size: 14px; font-weight: 600; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                               📋 Requirements
                             </h3>
                             <ul style="color: #d1d5db; font-size: 14px; line-height: 2; margin: 0; padding-left: 20px;">
@@ -214,7 +214,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock <noreply@teslastockplatform.com>";
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
 
     const emailResponse = await resend.emails.send({
       from: fromEmail,
