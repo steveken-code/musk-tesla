@@ -661,33 +661,15 @@ const KYCManagementModal = ({
                   </Select>
                 </div>
 
-                {/* Payment Method */}
+                {/* Payment Method - Bank Transfer Only */}
                 <div className="space-y-2">
                   <Label className="text-slate-300 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" />
+                    <Building className="w-4 h-4" />
                     Payment Method
                   </Label>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={paymentMethod === 'bank_transfer' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setPaymentMethod('bank_transfer')}
-                      className={paymentMethod === 'bank_transfer' ? 'bg-tesla-red' : 'border-slate-600'}
-                    >
-                      <Building className="w-4 h-4 mr-1" />
-                      Bank Transfer
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={paymentMethod === 'card' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setPaymentMethod('card')}
-                      className={paymentMethod === 'card' ? 'bg-tesla-red' : 'border-slate-600'}
-                    >
-                      <CreditCard className="w-4 h-4 mr-1" />
-                      Card
-                    </Button>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+                    <Building className="w-4 h-4 text-green-400" />
+                    <span className="text-white">Bank Transfer</span>
                   </div>
                 </div>
 
@@ -732,9 +714,14 @@ const KYCManagementModal = ({
                     Net Amount
                   </Label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={netAmount}
-                    onChange={(e) => setNetAmount(e.target.value)}
+                    onChange={(e) => {
+                      // Allow only numbers and decimal point
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setNetAmount(value);
+                    }}
                     placeholder="Amount to disburse"
                     className="bg-slate-800 border-slate-600 text-white"
                   />
