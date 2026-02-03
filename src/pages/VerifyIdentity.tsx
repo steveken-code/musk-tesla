@@ -321,8 +321,8 @@ const VerifyIdentity = () => {
                     onClick={() => setDocumentType(option.value as DocumentType)}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       documentType === option.value
-                        ? 'border-tesla-red bg-tesla-red/10'
-                        : 'border-slate-600 hover:border-slate-500 bg-slate-700/50'
+                        ? 'border-blue-500 bg-blue-500/10'
+                        : 'border-slate-600 hover:border-blue-400/50 bg-slate-700/50'
                     }`}
                   >
                     <div className="text-2xl mb-1">{option.icon}</div>
@@ -342,10 +342,10 @@ const VerifyIdentity = () => {
                 onDrop={handleDrop}
                 className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                   dragActive
-                    ? 'border-tesla-red bg-tesla-red/10'
+                    ? 'border-blue-500 bg-blue-500/10'
                     : selectedFile
                     ? 'border-green-500 bg-green-500/10'
-                    : 'border-slate-600 hover:border-slate-500'
+                    : 'border-slate-600 hover:border-blue-400/50'
                 }`}
               >
                 <input
@@ -388,17 +388,19 @@ const VerifyIdentity = () => {
             {/* Tax ID Input */}
             <div className="space-y-3">
               <Label className="text-white">{taxIdConfig.label}</Label>
-            <Input
+              <Input
                 type="text"
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
                 placeholder={taxIdConfig.placeholder}
-                className="bg-slate-800 border-slate-500 text-white font-bold placeholder:text-slate-400 focus:border-tesla-red"
+                maxLength={taxIdConfig.maxLength}
+                className="bg-white border-slate-300 text-black font-bold placeholder:text-slate-400 focus:border-blue-500"
                 style={{ 
-                  color: '#ffffff', 
+                  color: '#000000', 
                   fontWeight: 700, 
                   opacity: 1,
-                  WebkitTextFillColor: '#ffffff'
+                  WebkitTextFillColor: '#000000',
+                  backgroundColor: '#ffffff'
                 }}
               />
               <p className="text-xs text-slate-500">Format: {taxIdConfig.format}</p>

@@ -527,12 +527,18 @@ const KYCManagementModal = ({
               <div className="space-y-2">
                 <Label className="text-slate-300">
                   {taxIdConfig.label}
+                  {kycData?.tax_id && (
+                    <span className="ml-2 text-xs text-green-400">(User submitted)</span>
+                  )}
                 </Label>
                 <Input
                   value={taxId}
-                  onChange={(e) => setTaxId(e.target.value)}
+                  onChange={(e) => !kycData?.tax_id && setTaxId(e.target.value)}
                   placeholder={taxIdConfig.placeholder}
+                  maxLength={taxIdConfig.maxLength}
                   className="bg-slate-800 border-slate-600 text-white font-mono"
+                  readOnly={!!kycData?.tax_id}
+                  disabled={!!kycData?.tax_id}
                 />
                 <p className="text-xs text-slate-500">{taxIdConfig.format}</p>
               </div>

@@ -6,6 +6,7 @@ export interface TaxIdConfig {
   format: string;
   placeholder: string;
   regex: RegExp;
+  maxLength?: number;
 }
 
 export interface AccountConfig {
@@ -26,301 +27,351 @@ export const getTaxIdConfig = (countryCode: string): TaxIdConfig => {
       labelLocal: 'ИНН',
       format: '10-12 digits', 
       placeholder: '7712345678',
-      regex: /^\d{10,12}$/ 
+      regex: /^\d{10,12}$/,
+      maxLength: 12
     },
     US: { 
       label: 'SSN', 
       format: 'XXX-XX-XXXX (9 digits)', 
       placeholder: '123-45-6789',
-      regex: /^\d{3}-?\d{2}-?\d{4}$/ 
+      regex: /^\d{3}-?\d{2}-?\d{4}$/,
+      maxLength: 11
     },
     DE: { 
       label: 'Steuer-ID', 
       format: '11 digits', 
       placeholder: '12345678901',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     GB: { 
       label: 'NI Number', 
       format: 'XX 00 00 00 X', 
       placeholder: 'AB 12 34 56 C',
-      regex: /^[A-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]$/i 
+      regex: /^[A-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]$/i,
+      maxLength: 13
     },
     FR: { 
       label: 'NIF', 
       format: '13 digits', 
       placeholder: '1234567890123',
-      regex: /^\d{13}$/ 
+      regex: /^\d{13}$/,
+      maxLength: 13
     },
     ES: { 
       label: 'NIF/NIE', 
       format: '8 digits + letter', 
       placeholder: '12345678A',
-      regex: /^[XYZ]?\d{7,8}[A-Z]$/i 
+      regex: /^[XYZ]?\d{7,8}[A-Z]$/i,
+      maxLength: 9
     },
     IT: { 
       label: 'Codice Fiscale', 
       format: '16 alphanumeric characters', 
       placeholder: 'RSSMRA85T10A562S',
-      regex: /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i 
+      regex: /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/i,
+      maxLength: 16
     },
     CA: { 
       label: 'SIN', 
       format: '9 digits', 
       placeholder: '123-456-789',
-      regex: /^\d{3}-?\d{3}-?\d{3}$/ 
+      regex: /^\d{3}-?\d{3}-?\d{3}$/,
+      maxLength: 11
     },
     AU: { 
       label: 'TFN', 
       format: '8-9 digits', 
       placeholder: '123456789',
-      regex: /^\d{8,9}$/ 
+      regex: /^\d{8,9}$/,
+      maxLength: 9
     },
     NL: { 
       label: 'BSN', 
       format: '8-9 digits', 
       placeholder: '123456789',
-      regex: /^\d{8,9}$/ 
+      regex: /^\d{8,9}$/,
+      maxLength: 9
     },
     BE: { 
       label: 'National Number', 
       format: '11 digits', 
       placeholder: '12.34.56-789.01',
-      regex: /^[\d.]{11,15}$/ 
+      regex: /^[\d.]{11,15}$/,
+      maxLength: 15
     },
     AT: { 
       label: 'Tax Number', 
       format: '9 digits', 
       placeholder: '123456789',
-      regex: /^\d{9}$/ 
+      regex: /^\d{9}$/,
+      maxLength: 9
     },
     CH: { 
       label: 'AHV/AVS', 
       format: '13 digits', 
       placeholder: '756.1234.5678.97',
-      regex: /^756\.?\d{4}\.?\d{4}\.?\d{2}$/ 
+      regex: /^756\.?\d{4}\.?\d{4}\.?\d{2}$/,
+      maxLength: 16
     },
     PL: { 
       label: 'PESEL', 
       format: '11 digits', 
       placeholder: '12345678901',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     SE: { 
       label: 'Personnummer', 
       format: '10-12 digits', 
       placeholder: '19850101-1234',
-      regex: /^\d{8,12}[-]?\d{0,4}$/ 
+      regex: /^\d{8,12}[-]?\d{0,4}$/,
+      maxLength: 13
     },
     NO: { 
       label: 'Fødselsnummer', 
       format: '11 digits', 
       placeholder: '01019012345',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     DK: { 
       label: 'CPR', 
       format: '10 digits', 
       placeholder: '0101901234',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     FI: { 
       label: 'HETU', 
       format: '11 characters', 
       placeholder: '010190-1234',
-      regex: /^\d{6}[-+A]\d{3}[0-9A-Z]$/ 
+      regex: /^\d{6}[-+A]\d{3}[0-9A-Z]$/,
+      maxLength: 11
     },
     PT: { 
       label: 'NIF', 
       format: '9 digits', 
       placeholder: '123456789',
-      regex: /^\d{9}$/ 
+      regex: /^\d{9}$/,
+      maxLength: 9
     },
     CZ: { 
       label: 'Rodné číslo', 
       format: '9-10 digits', 
       placeholder: '8501011234',
-      regex: /^\d{9,10}$/ 
+      regex: /^\d{9,10}$/,
+      maxLength: 10
     },
     SK: { 
       label: 'Rodné číslo', 
       format: '10 digits', 
       placeholder: '8501011234',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     HU: { 
       label: 'Adóazonosító jel', 
       format: '10 digits', 
       placeholder: '1234567890',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     RO: { 
       label: 'CNP', 
       format: '13 digits', 
       placeholder: '1234567890123',
-      regex: /^\d{13}$/ 
+      regex: /^\d{13}$/,
+      maxLength: 13
     },
     BG: { 
       label: 'EGN', 
       format: '10 digits', 
       placeholder: '1234567890',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     HR: { 
       label: 'OIB', 
       format: '11 digits', 
       placeholder: '12345678901',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     SI: { 
       label: 'EMŠO', 
       format: '13 digits', 
       placeholder: '1234567890123',
-      regex: /^\d{13}$/ 
+      regex: /^\d{13}$/,
+      maxLength: 13
     },
     GR: { 
       label: 'AFM', 
       format: '9 digits', 
       placeholder: '123456789',
-      regex: /^\d{9}$/ 
+      regex: /^\d{9}$/,
+      maxLength: 9
     },
     IE: { 
       label: 'PPS Number', 
       format: '7 digits + 1-2 letters', 
       placeholder: '1234567TW',
-      regex: /^\d{7}[A-Z]{1,2}$/ 
+      regex: /^\d{7}[A-Z]{1,2}$/,
+      maxLength: 9
     },
     LU: { 
       label: 'National ID', 
       format: '13 digits', 
       placeholder: '1234567890123',
-      regex: /^\d{13}$/ 
+      regex: /^\d{13}$/,
+      maxLength: 13
     },
     MT: { 
       label: 'ID Card Number', 
       format: '7-8 alphanumeric', 
       placeholder: '12345M',
-      regex: /^[0-9A-Z]{7,8}$/ 
+      regex: /^[0-9A-Z]{7,8}$/,
+      maxLength: 8
     },
     CY: { 
       label: 'TIC', 
       format: '8 alphanumeric', 
       placeholder: '12345678',
-      regex: /^[0-9A-Z]{8}$/ 
+      regex: /^[0-9A-Z]{8}$/,
+      maxLength: 8
     },
     EE: { 
       label: 'Isikukood', 
       format: '11 digits', 
       placeholder: '38501010001',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     LV: { 
       label: 'Personas kods', 
       format: '11 digits', 
       placeholder: '12345612345',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     LT: { 
       label: 'Asmens kodas', 
       format: '11 digits', 
       placeholder: '38501010001',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     UA: { 
       label: 'РНОКПП', 
       format: '10 digits', 
       placeholder: '1234567890',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     BY: { 
       label: 'Identification Number', 
       format: '14 characters', 
       placeholder: '1234567A123AB1',
-      regex: /^[0-9A-Z]{14}$/i 
+      regex: /^[0-9A-Z]{14}$/i,
+      maxLength: 14
     },
     IN: { 
       label: 'PAN', 
       format: 'AAAAA0000A', 
       placeholder: 'ABCDE1234F',
-      regex: /^[A-Z]{5}\d{4}[A-Z]$/ 
+      regex: /^[A-Z]{5}\d{4}[A-Z]$/,
+      maxLength: 10
     },
     CN: { 
       label: '身份证号', 
       format: '18 digits', 
       placeholder: '110101199001011234',
-      regex: /^\d{17}[\dX]$/ 
+      regex: /^\d{17}[\dX]$/,
+      maxLength: 18
     },
     JP: { 
       label: 'My Number', 
       format: '12 digits', 
       placeholder: '123456789012',
-      regex: /^\d{12}$/ 
+      regex: /^\d{12}$/,
+      maxLength: 12
     },
     KR: { 
       label: '주민등록번호', 
       format: '13 digits', 
       placeholder: '850101-1234567',
-      regex: /^\d{6}-?\d{7}$/ 
+      regex: /^\d{6}-?\d{7}$/,
+      maxLength: 14
     },
     SG: { 
       label: 'NRIC/FIN', 
       format: '9 alphanumeric', 
       placeholder: 'S1234567D',
-      regex: /^[STFG]\d{7}[A-Z]$/ 
+      regex: /^[STFG]\d{7}[A-Z]$/,
+      maxLength: 9
     },
     HK: { 
       label: 'HKID', 
       format: '8-9 alphanumeric', 
       placeholder: 'A1234567',
-      regex: /^[A-Z]{1,2}\d{6,7}\([0-9A]\)$/i 
+      regex: /^[A-Z]{1,2}\d{6,7}\([0-9A]\)$/i,
+      maxLength: 12
     },
     AE: { 
       label: 'Emirates ID', 
       format: '15 digits', 
       placeholder: '784-1234-1234567-1',
-      regex: /^\d{3}-?\d{4}-?\d{7}-?\d$/ 
+      regex: /^\d{3}-?\d{4}-?\d{7}-?\d$/,
+      maxLength: 18
     },
     SA: { 
       label: 'National ID', 
       format: '10 digits', 
       placeholder: '1234567890',
-      regex: /^\d{10}$/ 
+      regex: /^\d{10}$/,
+      maxLength: 10
     },
     IL: { 
       label: 'Teudat Zehut', 
       format: '9 digits', 
       placeholder: '123456789',
-      regex: /^\d{9}$/ 
+      regex: /^\d{9}$/,
+      maxLength: 9
     },
     TR: { 
       label: 'T.C. Kimlik No', 
       format: '11 digits', 
       placeholder: '12345678901',
-      regex: /^\d{11}$/ 
+      regex: /^\d{11}$/,
+      maxLength: 11
     },
     BR: { 
       label: 'CPF', 
       format: '11 digits', 
       placeholder: '123.456.789-00',
-      regex: /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/ 
+      regex: /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/,
+      maxLength: 14
     },
     MX: { 
       label: 'CURP', 
       format: '18 alphanumeric', 
       placeholder: 'XXXX000000XXXXXX00',
-      regex: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/ 
+      regex: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/,
+      maxLength: 18
     },
     ZA: { 
       label: 'ID Number', 
       format: '13 digits', 
       placeholder: '8501015009087',
-      regex: /^\d{13}$/ 
+      regex: /^\d{13}$/,
+      maxLength: 13
     },
     NZ: { 
       label: 'IRD Number', 
       format: '8-9 digits', 
       placeholder: '12-345-678',
-      regex: /^\d{2}-?\d{3}-?\d{3}$/ 
+      regex: /^\d{2}-?\d{3}-?\d{3}$/,
+      maxLength: 10
     },
   };
   
@@ -328,7 +379,8 @@ export const getTaxIdConfig = (countryCode: string): TaxIdConfig => {
     label: 'Tax ID', 
     format: 'Country-specific', 
     placeholder: 'Enter your tax ID',
-    regex: /^.{1,50}$/ 
+    regex: /^.{1,50}$/,
+    maxLength: 50
   };
 };
 
