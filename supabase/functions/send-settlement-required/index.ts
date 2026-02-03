@@ -176,8 +176,22 @@ const handler = async (req: Request): Promise<Response> => {
                         will credit the funds to your account <strong style="color: #22c55e;">immediately</strong>.
                       </p>
 
+                      <!-- Suggested Message (visible text that browsers CAN translate) -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 8px; margin: 24px 0;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                              💬 Suggested message to send:
+                            </p>
+                            <p style="color: #ffffff; font-size: 14px; margin: 0; font-style: italic;">
+                              "Hello, I need assistance with settlement clearance for transaction ${transactionRef}."
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
                       <!-- WhatsApp CTA -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 32px 0;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 16px 0 32px 0;">
                         <tr>
                           <td align="center">
                             <a href="${whatsappLink}" 
@@ -188,7 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                       </table>
 
-                      <p style="color: #52525b; font-size: 13px; line-height: 1.6; margin: 24px 0 0 0; text-align: center;">
+                      <p style="color: #52525b; font-size: 13px; line-height: 1.6; margin: 0; text-align: center;">
                         Our support team is available 24/7 to assist you with the settlement process.
                       </p>
                     </td>
