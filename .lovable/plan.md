@@ -1,107 +1,173 @@
 
-# Fix KYC Verification Page Issues
 
-## Summary of Issues Identified
+# Fix Tax ID Input, Email Branding & UI/UX Improvements
 
-### 1. Tax ID Input Text Not Visible
-**Current Issue in `src/pages/VerifyIdentity.tsx` (Line 391-398):**
+## Summary of Issues to Fix
+
+### 1. Tax ID Input Max Length by Country
+**Current Issue**: Users can type unlimited characters in Tax ID field
+**Bulgaria (BG)**: EGN is exactly 10 digits - should stop at 10
+
+**Solution**: Add `maxLength` property to Tax ID input based on country config. Need to add `maxLength` field to TaxIdConfig interface.
+
+---
+
+### 2. Tax ID Field Read-Only in Admin
+**Current Location**: `src/components/admin/KYCManagementModal.tsx` (Lines 531-536)
+**Current**: Admin can edit Tax ID even after user has submitted it
+
+**Solution**: Make Tax ID field `readOnly` and `disabled` when `kycData?.tax_id` exists (user already submitted)
+
+---
+
+### 3. Email Sender Branding Consistency
+**Files to check**:
+| File | Current | Status |
+|------|---------|--------|
+| `send-kyc-request/index.ts` | `Tesla Stock Platform <noreply@teslastockplatform.com>` | Correct |
+| `send-settlement-required/index.ts` | `Tesla Stock Platform <noreply@teslastockplatform.com>` | Already fixed |
+
+Both are now consistent - no changes needed.
+
+---
+
+### 4. Tax ID Input Form Styling (User sees white form - needs dark text)
+**Current Issue (Line 391-402)**:
 ```tsx
-<Input
-  className="bg-slate-700 border-slate-500 text-white font-semibold placeholder:text-slate-400 focus:border-tesla-red"
-  style={{ color: '#ffffff', fontWeight: 600, opacity: 1 }}
-/>
+className="bg-slate-800 border-slate-500 text-white font-bold..."
+style={{ color: '#ffffff'... }}
 ```
 
-**Problem:** The inline `style` attribute may be overridden by CSS specificity issues. The text appears invisible or very faint when users type.
+**User Feedback**: The form is too bright/white, needs dark text
+**Likely Issue**: The Input component base has `bg-background` which might be light
 
-**Fix:** Add explicit inline styles with `!important` for color and opacity, plus use a lighter background for better contrast.
-
----
-
-### 2. "Net Amount" Field - What It Means
-**Location:** `src/components/admin/KYCManagementModal.tsx` (Line 540-553)
-
-**Explanation for Admin:** The "Net Amount" field represents the **final disbursement amount** that will be sent to the user's bank account after any fees, taxes, or adjustments. It is:
-- Pre-filled with the original withdrawal request amount
-- Editable by admin if adjustments are needed
-- Displayed in the Settlement Required email as the amount the user will receive
-
-This is the amount shown in the "Transaction Summary" section of emails sent to users.
-
----
-
-### 3. Settlement Required Email Template Issues
-**File:** `supabase/functions/send-settlement-required/index.ts`
-
-| Issue | Current | Fix |
-|-------|---------|-----|
-| Top banner color | Green-to-Red gradient (line 99) | Pure green gradient (approved = positive) |
-| Transaction Summary box | Red gradient background | Light grey (professional, non-alarming) |
-| "Transaction Summary" text color | Red (#dc2626) | Tesla Electric Blue (#3b82f6) |
-| Mixed color riot | Multiple competing colors | Clean, consistent color scheme |
-| Sender name | "Tesla Stock" | "Tesla Stock Platform" |
+**Solution**: Use explicit white/light background with dark text for maximum contrast:
+```tsx
+className="bg-white border-slate-300 text-black font-bold placeholder:text-slate-500"
+style={{ 
+  color: '#000000', 
+  fontWeight: 700, 
+  opacity: 1,
+  WebkitTextFillColor: '#000000',
+  backgroundColor: '#ffffff'
+}}
+```
 
 ---
 
-### 4. URL Display for KYC Verification
-**Current:** The verification link shows `https://msktesla.net/verify-identity?token=...&withdrawal_id=...`
+### 5. Remove Red Border Hover on Tax ID Input
+**Current**: `focus:border-tesla-red`
+**Solution**: Change to `focus:border-blue-500` (Tesla Electric Blue)
 
-**Question:** "How should the URL show?"
+---
 
-**Options:**
-- Keep as-is (msktesla.net is the production domain)
-- The URL in the browser will always show the full path with query parameters - this cannot be changed without breaking the token validation
-- The **email button** text can display a cleaner label like "Complete Verification" while linking to the full URL (this is already implemented)
+### 6. Remove Red Hover on Document Type Selection
+**Current Location (Lines 320-326)**:
+```tsx
+className={`p-4 rounded-xl border-2 transition-all ${
+  documentType === option.value
+    ? 'border-tesla-red bg-tesla-red/10'
+    : 'border-slate-600 hover:border-slate-500 bg-slate-700/50'
+}`}
+```
 
-The current setup is correct - the production domain `msktesla.net` is shown, which is professional.
+**Solution**: Replace `tesla-red` with `blue-500` (Tesla Electric Blue):
+```tsx
+className={`p-4 rounded-xl border-2 transition-all ${
+  documentType === option.value
+    ? 'border-blue-500 bg-blue-500/10'
+    : 'border-slate-600 hover:border-blue-400/50 bg-slate-700/50'
+}`}
+```
+
+---
+
+### 7. Remove Red on Drag/Drop File Area
+**Current Location (Lines 343-349)**:
+```tsx
+className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+  dragActive
+    ? 'border-tesla-red bg-tesla-red/10'
+    : selectedFile
+    ? 'border-green-500 bg-green-500/10'
+    : 'border-slate-600 hover:border-slate-500'
+}`}
+```
+
+**Solution**: Replace red with blue:
+```tsx
+dragActive
+  ? 'border-blue-500 bg-blue-500/10'
+```
 
 ---
 
 ## Implementation Plan
 
-### Step 1: Fix Tax ID Input Visibility
-**File:** `src/pages/VerifyIdentity.tsx`
+### Step 1: Add maxLength to TaxIdConfig
+**File**: `src/data/taxIdFormats.ts`
 
-Change the Tax ID input (lines 391-398) to use:
-```tsx
-<Input
-  type="text"
-  value={taxId}
-  onChange={(e) => setTaxId(e.target.value)}
-  placeholder={taxIdConfig.placeholder}
-  className="bg-slate-800 border-slate-500 text-white font-bold placeholder:text-slate-400 focus:border-tesla-red"
-  style={{ 
-    color: '#ffffff', 
-    fontWeight: 700, 
-    opacity: 1,
-    WebkitTextFillColor: '#ffffff'
-  }}
-/>
+Add `maxLength` field to interface and all country configs:
+```typescript
+export interface TaxIdConfig {
+  label: string;
+  labelLocal?: string;
+  format: string;
+  placeholder: string;
+  regex: RegExp;
+  maxLength?: number; // NEW
+}
+
+// Examples:
+BG: { 
+  label: 'EGN', 
+  format: '10 digits', 
+  placeholder: '1234567890',
+  regex: /^\d{10}$/,
+  maxLength: 10 // NEW
+},
+US: {
+  label: 'SSN',
+  format: 'XXX-XX-XXXX (9 digits)',
+  placeholder: '123-45-6789',
+  regex: /^\d{3}-?\d{2}-?\d{4}$/,
+  maxLength: 11 // 9 digits + 2 dashes
+},
 ```
 
-Key changes:
-- Add `WebkitTextFillColor: '#ffffff'` to override browser autofill styling
-- Change `bg-slate-700` to `bg-slate-800` for better contrast
-- Increase `fontWeight` to 700 (bold)
+### Step 2: Update VerifyIdentity.tsx Tax ID Input
+**File**: `src/pages/VerifyIdentity.tsx`
 
-### Step 2: Fix Settlement Required Email Template
-**File:** `supabase/functions/send-settlement-required/index.ts`
+**Changes**:
+1. Add `maxLength={taxIdConfig.maxLength}` to Input
+2. Change background to white with dark text
+3. Replace `focus:border-tesla-red` with `focus:border-blue-500`
+4. Replace red with blue in document type buttons
+5. Replace red with blue in drag/drop area
 
-| Change | Line | From | To |
-|--------|------|------|-----|
-| Header gradient | 99 | `#22c55e 0%, #16a34a 50%, #dc2626 100%` | `#22c55e 0%, #16a34a 100%` (pure green) |
-| Transaction Summary box | 138 | Red gradient `rgba(220, 38, 38, 0.1)` | Light grey `rgba(148, 163, 184, 0.1)` |
-| Transaction Summary header | 141 | `color: #dc2626` | `color: #3b82f6` (electric blue) |
-| Required Action text | 167 | `color: #dc2626` | `color: #ffffff` (neutral) |
-| From email | 217 | `Tesla Stock` | `Tesla Stock Platform` |
+### Step 3: Make Tax ID Read-Only in Admin When User Submitted
+**File**: `src/components/admin/KYCManagementModal.tsx`
 
-### Step 3: Ensure Consistent Email Sender Branding
-**Files:** Both email functions
-
-| File | Current From | Fixed From |
-|------|--------------|------------|
-| `send-kyc-request/index.ts` | `Tesla Stock Platform` (correct) | No change needed |
-| `send-settlement-required/index.ts` | `Tesla Stock` | `Tesla Stock Platform` |
+```tsx
+{/* Tax ID */}
+<div className="space-y-2">
+  <Label className="text-slate-300">
+    {taxIdConfig.label}
+    {kycData?.tax_id && (
+      <span className="ml-2 text-xs text-green-400">(User submitted)</span>
+    )}
+  </Label>
+  <Input
+    value={taxId}
+    onChange={(e) => !kycData?.tax_id && setTaxId(e.target.value)}
+    placeholder={taxIdConfig.placeholder}
+    className="bg-slate-800 border-slate-600 text-white font-mono"
+    readOnly={!!kycData?.tax_id}
+    disabled={!!kycData?.tax_id}
+  />
+  <p className="text-xs text-slate-500">{taxIdConfig.format}</p>
+</div>
+```
 
 ---
 
@@ -109,35 +175,37 @@ Key changes:
 
 | File | Changes |
 |------|---------|
-| `src/pages/VerifyIdentity.tsx` | Fix Tax ID input styling with explicit color properties |
-| `supabase/functions/send-settlement-required/index.ts` | Fix email template colors and sender name |
+| `src/data/taxIdFormats.ts` | Add `maxLength` to TaxIdConfig interface and all country configs |
+| `src/pages/VerifyIdentity.tsx` | Update Tax ID input styling, add maxLength, replace red with blue |
+| `src/components/admin/KYCManagementModal.tsx` | Make Tax ID read-only when user has submitted |
 
 ---
 
-## Visual Before/After
+## Visual Changes Summary
 
-### Tax ID Input
-**Before:** Text invisible or very faint when typing
-**After:** Bold white text (#ffffff) clearly visible on dark background
-
-### Settlement Email Header
-**Before:** Green-to-red gradient (confusing - mixing approval with warning)
-**After:** Pure green gradient (clear approval signal)
-
-### Transaction Summary Box
-**Before:** Red gradient background (alarming, aggressive)
-**After:** Light grey background (professional, neutral, like Requirements box)
-
-### Transaction Summary Title
-**Before:** Red text (#dc2626)
-**After:** Tesla Electric Blue (#3b82f6) - consistent with platform branding
+| Element | Before | After |
+|---------|--------|-------|
+| Tax ID Input Background | Dark (slate-800) | White (#ffffff) |
+| Tax ID Input Text | White | Black/Dark (#000000) |
+| Tax ID Focus Border | Red (tesla-red) | Blue (blue-500) |
+| Document Type Selected | Red border/bg | Blue border/bg |
+| Document Type Hover | Red hover | Blue hover |
+| Drag/Drop Active | Red border/bg | Blue border/bg |
+| Tax ID in Admin | Editable always | Read-only after user submits |
 
 ---
 
-## Technical Note on URL Display
-The URL `https://msktesla.net/verify-identity?token=...` is the correct production URL. This is how SPAs work:
-- The query parameters (`token`, `withdrawal_id`) are essential for the verification to work
-- The email button text shows "Complete KYC Verification" (clean label)
-- The actual URL in the browser address bar must contain the full path for the app to function
+## Country Max Length Reference (Key Countries)
 
-If you want to hide the query parameters from users, that would require a server-side redirect which is not recommended as it adds complexity and could break the verification flow.
+| Country | Tax ID | Max Length |
+|---------|--------|------------|
+| BG (Bulgaria) | EGN | 10 |
+| US | SSN | 11 (with dashes) |
+| RU | TIN/ИНН | 12 |
+| DE | Steuer-ID | 11 |
+| GB | NI Number | 13 (with spaces) |
+| FR | NIF | 13 |
+| IT | Codice Fiscale | 16 |
+| PL | PESEL | 11 |
+| TR | T.C. Kimlik No | 11 |
+
