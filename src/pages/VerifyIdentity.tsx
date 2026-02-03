@@ -37,7 +37,7 @@ const VerifyIdentity = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // Validate token and load KYC data
+  // Validate token and load KYC data via Edge Function (bypasses RLS for unauthenticated users)
   useEffect(() => {
     const validateToken = async () => {
       if (!token || !withdrawalId) {
@@ -47,21 +47,23 @@ const VerifyIdentity = () => {
       }
 
       try {
-        // Find KYC record by token
-        const { data, error: fetchError } = await supabase
-          .from('kyc_verifications')
-          .select('*')
-          .eq('kyc_token', token)
-          .eq('withdrawal_id', withdrawalId)
-          .maybeSingle();
+        // Use Edge Function to validate token (bypasses RLS)
+        const { data: responseData, error: invokeError } = await supabase.functions.invoke('verify-kyc-token', {
+          body: { token, withdrawal_id: withdrawalId }
+        });
 
-        if (fetchError) throw fetchError;
+        if (invokeError) {
+          console.error('Error invoking verify-kyc-token:', invokeError);
+          throw new Error('Unable to verify your link');
+        }
 
-        if (!data) {
-          setError('Verification link is invalid or has expired.');
+        if (!responseData?.valid) {
+          setError(responseData?.error || 'Verification link is invalid or has expired.');
           setLoading(false);
           return;
         }
+
+        const data = responseData.kycData;
 
         if (data.status !== 'pending_kyc') {
           if (data.status === 'kyc_submitted' || data.status === 'kyc_approved') {

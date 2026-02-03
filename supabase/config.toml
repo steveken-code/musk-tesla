@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.send-kyc-admin-notification]
 verify_jwt = false
+
+[functions.verify-kyc-token]
+verify_jwt = false
