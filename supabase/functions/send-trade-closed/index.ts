@@ -161,7 +161,7 @@ async function sendTradeClosedEmail(data: TradeClosedRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #dc2626; font-size: 22px; font-weight: 700;">
+                  <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
                     Congratulations ${userName || (userEmail ? userEmail.split('@')[0] : 'there')}!
                   </p>
                 </td>
@@ -218,7 +218,7 @@ async function sendTradeClosedEmail(data: TradeClosedRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #dc2626; font-size: 20px; font-weight: 700;">
+                    <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
                       📋 Trade Summary
                     </h3>
                     
