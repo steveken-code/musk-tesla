@@ -49,6 +49,7 @@ const AppRoutes = () => {
       <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
       <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
       <Route path="/verify-identity" element={<PageTransition><VerifyIdentity /></PageTransition>} />
+      <Route path="/verify-identity/*" element={<PageTransition><VerifyIdentity /></PageTransition>} />
       <Route path="/transactions" element={<PageTransition><TransactionHistory /></PageTransition>} />
       <Route path="/live-activity" element={<PageTransition><LiveActivity /></PageTransition>} />
       <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
@@ -94,6 +95,7 @@ const AnimatedRoutes = () => {
           <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
           <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
           <Route path="/verify-identity" element={<PageTransition><VerifyIdentity /></PageTransition>} />
+          <Route path="/verify-identity/*" element={<PageTransition><VerifyIdentity /></PageTransition>} />
           <Route path="/transactions" element={<PageTransition><TransactionHistory /></PageTransition>} />
           <Route path="/live-activity" element={<PageTransition><LiveActivity /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
