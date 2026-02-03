@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { 
   Loader2, CheckCircle, XCircle, FileText, Eye, Send, 
   User, Globe, CreditCard, Building, DollarSign, AlertCircle,
-  RefreshCw, ExternalLink
+  RefreshCw, ExternalLink, Copy, Link
 } from 'lucide-react';
 import { getTaxIdConfig, getAccountConfig, getCountryList, getCurrencyList } from '@/data/taxIdFormats';
 import {
@@ -580,6 +580,46 @@ const KYCManagementModal = ({
                 className="bg-slate-800 border-slate-600 text-white min-h-[80px]"
               />
             </div>
+
+            {/* Verification Link Tools (when KYC token exists) */}
+            {kycData?.kyc_token && (
+              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                <Label className="text-slate-300 flex items-center gap-2 mb-3">
+                  <Link className="w-4 h-4" />
+                  Verification Link
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const url = `https://msktesla.net/verify-identity?token=${kycData.kyc_token}&withdrawal_id=${withdrawal.id}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Open Link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const url = `https://msktesla.net/verify-identity?token=${kycData.kyc_token}&withdrawal_id=${withdrawal.id}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success('Verification link copied!');
+                    }}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2 font-mono break-all">
+                  https://msktesla.net/verify-identity?token={kycData.kyc_token}&withdrawal_id={withdrawal.id}
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-700">
