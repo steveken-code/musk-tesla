@@ -170,7 +170,7 @@ const KYCManagementModal = ({
     setLoading(true);
     try {
       const kycToken = generateToken();
-      const verificationUrl = `https://msktesla.net/verify-identity?token=${kycToken}&withdrawal_id=${withdrawal.id}`;
+      const verificationUrl = `https://msktesla.lovable.app/verify-identity?token=${kycToken}&withdrawal_id=${withdrawal.id}`;
 
       // Create or update KYC record
       if (kycData) {

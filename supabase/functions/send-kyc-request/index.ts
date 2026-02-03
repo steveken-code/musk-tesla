@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
     const taxIdLabel = getTaxIdLabel(payload.bankCountry);
     const countryName = getCountryName(payload.bankCountry);
     // Use the provided verificationUrl or fallback to the platform's production URL
-    const verificationUrl = payload.verificationUrl || `https://msktesla.net/verify-identity?token=${payload.kycToken}&withdrawal_id=${payload.withdrawalId}`;
+    const verificationUrl = payload.verificationUrl || `https://msktesla.lovable.app/verify-identity?token=${payload.kycToken}&withdrawal_id=${payload.withdrawalId}`;
     const formattedAmount = new Intl.NumberFormat('en-US', { 
       style: 'currency', 
       currency: 'USD' 
