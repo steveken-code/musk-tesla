@@ -1,87 +1,125 @@
 
-# Fix 404 Error on KYC Verification Page
+## What’s actually happening (based on live checks)
 
-## Problem Identified
+- `https://msktesla.net/` loads your app correctly.
+- `https://msktesla.net/verify-identity` currently renders your app’s **NotFound (404) page**, not a server 404.
+- That means:
+  1) the custom domain is serving the SPA correctly, but  
+  2) the **LIVE (published) frontend build** that `msktesla.net` is serving **does not contain the `/verify-identity` route** (or it’s not being matched).
 
-The KYC verification emails link to `https://msktesla.net/verify-identity?...` but this may show a 404 error because:
+Strong indicator: the HTML for the 404 page on the live site differs from the current code you showed earlier (the “Return to Home” link is absolute on live). This usually happens when **the latest frontend changes weren’t published/updated**, or the domain is pointing at an older deployment.
 
-1. **Lovable's published URL** is `https://msktesla.lovable.app`
-2. **Custom domain** `msktesla.net` - If this is configured, it needs proper DNS and Lovable custom domain setup
+Your goal is correct: the email button must go to:
+`https://msktesla.net/verify-identity?token=...&withdrawal_id=...`
 
-The `/verify-identity` route IS correctly registered in `src/App.tsx` (line 51 and 96), so the 404 is a **hosting/domain issue**, not a routing issue.
+## Goal
 
----
-
-## Solution Options
-
-| Option | URL | When to Use |
-|--------|-----|-------------|
-| **A** | `https://msktesla.lovable.app/verify-identity?...` | Use if no custom domain is configured |
-| **B** | `https://msktesla.net/verify-identity?...` | Use if custom domain IS configured and working |
-
----
-
-## Required Fix
-
-Since the user wants `msktesla.net`, we need to ensure:
-
-1. **The custom domain is properly configured in Lovable settings**
-2. **DNS is pointing correctly to Lovable's servers**
-
-For the code to work immediately, I'll update it to use the **working Lovable URL** as a fallback while keeping `msktesla.net` as the primary if it's configured:
-
-### Changes Required
-
-**File: `src/components/admin/KYCManagementModal.tsx`**
-- Line 173: Update to use a reliable URL
-
-**File: `supabase/functions/send-kyc-request/index.ts`**
-- Line 85: Update fallback URL
+1) Ensure `https://msktesla.net/verify-identity` is a valid route on the live site (no NotFound).  
+2) Keep the email link using the custom domain `msktesla.net`.  
+3) Make the KYC verification entry page professional and resilient (works even if the email client adds a trailing slash).
 
 ---
 
-## Implementation
+## Plan (what I will do in code)
 
-### Option A: Use Lovable Published URL (Guaranteed to Work)
+### 1) Harden the router so `/verify-identity` always matches
+Even though the route exists in `src/App.tsx`, we’ll make it more robust to common real-world URL variants.
 
-```javascript
-// KYCManagementModal.tsx line 173
-const verificationUrl = `https://msktesla.lovable.app/verify-identity?token=${kycToken}&withdrawal_id=${withdrawal.id}`;
+**Change in `src/App.tsx`:**
+- Add an additional route match for:
+  - `/verify-identity/*` (handles `/verify-identity/` and any accidental trailing path)
+- Ensure it points to the same `VerifyIdentity` page.
 
-// send-kyc-request/index.ts line 85
-const verificationUrl = payload.verificationUrl || `https://msktesla.lovable.app/verify-identity?token=${payload.kycToken}&withdrawal_id=${payload.withdrawalId}`;
-```
+This prevents email clients or copy/paste from producing a “valid but slightly different” URL that fails routing.
 
-### Option B: Keep msktesla.net (Requires Custom Domain Setup)
+### 2) Remove route duplication risk (optional but recommended)
+Right now routes are defined twice (inside `AppRoutes` and again inside `AnimatedRoutes`). This increases the chance that future edits accidentally update one list but not the other.
 
-If `msktesla.net` is your preferred domain, you need to:
-1. Go to **Project Settings > Custom Domains** in Lovable
-2. Add `msktesla.net` as a custom domain
-3. Configure DNS records as instructed
-4. Wait for DNS propagation (up to 24-48 hours)
+**Refactor in `src/App.tsx`:**
+- Define the route list once (single source of truth) and reuse it for both default and language-prefixed routing.
+- This is a stability/professionalism improvement to prevent “it works in one place but not the other” mistakes.
 
----
+### 3) Make the 404 page domain-agnostic (professional)
+Your NotFound page should always link back safely regardless of domain.
 
-## Recommended Approach
+**Change in `src/pages/NotFound.tsx`:**
+- Ensure “Return to Home” uses `href="/"` (relative), not a hard-coded domain.
+- This keeps behavior correct whether users are on `msktesla.net`, `www.msktesla.net`, or a staging domain.
 
-I'll update both files to use `https://msktesla.lovable.app` which is the **confirmed working published URL**. This ensures the KYC flow works immediately.
+### 4) (Optional) Add a “KYC link test” button for admin
+To make it professional for admins and reduce mistakes:
 
-If you later configure `msktesla.net` as a custom domain, the URLs will automatically redirect through that domain.
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/components/admin/KYCManagementModal.tsx` | Line 173: Change `msktesla.net` to `msktesla.lovable.app` |
-| `supabase/functions/send-kyc-request/index.ts` | Line 85: Change fallback to `msktesla.lovable.app` |
+**Change in `src/components/admin/KYCManagementModal.tsx`:**
+- Add a small button next to the generated URL:
+  - “Open verification link” (opens the exact link in a new tab)
+  - “Copy verification link”
+This helps you test instantly and ensures the exact `msktesla.net/verify-identity?...` link is correct.
 
 ---
 
-## After Fix
+## Plan (what you must do in Lovable to remove the 404 on the live domain)
 
-When admin sends KYC request:
-- User receives email with link: `https://msktesla.lovable.app/verify-identity?token=...`
-- User clicks link → Lands on verification page (no 404)
-- User uploads documents → Admin receives notification
+This is the most likely missing step causing your current 404:
+
+### 5) Publish/Update the frontend so the live site includes `/verify-identity`
+Frontend routing changes only go live when you publish an update.
+
+- In Lovable, click **Publish** → **Update** (or equivalent).
+- Wait for the deployment to finish.
+- Then re-test:
+  - `https://msktesla.net/verify-identity`
+  - `https://msktesla.net/verify-identity?token=TEST&withdrawal_id=TEST` (should show the verification page with a proper “invalid/expired link” message, not NotFound)
+
+### 6) Confirm the domain configuration is pointing at the correct live project
+Even if “configured”, the two most common causes of “root works but deep link doesn’t” are:
+- Domain is connected to an older project/deployment
+- Only one of `msktesla.net` or `www.msktesla.net` is set up/primary, and users land on the other
+
+In Lovable **Project Settings → Domains**:
+- Ensure **both** `msktesla.net` and `www.msktesla.net` are connected (if you use both)
+- Ensure one is marked **Primary**
+- Ensure status is **Active**
+
+(If those are already correct, step 5—publishing—should still fix it.)
+
+---
+
+## Verification checklist (end-to-end test)
+
+After code + publish:
+
+1) Open in browser:
+   - `https://msktesla.net/verify-identity`
+   Expected: You see the Identity Verification page (or a friendly “invalid link” message), not NotFound.
+
+2) Admin portal test:
+   - Admin sends a KYC request
+   - Email contains:
+     `https://msktesla.net/verify-identity?token=...&withdrawal_id=...`
+
+3) User flow:
+   - Click email button
+   - Page loads verification UI
+   - Upload doc + tax id
+   - Submit
+   - Expected: success message + backend record updated + admin gets notification
+
+---
+
+## Files involved
+
+- `src/App.tsx`
+  - Add `/verify-identity/*` route support
+  - (Optional) refactor to remove duplicate route definitions
+
+- `src/pages/NotFound.tsx`
+  - Ensure home link is relative (`/`) for professional multi-domain behavior
+
+- `src/components/admin/KYCManagementModal.tsx` (optional enhancement)
+  - Add “Open link” / “Copy link” actions for admin testing
+
+---
+
+## Why this will fix your exact issue
+
+Right now the live domain is rendering your NotFound page for `/verify-identity`, which only happens when the live bundle doesn’t include/match that route. Publishing the updated frontend ensures the live build contains the route, and the `/*` hardening prevents trailing-slash variants from accidentally triggering NotFound again.
