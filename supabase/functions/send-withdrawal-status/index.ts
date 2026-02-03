@@ -189,7 +189,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       statusLabel = "COMPLETED";
       statusBgColor = "#dcfce7";
       statusTextColor = "#166534";
-      statusMessage = "Your withdrawal has been successfully processed! The funds have been transferred to your account.";
+      statusMessage = "Your withdrawal has been successfully processed! The funds have been transferred and will be credited to your account shortly.";
       statusIcon = "✅";
       break;
     case "rejected":
@@ -256,7 +256,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #c4b5fd; font-size: 22px; font-weight: 700;">
+                  <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
                     Hello ${userName || (userEmail ? userEmail.split('@')[0] : 'there')},
                   </p>
                 </td>
@@ -280,7 +280,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #c4b5fd; font-size: 20px; font-weight: 700;">
+                    <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
                     
