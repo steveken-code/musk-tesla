@@ -454,6 +454,9 @@ const englishTranslations: Record<string, string> = {
   'recentInvestments': 'Recent Investments',
   'globalInvestors': 'Global Investors',
   'activeNow': 'Active Now',
+  
+  // WhatsApp Support
+  'whatsappDefaultMessage': 'Hello! I would like to learn more about Tesla stocks.',
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
