@@ -7,9 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX, Play, FileText } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, FileText, Eye, Globe } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 import KYCManagementModal from '@/components/admin/KYCManagementModal';
 
@@ -69,9 +67,26 @@ interface CryptoSettings {
   network: string;
 }
 
-interface SoundSettings {
-  enabled: boolean;
-  volume: number;
+interface KYCVerification {
+  id: string;
+  user_id: string;
+  withdrawal_id: string;
+  bank_country: string;
+  status: string;
+  document_url: string | null;
+  document_type: string | null;
+  tax_id: string | null;
+  tax_id_type: string | null;
+  net_amount: number | null;
+  currency: string | null;
+  admin_notes: string | null;
+  user_name: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    full_name: string | null;
+    email: string | null;
+  };
 }
 
 const languages = [
@@ -171,14 +186,13 @@ const Admin = () => {
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
   const [referralSettings, setReferralSettings] = useState<ReferralSettings>(DEFAULT_REFERRAL_SETTINGS);
   const [cryptoSettings, setCryptoSettings] = useState<CryptoSettings>(DEFAULT_CRYPTO_SETTINGS);
-  const [soundSettings, setSoundSettings] = useState<SoundSettings>({ enabled: true, volume: 0.5 });
-  const { playSound: playNotificationSound, initializeAudio } = useNotificationSound();
+  const [kycVerifications, setKycVerifications] = useState<KYCVerification[]>([]);
+  const [kycSearchQuery, setKycSearchQuery] = useState('');
   const [savingPayment, setSavingPayment] = useState(false);
   const [savingWithdrawal, setSavingWithdrawal] = useState(false);
   const [savingSupport, setSavingSupport] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
   const [savingCrypto, setSavingCrypto] = useState(false);
-  const [savingSound, setSavingSound] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc'>('investments');
   
   // KYC Modal state
@@ -344,12 +358,6 @@ const Admin = () => {
             setCryptoSettings({
               walletAddress: value.walletAddress || DEFAULT_CRYPTO_SETTINGS.walletAddress,
               network: value.network || DEFAULT_CRYPTO_SETTINGS.network,
-            });
-          } else if (setting.setting_key === 'sound_settings' && setting.setting_value) {
-            const value = setting.setting_value as unknown as SoundSettings;
-            setSoundSettings({
-              enabled: value.enabled ?? true,
-              volume: value.volume ?? 0.5,
             });
           }
         });
@@ -839,88 +847,42 @@ const Admin = () => {
     }
   };
 
-  const handleToggleSoundSettings = async () => {
-    const newEnabled = !soundSettings.enabled;
-    setSavingSound(true);
-    
+  // Fetch KYC verifications
+  const fetchKycVerifications = async () => {
     try {
-      const { data: existingSetting } = await supabase
-        .from('admin_settings')
-        .select('id')
-        .eq('setting_key', 'sound_settings')
-        .maybeSingle();
+      const { data: kycData, error: kycError } = await supabase
+        .from('kyc_verifications')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      const newSettings = { enabled: newEnabled, volume: soundSettings.volume };
-
-      if (existingSetting) {
-        await supabase
-          .from('admin_settings')
-          .update({ 
-            setting_value: JSON.parse(JSON.stringify(newSettings)),
-            updated_by: user?.id,
-            updated_at: new Date().toISOString()
-          })
-          .eq('setting_key', 'sound_settings');
-      } else {
-        await supabase
-          .from('admin_settings')
-          .insert({ 
-            setting_key: 'sound_settings',
-            setting_value: JSON.parse(JSON.stringify(newSettings)),
-            updated_by: user?.id
-          });
-      }
+      if (kycError) throw kycError;
       
-      setSoundSettings(newSettings);
-      toast.success(newEnabled ? 'Notification sounds enabled!' : 'Notification sounds disabled!');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save sound settings';
-      toast.error(errorMessage);
-    } finally {
-      setSavingSound(false);
-    }
-  };
+      if (kycData) {
+        // Enrich with profile data
+        const userIds = [...new Set(kycData.map(k => k.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
 
-  const handleVolumeChange = async (newVolume: number[]) => {
-    const volume = newVolume[0];
-    setSoundSettings(prev => ({ ...prev, volume }));
-    
-    try {
-      const { data: existingSetting } = await supabase
-        .from('admin_settings')
-        .select('id')
-        .eq('setting_key', 'sound_settings')
-        .maybeSingle();
-
-      const newSettings = { enabled: soundSettings.enabled, volume };
-
-      if (existingSetting) {
-        await supabase
-          .from('admin_settings')
-          .update({ 
-            setting_value: JSON.parse(JSON.stringify(newSettings)),
-            updated_by: user?.id,
-            updated_at: new Date().toISOString()
-          })
-          .eq('setting_key', 'sound_settings');
-      } else {
-        await supabase
-          .from('admin_settings')
-          .insert({ 
-            setting_key: 'sound_settings',
-            setting_value: JSON.parse(JSON.stringify(newSettings)),
-            updated_by: user?.id
-          });
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+        const enriched: KYCVerification[] = kycData.map(kyc => ({
+          ...kyc,
+          profiles: profileMap.get(kyc.user_id) || undefined
+        }));
+        setKycVerifications(enriched);
       }
-    } catch (error: unknown) {
-      console.warn('Failed to save volume setting:', error);
+    } catch (error) {
+      console.error('Error fetching KYC verifications:', error);
     }
   };
 
-  const handlePreviewSound = (type: 'investment' | 'withdrawal') => {
-    initializeAudio();
-    playNotificationSound(type, true);
-  };
+  // Load KYC verifications when admin is confirmed
+  useEffect(() => {
+    if (isAdmin) {
+      fetchKycVerifications();
+    }
+  }, [isAdmin]);
 
   const handleSaveSupportSettings = async () => {
     if (!supportSettings.whatsappEnabled && !supportSettings.telegramEnabled) {
@@ -1230,26 +1192,6 @@ const Admin = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-8 max-w-full">
-        {/* Language Control Section */}
-        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
-            <Globe className="w-5 h-5 text-electric-blue" />
-            {t('defaultLanguage') || 'Default Language Control'}
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-            {languages.map((lang) => (
-              <Button
-                key={lang.code}
-                variant={language === lang.code ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleSetDefaultLanguage(lang.code)}
-                className={language === lang.code ? 'bg-tesla-red hover:bg-tesla-red/90' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}
-              >
-                {lang.label}
-              </Button>
-            ))}
-          </div>
-        </div>
 
         {/* Payment Settings Section */}
         <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
@@ -1566,98 +1508,6 @@ const Admin = () => {
           </Button>
         </div>
 
-        {/* Notification Sound Settings Section */}
-        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 mb-8 animate-fade-in">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
-            {soundSettings.enabled ? (
-              <Volume2 className="w-5 h-5 text-green-500" />
-            ) : (
-              <VolumeX className="w-5 h-5 text-slate-500" />
-            )}
-            Notification Sound Settings
-          </h2>
-          
-          {/* Enable/Disable Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/50 border border-slate-600 mb-4">
-            <div>
-              <p className="text-white font-medium">Live Activity Sounds</p>
-              <p className="text-xs text-slate-400 mt-1">
-                Play notification sounds when new investments or withdrawals appear in the live activity feed
-              </p>
-            </div>
-            <Button
-              onClick={handleToggleSoundSettings}
-              disabled={savingSound}
-              className={`min-w-[100px] ${
-                soundSettings.enabled 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-slate-600 hover:bg-slate-500'
-              }`}
-            >
-              {savingSound ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : soundSettings.enabled ? (
-                <>
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  ON
-                </>
-              ) : (
-                <>
-                  <VolumeX className="w-4 h-4 mr-2" />
-                  OFF
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Volume Control */}
-          <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-white font-medium">Volume Level</p>
-              <span className="text-sm text-slate-400">{Math.round(soundSettings.volume * 100)}%</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <VolumeX className="w-4 h-4 text-slate-400" />
-              <Slider
-                value={[soundSettings.volume]}
-                onValueChange={handleVolumeChange}
-                min={0}
-                max={1}
-                step={0.05}
-                className="flex-1"
-              />
-              <Volume2 className="w-4 h-4 text-slate-400" />
-            </div>
-          </div>
-
-          {/* Sound Preview */}
-          <div className="p-4 rounded-xl bg-slate-700/50 border border-slate-600">
-            <p className="text-white font-medium mb-3">Preview Sounds</p>
-            <p className="text-xs text-slate-400 mb-4">
-              Click to hear how each notification sounds. Uses current volume setting.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => handlePreviewSound('investment')}
-                variant="outline"
-                className="border-green-600 text-green-400 hover:bg-green-600/20 hover:text-green-300"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Investment Sound
-                <TrendingUp className="w-4 h-4 ml-2" />
-              </Button>
-              <Button
-                onClick={() => handlePreviewSound('withdrawal')}
-                variant="outline"
-                className="border-amber-600 text-amber-400 hover:bg-amber-600/20 hover:text-amber-300"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Withdrawal Sound
-                <Wallet className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           <Button
@@ -1695,6 +1545,19 @@ const Admin = () => {
             {t('emailMonitoring')}
           </Button>
           <Button
+            variant={activeTab === 'kyc' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('kyc')}
+            className={`relative ${activeTab === 'kyc' ? 'bg-purple-600' : 'border-slate-600 text-slate-300'}`}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            KYC ({kycVerifications.length})
+            {kycVerifications.filter(k => k.status === 'pending_kyc' || k.status === 'kyc_submitted').length > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-purple-400 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+                {kycVerifications.filter(k => k.status === 'pending_kyc' || k.status === 'kyc_submitted').length}
+              </span>
+            )}
+          </Button>
+          <Button
             variant={activeTab === 'security' ? 'default' : 'outline'}
             onClick={() => setActiveTab('security')}
             className={activeTab === 'security' ? 'bg-orange-600' : 'border-slate-600 text-slate-300'}
@@ -1703,6 +1566,163 @@ const Admin = () => {
             {t('securityLogs')}
           </Button>
         </div>
+
+        {/* KYC Tab */}
+        {activeTab === 'kyc' && (
+          <>
+            {/* Search Bar */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 mb-4 animate-fade-in">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  placeholder="Search by user name or email..."
+                  value={kycSearchQuery}
+                  onChange={(e) => setKycSearchQuery(e.target.value)}
+                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            {kycVerifications.filter(kyc => {
+              if (!kycSearchQuery.trim()) return true;
+              const search = kycSearchQuery.toLowerCase();
+              const name = (kyc.user_name || kyc.profiles?.full_name || '').toLowerCase();
+              const email = (kyc.profiles?.email || '').toLowerCase();
+              return name.includes(search) || email.includes(search);
+            }).length === 0 ? (
+              <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-8 text-center animate-fade-in">
+                <FileText className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {kycSearchQuery.trim() ? 'No matching KYC records' : 'No KYC verifications yet'}
+                </h3>
+                <p className="text-slate-400">
+                  {kycSearchQuery.trim() ? 'Try a different search term.' : 'When users submit KYC documents, they will appear here.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {kycVerifications.filter(kyc => {
+                  if (!kycSearchQuery.trim()) return true;
+                  const search = kycSearchQuery.toLowerCase();
+                  const name = (kyc.user_name || kyc.profiles?.full_name || '').toLowerCase();
+                  const email = (kyc.profiles?.email || '').toLowerCase();
+                  return name.includes(search) || email.includes(search);
+                }).map((kyc) => {
+                  const getKycStatusBadge = (status: string) => {
+                    const styles: Record<string, string> = {
+                      pending_kyc: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+                      kyc_submitted: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                      kyc_approved: 'bg-green-500/20 text-green-400 border-green-500/30',
+                      pending_settlement: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+                      completed: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                    };
+                    return styles[status] || styles.pending_kyc;
+                  };
+
+                  return (
+                    <div
+                      key={kyc.id}
+                      className={`bg-slate-800/80 backdrop-blur-xl border rounded-xl p-5 md:p-6 animate-fade-in hover:border-slate-600 transition-colors ${
+                        kyc.status === 'kyc_submitted' 
+                          ? 'border-blue-500/50 ring-2 ring-blue-500/20' 
+                          : kyc.status === 'pending_kyc'
+                          ? 'border-yellow-500/50'
+                          : 'border-slate-700'
+                      }`}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          {/* User Info */}
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                              kyc.status === 'kyc_submitted' ? 'bg-blue-500/20 text-blue-400' :
+                              kyc.status === 'kyc_approved' ? 'bg-green-500/20 text-green-400' :
+                              'bg-purple-500/20 text-purple-400'
+                            }`}>
+                              {(kyc.user_name || kyc.profiles?.full_name || kyc.profiles?.email || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-white font-semibold">
+                                {kyc.user_name || kyc.profiles?.full_name || 'Unknown User'}
+                              </p>
+                              <p className="text-electric-blue text-sm">
+                                {kyc.profiles?.email || `User ID: ${kyc.user_id.slice(0, 8)}...`}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Details Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div className="bg-slate-900/40 rounded-lg p-2">
+                              <p className="text-slate-500 text-xs">Country</p>
+                              <p className="text-slate-200 font-medium">{getCountryName(kyc.bank_country)}</p>
+                            </div>
+                            {kyc.net_amount && (
+                              <div className="bg-slate-900/40 rounded-lg p-2">
+                                <p className="text-slate-500 text-xs">Amount</p>
+                                <p className="text-green-400 font-medium">${kyc.net_amount.toLocaleString()}</p>
+                              </div>
+                            )}
+                            <div className="bg-slate-900/40 rounded-lg p-2">
+                              <p className="text-slate-500 text-xs">Status</p>
+                              <span className={`inline-flex px-2 py-0.5 text-xs rounded-full border font-medium ${getKycStatusBadge(kyc.status)}`}>
+                                {kyc.status.replace(/_/g, ' ').toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="bg-slate-900/40 rounded-lg p-2">
+                              <p className="text-slate-500 text-xs">Submitted</p>
+                              <p className="text-slate-200 text-xs">{new Date(kyc.created_at).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+
+                          {/* Tax ID if available */}
+                          {kyc.tax_id && (
+                            <div className="text-sm">
+                              <span className="text-slate-500">Tax ID ({kyc.tax_id_type}):</span>
+                              <span className="text-slate-200 font-mono ml-2">{kyc.tax_id}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-wrap gap-2">
+                          {kyc.document_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(kyc.document_url!, '_blank')}
+                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Doc
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              // Find matching withdrawal
+                              const withdrawal = withdrawals.find(w => w.id === kyc.withdrawal_id);
+                              if (withdrawal) {
+                                setSelectedWithdrawalForKyc(withdrawal);
+                                setShowKycModal(true);
+                              } else {
+                                toast.error('Associated withdrawal not found');
+                              }
+                            }}
+                            className="bg-purple-600 hover:bg-purple-700"
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            Manage KYC
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
 
         {/* Security Logs Tab */}
         {activeTab === 'security' && (
