@@ -74,3 +74,12 @@ verify_jwt = false
 
 [functions.sync-missing-profiles]
 verify_jwt = false
+
+[functions.send-kyc-request]
+verify_jwt = false
+
+[functions.send-settlement-required]
+verify_jwt = false
+
+[functions.send-kyc-admin-notification]
+verify_jwt = false

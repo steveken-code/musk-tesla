@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX, Play } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Globe, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, Volume2, VolumeX, Play, FileText } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
+import KYCManagementModal from '@/components/admin/KYCManagementModal';
 
 interface Investment {
   id: string;
@@ -178,7 +179,11 @@ const Admin = () => {
   const [savingReferral, setSavingReferral] = useState(false);
   const [savingCrypto, setSavingCrypto] = useState(false);
   const [savingSound, setSavingSound] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security'>('investments');
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc'>('investments');
+  
+  // KYC Modal state
+  const [showKycModal, setShowKycModal] = useState(false);
+  const [selectedWithdrawalForKyc, setSelectedWithdrawalForKyc] = useState<Withdrawal | null>(null);
   
   // Security logs state - Admin login attempts
   const [loginAttempts, setLoginAttempts] = useState<Array<{
@@ -2223,6 +2228,19 @@ const Admin = () => {
                               </Button>
                             </>
                           )}
+                          {/* KYC Management Button - always visible */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedWithdrawalForKyc(withdrawal);
+                              setShowKycModal(true);
+                            }}
+                            className="border-purple-500 text-purple-400 hover:bg-purple-500/10"
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            KYC
+                          </Button>
                           {withdrawal.status === 'on_hold' && (
                             <>
                               <Button
@@ -2399,6 +2417,18 @@ const Admin = () => {
           </div>
         </div>
       )}
+
+      {/* KYC Management Modal */}
+      <KYCManagementModal
+        open={showKycModal}
+        onClose={() => {
+          setShowKycModal(false);
+          setSelectedWithdrawalForKyc(null);
+        }}
+        withdrawal={selectedWithdrawalForKyc}
+        onKycCreated={fetchData}
+        whatsappPhone={supportSettings.whatsappPhone}
+      />
     </div>
   );
 };
