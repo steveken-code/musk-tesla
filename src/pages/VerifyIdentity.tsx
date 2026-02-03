@@ -210,7 +210,7 @@ const VerifyIdentity = () => {
       }
 
       setSubmitted(true);
-      toast.success('Your documents have been submitted successfully!');
+      toast.success('Your document has been submitted successfully!');
     } catch (err) {
       console.error('Submission error:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
@@ -260,9 +260,9 @@ const VerifyIdentity = () => {
           <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Documents Submitted!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Document Submitted!</h1>
           <p className="text-slate-400 mb-6">
-            Your identity verification documents have been submitted successfully. Our compliance team will review them shortly.
+            Your identity verification document has been submitted successfully. Our compliance team will review it shortly.
           </p>
           <p className="text-sm text-slate-500 mb-6">
             You will receive an email notification once your verification is approved.
@@ -280,11 +280,11 @@ const VerifyIdentity = () => {
 
   // Main form
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 py-6 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <img src={teslaLogo} alt="Tesla" className="h-12 mx-auto mb-4" />
+          <img src={teslaLogo} alt="Tesla" className="h-16 mx-auto mb-6" />
           <div className="flex items-center justify-center gap-2 mb-2">
             <Shield className="w-6 h-6 text-tesla-red" />
             <h1 className="text-2xl font-bold text-white">Identity Verification</h1>
