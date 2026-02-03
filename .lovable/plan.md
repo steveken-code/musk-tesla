@@ -1,107 +1,111 @@
 
 
-# Remove Net Amount Arrows & Clarify Card Option
+# Fix Email Sender Branding - Ensure All Emails Come from "Tesla Stock Platform"
 
-## Summary of Issues
+## Current Status: Audit of All Email Functions
 
-### 1. Net Amount Input Has Arrow Buttons
-**Problem:** The number input has browser-default increment/decrement arrow buttons that make typing difficult.
+I examined every email-sending edge function to check what sender name/address they use.
 
-**Location:** `src/components/admin/KYCManagementModal.tsx` (Lines 734-741)
+### Sender Configuration Summary
 
-**Current:**
-```tsx
-<Input
-  type="number"
-  value={netAmount}
-  onChange={(e) => setNetAmount(e.target.value)}
-  placeholder="Amount to disburse"
-  className="bg-slate-800 border-slate-600 text-white"
-/>
+| Function | Current FROM_EMAIL | Status |
+|----------|-------------------|--------|
+| `send-welcome-email` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-password-reset` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-investment-confirmation` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-investment-activation` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-withdrawal-status` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-profit-notification` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-trade-closed` | `Tesla Stock Platform <no-reply@msktesla.net>` (hardcoded) | Correct |
+| `send-kyc-request` | Uses `FROM_EMAIL` secret with fallback to `Tesla Stock Platform <noreply@teslastockplatform.com>` | Needs Update |
+| `send-settlement-required` | Uses `FROM_EMAIL` secret with fallback to `Tesla Stock Platform <noreply@teslastockplatform.com>` | Needs Update |
+
+## The Problem
+
+The KYC-related emails (`send-kyc-request` and `send-settlement-required`) use a dynamic approach:
+```typescript
+const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
 ```
 
-**Fix:** Change to `type="text"` with `inputMode="decimal"` and pattern validation:
-```tsx
-<Input
-  type="text"
-  inputMode="decimal"
-  value={netAmount}
-  onChange={(e) => {
-    // Allow only numbers and decimal point
-    const value = e.target.value.replace(/[^0-9.]/g, '');
-    setNetAmount(value);
-  }}
-  placeholder="Amount to disburse"
-  className="bg-slate-800 border-slate-600 text-white"
-/>
+This means:
+1. If the `FROM_EMAIL` secret is set to something different, those emails will use whatever is in that secret
+2. The fallback domain is `teslastockplatform.com` instead of `msktesla.net` (inconsistent)
+
+All other emails have it hardcoded correctly as:
+```typescript
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 ```
 
----
+## Solution: Standardize All KYC Email Functions
 
-### 2. Card Number Box Explanation
+Update `send-kyc-request` and `send-settlement-required` to use the same hardcoded pattern as all other email functions:
 
-**Purpose:** The Payment Method section (Bank Transfer / Card) determines what account information is collected for the disbursement.
+```typescript
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
+```
 
-**Location:** Lines 664-706
-
-**Current Behavior:**
-- **Bank Transfer** selected → Account Number field shows IBAN/Account format based on country
-- **Card** selected → Account Number field would be for card number
-
-**Your Options:**
-
-| Option | Action |
-|--------|--------|
-| Keep it | Useful if some users want to receive funds to a debit card |
-| Remove Card button | If all withdrawals are bank transfers only |
-
-**Recommendation:** Remove the Card option since your withdrawal flow primarily uses bank transfers, phone (SBP), or crypto. Having Card as an option is confusing if you don't actually process card disbursements.
-
----
+This ensures:
+- Consistent sender name: **Tesla Stock Platform**
+- Consistent email address: **no-reply@msktesla.net**
+- No dependency on external secrets for sender identity
+- Professional appearance for KYC/compliance communications
 
 ## Implementation Plan
 
-### Step 1: Remove Arrow Buttons from Net Amount
-**File:** `src/components/admin/KYCManagementModal.tsx` (Lines 734-741)
+### Step 1: Update send-kyc-request Function
+**File:** `supabase/functions/send-kyc-request/index.ts`
 
-Change the Input from `type="number"` to `type="text"` with:
-- `inputMode="decimal"` (shows numeric keyboard on mobile)
-- Filter input to allow only numbers and decimal point
-- This removes the arrow spinner completely
+**Change (Line 217):**
+```typescript
+// BEFORE:
+const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
 
-### Step 2: Remove Card Payment Option
-**File:** `src/components/admin/KYCManagementModal.tsx` (Lines 664-692)
-
-Remove the entire Card button (Lines 681-690):
-```tsx
-<Button
-  type="button"
-  variant={paymentMethod === 'card' ? 'default' : 'outline'}
-  size="sm"
-  onClick={() => setPaymentMethod('card')}
-  className={paymentMethod === 'card' ? 'bg-tesla-red' : 'border-slate-600'}
->
-  <CreditCard className="w-4 h-4 mr-1" />
-  Card
-</Button>
+// AFTER:
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 ```
 
-And simplify the Payment Method section since there's only one option.
+Also update line 219-220 to use the constant:
+```typescript
+from: FROM_EMAIL,
+```
 
----
+### Step 2: Update send-settlement-required Function
+**File:** `supabase/functions/send-settlement-required/index.ts`
 
-## Visual Changes
+**Change (Line 217):**
+```typescript
+// BEFORE:
+const fromEmail = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <noreply@teslastockplatform.com>";
 
-| Element | Before | After |
-|---------|--------|-------|
-| Net Amount Input | Has arrow spinners | Plain text input, easier to type |
-| Payment Method | Bank Transfer + Card buttons | Bank Transfer only (or remove section entirely) |
+// AFTER:
+const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
+```
 
----
+Also update line 219-220 to use the constant:
+```typescript
+from: FROM_EMAIL,
+```
+
+## What Users Will See After Fix
+
+| Email Type | Sender Name (inbox display) | Sender Address |
+|------------|----------------------------|----------------|
+| Action Required (KYC Request) | **Tesla Stock Platform** | no-reply@msktesla.net |
+| Verification Approved (Settlement) | **Tesla Stock Platform** | no-reply@msktesla.net |
+| All other emails | **Tesla Stock Platform** | no-reply@msktesla.net |
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/components/admin/KYCManagementModal.tsx` | Remove number input arrows, remove Card option |
+| File | Change |
+|------|--------|
+| `supabase/functions/send-kyc-request/index.ts` | Hardcode FROM_EMAIL constant at top of file, remove dynamic fromEmail |
+| `supabase/functions/send-settlement-required/index.ts` | Hardcode FROM_EMAIL constant at top of file, remove dynamic fromEmail |
+
+## Why This Matters for KYC
+
+Since these are compliance-related emails (identity verification, settlement requirements), having a consistent, professional sender identity is critical:
+- Builds trust with users
+- Reduces spam filtering issues
+- Maintains brand consistency across all communications
+- Ensures the "Action Required" and "Verification Approved" emails look as professional as welcome/activation emails
 
