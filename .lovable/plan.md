@@ -1,125 +1,146 @@
 
-## What’s actually happening (based on live checks)
+# Fix KYC Verification Page Issues
 
-- `https://msktesla.net/` loads your app correctly.
-- `https://msktesla.net/verify-identity` currently renders your app’s **NotFound (404) page**, not a server 404.
-- That means:
-  1) the custom domain is serving the SPA correctly, but  
-  2) the **LIVE (published) frontend build** that `msktesla.net` is serving **does not contain the `/verify-identity` route** (or it’s not being matched).
+## Problems Identified
 
-Strong indicator: the HTML for the 404 page on the live site differs from the current code you showed earlier (the “Return to Home” link is absolute on live). This usually happens when **the latest frontend changes weren’t published/updated**, or the domain is pointing at an older deployment.
+### 1. File Upload Failing
+**Root Cause**: The storage RLS policy requires `auth.uid()` to match the folder name for uploads:
+```sql
+-- Current policy
+((bucket_id = 'kyc-documents') AND ((auth.uid())::text = (storage.foldername(name))[1]))
+```
 
-Your goal is correct: the email button must go to:
-`https://msktesla.net/verify-identity?token=...&withdrawal_id=...`
+Users clicking the email link are **not authenticated**, so `auth.uid()` is NULL and the upload is blocked.
 
-## Goal
-
-1) Ensure `https://msktesla.net/verify-identity` is a valid route on the live site (no NotFound).  
-2) Keep the email link using the custom domain `msktesla.net`.  
-3) Make the KYC verification entry page professional and resilient (works even if the email client adds a trailing slash).
+**Solution**: Create an Edge Function to handle document uploads server-side using the service role key (bypasses RLS).
 
 ---
 
-## Plan (what I will do in code)
+### 2. Tax ID Input Not Visible
+**Current**: `className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"`
 
-### 1) Harden the router so `/verify-identity` always matches
-Even though the route exists in `src/App.tsx`, we’ll make it more robust to common real-world URL variants.
+The opacity on the background may affect text visibility. Need explicit high-contrast styling.
 
-**Change in `src/App.tsx`:**
-- Add an additional route match for:
-  - `/verify-identity/*` (handles `/verify-identity/` and any accidental trailing path)
-- Ensure it points to the same `VerifyIdentity` page.
-
-This prevents email clients or copy/paste from producing a “valid but slightly different” URL that fails routing.
-
-### 2) Remove route duplication risk (optional but recommended)
-Right now routes are defined twice (inside `AppRoutes` and again inside `AnimatedRoutes`). This increases the chance that future edits accidentally update one list but not the other.
-
-**Refactor in `src/App.tsx`:**
-- Define the route list once (single source of truth) and reuse it for both default and language-prefixed routing.
-- This is a stability/professionalism improvement to prevent “it works in one place but not the other” mistakes.
-
-### 3) Make the 404 page domain-agnostic (professional)
-Your NotFound page should always link back safely regardless of domain.
-
-**Change in `src/pages/NotFound.tsx`:**
-- Ensure “Return to Home” uses `href="/"` (relative), not a hard-coded domain.
-- This keeps behavior correct whether users are on `msktesla.net`, `www.msktesla.net`, or a staging domain.
-
-### 4) (Optional) Add a “KYC link test” button for admin
-To make it professional for admins and reduce mistakes:
-
-**Change in `src/components/admin/KYCManagementModal.tsx`:**
-- Add a small button next to the generated URL:
-  - “Open verification link” (opens the exact link in a new tab)
-  - “Copy verification link”
-This helps you test instantly and ensures the exact `msktesla.net/verify-identity?...` link is correct.
+**Solution**: Add `!opacity-100` and enforce bold, high-contrast text with `text-white font-semibold`.
 
 ---
 
-## Plan (what you must do in Lovable to remove the 404 on the live domain)
+### 3. No WhatsApp Link in Support Section
+**Current** (line 429-431):
+```tsx
+<p className="text-center text-sm text-slate-500 mt-6">
+  Need help? Contact our support team via WhatsApp for assistance.
+</p>
+```
 
-This is the most likely missing step causing your current 404:
-
-### 5) Publish/Update the frontend so the live site includes `/verify-identity`
-Frontend routing changes only go live when you publish an update.
-
-- In Lovable, click **Publish** → **Update** (or equivalent).
-- Wait for the deployment to finish.
-- Then re-test:
-  - `https://msktesla.net/verify-identity`
-  - `https://msktesla.net/verify-identity?token=TEST&withdrawal_id=TEST` (should show the verification page with a proper “invalid/expired link” message, not NotFound)
-
-### 6) Confirm the domain configuration is pointing at the correct live project
-Even if “configured”, the two most common causes of “root works but deep link doesn’t” are:
-- Domain is connected to an older project/deployment
-- Only one of `msktesla.net` or `www.msktesla.net` is set up/primary, and users land on the other
-
-In Lovable **Project Settings → Domains**:
-- Ensure **both** `msktesla.net` and `www.msktesla.net` are connected (if you use both)
-- Ensure one is marked **Primary**
-- Ensure status is **Active**
-
-(If those are already correct, step 5—publishing—should still fix it.)
+**Solution**: Add a professional WhatsApp button/link using the same phone number from `SupportButtons.tsx` (+12186500840).
 
 ---
 
-## Verification checklist (end-to-end test)
+### 4. Logo Needs Updating
+**Current**: Uses `src/assets/tesla-logo-clean.png`
+**Requested**: Use the new transparent background logo uploaded by user.
 
-After code + publish:
-
-1) Open in browser:
-   - `https://msktesla.net/verify-identity`
-   Expected: You see the Identity Verification page (or a friendly “invalid link” message), not NotFound.
-
-2) Admin portal test:
-   - Admin sends a KYC request
-   - Email contains:
-     `https://msktesla.net/verify-identity?token=...&withdrawal_id=...`
-
-3) User flow:
-   - Click email button
-   - Page loads verification UI
-   - Upload doc + tax id
-   - Submit
-   - Expected: success message + backend record updated + admin gets notification
+**Solution**: Copy the uploaded logo to `src/assets/` and import it in `VerifyIdentity.tsx`.
 
 ---
 
-## Files involved
+## Implementation Plan
 
-- `src/App.tsx`
-  - Add `/verify-identity/*` route support
-  - (Optional) refactor to remove duplicate route definitions
+### Step 1: Create Edge Function for Document Upload
+Create `supabase/functions/upload-kyc-document/index.ts`:
+- Accept: file (base64), fileName, userId, kycId, documentType
+- Validate the KYC token matches the user
+- Upload to storage using service role (bypasses RLS)
+- Return the document URL
 
-- `src/pages/NotFound.tsx`
-  - Ensure home link is relative (`/`) for professional multi-domain behavior
+### Step 2: Update VerifyIdentity.tsx
 
-- `src/components/admin/KYCManagementModal.tsx` (optional enhancement)
-  - Add “Open link” / “Copy link” actions for admin testing
+| Change | Location | Description |
+|--------|----------|-------------|
+| Logo | Line 10, 294 | Import and use new logo |
+| Tax ID Input | Line 398-404 | Add explicit opacity-100, font-bold styling |
+| WhatsApp Link | Line 429-431 | Replace plain text with clickable WhatsApp button |
+| Upload Logic | handleSubmit | Call Edge Function instead of direct storage upload |
+
+### Step 3: Copy New Logo
+Copy `user-uploads://new_tesla-removebg-preview_1-4.png` to `src/assets/tesla-logo-kyc.png`
 
 ---
 
-## Why this will fix your exact issue
+## Technical Details
 
-Right now the live domain is rendering your NotFound page for `/verify-identity`, which only happens when the live bundle doesn’t include/match that route. Publishing the updated frontend ensures the live build contains the route, and the `/*` hardening prevents trailing-slash variants from accidentally triggering NotFound again.
+### Edge Function: upload-kyc-document
+
+```typescript
+// Receives:
+{
+  file: string; // base64 encoded
+  fileName: string;
+  contentType: string;
+  kycId: string;
+  token: string;
+  withdrawalId: string;
+  documentType: string;
+}
+
+// Process:
+1. Validate token + withdrawalId match KYC record
+2. Decode base64 to binary
+3. Upload to storage using service role
+4. Generate signed URL
+5. Update kyc_verifications record with document_url
+6. Return success
+```
+
+### Updated Tax ID Input Styling
+```tsx
+<Input
+  type="text"
+  value={taxId}
+  onChange={(e) => setTaxId(e.target.value)}
+  placeholder={taxIdConfig.placeholder}
+  className="bg-slate-700 border-slate-500 text-white font-semibold placeholder:text-slate-400 [opacity:1_!important] focus:border-tesla-red"
+  style={{ color: '#ffffff', fontWeight: 600 }}
+/>
+```
+
+### WhatsApp Support Section
+```tsx
+<div className="text-center mt-6 space-y-3">
+  <p className="text-sm text-slate-400">Need help with your verification?</p>
+  <a
+    href="https://wa.me/12186500840"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+  >
+    <MessageCircle className="w-5 h-5" />
+    Contact Support via WhatsApp
+  </a>
+</div>
+```
+
+---
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `src/assets/tesla-logo-kyc.png` | Copy from user upload |
+| `supabase/functions/upload-kyc-document/index.ts` | Create new Edge Function |
+| `supabase/config.toml` | Add function config |
+| `src/pages/VerifyIdentity.tsx` | Update logo, input styling, WhatsApp link, upload logic |
+
+---
+
+## After Implementation
+
+1. User clicks email link (not logged in)
+2. Token validates via Edge Function (already working)
+3. User selects document type and uploads file
+4. File converts to base64, sent to new Edge Function
+5. Edge Function uploads using service role (bypasses RLS)
+6. Tax ID input is clearly visible with high contrast
+7. User can click WhatsApp button for support
+8. Professional Tesla logo with transparent background displays
