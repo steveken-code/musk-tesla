@@ -74,7 +74,7 @@ const handler = async (req: Request): Promise<Response> => {
     }).format(payload.netAmount || 0);
 
     const whatsappPhone = payload.whatsappPhone || '+12186500840';
-    const whatsappLink = `https://wa.me/${whatsappPhone.replace(/[^0-9]/g, '')}?text=Hello,%20I%20need%20assistance%20with%20settlement%20clearance%20for%20transaction%20${transactionRef}`;
+    const whatsappLink = `https://wa.me/${whatsappPhone.replace(/[^0-9]/g, '')}`;
 
     const accountDisplay = payload.accountNumber 
       ? `****${payload.accountNumber.slice(-4)}` 
@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(148, 163, 184, 0.1) 0%, rgba(30, 30, 30, 1) 100%); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 12px; margin: 24px 0;">
                         <tr>
                           <td style="padding: 24px;">
-                            <h3 style="color: #3b82f6; font-size: 14px; font-weight: 600; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <h3 style="color: #94a3b8; font-size: 14px; font-weight: 600; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                               📊 Transaction Summary
                             </h3>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0">

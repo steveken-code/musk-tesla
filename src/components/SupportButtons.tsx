@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
 import whatsappIcon from '@/assets/whatsapp-icon.png';
 
 interface SupportSettings {
@@ -19,6 +20,7 @@ const DEFAULT_SETTINGS: SupportSettings = {
 
 const SupportButtons = () => {
   const location = useLocation();
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<SupportSettings>(DEFAULT_SETTINGS);
   
   useEffect(() => {
@@ -51,10 +53,10 @@ const SupportButtons = () => {
   const investmentPages = ['/dashboard', '/admin', '/transaction-history'];
   const isInvestmentArea = investmentPages.some(page => location.pathname.startsWith(page));
   
-  // Only include the message when user is on main website pages
+  // Only include the message when user is on main website pages - uses translation for current language
   const message = isInvestmentArea 
     ? '' 
-    : encodeURIComponent('Hello! I would like to learn more about Tesla stocks.');
+    : encodeURIComponent(t('whatsappDefaultMessage'));
   
   const whatsappUrl = message 
     ? `https://wa.me/${settings.whatsappPhone.replace('+', '')}?text=${message}`
