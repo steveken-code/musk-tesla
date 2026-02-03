@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Net Amount</td>
-                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount} ${currency}</td>
+                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount}</td>
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Destination</td>
