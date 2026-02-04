@@ -1,96 +1,124 @@
 
-# Plan: Fix Referral Welcome Bonus Not Showing in Dashboard
 
-## Problem Identified
+# Plan: Dashboard Logo & Branding Improvements + Signup Flow Explanation
 
-New users signing up with a referral link are **not seeing their $100 welcome bonus** in the dashboard. After investigation, I found the root cause:
+## What You Want
 
-**The database trigger that creates user profiles does NOT include the referral_code field.**
-
-### Current Flow (Broken)
-
-1. User signs up with referral code in URL
-2. `handle_new_user()` trigger fires and creates profile with ONLY: `user_id`, `email`, `full_name`
-3. Frontend tries to update profile with `referral_code` 500ms later
-4. If this update fails or times out, no referral record is created
-5. User sees no welcome bonus
-
-### Working Cases
-
-Looking at the database, users like "Tatyana Pilipyak" and "Nostress" have `referral_code` saved and have referral records. The most recent user "DHL" has `referral_code = null` and no referral record.
+1. **Increase the Tesla logo size** in the dashboard header and sidebar
+2. **Rename "Tesla Trading" to "Tesla Stock Platform"** in the sidebar
+3. **Apply electric blue or a suitable color** to the text for a balanced, professional look
+4. **Confirm that users will NOT receive the "Confirm your signup" email anymore**
 
 ---
 
-## Solution
+## Current State
 
-Update the `handle_new_user()` database function to include the `referral_code` from user metadata during signup. This ensures the referral code is captured immediately when the profile is created, triggering the `handle_referral_signup` function reliably.
+| Location | Current Logo Size | Current Text |
+|----------|-------------------|--------------|
+| Dashboard Header | `h-10 sm:h-12` (small) | No text - just logo |
+| Dashboard Sidebar | `h-8` (tiny) | "Tesla Trading" in white/foreground |
 
 ---
 
-## Technical Changes
+## Proposed Changes
 
-### 1. Update `handle_new_user()` Database Function
+### 1. Dashboard Header Logo (Dashboard.tsx line ~1205)
+- **Current**: `h-10 sm:h-12` 
+- **New**: `h-12 sm:h-14` (20% larger for better prominence)
 
-Modify the function to extract and save the referral_code from user metadata:
+### 2. Dashboard Sidebar Header (DashboardSidebar.tsx lines 106-108)
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user() 
-RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  INSERT INTO public.profiles (user_id, email, full_name, referral_code)
-  VALUES (
-    NEW.id, 
-    NEW.email, 
-    NEW.raw_user_meta_data ->> 'full_name',
-    NEW.raw_user_meta_data ->> 'referral_code'  -- NEW: Include referral code
-  );
-  
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'user');
-  
-  RETURN NEW;
-END;
-$$;
+**Logo Size:**
+- **Current**: `h-8` 
+- **New**: `h-10` (25% larger)
+
+**Text Changes:**
+- **Current**: "Tesla Trading" in `text-foreground text-lg`
+- **New**: "Tesla Stock Platform" with electric blue gradient styling
+
+**Color Recommendation:**
+
+After analyzing the design system, I recommend using a **gradient text effect** from Tesla Red to Electric Blue for "Tesla Stock Platform". This:
+- Matches the existing brand identity (tesla-red and electric-blue are your core brand colors)
+- Creates visual interest without being harsh
+- Maintains the professional trading platform aesthetic
+- Uses the `text-gradient` utility class already defined in your CSS
+
+Alternative: If a solid color is preferred, **electric blue** (`text-electric-blue`) would work well but may be slightly harsh against the dark sidebar background. A softened version using opacity (`text-electric-blue/90`) could balance this.
+
+---
+
+## Visual Preview (Before vs After)
+
+### Sidebar Header
+
+**Before:**
+```
+[Logo h-8] Tesla Trading (white text)
 ```
 
-### 2. What Happens After This Fix
-
-1. User signs up with referral code in URL
-2. Frontend stores `referral_code` in user metadata during signup (already working)
-3. `handle_new_user()` trigger creates profile **WITH** the referral_code
-4. `handle_referral_signup()` trigger fires immediately and creates referral record
-5. User sees their $100 welcome bonus in the dashboard
+**After:**
+```
+[Logo h-10] Tesla Stock Platform (gradient red-to-blue text)
+```
 
 ---
 
-## Impact
+## Technical Details
 
-| Before Fix | After Fix |
-|------------|-----------|
-| Referral code saved 500ms later via frontend | Referral code saved immediately via trigger |
-| Race conditions could cause missed referrals | Atomic operation, no race conditions |
-| Some users get bonus, some don't | All referral signups get bonus reliably |
+### Files to Modify
 
----
+**1. `src/components/DashboardSidebar.tsx`**
+- Line 107: Change `h-8` to `h-10`
+- Line 108: Change "Tesla Trading" to "Tesla Stock Platform"
+- Line 108: Apply gradient text styling: `font-bold bg-gradient-to-r from-tesla-red to-electric-blue bg-clip-text text-transparent text-lg`
 
-## Files Changed
-
-- Database migration to update `handle_new_user()` function
+**2. `src/pages/Dashboard.tsx`**
+- Line 1205: Change `h-10 sm:h-12` to `h-12 sm:h-14`
 
 ---
 
-## No Changes Required
+## Signup Flow Explanation
 
-- Frontend code (AuthContext.tsx) - already passes referral_code in metadata
-- `handle_referral_signup()` trigger - already works correctly
-- ReferralBonus.tsx component - already displays bonus correctly when data exists
-- Email notifications - already working
+### How Signup Works Now (After Previous Changes)
+
+When a user signs up on your platform:
+
+1. **User enters email, password, name** (and optionally a referral code)
+
+2. **Account is created immediately** - No email confirmation required
+   - Auto-confirm is now enabled (`auto_confirm_email: true`)
+   - User is logged in right away
+
+3. **Custom welcome email is sent** via your `send-welcome-email` edge function
+   - This is YOUR branded email, not Supabase's default
+   - Contains your Tesla branding and welcome message
+
+4. **If using a referral link:**
+   - The `handle_new_user()` database trigger now captures the referral code atomically
+   - The `handle_referral_signup()` trigger creates the $100 bonus record immediately
+   - User sees their welcome bonus in the dashboard right away
+
+### What Users Will NOT Receive
+
+- **Supabase's "Confirm your signup" email** - This is now disabled
+- No verification link to click before accessing the dashboard
+- No "please verify your email" blocking screens
+
+### What Users WILL Receive
+
+- **Your custom welcome email** from Tesla Stock Platform
+- Immediate access to the dashboard
+- Immediate visibility of their $100 referral bonus (if they used a referral link)
 
 ---
 
-## Existing Users
+## Summary of Changes
 
-Users who signed up with a referral code but didn't get their bonus (like "DHL") can be manually fixed by an admin updating their profile's `referral_code` field, which will trigger the referral creation.
+| Component | Change | Purpose |
+|-----------|--------|---------|
+| Dashboard Header Logo | `h-10 sm:h-12` to `h-12 sm:h-14` | More prominent branding |
+| Sidebar Logo | `h-8` to `h-10` | Larger, more visible |
+| Sidebar Text | "Tesla Trading" to "Tesla Stock Platform" | Accurate platform name |
+| Sidebar Text Color | White to gradient (red-to-blue) | Professional, balanced styling |
+
