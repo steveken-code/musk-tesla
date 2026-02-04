@@ -24,7 +24,6 @@ interface ReferredBonusInfo {
 
 interface ReferrerInfo {
   full_name: string | null;
-  email: string | null;
   avatar_url: string | null;
 }
 
@@ -36,7 +35,6 @@ interface ReferralRecord {
   created_at: string;
   profile?: {
     full_name: string | null;
-    email: string | null;
     avatar_url: string | null;
   };
 }
@@ -98,24 +96,28 @@ const ReferralBonus = () => {
         if (!referralsResult.error && referralsResult.data) {
           const referrals = referralsResult.data;
           
-          // Get profiles for referred users
+          // Get profiles for referred users using secure RPC function
+          // This function only returns non-sensitive data (name, avatar) - no email/phone
           const referredUserIds = referrals.map(r => r.referred_user_id);
-          let profileMap = new Map<string, { full_name: string | null; email: string | null; avatar_url: string | null }>();
+          let profileMap = new Map<string, { full_name: string | null; avatar_url: string | null }>();
           
           if (referredUserIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id, full_name, email, avatar_url')
-              .in('user_id', referredUserIds);
-            
-            if (profiles) {
-              profiles.forEach(p => {
-                profileMap.set(p.user_id, { full_name: p.full_name, email: p.email, avatar_url: p.avatar_url });
+            // Fetch each referred user's summary via RPC (secure - no email/phone exposed)
+            const profilePromises = referredUserIds.map(async (userId) => {
+              const { data } = await supabase.rpc('get_referred_user_summary', { 
+                p_referred_user_id: userId 
               });
-            }
+              if (data && data.length > 0) {
+                profileMap.set(userId, { 
+                  full_name: data[0].full_name, 
+                  avatar_url: data[0].avatar_url 
+                });
+              }
+            });
+            await Promise.all(profilePromises);
           }
           
-          // Enrich referral records with profile data
+          // Enrich referral records with secure profile data (no email/phone)
           const enrichedRecords: ReferralRecord[] = referrals.map(r => ({
             ...r,
             profile: profileMap.get(r.referred_user_id),
@@ -152,10 +154,11 @@ const ReferralBonus = () => {
         if (!wasReferredResult.error && wasReferredResult.data) {
           setWasReferred(wasReferredResult.data);
           
-          // Fetch referrer's profile to show who referred this user
+          // Fetch referrer's profile using secure RPC (only name and avatar, no email/phone)
+          // This user can view their own referrer info safely
           const { data: referrerProfile } = await supabase
             .from('profiles')
-            .select('full_name, email, avatar_url')
+            .select('full_name, avatar_url')
             .eq('user_id', wasReferredResult.data.referrer_user_id)
             .maybeSingle();
           
@@ -203,7 +206,7 @@ const ReferralBonus = () => {
 
   const getUserDisplay = (record: ReferralRecord) => {
     if (record.profile?.full_name) return record.profile.full_name;
-    if (record.profile?.email) return record.profile.email.split('@')[0];
+    // No longer exposing email - using anonymized display instead
     return `User ${record.referred_user_id.slice(0, 6)}...`;
   };
 
@@ -252,11 +255,11 @@ const ReferralBonus = () => {
                       />
                     ) : (
                       <div className="w-4 h-4 rounded-full bg-green-500/30 flex items-center justify-center text-[8px] font-medium text-green-400">
-                        {(referrerInfo.full_name || referrerInfo.email || 'F').charAt(0).toUpperCase()}
+                        {(referrerInfo.full_name || 'F').charAt(0).toUpperCase()}
                       </div>
                     )}
                     <span className="text-[10px] text-green-400/80">
-                      Referred by {referrerInfo.full_name || referrerInfo.email?.split('@')[0] || 'Friend'}
+                      Referred by {referrerInfo.full_name || 'Friend'}
                     </span>
                   </div>
                 )}
