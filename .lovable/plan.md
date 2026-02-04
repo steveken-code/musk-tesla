@@ -1,48 +1,56 @@
-# Security Hardening Plan - COMPLETED ✅
 
-## Summary of Security Fixes Applied
+# Plan: Disable Supabase "Confirm Your Signup" Email
 
-All critical security issues have been resolved:
+## What's Happening Now
 
-### ✅ Issue 1: Referral System Fraud Protection
-- **Dropped** the dangerous `Users can create referral for themselves` RLS policy
-- Referrals can now ONLY be created via the secure database trigger `handle_referral_signup`
-- This prevents users from manually inserting fake referral records
+When a user signs up, they receive **two separate emails**:
 
-### ✅ Issue 2: Contact Information Protection
-- **Dropped** the overly permissive `Users can view referred user profiles` policy
-- **Created** new RPC function `get_referred_user_summary` that only returns:
-  - `full_name` - Display name only
-  - `avatar_url` - Profile picture only
-- **No longer exposed**: email addresses, phone numbers
-- Updated `ReferralBonus.tsx` to use the secure RPC function
+1. **Supabase's Built-in Email** - "Confirm your signup" from Supabase Auth
+2. **Your Custom Welcome Email** - Sent via `send-welcome-email` edge function
 
-### ✅ Issue 3: KYC Document Security Hardened
-- Signed URL expiration **reduced from 1 year to 7 days**
-- Added **file type validation** (only JPEG, PNG, GIF, WebP allowed)
-- Added **file size validation** (max 10MB)
-- Edge function deployed with security improvements
+You want to remove the Supabase confirmation email and only keep your custom welcome email.
 
-### ⚠️ Known Warnings (By Design)
-- `admin_login_attempts` and `user_login_attempts` INSERT policies use `WITH CHECK (true)` 
-  - This is intentional for service role edge functions
-- **Leaked Password Protection**: Enable in Supabase Auth dashboard settings
+---
+
+## Solution
+
+Enable **auto-confirm email signups** in the authentication settings. This tells Supabase to automatically mark new users as verified, skipping the built-in confirmation email entirely.
+
+---
+
+## What Will Change
+
+| Before | After |
+|--------|-------|
+| User gets 2 emails on signup | User gets only your custom welcome email |
+| User must click Supabase confirm link | User account is active immediately |
+| Supabase sends "Confirm your signup" | No Supabase confirmation email sent |
+
+---
+
+## Your Custom Email System Stays Intact
+
+Your existing system still works:
+- **Welcome email** via `send-welcome-email` is still sent on signup
+- **Email verification tokens** are still created (for manual verification if needed)
+- **Resend verification** function still works if you want users to verify later
+
+---
+
+## Implementation
+
+I will use the authentication configuration tool to enable `autoconfirm` for email signups. This is a single setting change in your backend.
+
+---
 
 ## Technical Details
 
-### New Database Function
-```sql
-CREATE OR REPLACE FUNCTION get_referred_user_summary(p_referred_user_id uuid)
-RETURNS TABLE(full_name text, avatar_url text)
-```
-- Uses `SECURITY DEFINER` to bypass RLS
-- Only returns data for users the caller has actually referred
-- Prevents email/phone harvesting attacks
+### Configuration Change
+- Set `autoconfirm: true` in auth settings
+- This prevents Supabase from sending its default confirmation email
+- Users can sign in immediately after signup
 
-### Files Modified
-- `supabase/functions/upload-kyc-document/index.ts` - Security hardening
-- `src/components/dashboard/ReferralBonus.tsx` - Use secure RPC, remove email references
-
-### Policies Dropped
-1. `Users can create referral for themselves` ON `referrals`
-2. `Users can view referred user profiles` ON `profiles`
+### Impact on Security
+- Users will not need to verify their email to access the dashboard
+- Your custom verification system (via `email_verification_tokens` table) can still be used if you want to require verification for certain actions later
+- The `email_verified` field in profiles can still track verification status
