@@ -1,20 +1,18 @@
 
 
-# Plan: Add "Cancel/Revert Withdrawal" Feature for Incorrect Details
+# Plan: Fix Button Loading States - Each Button Shows Its Own Loading
 
-## Overview
+## Problem
 
-This plan adds a "Cancel" button for withdrawals that are on hold or pending, allowing the admin to cancel a withdrawal when the user has submitted incorrect details (like wrong card numbers). Once cancelled, the user can submit a new withdrawal with correct information.
+Currently, when you click any withdrawal action button (Cancel, Complete, Hold, etc.), ALL buttons for that withdrawal show as disabled/loading because they all share the same state check: `updatingWithdrawal === withdrawal.id`.
 
-**Specific Case**: Bolyshev Sergey Nikolaevich with $13,200 has an incorrect card number `3521 8563 1452 36` - this withdrawal needs to be cancelled so he can try again.
+**Example**: Click "Cancel" → The "Complete" button starts spinning instead of Cancel.
 
 ---
 
-## Current System
+## Solution
 
-- Withdrawals can be: `pending`, `on_hold`, `completed`, or `cancelled`
-- When a withdrawal is `on_hold`, admin can only: Complete it, Edit the hold message, or Set it back to Pending
-- There's no way to **cancel** an on_hold withdrawal so the user can start fresh
+Change the state from storing just the withdrawal ID to storing both the withdrawal ID AND the action type. This way, only the specific button that was clicked will show the loading spinner.
 
 ---
 
@@ -22,156 +20,226 @@ This plan adds a "Cancel" button for withdrawals that are on hold or pending, al
 
 ### File: `src/pages/Admin.tsx`
 
-#### Change 1: Add "Cancel" Button for on_hold Withdrawals
+#### Change 1: Update State Type
 
-**Location**: Lines 2265-2298 (the on_hold withdrawal actions section)
+**Location**: Line 183
 
-Add a red "Cancel" button after the existing "Set Pending" button:
-
-```tsx
-{withdrawal.status === 'on_hold' && (
-  <>
-    <Button
-      size="sm"
-      onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
-      disabled={updatingWithdrawal === withdrawal.id}
-      className="bg-green-600 hover:bg-green-700"
-    >
-      {updatingWithdrawal === withdrawal.id ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <CheckCircle className="w-4 h-4 mr-1" />
-      )}
-      Complete
-    </Button>
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={() => openStatusModal(withdrawal, 'on_hold')}
-      disabled={updatingWithdrawal === withdrawal.id}
-      className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
-    >
-      Edit Message
-    </Button>
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={() => openStatusModal(withdrawal, 'pending')}
-      disabled={updatingWithdrawal === withdrawal.id}
-      className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
-    >
-      Set Pending
-    </Button>
-    {/* NEW: Cancel/Revert Button */}
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={() => handleCancelWithdrawal(withdrawal)}
-      disabled={updatingWithdrawal === withdrawal.id}
-      className="border-red-500 text-red-500 hover:bg-red-500/10"
-    >
-      <XCircle className="w-4 h-4 mr-1" />
-      Cancel
-    </Button>
-  </>
-)}
-```
-
-#### Change 2: Add Cancel Handler Function
-
-Add a new function `handleCancelWithdrawal` that:
-1. Shows a confirmation dialog
-2. Sets the withdrawal status to `cancelled`
-3. Clears the `hold_message` 
-4. Does NOT send an email (user will just see their balance is available again)
-
+**Current**:
 ```typescript
-const handleCancelWithdrawal = async (withdrawal: Withdrawal) => {
-  // Confirmation dialog
-  const confirmed = window.confirm(
-    `Cancel withdrawal for ${withdrawal.profiles?.full_name || 'User'}?\n\n` +
-    `Amount: $${withdrawal.amount.toLocaleString()}\n\n` +
-    `This will cancel the withdrawal and clear the hold message. ` +
-    `The user will be able to submit a new withdrawal request.`
-  );
-  
-  if (!confirmed) return;
-  
-  setUpdatingWithdrawal(withdrawal.id);
-  try {
-    const { error } = await supabase
-      .from('withdrawals')
-      .update({ 
-        status: 'cancelled',
-        hold_message: null
-      })
-      .eq('id', withdrawal.id);
-
-    if (error) throw error;
-
-    toast.success('Withdrawal cancelled. User can now submit a new request.');
-    fetchData();
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to cancel withdrawal';
-    toast.error(errorMessage);
-  } finally {
-    setUpdatingWithdrawal(null);
-  }
-};
+const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
 ```
 
-#### Change 3: Also Add Cancel Button for Pending Withdrawals
+**Updated**:
+```typescript
+const [updatingWithdrawal, setUpdatingWithdrawal] = useState<{ id: string; action: string } | null>(null);
+```
 
-Update the pending withdrawals section (lines 2215-2250) to include a Cancel button:
+Now we track both the withdrawal ID and which action is being performed.
 
+#### Change 2: Update `updateWithdrawal` Function
+
+**Location**: Line 576
+
+**Current**:
+```typescript
+setUpdatingWithdrawal(id);
+```
+
+**Updated**:
+```typescript
+setUpdatingWithdrawal({ id, action: status });
+```
+
+Pass the status (completed, processing, on_hold, pending) as the action.
+
+#### Change 3: Update `handleCancelWithdrawal` Function
+
+**Location**: Line 634
+
+**Current**:
+```typescript
+setUpdatingWithdrawal(withdrawal.id);
+```
+
+**Updated**:
+```typescript
+setUpdatingWithdrawal({ id: withdrawal.id, action: 'cancelled' });
+```
+
+#### Change 4: Update All Button Loading/Disabled States
+
+For each button, update the `disabled` and loading spinner conditions to check both ID and action:
+
+**Complete Button (Pending Section - Lines 2249-2261)**:
 ```tsx
-{withdrawal.status === 'pending' && (
-  <>
-    {/* ... existing Complete, Processing, Hold buttons ... */}
-    <Button
-      size="sm"
-      variant="outline"
-      onClick={() => handleCancelWithdrawal(withdrawal)}
-      disabled={updatingWithdrawal === withdrawal.id}
-      className="border-red-500 text-red-500 hover:bg-red-500/10"
-    >
-      <XCircle className="w-4 h-4 mr-1" />
-      Cancel
-    </Button>
-  </>
-)}
+<Button
+  size="sm"
+  onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="bg-green-600 hover:bg-green-700"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'completed' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <CheckCircle className="w-4 h-4 mr-1" />
+  )}
+  Complete
+</Button>
+```
+
+**Processing Button (Lines 2262-2271)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => openStatusModal(withdrawal, 'processing')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'processing' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <Clock className="w-4 h-4 mr-1" />
+  )}
+  Processing
+</Button>
+```
+
+**Hold Button (Lines 2272-2281)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => openStatusModal(withdrawal, 'on_hold')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-orange-500 text-orange-400 hover:bg-orange-500/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'on_hold' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <AlertCircle className="w-4 h-4 mr-1" />
+  )}
+  Hold
+</Button>
+```
+
+**Cancel Button (Pending - Lines 2282-2291)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => handleCancelWithdrawal(withdrawal)}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-red-500 text-red-500 hover:bg-red-500/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'cancelled' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <XCircle className="w-4 h-4 mr-1" />
+  )}
+  Cancel
+</Button>
+```
+
+**Complete Button (On Hold - Lines 2309-2321)**:
+```tsx
+<Button
+  size="sm"
+  onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="bg-green-600 hover:bg-green-700"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'completed' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <CheckCircle className="w-4 h-4 mr-1" />
+  )}
+  Complete
+</Button>
+```
+
+**Edit Message Button (Lines 2322-2330)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => openStatusModal(withdrawal, 'on_hold')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'on_hold' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : null}
+  Edit Message
+</Button>
+```
+
+**Set Pending Button (Lines 2331-2339)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => openStatusModal(withdrawal, 'pending')}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'pending' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : null}
+  Set Pending
+</Button>
+```
+
+**Cancel Button (On Hold - Lines 2340-2349)**:
+```tsx
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => handleCancelWithdrawal(withdrawal)}
+  disabled={updatingWithdrawal?.id === withdrawal.id}
+  className="border-red-500 text-red-500 hover:bg-red-500/10"
+>
+  {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'cancelled' ? (
+    <Loader2 className="w-4 h-4 animate-spin" />
+  ) : (
+    <XCircle className="w-4 h-4 mr-1" />
+  )}
+  Cancel
+</Button>
+```
+
+#### Change 5: Update Modal Save Button Check
+
+**Location**: Line 2475
+
+**Current**:
+```typescript
+disabled={updatingWithdrawal === statusModalWithdrawal.id}
+```
+
+**Updated**:
+```typescript
+disabled={updatingWithdrawal?.id === statusModalWithdrawal.id}
 ```
 
 ---
 
-## Immediate Action for Bolyshev Sergey
+## Result
 
-After implementing this feature:
+| Button Clicked | Loading Spinner Shows On | Other Buttons |
+|----------------|-------------------------|---------------|
+| Cancel | Cancel button only | Disabled but no spinner |
+| Complete | Complete button only | Disabled but no spinner |
+| Hold | Hold button only | Disabled but no spinner |
+| Processing | Processing button only | Disabled but no spinner |
 
-1. Go to Admin → Withdrawals
-2. Find Bolyshev Sergey Nikolaevich's $13,200 withdrawal
-3. Click the "Cancel" button
-4. Confirm the cancellation
-5. The user will be able to submit a new withdrawal with correct card details
-
----
-
-## What Happens After Cancellation
-
-| Item | Before | After |
-|------|--------|-------|
-| Withdrawal Status | `on_hold` | `cancelled` |
-| Hold Message | "Your withdrawal is currently on hold..." | `null` (cleared) |
-| User's Balance | Locked in withdrawal | Available for new withdrawal |
-| User Experience | Stuck | Can submit new withdrawal with correct details |
+All buttons remain disabled during an action (to prevent double-clicks), but only the clicked button shows the spinning loader.
 
 ---
 
-## Summary
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/Admin.tsx` | Add `handleCancelWithdrawal` function + Cancel buttons for pending/on_hold withdrawals |
-
-This is a minimal change that adds a critical admin capability to handle user mistakes gracefully.
+| `src/pages/Admin.tsx` | State type change + update all button conditions |
 
