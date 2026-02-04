@@ -180,7 +180,7 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
+  const [updatingWithdrawal, setUpdatingWithdrawal] = useState<{ id: string; action: string } | null>(null);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(DEFAULT_PAYMENT_SETTINGS);
   const [withdrawalSettings, setWithdrawalSettings] = useState<WithdrawalSettings>(DEFAULT_WITHDRAWAL_SETTINGS);
   const [supportSettings, setSupportSettings] = useState<SupportSettings>(DEFAULT_SUPPORT_SETTINGS);
@@ -573,7 +573,7 @@ const Admin = () => {
   };
 
   const updateWithdrawal = async (id: string, status: string, holdMessage?: string) => {
-    setUpdatingWithdrawal(id);
+    setUpdatingWithdrawal({ id, action: status });
     try {
       const updateData: Record<string, unknown> = { status };
       if (holdMessage !== undefined) {
@@ -631,7 +631,7 @@ const Admin = () => {
     
     if (!confirmed) return;
     
-    setUpdatingWithdrawal(withdrawal.id);
+    setUpdatingWithdrawal({ id: withdrawal.id, action: 'cancelled' });
     try {
       const { error } = await supabase
         .from('withdrawals')
@@ -2249,10 +2249,10 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="bg-green-600 hover:bg-green-700"
                               >
-                                {updatingWithdrawal === withdrawal.id ? (
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'completed' ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -2263,30 +2263,42 @@ const Admin = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openStatusModal(withdrawal, 'processing')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
                               >
-                                <Clock className="w-4 h-4 mr-1" />
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'processing' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Clock className="w-4 h-4 mr-1" />
+                                )}
                                 Processing
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openStatusModal(withdrawal, 'on_hold')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-orange-500 text-orange-400 hover:bg-orange-500/10"
                               >
-                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'on_hold' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                )}
                                 Hold
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleCancelWithdrawal(withdrawal)}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-red-500 text-red-500 hover:bg-red-500/10"
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'cancelled' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                )}
                                 Cancel
                               </Button>
                             </>
@@ -2309,10 +2321,10 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="bg-green-600 hover:bg-green-700"
                               >
-                                {updatingWithdrawal === withdrawal.id ? (
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'completed' ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
                                   <CheckCircle className="w-4 h-4 mr-1" />
@@ -2323,28 +2335,38 @@ const Admin = () => {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openStatusModal(withdrawal, 'on_hold')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
                               >
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'on_hold' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                ) : null}
                                 Edit Message
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openStatusModal(withdrawal, 'pending')}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
                               >
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'pending' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                ) : null}
                                 Set Pending
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleCancelWithdrawal(withdrawal)}
-                                disabled={updatingWithdrawal === withdrawal.id}
+                                disabled={updatingWithdrawal?.id === withdrawal.id}
                                 className="border-red-500 text-red-500 hover:bg-red-500/10"
                               >
-                                <XCircle className="w-4 h-4 mr-1" />
+                                {updatingWithdrawal?.id === withdrawal.id && updatingWithdrawal?.action === 'cancelled' ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                )}
                                 Cancel
                               </Button>
                             </>
@@ -2472,14 +2494,14 @@ const Admin = () => {
               </Button>
               <Button
                 onClick={handleStatusModalSave}
-                disabled={updatingWithdrawal === statusModalWithdrawal.id}
+                disabled={updatingWithdrawal?.id === statusModalWithdrawal.id}
                 className={`flex-1 ${
                   statusModalType === 'on_hold' ? 'bg-orange-600 hover:bg-orange-700' :
                   statusModalType === 'processing' ? 'bg-blue-600 hover:bg-blue-700' :
                   'bg-yellow-600 hover:bg-yellow-700'
                 }`}
               >
-                {updatingWithdrawal === statusModalWithdrawal.id ? (
+                {updatingWithdrawal?.id === statusModalWithdrawal.id ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : (
                   <Send className="w-4 h-4 mr-2" />
