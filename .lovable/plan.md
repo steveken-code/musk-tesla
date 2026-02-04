@@ -1,110 +1,164 @@
 
-## Goal
-Make the Admin KYC Management modal look professional on mobile by ensuring:
-- No transparency issues (already mostly addressed)
-- Form fields are high-contrast and readable (dark text, opacity 1)
-- Country/Currency dropdowns look solid (non-transparent), well-styled, and stack correctly
-- Layout remains responsive on small screens
+# Plan: Fix Admin KYC Section - Search Input, Auto-populate Country/Currency, Remove Red Borders
 
-## What I found in the code
-File: `src/components/admin/KYCManagementModal.tsx`
+## Overview
 
-- Modal container is now correctly forced opaque (`bg-slate-900/100` + solid HSL fallback).
-- The form controls (Input/Textarea/SelectTrigger) are currently styled as **dark fields with forced white text**:
-  - `bg-slate-800 ... text-white [color:white_!important] [-webkit-text-fill-color:white]`
-- You’re seeing “bright white” fields on some mobile devices, and the current forced **white text** can become unreadable when the browser renders/overrides field backgrounds (common on mobile, autofill, accessibility settings).
+This plan addresses multiple issues in the Admin KYC section:
 
-## Approach
-Align the KYC modal form fields with the admin portal’s established “visibility standard”:
-- Use **light / cool** field backgrounds (not harsh pure white)
-- Force **dark text with opacity: 1** (including iOS/Safari via `WebkitTextFillColor`)
-- Style dropdown menu surfaces the same way (solid background + high z-index)
+1. **KYC Search Input**: Make text dark with opacity 1 (currently has white text on dark background)
+2. **Auto-populate Country**: Pull country from the withdrawal data instead of requiring manual selection
+3. **Currency Default**: Default to USD without requiring selection
+4. **Remove Red Border Hover**: Replace `focus:border-tesla-red` with neutral light grey (`focus:border-slate-400`)
+5. **Display Country/Currency as Read-Only**: Show Bank Country and Currency as white text display fields (not selectable inputs)
 
-## Implementation steps (single file change)
+---
 
-### 1) Introduce shared styling constants inside `KYCManagementModal.tsx`
-Add two constants near the component body to keep styling consistent and avoid repetition:
+## File Changes
 
-- `const adminFieldClass = "...";` for Inputs/Textarea/SelectTrigger
-- `const adminFieldStyle = { color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }`
+### File 1: `src/pages/Admin.tsx`
 
-Recommended “cool light” field styling (example):
-- Background: `bg-slate-50` (cool, not harsh white)
-- Border: `border-2 border-slate-300`
-- Text: `text-black font-semibold`
-- Placeholder: `placeholder:text-slate-500`
-- Focus: `focus:border-tesla-red focus:ring-tesla-red/20`
+**Location**: Lines 1577-1581 (KYC Search Input)
 
-This guarantees dark text even if a browser tries to override colors.
+**Current**:
+```tsx
+<Input
+  placeholder="Search by user name or email..."
+  value={kycSearchQuery}
+  onChange={(e) => setKycSearchQuery(e.target.value)}
+  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-purple-500"
+/>
+```
 
-### 2) Update ALL form Inputs/Textarea to dark text (opacity 1)
-Update these controls to use the shared class/style:
-- User Name input
-- Account Number input
-- Tax ID input (including read-only state)
-- Net Amount input
-- Admin Notes textarea
+**Updated**:
+```tsx
+<Input
+  placeholder="Search by user name or email..."
+  value={kycSearchQuery}
+  onChange={(e) => setKycSearchQuery(e.target.value)}
+  className="pl-10 bg-white border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-slate-400"
+  style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
+/>
+```
 
-Key adjustments:
-- Remove `text-white` and any `[color:white_!important]` / `[-webkit-text-fill-color:white]`
-- Apply `style={adminFieldStyle}` to force black text on mobile Safari
-- Ensure `opacity` is not reduced for read-only fields:
-  - Replace `opacity-60` with a clearer read-only look (example):
-    - `bg-slate-200 text-slate-800` while keeping `opacity: 1`
-  - Keep `cursor-not-allowed` for locked Tax ID, but don’t make it faint
+This matches the style of the Investments and Withdrawals search inputs (already using white background with dark text).
 
-### 3) Make Payment Method display match the new professional form style
-Currently:
-- `bg-slate-800 ... text-white`
+---
 
-Update to:
-- `bg-slate-50 border-2 border-slate-300 text-slate-900 font-semibold`
-So it looks like a deliberate read-only field.
+### File 2: `src/components/admin/KYCManagementModal.tsx`
 
-### 4) Redesign Country/Currency Select styling for a professional light dropdown
-Update:
+#### Change 1: Remove Country Select - Show as Read-Only Display
 
-**SelectTrigger**
-- Use the same `adminFieldClass` + `adminFieldStyle`
-- Ensure the chevron/icon remains visible (dark text theme)
+**Location**: Lines 645-666 (Country Select)
 
-**SelectContent**
-- Keep the “always on top” requirement:
-  - Preserve `z-[200]`
-- Make it solid and clean:
-  - `bg-white border-slate-300 text-slate-900 shadow-lg`
-  - Add a fallback solid background if needed: `[background:#ffffff]` (optional)
+**Current**: A selectable dropdown for country.
 
-**SelectItem**
-- Switch from white text to dark text:
-  - `text-slate-900`
-- Professional hover/focus:
-  - `hover:bg-slate-100`
-  - `focus:bg-slate-100 focus:text-slate-900`
+**Updated**: Replace with a read-only display field that shows the country from the withdrawal data:
+```tsx
+{/* Bank Country - Read-only from withdrawal */}
+<div className="space-y-2">
+  <Label className="text-slate-300 flex items-center gap-2">
+    <Globe className="w-4 h-4" />
+    Bank Country
+  </Label>
+  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+    <Globe className="w-4 h-4 text-slate-400" />
+    <span className="text-white font-semibold">
+      {getCountryName(bankCountry) || 'Not specified'}
+    </span>
+  </div>
+</div>
+```
 
-This directly fixes “dropdown isn’t nice” and prevents see-through menus.
+The country is already being set from the withdrawal data during `loadKycData()` and `resetFormState()`:
+- Line 145: `setBankCountry(w?.country || 'US');`
+- Line 201: `setBankCountry(data.bank_country || withdrawal.country || 'US');`
 
-### 5) Keep/verify mobile responsiveness
-The form grid is already improved:
-- `grid-cols-1 sm:grid-cols-2`
+No selection needed - it automatically comes from the user's withdrawal.
 
-I’ll keep that, and if needed, slightly improve mobile spacing without changing layout intent:
-- Optional: reduce label sizes or tighten gaps on very small screens (only if it still feels cramped after the contrast fix)
+#### Change 2: Remove Currency Select - Show as Read-Only Display
 
-## Acceptance checklist (what you should see after)
-1. On mobile, the KYC modal background stays solid (no transparency).
-2. Form fields are cool-light (not harsh white) and text is dark, fully opaque, and readable.
-3. Country/Currency dropdowns:
-   - are not transparent
-   - open above everything
-   - have clean light background + dark text
-4. Read-only Tax ID is still clearly readable (not faded out).
+**Location**: Lines 737-755 (Currency Select)
 
-## Files affected
-- `src/components/admin/KYCManagementModal.tsx` only
+**Current**: A selectable dropdown for currency.
 
-## Quick test plan (important)
-- Open Admin → KYC tab → open a KYC record on mobile dimensions.
-- Tap each input to ensure text remains dark (especially after focus).
-- Open Country/Currency dropdowns and scroll; verify the menu is solid and not clipped/transparent.
-- Test the “Tax ID locked” state: confirm it is readable and clearly marked as user-submitted.
+**Updated**: Replace with a read-only display showing USD:
+```tsx
+{/* Currency - Read-only, always USD */}
+<div className="space-y-2">
+  <Label className="text-slate-300">Currency</Label>
+  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+    <DollarSign className="w-4 h-4 text-green-400" />
+    <span className="text-white font-semibold">USD (US Dollar)</span>
+  </div>
+</div>
+```
+
+#### Change 3: Remove Red Border Focus from All Inputs
+
+Replace all occurrences of:
+- `focus:border-tesla-red focus:ring-tesla-red/20`
+
+With:
+- `focus:border-slate-400 focus:ring-slate-400/20`
+
+**Affected inputs**:
+| Line | Field |
+|------|-------|
+| 640 | User Name |
+| 689 | Account Number |
+| 708 | Tax ID |
+| 732 | Net Amount |
+| 765 | Admin Notes |
+
+#### Change 4: Update Payment Method Display to White Text
+
+**Location**: Line 674-677
+
+**Current**:
+```tsx
+<div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border-2 border-slate-300 rounded-md">
+  <Building className="w-4 h-4 text-green-600" />
+  <span className="text-slate-900 font-semibold">Bank Transfer</span>
+</div>
+```
+
+**Updated**: Use dark background with white text to match the new read-only fields:
+```tsx
+<div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+  <Building className="w-4 h-4 text-green-400" />
+  <span className="text-white font-semibold">Bank Transfer</span>
+</div>
+```
+
+---
+
+## Summary of Visual Changes
+
+| Element | Before | After |
+|---------|--------|-------|
+| KYC Search Input | Dark background, white text | White background, dark text, opacity 1 |
+| Bank Country | Selectable dropdown (light theme) | Read-only display (dark bg, white text) |
+| Currency | Selectable dropdown (light theme) | Read-only display (dark bg, white text, shows "USD") |
+| Payment Method | Light background, dark text | Dark background, white text |
+| Focus Border (all inputs) | Tesla Red | Light Grey (slate-400) |
+
+---
+
+## Why This Works
+
+1. **Country Auto-population**: The code already sets `bankCountry` from `withdrawal.country` - we just need to display it as read-only instead of allowing selection.
+
+2. **Currency Default**: The code defaults to `'USD'` (line 129) and the modal always uses dollars - just display it instead of selecting.
+
+3. **Consistency**: The read-only fields (Country, Currency, Payment Method) will all use the same dark styling (`bg-slate-800 border-slate-600`) matching the modal's overall dark theme.
+
+4. **Search Input Visibility**: Using white background + dark text + forced opacity 1 matches other admin search inputs and ensures maximum readability on all devices.
+
+---
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/Admin.tsx` | KYC search input styling (1 location) |
+| `src/components/admin/KYCManagementModal.tsx` | Country/Currency as read-only, remove red borders (multiple locations) |
