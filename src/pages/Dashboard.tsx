@@ -1202,7 +1202,7 @@ const Dashboard = () => {
               </div>
             </button>
             <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <img src={teslaLogo} alt="Tesla Stock" className="h-10 sm:h-12 w-auto brightness-150 drop-shadow-lg" />
+              <img src={teslaLogo} alt="Tesla Stock" className="h-12 sm:h-14 w-auto brightness-150 drop-shadow-lg" />
             </Link>
           </div>
 
