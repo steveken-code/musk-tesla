@@ -1578,7 +1578,8 @@ const Admin = () => {
                   placeholder="Search by user name or email..."
                   value={kycSearchQuery}
                   onChange={(e) => setKycSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-purple-500"
+                  className="pl-10 bg-white border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-slate-400"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                 />
               </div>
             </div>
