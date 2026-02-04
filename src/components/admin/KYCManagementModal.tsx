@@ -115,7 +115,7 @@ const KYCManagementModal = ({
   onKycCreated,
   whatsappPhone = '+12186500840'
 }: KYCManagementModalProps) => {
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [kycData, setKycData] = useState<KYCVerification | null>(null);
   const [loadingKyc, setLoadingKyc] = useState(false);
 
@@ -245,7 +245,7 @@ const KYCManagementModal = ({
       return;
     }
 
-    setLoading(true);
+    setLoadingAction('send_kyc');
     try {
       const kycToken = generateToken();
       const verificationUrl = `https://msktesla.net/verify-identity?token=${kycToken}&withdrawal_id=${withdrawal.id}`;
@@ -321,7 +321,7 @@ const KYCManagementModal = ({
       console.error('Error sending KYC request:', err);
       toast.error('Failed to send KYC request');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -329,7 +329,7 @@ const KYCManagementModal = ({
     if (!validateActionSafety()) return;
     if (!kycData) return;
 
-    setLoading(true);
+    setLoadingAction('approve');
     try {
       const { error } = await supabase
         .from('kyc_verifications')
@@ -347,7 +347,7 @@ const KYCManagementModal = ({
       console.error('Error approving KYC:', err);
       toast.error('Failed to approve KYC');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -358,7 +358,7 @@ const KYCManagementModal = ({
       return;
     }
 
-    setLoading(true);
+    setLoadingAction('settlement');
     try {
       // Update status to pending_settlement
       const { error: updateError } = await supabase
@@ -400,7 +400,7 @@ const KYCManagementModal = ({
       console.error('Error sending settlement email:', err);
       toast.error('Failed to send settlement email');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -408,7 +408,7 @@ const KYCManagementModal = ({
     if (!validateActionSafety()) return;
     if (!kycData) return;
 
-    setLoading(true);
+    setLoadingAction('complete');
     try {
       const { error } = await supabase
         .from('kyc_verifications')
@@ -427,7 +427,7 @@ const KYCManagementModal = ({
       console.error('Error completing KYC:', err);
       toast.error('Failed to complete KYC');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -436,7 +436,7 @@ const KYCManagementModal = ({
     if (!validateActionSafety()) return;
     if (!kycData) return;
 
-    setLoading(true);
+    setLoadingAction('reset');
     try {
       const newToken = generateToken();
       const { error } = await supabase
@@ -461,7 +461,7 @@ const KYCManagementModal = ({
       console.error('Error resetting KYC:', err);
       toast.error('Failed to reset KYC');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -796,10 +796,10 @@ const KYCManagementModal = ({
                     title: 'Send KYC Request?',
                     description: 'This will send a KYC verification email to the user with a new verification link. Any previous links will be invalidated.'
                   })}
-                  disabled={loading || !userName.trim() || !bankCountry}
+                  disabled={loadingAction !== null || !userName.trim() || !bankCountry}
                   className="bg-amber-600 hover:bg-amber-700"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                  {loadingAction === 'send_kyc' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                   Send KYC Request
                 </Button>
 
@@ -811,10 +811,10 @@ const KYCManagementModal = ({
                       title: 'Approve KYC?',
                       description: 'This will approve the user\'s identity verification. Make sure you have reviewed their uploaded document.'
                     })}
-                    disabled={loading}
+                    disabled={loadingAction !== null}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                    {loadingAction === 'approve' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                     Approve KYC
                   </Button>
                 )}
@@ -827,10 +827,10 @@ const KYCManagementModal = ({
                       title: 'Send Settlement Email?',
                       description: 'This will send a settlement/unsettled funds notification email to the user and update status to pending settlement.'
                     })}
-                    disabled={loading}
+                    disabled={loadingAction !== null}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                    {loadingAction === 'settlement' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
                     Send Settlement Email
                   </Button>
                 )}
@@ -843,10 +843,10 @@ const KYCManagementModal = ({
                       title: 'Mark KYC Completed?',
                       description: 'This will mark the entire KYC process as completed. Only do this after settlement has been resolved.'
                     })}
-                    disabled={loading}
+                    disabled={loadingAction !== null}
                     className="bg-emerald-600 hover:bg-emerald-700"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                    {loadingAction === 'complete' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                     Mark Completed
                   </Button>
                 )}
@@ -859,11 +859,11 @@ const KYCManagementModal = ({
                       title: 'Reset KYC?',
                       description: 'WARNING: This will clear the user\'s submitted documents and Tax ID, generate a new verification link, and reset status to pending_kyc. Old links will stop working.'
                     })}
-                    disabled={loading}
+                    disabled={loadingAction !== null}
                     variant="outline"
                     className="border-red-600 text-red-400 hover:bg-red-600/20"
                   >
-                    <RotateCcw className="w-4 h-4 mr-2" />
+                    {loadingAction === 'reset' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RotateCcw className="w-4 h-4 mr-2" />}
                     Reset KYC
                   </Button>
                 )}
