@@ -105,7 +105,7 @@ const DashboardSidebar = ({ isOpen, onClose, onSignOut, onWithdrawClick, onEditP
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-3">
                 <img src={teslaLogo} alt="Tesla" className="h-10 w-auto" />
-                <span className="font-bold text-foreground text-lg">Tesla Stock Platform</span>
+                <span className="font-semibold text-muted-foreground text-lg">Tesla Stock Platform</span>
               </div>
               <button
                 onClick={onClose}
