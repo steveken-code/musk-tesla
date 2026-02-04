@@ -474,6 +474,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_referred_user_summary: {
+        Args: { p_referred_user_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

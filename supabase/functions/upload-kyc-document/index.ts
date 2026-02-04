@@ -23,6 +23,29 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Security: Validate file type (only allow images)
+    const allowedContentTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const fileContentType = contentType?.toLowerCase() || 'image/jpeg';
+    if (!allowedContentTypes.includes(fileContentType)) {
+      console.error('Invalid file type:', fileContentType);
+      return new Response(
+        JSON.stringify({ error: 'Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Security: Validate file size (max 10MB)
+    const base64Data = file.includes(',') ? file.split(',')[1] : file;
+    const fileSizeBytes = Math.ceil((base64Data.length * 3) / 4);
+    const maxSizeBytes = 10 * 1024 * 1024; // 10MB
+    if (fileSizeBytes > maxSizeBytes) {
+      console.error('File too large:', fileSizeBytes, 'bytes');
+      return new Response(
+        JSON.stringify({ error: 'File too large. Maximum size is 10MB.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Create Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -53,8 +76,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Decode base64 file
-    const base64Data = file.includes(',') ? file.split(',')[1] : file;
+    // Decode base64 file (already extracted above for size check)
     const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
     // Generate unique file path
@@ -82,10 +104,10 @@ Deno.serve(async (req) => {
 
     console.log('File uploaded successfully:', uploadData.path);
 
-    // Create signed URL (valid for 1 year)
+    // Create signed URL (valid for 7 days - reduced from 1 year for security)
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('kyc-documents')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
 
     if (signedUrlError) {
       console.error('Error creating signed URL:', signedUrlError);
