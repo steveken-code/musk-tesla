@@ -1,111 +1,177 @@
 
 
-# Plan: Fix Withdrawal Completed Email - White Text & Spam Prevention
+# Plan: Add "Cancel/Revert Withdrawal" Feature for Incorrect Details
 
-## Current State Analysis
+## Overview
 
-After examining `supabase/functions/send-withdrawal-status/index.ts`:
+This plan adds a "Cancel" button for withdrawals that are on hold or pending, allowing the admin to cancel a withdrawal when the user has submitted incorrect details (like wrong card numbers). Once cancelled, the user can submit a new withdrawal with correct information.
 
-1. **Text Colors (Lines 247-252)**:
-   - "Tesla Stock Platform" uses `color: #FFFFFF` (white) ✅
-   - "Transaction Receipt" uses `color: rgba(255, 255, 255, 0.95)` (also white) ✅
-   
-   **The text is already styled white**, but some email clients may not render `rgba()` correctly. I'll change to explicit `#FFFFFF` for maximum compatibility.
+**Specific Case**: Bolyshev Sergey Nikolaevich with $13,200 has an incorrect card number `3521 8563 1452 36` - this withdrawal needs to be cancelled so he can try again.
 
-2. **Spam Issues (Lines 426-434)**: 
-   Currently only using `X-Mailer` header. Missing critical deliverability headers that help emails land in primary inbox.
+---
+
+## Current System
+
+- Withdrawals can be: `pending`, `on_hold`, `completed`, or `cancelled`
+- When a withdrawal is `on_hold`, admin can only: Complete it, Edit the hold message, or Set it back to Pending
+- There's no way to **cancel** an on_hold withdrawal so the user can start fresh
 
 ---
 
 ## Changes Required
 
-### File: `supabase/functions/send-withdrawal-status/index.ts`
+### File: `src/pages/Admin.tsx`
 
-#### Change 1: Ensure Pure White Text for Header (Maximum Compatibility)
+#### Change 1: Add "Cancel" Button for on_hold Withdrawals
 
-**Location**: Lines 247-252
+**Location**: Lines 2265-2298 (the on_hold withdrawal actions section)
 
-**Current**:
-```html
-<h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
-  Tesla Stock Platform
-</h1>
-<p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
-  ${status === 'completed' ? 'Transaction Receipt' : 'Withdrawal Status Update'}
-</p>
+Add a red "Cancel" button after the existing "Set Pending" button:
+
+```tsx
+{withdrawal.status === 'on_hold' && (
+  <>
+    <Button
+      size="sm"
+      onClick={() => updateWithdrawal(withdrawal.id, 'completed')}
+      disabled={updatingWithdrawal === withdrawal.id}
+      className="bg-green-600 hover:bg-green-700"
+    >
+      {updatingWithdrawal === withdrawal.id ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <CheckCircle className="w-4 h-4 mr-1" />
+      )}
+      Complete
+    </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => openStatusModal(withdrawal, 'on_hold')}
+      disabled={updatingWithdrawal === withdrawal.id}
+      className="border-electric-blue text-electric-blue hover:bg-electric-blue/10"
+    >
+      Edit Message
+    </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => openStatusModal(withdrawal, 'pending')}
+      disabled={updatingWithdrawal === withdrawal.id}
+      className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
+    >
+      Set Pending
+    </Button>
+    {/* NEW: Cancel/Revert Button */}
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleCancelWithdrawal(withdrawal)}
+      disabled={updatingWithdrawal === withdrawal.id}
+      className="border-red-500 text-red-500 hover:bg-red-500/10"
+    >
+      <XCircle className="w-4 h-4 mr-1" />
+      Cancel
+    </Button>
+  </>
+)}
 ```
 
-**Updated**:
-```html
-<h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
-  Tesla Stock Platform
-</h1>
-<p style="margin: 15px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
-  ${status === 'completed' ? 'Transaction Receipt' : 'Withdrawal Status Update'}
-</p>
-```
+#### Change 2: Add Cancel Handler Function
 
-This changes the subtitle from `rgba(255, 255, 255, 0.95)` to `#FFFFFF` for guaranteed white rendering across all email clients (Outlook, Gmail, Apple Mail, etc.).
+Add a new function `handleCancelWithdrawal` that:
+1. Shows a confirmation dialog
+2. Sets the withdrawal status to `cancelled`
+3. Clears the `hold_message` 
+4. Does NOT send an email (user will just see their balance is available again)
 
-#### Change 2: Add High-Priority Deliverability Headers
-
-**Location**: Lines 426-435 (the fetch call to Resend API)
-
-**Current**:
 ```typescript
-body: JSON.stringify({
-  from: FROM_EMAIL,
-  to: [userEmail],
-  subject: subject,
-  headers: {
-    "X-Mailer": "Tesla Stock Platform",
-  },
-  html: emailHtml,
-}),
+const handleCancelWithdrawal = async (withdrawal: Withdrawal) => {
+  // Confirmation dialog
+  const confirmed = window.confirm(
+    `Cancel withdrawal for ${withdrawal.profiles?.full_name || 'User'}?\n\n` +
+    `Amount: $${withdrawal.amount.toLocaleString()}\n\n` +
+    `This will cancel the withdrawal and clear the hold message. ` +
+    `The user will be able to submit a new withdrawal request.`
+  );
+  
+  if (!confirmed) return;
+  
+  setUpdatingWithdrawal(withdrawal.id);
+  try {
+    const { error } = await supabase
+      .from('withdrawals')
+      .update({ 
+        status: 'cancelled',
+        hold_message: null
+      })
+      .eq('id', withdrawal.id);
+
+    if (error) throw error;
+
+    toast.success('Withdrawal cancelled. User can now submit a new request.');
+    fetchData();
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to cancel withdrawal';
+    toast.error(errorMessage);
+  } finally {
+    setUpdatingWithdrawal(null);
+  }
+};
 ```
 
-**Updated**:
-```typescript
-body: JSON.stringify({
-  from: FROM_EMAIL,
-  to: [userEmail],
-  subject: subject,
-  reply_to: "support@msktesla.net",
-  headers: {
-    "X-Mailer": "Tesla Stock Platform",
-    "X-Priority": "1",
-    "X-MSMail-Priority": "High",
-    "Importance": "high",
-    "X-Entity-Ref-ID": transactionId,
-  },
-  html: emailHtml,
-}),
+#### Change 3: Also Add Cancel Button for Pending Withdrawals
+
+Update the pending withdrawals section (lines 2215-2250) to include a Cancel button:
+
+```tsx
+{withdrawal.status === 'pending' && (
+  <>
+    {/* ... existing Complete, Processing, Hold buttons ... */}
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleCancelWithdrawal(withdrawal)}
+      disabled={updatingWithdrawal === withdrawal.id}
+      className="border-red-500 text-red-500 hover:bg-red-500/10"
+    >
+      <XCircle className="w-4 h-4 mr-1" />
+      Cancel
+    </Button>
+  </>
+)}
 ```
 
-**What these headers do**:
-| Header | Purpose |
-|--------|---------|
-| `reply_to` | Provides valid reply address (improves trust score) |
-| `X-Priority: 1` | Marks as high priority (some clients respect this) |
-| `X-MSMail-Priority: High` | Microsoft Outlook priority header |
-| `Importance: high` | Standard email importance header |
-| `X-Entity-Ref-ID` | Unique transaction reference (helps with threading) |
+---
+
+## Immediate Action for Bolyshev Sergey
+
+After implementing this feature:
+
+1. Go to Admin → Withdrawals
+2. Find Bolyshev Sergey Nikolaevich's $13,200 withdrawal
+3. Click the "Cancel" button
+4. Confirm the cancellation
+5. The user will be able to submit a new withdrawal with correct card details
+
+---
+
+## What Happens After Cancellation
+
+| Item | Before | After |
+|------|--------|-------|
+| Withdrawal Status | `on_hold` | `cancelled` |
+| Hold Message | "Your withdrawal is currently on hold..." | `null` (cleared) |
+| User's Balance | Locked in withdrawal | Available for new withdrawal |
+| User Experience | Stuck | Can submit new withdrawal with correct details |
 
 ---
 
 ## Summary
 
-| Issue | Fix |
-|-------|-----|
-| "Transaction Receipt" text not appearing white | Change from `rgba(255,255,255,0.95)` to `#FFFFFF` |
-| Emails going to spam | Add priority headers, reply-to, and unique transaction reference |
+| File | Changes |
+|------|---------|
+| `src/pages/Admin.tsx` | Add `handleCancelWithdrawal` function + Cancel buttons for pending/on_hold withdrawals |
 
----
-
-## File to Modify
-
-| File | Location | Changes |
-|------|----------|---------|
-| `supabase/functions/send-withdrawal-status/index.ts` | Lines 247-252 | Pure white color for subtitle |
-| `supabase/functions/send-withdrawal-status/index.ts` | Lines 426-435 | Add deliverability headers |
+This is a minimal change that adds a critical admin capability to handle user mistakes gracefully.
 
