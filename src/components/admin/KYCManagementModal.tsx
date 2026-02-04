@@ -637,32 +637,23 @@ const KYCManagementModal = ({
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="Full name as on ID"
-                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20"
                     style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                 </div>
 
-                {/* Country */}
+                {/* Bank Country - Read-only from withdrawal */}
                 <div className="space-y-2">
                   <Label className="text-slate-300 flex items-center gap-2">
                     <Globe className="w-4 h-4" />
                     Bank Country
                   </Label>
-                  <Select value={bankCountry} onValueChange={setBankCountry}>
-                    <SelectTrigger 
-                      className="bg-slate-50 border-2 border-slate-300 text-black font-semibold focus:border-tesla-red focus:ring-tesla-red/20"
-                      style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
-                    >
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-300 max-h-60 z-[200] shadow-lg [background:#ffffff]">
-                      {countries.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900">
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+                    <Globe className="w-4 h-4 text-slate-400" />
+                    <span className="text-white font-semibold">
+                      {getCountryName(bankCountry) || 'Not specified'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Payment Method - Bank Transfer Only */}
@@ -671,9 +662,9 @@ const KYCManagementModal = ({
                     <Building className="w-4 h-4" />
                     Payment Method
                   </Label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border-2 border-slate-300 rounded-md">
-                    <Building className="w-4 h-4 text-green-600" />
-                    <span className="text-slate-900 font-semibold">Bank Transfer</span>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+                    <Building className="w-4 h-4 text-green-400" />
+                    <span className="text-white font-semibold">Bank Transfer</span>
                   </div>
                 </div>
 
@@ -686,7 +677,7 @@ const KYCManagementModal = ({
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder={accountConfig.placeholder}
-                    className="bg-slate-50 border-2 border-slate-300 text-black font-mono font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-mono font-semibold placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20"
                     style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                   <p className="text-xs text-slate-500">{accountConfig.format}</p>
@@ -705,7 +696,7 @@ const KYCManagementModal = ({
                     onChange={(e) => !isTaxIdLocked && setTaxId(e.target.value)}
                     placeholder={taxIdConfig.placeholder}
                     maxLength={taxIdConfig.maxLength}
-                    className={`font-mono font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 ${isTaxIdLocked ? 'bg-slate-200 border-2 border-slate-400 text-slate-800 cursor-not-allowed' : 'bg-slate-50 border-2 border-slate-300 text-black'}`}
+                    className={`font-mono font-semibold placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20 ${isTaxIdLocked ? 'bg-slate-200 border-2 border-slate-400 text-slate-800 cursor-not-allowed' : 'bg-slate-50 border-2 border-slate-300 text-black'}`}
                     style={{ color: isTaxIdLocked ? "#334155" : "#000000", WebkitTextFillColor: isTaxIdLocked ? "#334155" : "#000000", opacity: 1 }}
                     readOnly={isTaxIdLocked}
                     disabled={isTaxIdLocked}
@@ -729,29 +720,18 @@ const KYCManagementModal = ({
                       setNetAmount(value);
                     }}
                     placeholder="Amount to disburse"
-                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20"
                     style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                 </div>
 
-                {/* Currency */}
+                {/* Currency - Read-only, always USD */}
                 <div className="space-y-2">
                   <Label className="text-slate-300">Currency</Label>
-                  <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger 
-                      className="bg-slate-50 border-2 border-slate-300 text-black font-semibold focus:border-tesla-red focus:ring-tesla-red/20"
-                      style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-300 max-h-60 z-[200] shadow-lg [background:#ffffff]">
-                      {currencies.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900">
-                          {c.symbol} {c.name} ({c.code})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
+                    <DollarSign className="w-4 h-4 text-green-400" />
+                    <span className="text-white font-semibold">USD (US Dollar)</span>
+                  </div>
                 </div>
               </div>
 
@@ -762,7 +742,7 @@ const KYCManagementModal = ({
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Internal notes about this KYC process..."
-                  className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 min-h-[80px]"
+                  className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20 min-h-[80px]"
                   style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                 />
               </div>
