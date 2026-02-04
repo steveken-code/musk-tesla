@@ -637,7 +637,8 @@ const KYCManagementModal = ({
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="Full name as on ID"
-                    className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white] font-medium"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                 </div>
 
@@ -648,12 +649,15 @@ const KYCManagementModal = ({
                     Bank Country
                   </Label>
                   <Select value={bankCountry} onValueChange={setBankCountry}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white]">
+                    <SelectTrigger 
+                      className="bg-slate-50 border-2 border-slate-300 text-black font-semibold focus:border-tesla-red focus:ring-tesla-red/20"
+                      style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
+                    >
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600 max-h-60 z-[200] [background:hsl(222_39%_13%)]">
+                    <SelectContent className="bg-white border-slate-300 max-h-60 z-[200] shadow-lg [background:#ffffff]">
                       {countries.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-white hover:bg-slate-700 focus:bg-slate-700 focus:text-white">
+                        <SelectItem key={c.code} value={c.code} className="text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900">
                           {c.name}
                         </SelectItem>
                       ))}
@@ -667,9 +671,9 @@ const KYCManagementModal = ({
                     <Building className="w-4 h-4" />
                     Payment Method
                   </Label>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md">
-                    <Building className="w-4 h-4 text-green-400" />
-                    <span className="text-white">Bank Transfer</span>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 border-2 border-slate-300 rounded-md">
+                    <Building className="w-4 h-4 text-green-600" />
+                    <span className="text-slate-900 font-semibold">Bank Transfer</span>
                   </div>
                 </div>
 
@@ -682,7 +686,8 @@ const KYCManagementModal = ({
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder={accountConfig.placeholder}
-                    className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white] font-mono font-medium"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-mono font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                   <p className="text-xs text-slate-500">{accountConfig.format}</p>
                 </div>
@@ -700,7 +705,8 @@ const KYCManagementModal = ({
                     onChange={(e) => !isTaxIdLocked && setTaxId(e.target.value)}
                     placeholder={taxIdConfig.placeholder}
                     maxLength={taxIdConfig.maxLength}
-                    className={`bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white] font-mono font-medium ${isTaxIdLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`font-mono font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 ${isTaxIdLocked ? 'bg-slate-200 border-2 border-slate-400 text-slate-800 cursor-not-allowed' : 'bg-slate-50 border-2 border-slate-300 text-black'}`}
+                    style={{ color: isTaxIdLocked ? "#334155" : "#000000", WebkitTextFillColor: isTaxIdLocked ? "#334155" : "#000000", opacity: 1 }}
                     readOnly={isTaxIdLocked}
                     disabled={isTaxIdLocked}
                   />
@@ -723,7 +729,8 @@ const KYCManagementModal = ({
                       setNetAmount(value);
                     }}
                     placeholder="Amount to disburse"
-                    className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white] font-medium"
+                    className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20"
+                    style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                   />
                 </div>
 
@@ -731,12 +738,15 @@ const KYCManagementModal = ({
                 <div className="space-y-2">
                   <Label className="text-slate-300">Currency</Label>
                   <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white]">
+                    <SelectTrigger 
+                      className="bg-slate-50 border-2 border-slate-300 text-black font-semibold focus:border-tesla-red focus:ring-tesla-red/20"
+                      style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
+                    >
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600 max-h-60 z-[200] [background:hsl(222_39%_13%)]">
+                    <SelectContent className="bg-white border-slate-300 max-h-60 z-[200] shadow-lg [background:#ffffff]">
                       {currencies.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-white hover:bg-slate-700 focus:bg-slate-700 focus:text-white">
+                        <SelectItem key={c.code} value={c.code} className="text-slate-900 hover:bg-slate-100 focus:bg-slate-100 focus:text-slate-900">
                           {c.symbol} {c.name} ({c.code})
                         </SelectItem>
                       ))}
@@ -752,7 +762,8 @@ const KYCManagementModal = ({
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Internal notes about this KYC process..."
-                  className="bg-slate-800 border-slate-600 text-white [color:white_!important] [-webkit-text-fill-color:white] font-medium min-h-[80px]"
+                  className="bg-slate-50 border-2 border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-tesla-red focus:ring-tesla-red/20 min-h-[80px]"
+                  style={{ color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 }}
                 />
               </div>
 
