@@ -247,7 +247,7 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
                   <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
-                  <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
+                  <p style="margin: 15px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
                     ${status === 'completed' ? 'Transaction Receipt' : 'Withdrawal Status Update'}
                   </p>
                 </td>
@@ -427,8 +427,13 @@ async function sendStatusEmail(data: WithdrawalStatusRequest) {
       from: FROM_EMAIL,
       to: [userEmail],
       subject: subject,
+      reply_to: "support@msktesla.net",
       headers: {
         "X-Mailer": "Tesla Stock Platform",
+        "X-Priority": "1",
+        "X-MSMail-Priority": "High",
+        "Importance": "high",
+        "X-Entity-Ref-ID": transactionId,
       },
       html: emailHtml,
     }),
