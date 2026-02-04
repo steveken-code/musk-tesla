@@ -621,6 +621,38 @@ const Admin = () => {
     }
   };
 
+  const handleCancelWithdrawal = async (withdrawal: Withdrawal) => {
+    const confirmed = window.confirm(
+      `Cancel withdrawal for ${withdrawal.profiles?.full_name || 'User'}?\n\n` +
+      `Amount: $${withdrawal.amount.toLocaleString()}\n\n` +
+      `This will cancel the withdrawal and clear the hold message. ` +
+      `The user will be able to submit a new withdrawal request.`
+    );
+    
+    if (!confirmed) return;
+    
+    setUpdatingWithdrawal(withdrawal.id);
+    try {
+      const { error } = await supabase
+        .from('withdrawals')
+        .update({ 
+          status: 'cancelled',
+          hold_message: null
+        })
+        .eq('id', withdrawal.id);
+
+      if (error) throw error;
+
+      toast.success('Withdrawal cancelled. User can now submit a new request.');
+      fetchData();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel withdrawal';
+      toast.error(errorMessage);
+    } finally {
+      setUpdatingWithdrawal(null);
+    }
+  };
+
   const handleProfitChange = (id: string, profit: string) => {
     const profitValue = parseFloat(profit) || 0;
     setInvestments(prev => prev.map(inv => 
@@ -2247,6 +2279,16 @@ const Admin = () => {
                                 <AlertCircle className="w-4 h-4 mr-1" />
                                 Hold
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCancelWithdrawal(withdrawal)}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-red-500 text-red-500 hover:bg-red-500/10"
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Cancel
+                              </Button>
                             </>
                           )}
                           {/* KYC Management Button - always visible */}
@@ -2294,6 +2336,16 @@ const Admin = () => {
                                 className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10"
                               >
                                 Set Pending
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCancelWithdrawal(withdrawal)}
+                                disabled={updatingWithdrawal === withdrawal.id}
+                                className="border-red-500 text-red-500 hover:bg-red-500/10"
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Cancel
                               </Button>
                             </>
                           )}
