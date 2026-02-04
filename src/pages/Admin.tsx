@@ -1905,7 +1905,7 @@ const Admin = () => {
                   placeholder="Search by user name or email..."
                   value={userSearchQuery}
                   onChange={(e) => setUserSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-green-500"
+                  className="pl-10 bg-white border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-green-500"
                 />
               </div>
             </div>
@@ -2093,7 +2093,7 @@ const Admin = () => {
                   placeholder="Search by user name or email..."
                   value={userSearchQuery}
                   onChange={(e) => setUserSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600 [color:#ffffff_!important] placeholder:text-slate-400 focus:border-green-500"
+                  className="pl-10 bg-white border-slate-300 text-black font-semibold placeholder:text-slate-500 focus:border-green-500"
                 />
               </div>
             </div>
