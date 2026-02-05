@@ -331,9 +331,8 @@ const InvestmentCountrySelector = ({
   return (
     <div className="space-y-2 relative" ref={containerRef}>
       <label className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-2">
-        <Globe className="w-4 h-4 text-slate-500" />
+        <Globe className="w-4 h-4 text-muted-foreground" />
         {t('selectCountry') || 'Select Your Country'}
-        <span className="text-destructive">*</span>
       </label>
       
       <button
