@@ -1506,7 +1506,7 @@ const Dashboard = () => {
                         const value = e.target.value.replace(/[^0-9.]/g, '');
                         setInvestAmount(value);
                       }}
-                      className="bg-white border-slate-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-sky-500 focus:ring-sky-500/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
+                       className="bg-white border-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:border-electric-blue focus:ring-electric-blue/20 focus:ring-2 h-11 sm:h-12 [color:#1a1a1a_!important] [font-size:16px_!important] sm:[font-size:18px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important] rounded-lg"
                       required
                     />
                     {/* Real-time amount preview - show USDT only for non-Russian users */}
