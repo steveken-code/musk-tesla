@@ -143,8 +143,8 @@ const InvestmentProgressTracker = ({ investments }: InvestmentProgressTrackerPro
       {/* Header */}
       <div className="flex items-center justify-between mb-5 pb-3 border-b border-border/30">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
-            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <div className="p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
           </div>
           <div>
             <h3 className="font-semibold text-sm sm:text-base text-foreground">Investment Progress</h3>
