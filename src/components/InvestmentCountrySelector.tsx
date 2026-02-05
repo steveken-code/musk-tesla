@@ -341,8 +341,8 @@ const InvestmentCountrySelector = ({
         onClick={() => setShowDropdown(!showDropdown)}
          className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
           selectedCountry 
-             ? 'border-teal-400 hover:border-teal-500' 
-            : 'border-slate-400 hover:border-electric-blue/60'
+            ? 'border-teal-400 hover:border-electric-blue' 
+           : 'border-slate-400 hover:border-electric-blue'
         }`}
       >
         {selectedCountryData ? (

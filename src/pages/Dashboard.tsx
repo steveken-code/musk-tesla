@@ -589,7 +589,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showPaymentDetails, setShowPaymentDetails] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT) === 'true';
+      const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
+      const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
+      // Only show payment if we have a valid saved amount AND the flag is true
+      if (savedAmount && parseFloat(savedAmount) >= 100 && savedShowPayment === 'true') {
+        return true;
+      }
     }
     return false;
   });
