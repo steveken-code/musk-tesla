@@ -78,7 +78,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <!-- Greeting -->
               <tr>
                 <td style="padding: 40px 50px 15px;">
-                  <p style="margin: 0; color: #c4b5fd; font-size: 22px; font-weight: 700;">
+                  <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
                     Hello ${userName || (userEmail ? userEmail.split('@')[0] : 'there')},
                   </p>
                 </td>
@@ -110,7 +110,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #c4b5fd; font-size: 20px; font-weight: 700;">
+                    <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
                       📋 Investment Details
                     </h3>
                     
@@ -187,7 +187,7 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 30px;">
-                    <h3 style="color: #c4b5fd; margin: 0 0 20px 0; font-size: 18px; font-weight: 700;">🚀 What Happens Next?</h3>
+                    <h3 style="color: #3b82f6; margin: 0 0 20px 0; font-size: 18px; font-weight: 700;">🚀 What Happens Next?</h3>
                     <ul style="margin: 0; padding: 0 0 0 25px; color: #374151; font-size: 15px; line-height: 2.2;">
                       <li>Your investment is now actively managed</li>
                       <li>Track real-time performance on your dashboard</li>

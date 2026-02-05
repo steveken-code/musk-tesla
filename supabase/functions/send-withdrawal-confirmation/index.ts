@@ -258,7 +258,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
                           <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
-                            © ${new Date().getFullYear()} TeslaInvest. All rights reserved.
+                            © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                           </p>
                           <p style="margin: 0 0 15px; color: #404040; font-size: 12px;">
                             This email was sent to ${email}

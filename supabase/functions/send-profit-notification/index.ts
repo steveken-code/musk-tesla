@@ -165,7 +165,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <!-- Greeting -->
                   <tr>
                     <td style="padding: 40px 50px 15px;">
-                      <p style="margin: 0; color: #c4b5fd; font-size: 22px; font-weight: 700;">
+                      <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
                         Hello ${displayName},
                       </p>
                     </td>
@@ -220,7 +220,7 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <tr>
                     <td style="padding: 0 50px 35px;">
                       <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                        <h3 style="margin: 0 0 25px; color: #c4b5fd; font-size: 20px; font-weight: 700;">
+                        <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
                           📊 Investment Summary
                         </h3>
                         
@@ -293,9 +293,9 @@ async function sendProfitEmail(request: ProfitNotificationRequest) {
                   <!-- Pro Tip -->
                   <tr>
                     <td style="padding: 0 50px 35px;">
-                      <div style="border-left: 5px solid #c4b5fd; padding-left: 25px;">
+                      <div style="border-left: 5px solid #3b82f6; padding-left: 25px;">
                         <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0;">
-                          <strong style="color: #c4b5fd;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
+                          <strong style="color: #3b82f6;">Pro Tip:</strong> Your profits are available for withdrawal anytime from your dashboard. Keep growing your portfolio!
                         </p>
                       </div>
                     </td>

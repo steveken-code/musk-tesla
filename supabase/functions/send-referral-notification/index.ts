@@ -98,7 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 20px 40px 40px; text-align: center;">
                       <p style="color: #64748b; font-size: 12px; margin: 0;">
-                        © ${new Date().getFullYear()} Tesla Investment Platform. All rights reserved.
+                        © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                       </p>
                     </td>
                   </tr>
@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 20px 40px 40px; text-align: center;">
                       <p style="color: #64748b; font-size: 12px; margin: 0;">
-                        © ${new Date().getFullYear()} Tesla Investment Platform. All rights reserved.
+                        © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                       </p>
                     </td>
                   </tr>
@@ -200,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 20px 40px 40px; text-align: center;">
                       <p style="color: #64748b; font-size: 12px; margin: 0;">
-                        © ${new Date().getFullYear()} Tesla Investment Platform. All rights reserved.
+                        © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                       </p>
                     </td>
                   </tr>
