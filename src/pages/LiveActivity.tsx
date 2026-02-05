@@ -1,142 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Activity, Globe, ArrowLeft, Users, DollarSign, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import WorldMapVisualization from '@/components/WorldMapVisualization';
+ import WorldMapVisualization from '@/components/WorldMapVisualization';
+ import { allUsers, getUniqueCountryCount } from '@/data/liveActivityData';
+ import { useRealInvestments, RealInvestment } from '@/hooks/useRealInvestments';
 
-// User data - all amounts will be in USD
-const allUsers = [
-  // United States
-  { name: "Liam", country: "United States", flag: "🇺🇸" },
-  { name: "Olivia", country: "United States", flag: "🇺🇸" },
-  { name: "Noah", country: "United States", flag: "🇺🇸" },
-  { name: "Emma", country: "United States", flag: "🇺🇸" },
-  { name: "James", country: "United States", flag: "🇺🇸" },
-  { name: "Charlotte", country: "United States", flag: "🇺🇸" },
-  
-  // Russia
-  { name: "Dmitri", country: "Russia", flag: "🇷🇺" },
-  { name: "Anastasia", country: "Russia", flag: "🇷🇺" },
-  { name: "Mikhail", country: "Russia", flag: "🇷🇺" },
-  { name: "Olga", country: "Russia", flag: "🇷🇺" },
-  { name: "Sergei", country: "Russia", flag: "🇷🇺" },
-  
-  // Germany
-  { name: "Lukas", country: "Germany", flag: "🇩🇪" },
-  { name: "Anna", country: "Germany", flag: "🇩🇪" },
-  { name: "Maximilian", country: "Germany", flag: "🇩🇪" },
-  { name: "Sophie", country: "Germany", flag: "🇩🇪" },
-  
-  // United Kingdom
-  { name: "Oliver", country: "United Kingdom", flag: "🇬🇧" },
-  { name: "Amelia", country: "United Kingdom", flag: "🇬🇧" },
-  { name: "George", country: "United Kingdom", flag: "🇬🇧" },
-  { name: "Grace", country: "United Kingdom", flag: "🇬🇧" },
-  
-  // France
-  { name: "Gabriel", country: "France", flag: "🇫🇷" },
-  { name: "Léa", country: "France", flag: "🇫🇷" },
-  { name: "Louis", country: "France", flag: "🇫🇷" },
-  { name: "Chloé", country: "France", flag: "🇫🇷" },
-  
-  // Hungary
-  { name: "Bence", country: "Hungary", flag: "🇭🇺" },
-  { name: "Eszter", country: "Hungary", flag: "🇭🇺" },
-  { name: "Levente", country: "Hungary", flag: "🇭🇺" },
-  
-  // Netherlands
-  { name: "Daan", country: "Netherlands", flag: "🇳🇱" },
-  { name: "Lotte", country: "Netherlands", flag: "🇳🇱" },
-  { name: "Sem", country: "Netherlands", flag: "🇳🇱" },
-  
-  // Norway
-  { name: "Lars", country: "Norway", flag: "🇳🇴" },
-  { name: "Ingrid", country: "Norway", flag: "🇳🇴" },
-  { name: "Magnus", country: "Norway", flag: "🇳🇴" },
-  
-  // Poland
-  { name: "Jakub", country: "Poland", flag: "🇵🇱" },
-  { name: "Zuzanna", country: "Poland", flag: "🇵🇱" },
-  { name: "Kacper", country: "Poland", flag: "🇵🇱" },
-  
-  // Kenya
-  { name: "Njeri", country: "Kenya", flag: "🇰🇪" },
-  { name: "Kamau", country: "Kenya", flag: "🇰🇪" },
-  { name: "Wambui", country: "Kenya", flag: "🇰🇪" },
-  
-  // Nigeria
-  { name: "Chukwuemeka", country: "Nigeria", flag: "🇳🇬" },
-  { name: "Adaeze", country: "Nigeria", flag: "🇳🇬" },
-  { name: "Oluwaseun", country: "Nigeria", flag: "🇳🇬" },
-  
-  // UAE
-  { name: "Ahmed", country: "United Arab Emirates", flag: "🇦🇪" },
-  { name: "Fatima", country: "United Arab Emirates", flag: "🇦🇪" },
-  { name: "Khalid", country: "United Arab Emirates", flag: "🇦🇪" },
-  
-  // Kuwait
-  { name: "Mohammad", country: "Kuwait", flag: "🇰🇼" },
-  { name: "Sara", country: "Kuwait", flag: "🇰🇼" },
-  { name: "Yousef", country: "Kuwait", flag: "🇰🇼" },
-  
-  // Japan
-  { name: "Haruto", country: "Japan", flag: "🇯🇵" },
-  { name: "Yui", country: "Japan", flag: "🇯🇵" },
-  { name: "Sota", country: "Japan", flag: "🇯🇵" },
-  
-  // China
-  { name: "Wei", country: "China", flag: "🇨🇳" },
-  { name: "Xiaoming", country: "China", flag: "🇨🇳" },
-  { name: "Jing", country: "China", flag: "🇨🇳" },
-  
-  // Brazil
-  { name: "Miguel", country: "Brazil", flag: "🇧🇷" },
-  { name: "Helena", country: "Brazil", flag: "🇧🇷" },
-  { name: "Arthur", country: "Brazil", flag: "🇧🇷" },
-  
-  // Canada
-  { name: "Ethan", country: "Canada", flag: "🇨🇦" },
-  { name: "Sophia", country: "Canada", flag: "🇨🇦" },
-  { name: "Mason", country: "Canada", flag: "🇨🇦" },
-  
-  // Australia
-  { name: "Jack", country: "Australia", flag: "🇦🇺" },
-  { name: "Chloe", country: "Australia", flag: "🇦🇺" },
-  { name: "William", country: "Australia", flag: "🇦🇺" },
-  
-  // India
-  { name: "Aarav", country: "India", flag: "🇮🇳" },
-  { name: "Ananya", country: "India", flag: "🇮🇳" },
-  { name: "Vihaan", country: "India", flag: "🇮🇳" },
-  
-  // South Africa
-  { name: "Thabo", country: "South Africa", flag: "🇿🇦" },
-  { name: "Naledi", country: "South Africa", flag: "🇿🇦" },
-  { name: "Sipho", country: "South Africa", flag: "🇿🇦" },
-  
-  // Saudi Arabia
-  { name: "Abdullah", country: "Saudi Arabia", flag: "🇸🇦" },
-  { name: "Fatimah", country: "Saudi Arabia", flag: "🇸🇦" },
-  { name: "Omar", country: "Saudi Arabia", flag: "🇸🇦" },
-  
-  // Singapore
-  { name: "Jia Wei", country: "Singapore", flag: "🇸🇬" },
-  { name: "Hui Ling", country: "Singapore", flag: "🇸🇬" },
-  { name: "Wei Ming", country: "Singapore", flag: "🇸🇬" },
-  
-  // Switzerland
-  { name: "Luca", country: "Switzerland", flag: "🇨🇭" },
-  { name: "Elena", country: "Switzerland", flag: "🇨🇭" },
-  { name: "Noah", country: "Switzerland", flag: "🇨🇭" },
-  
-  // Sweden
-  { name: "Oscar", country: "Sweden", flag: "🇸🇪" },
-  { name: "Maja", country: "Sweden", flag: "🇸🇪" },
-  { name: "Elias", country: "Sweden", flag: "🇸🇪" },
-];
+ // Base stats for professional appearance
+ const BASE_STATS = {
+   totalInvested: 847_200_000, // $847.2M base
+   totalWithdrawn: 312_500_000, // $312.5M base
+   activeUsers: 148_500, // 148,500 base users
+   countries: getUniqueCountryCount(), // 55+ countries
+ };
 
 interface ActivityItem {
   id: string;
@@ -146,6 +25,7 @@ interface ActivityItem {
   amount: string;
   type: 'investment' | 'withdrawal';
   timestamp: Date;
+   isReal?: boolean; // Flag for real database investments
 }
 
 const formatAmount = (amount: number): string => {
@@ -194,13 +74,18 @@ const formatTimeAgo = (date: Date): string => {
 const LiveActivity = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [stats, setStats] = useState({
-    totalInvested: 0,
-    totalWithdrawn: 0,
-    activeUsers: 0,
-    countries: 0,
+     totalInvested: BASE_STATS.totalInvested,
+     totalWithdrawn: BASE_STATS.totalWithdrawn,
+     activeUsers: BASE_STATS.activeUsers + Math.floor(Math.random() * 500),
+     countries: BASE_STATS.countries,
   });
   const usedIndicesRef = useRef<Set<number>>(new Set());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+   const userCounterRef = useRef<NodeJS.Timeout | null>(null);
+   const realInvestmentIndexRef = useRef(0);
+   
+   // Fetch real investments from database
+   const { realInvestments } = useRealInvestments();
 
   const getUniqueUser = () => {
     if (usedIndicesRef.current.size >= allUsers.length * 0.9) {
@@ -232,36 +117,84 @@ const LiveActivity = () => {
     };
   };
 
-  // Initialize with some activities
+   // Convert real investment to activity item
+   const convertRealToActivity = useCallback((real: RealInvestment): ActivityItem => {
+     return {
+       id: `real-${real.id}`,
+       name: real.firstName,
+       country: real.country,
+       flag: real.flag,
+       amount: formatAmount(real.amount),
+       type: 'investment',
+       timestamp: new Date(), // Use current time for natural feed
+       isReal: true,
+     };
+   }, []);
+ 
+   // Get next real investment to inject
+   const getNextRealInvestment = useCallback((): ActivityItem | null => {
+     if (realInvestments.length === 0) return null;
+     const investment = realInvestments[realInvestmentIndexRef.current % realInvestments.length];
+     realInvestmentIndexRef.current++;
+     return convertRealToActivity(investment);
+   }, [realInvestments, convertRealToActivity]);
+ 
+   // Initialize with activities
   useEffect(() => {
     const initialActivities: ActivityItem[] = [];
     for (let i = 0; i < 15; i++) {
-      const activity = generateActivity();
+       // Mix in real investments every 3-4 activities
+       const shouldUseReal = i % 4 === 0 && realInvestments.length > 0;
+       const activity = shouldUseReal 
+         ? getNextRealInvestment() || generateActivity()
+         : generateActivity();
       activity.timestamp = new Date(Date.now() - i * 45000); // Space them out
       initialActivities.push(activity);
     }
     setActivities(initialActivities);
+   }, [realInvestments, getNextRealInvestment]);
 
-    // Update stats
-    const uniqueCountries = new Set(initialActivities.map(a => a.country)).size;
-    setStats({
-      totalInvested: initialActivities.filter(a => a.type === 'investment').length * 50000,
-      totalWithdrawn: initialActivities.filter(a => a.type === 'withdrawal').length * 25000,
-      activeUsers: initialActivities.length,
-      countries: uniqueCountries,
-    });
-  }, []);
-
-  // Add new activities periodically
+   // Growing user counter - realistic increment every 15-30 seconds
+   useEffect(() => {
+     const incrementUsers = () => {
+       const increment = Math.floor(Math.random() * 5) + 1; // +1 to +5 users
+       setStats(prev => ({
+         ...prev,
+         activeUsers: prev.activeUsers + increment,
+       }));
+       
+       // Random interval between 15-30 seconds
+       const nextInterval = 15000 + Math.random() * 15000;
+       userCounterRef.current = setTimeout(incrementUsers, nextInterval);
+     };
+ 
+     // Start counter
+     userCounterRef.current = setTimeout(incrementUsers, 15000);
+ 
+     return () => {
+       if (userCounterRef.current) clearTimeout(userCounterRef.current);
+     };
+   }, []);
+ 
+   // Add new activities periodically - mix real and simulated
   useEffect(() => {
+     let activityCounter = 0;
+ 
     intervalRef.current = setInterval(() => {
-      const newActivity = generateActivity();
+       activityCounter++;
+       
+       // Inject real investment every 4th activity if available
+       const shouldUseReal = activityCounter % 4 === 0 && realInvestments.length > 0;
+       const newActivity = shouldUseReal 
+         ? getNextRealInvestment() || generateActivity()
+         : generateActivity();
+ 
       setActivities(prev => {
         const updated = [newActivity, ...prev.slice(0, 49)]; // Keep max 50 activities
         return updated;
       });
       
-      // Update stats
+       // Update stats incrementally
       setStats(prev => ({
         ...prev,
         totalInvested: newActivity.type === 'investment' 
@@ -270,14 +203,13 @@ const LiveActivity = () => {
         totalWithdrawn: newActivity.type === 'withdrawal'
           ? prev.totalWithdrawn + parseInt(newActivity.amount.replace(/[^0-9]/g, ''))
           : prev.totalWithdrawn,
-        activeUsers: prev.activeUsers + 1,
       }));
-    }, 4000); // New activity every 4 seconds
+     }, 4000); // New activity every 4 seconds
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+   }, [realInvestments, getNextRealInvestment]);
 
   // Update timestamps
   useEffect(() => {
@@ -332,7 +264,7 @@ const LiveActivity = () => {
                 <span className="text-sm text-muted-foreground">Total Invested</span>
               </div>
               <p className="text-xl sm:text-2xl font-bold text-foreground">
-                ${(stats.totalInvested / 1000000).toFixed(1)}M+
+                 ${(stats.totalInvested / 1000000).toFixed(1)}M+
               </p>
             </motion.div>
 
@@ -349,7 +281,7 @@ const LiveActivity = () => {
                 <span className="text-sm text-muted-foreground">Total Withdrawn</span>
               </div>
               <p className="text-xl sm:text-2xl font-bold text-foreground">
-                ${(stats.totalWithdrawn / 1000000).toFixed(1)}M+
+                 ${(stats.totalWithdrawn / 1000000).toFixed(1)}M+
               </p>
             </motion.div>
 
