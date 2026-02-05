@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
     let htmlContent = '';
 
     if (type === 'signup') {
-      subject = '🎉 New Referral Signup - Tesla Investment Platform';
+      subject = '🎉 New Referral Signup - Tesla Stock Platform';
       htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -180,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </tr>
                   <tr>
                     <td style="padding: 40px;">
-                      <h2 style="color: #3b82f6; margin: 0 0 20px; font-size: 24px;">Welcome to Tesla Investment Platform!</h2>
+                      <h2 style="color: #3b82f6; margin: 0 0 20px; font-size: 24px;">Welcome to Tesla Stock Platform!</h2>
                       <p style="color: #e2e8f0; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
                         Hi ${referredUserName}! 🎉 You've signed up using a referral link and earned a special welcome bonus!
                       </p>
