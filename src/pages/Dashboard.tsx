@@ -1735,45 +1735,45 @@ const Dashboard = () => {
                     <button
                       type="button"
                       onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                      className="w-full flex items-center justify-between p-4 bg-[#1E1E1E] border-2 border-[#444] rounded-xl hover:border-green-500/50 transition-colors"
+                      className="w-full flex items-center justify-between p-4 bg-background border-2 border-border rounded-xl hover:border-green-500 transition-all duration-200"
                     >
                       {selectedCountryData ? (
                         <span className="flex items-center gap-3">
                           <span className="text-2xl">{selectedCountryData.flag}</span>
-                          <span className="font-medium text-white">{selectedCountryData.name}</span>
+                          <span className="font-medium text-foreground">{selectedCountryData.name}</span>
                         </span>
                       ) : (
-                        <span className="text-[#888]">{t('chooseCountry')}</span>
+                        <span className="text-muted-foreground">{t('chooseCountry')}</span>
                       )}
-                      <ChevronDown className={`w-5 h-5 text-[#888] transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showCountryDropdown && (
-                      <div className="absolute z-[100] w-full mt-2 bg-[#1a1a1a] border-2 border-[#444] rounded-xl shadow-2xl overflow-hidden">
-                        <div className="p-3 border-b-2 border-[#333] bg-[#222]">
+                      <div className="absolute z-[100] w-full mt-2 bg-popover border-2 border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-3 border-b-2 border-border bg-popover">
                           <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888]" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               ref={countrySearchInputRef}
                               placeholder={t('searchCountries') || 'Type country name...'}
                               value={countrySearch}
                               onChange={(e) => setCountrySearch(e.target.value)}
-                              className="pl-10 bg-[#2a2a2a] border-2 border-[#555] h-12 text-base [color:#ffffff_!important] [-webkit-text-fill-color:#ffffff_!important] font-semibold placeholder:text-[#777] focus:border-green-500 focus:ring-green-500/20 focus:ring-2 rounded-lg"
+                              className="pl-10 bg-background border-2 border-border h-12 text-base text-foreground font-semibold placeholder:text-muted-foreground focus:border-green-500 focus:ring-green-500/20 focus:ring-2 rounded-lg"
                             />
                             {countrySearch && (
                               <button
                                 type="button"
                                 onClick={() => setCountrySearch('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-[#444] hover:bg-[#555] rounded-full transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-muted hover:bg-muted/80 rounded-full transition-colors"
                               >
-                                <X className="w-3 h-3 text-white" />
+                                <X className="w-3 h-3 text-foreground" />
                               </button>
                             )}
                           </div>
                         </div>
-                        <div className="max-h-[300px] overflow-y-auto">
+                        <div className="max-h-[300px] overflow-y-auto bg-popover">
                           {filteredCountries.length === 0 ? (
-                            <div className="p-4 text-center text-[#888] font-medium">
+                            <div className="p-4 text-center text-muted-foreground font-medium">
                               {t('noCountriesFound') || 'No countries found'}
                             </div>
                           ) : (
@@ -1786,17 +1786,14 @@ const Dashboard = () => {
                                   setShowCountryDropdown(false);
                                   setCountrySearch('');
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 transition-colors border-b border-[#333] last:border-b-0 ${
+                                className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-border last:border-b-0 ${
                                   withdrawCountry === country.code
-                                    ? 'bg-green-500/20 border-l-4 border-l-green-500'
-                                    : 'hover:bg-[#2a2a2a] border-l-4 border-l-transparent'
+                                    ? 'bg-green-500/10 border-l-4 border-l-green-500'
+                                    : 'bg-popover hover:bg-muted border-l-4 border-l-transparent'
                                 }`}
                               >
                                 <span className="text-xl">{country.flag}</span>
-                                <span 
-                                  className="font-semibold text-left flex-1"
-                                  style={{ color: withdrawCountry === country.code ? '#4ade80' : '#ffffff' }}
-                                >
+                                <span className={`font-semibold text-left flex-1 ${withdrawCountry === country.code ? 'text-green-500' : 'text-foreground'}`}>
                                   {country.name}
                                 </span>
                                 {withdrawCountry === country.code && (
