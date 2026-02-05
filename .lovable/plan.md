@@ -1,32 +1,54 @@
 
-# Plan: Fix Investment Form Persistence Bug
+# Plan: Add Visual "Clear Form" Button to Investment Form
 
 ## Overview
 
-Fix the bug where clearing the investment amount input and refreshing the page still shows the old value. The form should properly clear localStorage when the user manually wipes the amount field.
+Add a clear/reset button next to the investment amount input that allows users to explicitly clear the entire form (country, amount, and payment details). This provides an intuitive way to reset the form without manually deleting the amount.
 
 ---
 
-## Root Cause Analysis
+## Design Approach
 
-| Current Behavior | Expected Behavior |
-|-----------------|-------------------|
-| User types "800" → saved to localStorage | Same - correct |
-| User clears amount → localStorage unchanged | Should clear localStorage |
-| User refreshes → sees "800" again | Should see empty field |
+The "Clear Form" button will:
+- Appear **only when there's data to clear** (country selected OR amount entered)
+- Use the existing `X` icon (already imported) for visual clarity
+- Have subtle styling that doesn't compete with the primary "Submit" button
+- Clear all form state AND localStorage on click
 
-The bug is in the `useEffect` at lines 643-655:
+---
 
-```typescript
-useEffect(() => {
-  if (investAmount && investCountry) {  // ← Only runs when BOTH are truthy
-    localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
-    // ...
-  }
-}, [investAmount, investCountry]);
+## Button Placement Options
+
+| Option | Placement | Pros | Cons |
+|--------|-----------|------|------|
+| **A (Recommended)** | Next to the amount label | Visible when typing, doesn't clutter submit area | Requires amount to be visible |
+| B | Below submit button | Always accessible | May encourage accidental clicks |
+| C | Inside amount input (right side) | Compact, intuitive | Clutters input if already showing preview |
+
+**Recommendation:** Option A - Place a small "Clear" link/button next to the "Investment Amount" label, styled subtly.
+
+---
+
+## Visual Design
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ Investment Amount                    [Clear Form] (subtle)  │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │  800                                                    │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │  Investment Amount: 800 USDT                            │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-When `investAmount` becomes empty string, the condition fails and localStorage is never cleared.
+**Button Styling:**
+- Text: "Clear Form" or just "Clear"
+- Icon: `X` icon (already imported)
+- Color: Muted/subtle (e.g., `text-muted-foreground hover:text-destructive`)
+- Size: Small (`text-xs`)
 
 ---
 
@@ -34,90 +56,131 @@ When `investAmount` becomes empty string, the condition fails and localStorage i
 
 ### File: `src/pages/Dashboard.tsx`
 
-#### Change 1: Update the Amount Persistence useEffect
+#### Change 1: Add Clear Form Handler Function
 
-Replace the current useEffect (lines 643-655) with logic that also clears localStorage when amount is emptied:
+Add a new function after the existing form handlers (around line 640):
 
 ```typescript
-// Persist investment amount to localStorage
-useEffect(() => {
-  // If user has cleared the amount, clear all investment form data from localStorage
-  if (!investAmount || investAmount.trim() === '') {
-    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-    setShowPaymentDetails(false);
-    return;
-  }
-  
-  // Only persist if both country and amount are set
-  if (investAmount && investCountry) {
-    localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
-    // Show payment details if amount is valid (>= 100) and country is selected
-    if (parseFloat(investAmount) >= 100) {
-      localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
-      setShowPaymentDetails(true);
-    } else {
-      localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'false');
-      setShowPaymentDetails(false);
-    }
-  }
-}, [investAmount, investCountry]);
+// Function to clear the entire investment form
+const handleClearInvestmentForm = () => {
+  setInvestAmount('');
+  setInvestCountry('');
+  setShowPaymentDetails(false);
+  localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+  localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+  localStorage.removeItem('tesla_invest_country');
+  toast.info('Form cleared');
+};
 ```
 
-#### Change 2: Also Clear Country When Amount is Cleared (Optional)
+#### Change 2: Add Clear Button to Amount Input Section
 
-For a cleaner UX, when the user clears the amount, we should also clear the country from localStorage so the whole form resets:
+Update the amount input label section (around line 1481-1482) to include the clear button:
 
-```typescript
-useEffect(() => {
-  // If user has cleared the amount, clear all investment form data
-  if (!investAmount || investAmount.trim() === '') {
-    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-    localStorage.removeItem('tesla_invest_country');  // Also clear country
-    setShowPaymentDetails(false);
-    return;
-  }
-  
-  // ... rest of persistence logic
-}, [investAmount, investCountry]);
+**Current:**
+```tsx
+<div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+  <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
+```
+
+**Updated:**
+```tsx
+<div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+  <div className="flex items-center justify-between">
+    <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
+    {(investAmount || investCountry) && (
+      <button
+        type="button"
+        onClick={handleClearInvestmentForm}
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+      >
+        <X className="w-3 h-3" />
+        <span>Clear</span>
+      </button>
+    )}
+  </div>
 ```
 
 ---
 
-## Behavior After Fix
+## Alternative: Clear Button Always Visible (When Country Selected)
 
-| User Action | localStorage | On Refresh |
-|-------------|--------------|------------|
-| Type "800" with country selected | Saved | Shows 800 + country + payment |
-| Clear the amount field | Cleared | Shows empty form |
-| Type "50" (below minimum) | Saved amount, no payment flag | Shows 50, no payment details |
-| Submit investment | Cleared | Shows empty form |
+If you want the clear button visible even before the amount is entered:
+
+**Placement:** Add to the section header or country selector row:
+
+```tsx
+{/* Country Selector with Clear Option */}
+<div className="relative">
+  <InvestmentCountrySelector
+    selectedCountry={investCountry}
+    onCountrySelect={setInvestCountry}
+    countries={allCountries}
+  />
+  {investCountry && (
+    <button
+      type="button"
+      onClick={handleClearInvestmentForm}
+      className="absolute top-0 right-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+    >
+      <X className="w-3 h-3" />
+      <span>Clear</span>
+    </button>
+  )}
+</div>
+```
 
 ---
 
-## Technical Flow
+## Technical Details
+
+### State Reset Flow:
 
 ```text
-User clears amount input
+User clicks "Clear" button
         ↓
-onChange fires: setInvestAmount('')
+handleClearInvestmentForm() called
         ↓
-useEffect detects investAmount is empty
+┌────────────────────────────────┐
+│ setInvestAmount('')            │
+│ setInvestCountry('')           │
+│ setShowPaymentDetails(false)   │
+└────────────────────────────────┘
         ↓
-localStorage.removeItem() for all keys
+localStorage keys removed:
+- STORAGE_KEY_INVEST_AMOUNT
+- STORAGE_KEY_SHOW_PAYMENT  
+- 'tesla_invest_country'
         ↓
-User refreshes page
+Toast notification: "Form cleared"
         ↓
-useState initializer finds no localStorage value
-        ↓
-Form shows empty state ✓
+UI updates: Country selector + amount input reset to empty
 ```
+
+---
+
+## Visual Behavior
+
+| Form State | Clear Button Visible? |
+|------------|----------------------|
+| No country, no amount | No |
+| Country selected, no amount | Yes |
+| Country selected, amount entered | Yes |
+| Payment details showing | Yes |
+| After clicking Clear | No (form empty) |
 
 ---
 
 ## Files Summary
 
-| File | Changes |
-|------|---------|
-| `src/pages/Dashboard.tsx` | Update the investment amount persistence useEffect to handle clearing |
+| File | Action | Changes |
+|------|--------|---------|
+| `src/pages/Dashboard.tsx` | UPDATE | Add `handleClearInvestmentForm` function, add Clear button to form UI |
+
+---
+
+## Dependencies
+
+- `X` icon already imported from `lucide-react`
+- `toast` from `sonner` already available
+- All localStorage keys already defined as constants
