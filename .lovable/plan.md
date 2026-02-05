@@ -1,316 +1,123 @@
 
-
-# Plan: Investment Form Persistence & Professional Icon Colors
+# Plan: Fix Investment Form Persistence Bug
 
 ## Overview
 
-This plan addresses two key improvements:
-1. **Form Persistence**: Make the investment form persist country selection, amount, and payment details on page refresh (unless canceled)
-2. **Professional Icon Colors**: Change specific icons from red to Electric Blue for a more professional, inviting appearance
+Fix the bug where clearing the investment amount input and refreshing the page still shows the old value. The form should properly clear localStorage when the user manually wipes the amount field.
 
 ---
 
-## Current Issues
-
-### Issue 1: Form State Resets on Refresh
+## Root Cause Analysis
 
 | Current Behavior | Expected Behavior |
 |-----------------|-------------------|
-| Country selection resets on page refresh | Country should persist |
-| Amount input resets on refresh | Amount should persist if entered |
-| Payment details disappear on refresh | Payment details should remain if amount was valid |
-| All state is lost immediately | State only clears when user clears amount or submits |
+| User types "800" → saved to localStorage | Same - correct |
+| User clears amount → localStorage unchanged | Should clear localStorage |
+| User refreshes → sees "800" again | Should see empty field |
 
-### Issue 2: Red Icons Create "Fear" Feeling
+The bug is in the `useEffect` at lines 643-655:
 
-| Component | Current Icon Color | Proposed Color | Reason |
-|-----------|-------------------|----------------|--------|
-| "Make New Investment" (DollarSign) | Tesla Red (primary) | Electric Blue | Investment is positive action, not warning |
-| "Make Your Move" section header | Tesla Red (primary) | Electric Blue | Section about growth, should feel inviting |
-| "Total Invested" stat card | Tesla Red (primary) | Tesla Red | OK - represents Tesla brand |
-| "Investment Progress" header | Tesla Red (primary) | Electric Blue | Progress tracking is informational |
-| "Performance Overview" header | Tesla Red (primary) | Electric Blue | Analytics/data, should be neutral blue |
-| "Real-Time Activity" header | Tesla Red (primary) | Electric Blue | Live feed, blue feels modern/tech |
+```typescript
+useEffect(() => {
+  if (investAmount && investCountry) {  // ← Only runs when BOTH are truthy
+    localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
+    // ...
+  }
+}, [investAmount, investCountry]);
+```
 
----
-
-## Icon Color Philosophy
-
-**Electric Blue should be used for:**
-- Informational content (charts, analytics, progress)
-- Positive action CTAs (investing, deposits)
-- Technical/data displays
-- Modern, trustworthy appearance
-
-**Tesla Red should be reserved for:**
-- Brand identity elements (logo, main branding)
-- High-priority alerts or urgent actions
-- Key Tesla-brand focal points (like "Get Started" hero button)
+When `investAmount` becomes empty string, the condition fails and localStorage is never cleared.
 
 ---
 
 ## Changes Required
 
-### File 1: `src/pages/Dashboard.tsx`
+### File: `src/pages/Dashboard.tsx`
 
-#### Change 1.1: Add localStorage Persistence for Country
+#### Change 1: Update the Amount Persistence useEffect
 
-Add new storage key and persist country selection:
+Replace the current useEffect (lines 643-655) with logic that also clears localStorage when amount is emptied:
 
 ```typescript
-// Add new storage key
-const STORAGE_KEY_INVEST_COUNTRY = 'tesla_invest_country';
-
-// In state initialization, read from localStorage
-const [investCountry, setInvestCountry] = useState(() => {
-  return localStorage.getItem(STORAGE_KEY_INVEST_COUNTRY) || '';
-});
-
-// Add effect to persist country changes
+// Persist investment amount to localStorage
 useEffect(() => {
-  if (investCountry) {
-    localStorage.setItem(STORAGE_KEY_INVEST_COUNTRY, investCountry);
-  } else {
-    localStorage.removeItem(STORAGE_KEY_INVEST_COUNTRY);
+  // If user has cleared the amount, clear all investment form data from localStorage
+  if (!investAmount || investAmount.trim() === '') {
+    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+    setShowPaymentDetails(false);
+    return;
   }
-}, [investCountry]);
-```
-
-#### Change 1.2: Fix Amount Persistence to Trigger Payment Details
-
-Currently `showPaymentDetails` is not properly restored on load. Add logic to restore payment details visibility based on persisted amount:
-
-```typescript
-// On component mount, check if we should show payment details
-useEffect(() => {
-  const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
-  const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
-  const savedCountry = localStorage.getItem(STORAGE_KEY_INVEST_COUNTRY);
   
-  if (savedAmount && parseFloat(savedAmount) >= 100 && savedCountry) {
-    setInvestAmount(savedAmount);
-    setInvestCountry(savedCountry);
-    if (savedShowPayment === 'true') {
+  // Only persist if both country and amount are set
+  if (investAmount && investCountry) {
+    localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
+    // Show payment details if amount is valid (>= 100) and country is selected
+    if (parseFloat(investAmount) >= 100) {
+      localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
       setShowPaymentDetails(true);
+    } else {
+      localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'false');
+      setShowPaymentDetails(false);
     }
   }
-}, []);
+}, [investAmount, investCountry]);
 ```
 
-#### Change 1.3: Clear All Persisted Data Only on Cancel or Submit
+#### Change 2: Also Clear Country When Amount is Cleared (Optional)
 
-Update the cancel/clear behavior:
+For a cleaner UX, when the user clears the amount, we should also clear the country from localStorage so the whole form resets:
 
 ```typescript
-// Add a function to clear the investment form
-const handleClearInvestmentForm = () => {
-  setInvestAmount('');
-  setInvestCountry('');
-  setShowPaymentDetails(false);
-  localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-  localStorage.removeItem(STORAGE_KEY_INVEST_COUNTRY);
-  localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-};
-```
-
-Already clears on successful submit (verified in `handleInvest`).
-
-#### Change 1.4: Update "Make New Investment" Icon Color
-
-Change from `text-primary` (Tesla Red) to `text-electric-blue`:
-
-**Current (Line ~1439-1441):**
-```tsx
-<div className="p-1.5 rounded-lg bg-primary/10">
-  <DollarSign className="w-4 h-4 text-primary" />
-</div>
-```
-
-**Updated:**
-```tsx
-<div className="p-1.5 rounded-lg bg-electric-blue/10">
-  <DollarSign className="w-4 h-4 text-electric-blue" />
-</div>
-```
-
----
-
-### File 2: `src/components/dashboard/DashboardSectionHeader.tsx`
-
-#### Change 2.1: Add Color Variant Support
-
-Update component to support different icon colors:
-
-```typescript
-interface DashboardSectionHeaderProps {
-  title: string;
-  subtitle?: string;
-  icon?: LucideIcon;
-  action?: React.ReactNode;
-  color?: 'primary' | 'blue' | 'green'; // NEW: color variant
-}
-
-const DashboardSectionHeader = ({ 
-  title, 
-  subtitle, 
-  icon: Icon, 
-  action,
-  color = 'blue' // Default to blue (Electric Blue)
-}: DashboardSectionHeaderProps) => {
+useEffect(() => {
+  // If user has cleared the amount, clear all investment form data
+  if (!investAmount || investAmount.trim() === '') {
+    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+    localStorage.removeItem('tesla_invest_country');  // Also clear country
+    setShowPaymentDetails(false);
+    return;
+  }
   
-  const colorClasses = {
-    primary: {
-      gradient: 'from-primary/20 to-electric-blue/10',
-      icon: 'text-primary',
-      line: 'from-primary via-electric-blue to-transparent'
-    },
-    blue: {
-      gradient: 'from-electric-blue/20 to-blue-500/10',
-      icon: 'text-electric-blue',
-      line: 'from-electric-blue via-blue-400 to-transparent'
-    },
-    green: {
-      gradient: 'from-green-500/20 to-emerald-500/10',
-      icon: 'text-green-500',
-      line: 'from-green-500 via-emerald-400 to-transparent'
-    }
-  };
-  
-  const colors = colorClasses[color];
-  // Apply to icon wrapper and decorative line
-}
+  // ... rest of persistence logic
+}, [investAmount, investCountry]);
 ```
 
 ---
 
-### File 3: `src/pages/Dashboard.tsx` (Section Headers)
+## Behavior After Fix
 
-#### Change 3.1: Update Section Header Colors
-
-Update all section header usages to use appropriate colors:
-
-```tsx
-// Real-Time Activity - Blue (tech/modern)
-<DashboardSectionHeader 
-  title="Real-Time Activity" 
-  subtitle="Live trading updates and investment progress"
-  icon={Activity}
-  color="blue"
-/>
-
-// Performance Overview - Blue (analytics/data)
-<DashboardSectionHeader 
-  title="Performance Overview" 
-  subtitle="Your investment portfolio analytics"
-  icon={PieChart}
-  color="blue"
-/>
-
-// Make Your Move - Blue (positive action)
-<DashboardSectionHeader 
-  title="Make Your Move" 
-  subtitle="Invest or manage your portfolio"
-  icon={TrendingUp}
-  color="blue"
-/>
-```
+| User Action | localStorage | On Refresh |
+|-------------|--------------|------------|
+| Type "800" with country selected | Saved | Shows 800 + country + payment |
+| Clear the amount field | Cleared | Shows empty form |
+| Type "50" (below minimum) | Saved amount, no payment flag | Shows 50, no payment details |
+| Submit investment | Cleared | Shows empty form |
 
 ---
 
-### File 4: `src/components/InvestmentProgressTracker.tsx`
+## Technical Flow
 
-#### Change 4.1: Update Header Icon Color
-
-**Current (Line ~134-137):**
-```tsx
-<div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
-  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-</div>
-```
-
-**Updated:**
-```tsx
-<div className="p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
-  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
-</div>
-```
-
----
-
-### File 5: `src/components/LiveTradingFeed.tsx`
-
-#### Change 5.1: Update Header Icon Color
-
-**Current (Line ~178-180):**
-```tsx
-<div className="relative p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
-  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-```
-
-**Updated:**
-```tsx
-<div className="relative p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
-  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
-```
-
----
-
-## Summary of Icon Color Changes
-
-| Component | Location | Old Color | New Color |
-|-----------|----------|-----------|-----------|
-| Make New Investment header | Dashboard.tsx | `text-primary` | `text-electric-blue` |
-| DashboardSectionHeader (all) | DashboardSectionHeader.tsx | `text-primary` | `text-electric-blue` (default) |
-| Investment Progress header | InvestmentProgressTracker.tsx | `text-primary` | `text-electric-blue` |
-| Live Trading Feed header | LiveTradingFeed.tsx | `text-primary` | `text-electric-blue` |
-
----
-
-## Technical Details: Form Persistence Logic
-
-### On Page Load:
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Check localStorage for:                                  │
-│    - STORAGE_KEY_INVEST_COUNTRY (country code)              │
-│    - STORAGE_KEY_INVEST_AMOUNT (amount string)              │
-│    - STORAGE_KEY_SHOW_PAYMENT (boolean string)              │
-│                                                             │
-│ 2. If country + amount >= 100 exist:                        │
-│    - Restore investCountry state                            │
-│    - Restore investAmount state                             │
-│    - Restore showPaymentDetails state                       │
-│    - Payment details component renders with saved values    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### On User Actions:
-```text
-┌─────────────────────────────────┐
-│ User selects country            │──▶ Save to localStorage
-└─────────────────────────────────┘
-
-┌─────────────────────────────────┐
-│ User enters amount >= $100      │──▶ Save amount + show payment
-└─────────────────────────────────┘
-
-┌─────────────────────────────────┐
-│ User clears amount or country   │──▶ Hide payment, DON'T clear storage yet
-└─────────────────────────────────┘
-
-┌─────────────────────────────────┐
-│ User submits investment         │──▶ Clear ALL localStorage
-└─────────────────────────────────┘
+User clears amount input
+        ↓
+onChange fires: setInvestAmount('')
+        ↓
+useEffect detects investAmount is empty
+        ↓
+localStorage.removeItem() for all keys
+        ↓
+User refreshes page
+        ↓
+useState initializer finds no localStorage value
+        ↓
+Form shows empty state ✓
 ```
 
 ---
 
 ## Files Summary
 
-| File | Action | Changes |
-|------|--------|---------|
-| `src/pages/Dashboard.tsx` | UPDATE | Add country persistence, fix payment restoration, update icon colors |
-| `src/components/dashboard/DashboardSectionHeader.tsx` | UPDATE | Add color variant prop, default to Electric Blue |
-| `src/components/InvestmentProgressTracker.tsx` | UPDATE | Change header icon to Electric Blue |
-| `src/components/LiveTradingFeed.tsx` | UPDATE | Change header icon to Electric Blue |
-
+| File | Changes |
+|------|---------|
+| `src/pages/Dashboard.tsx` | Update the investment amount persistence useEffect to handle clearing |
