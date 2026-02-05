@@ -1,111 +1,132 @@
 
 
-# Plan: Fix Investment Form Issues - Border Color, Labels & Persistence
+# Plan: Fix Country Selector and Amount Reset on Country Change
 
 ## Overview
 
-Address the remaining issues in the investment form after testing:
-
-1. **Change hover border to electric-blue** - Both when selected and unselected
-2. **Fix "Country Required" label** - Ensure proper fallback text appears
-3. **Fix "Search Country" placeholder** - Verify proper fallback
-4. **Fix payment details persistence** - Payment details showing incorrectly after refresh when amount is empty
+This plan addresses the user's requirements:
+1. **Clear investment amount when country changes** - When user selects a different country, the amount should reset so they re-enter it (to load the correct payment method)
+2. **Grey border for country selector** - Change from teal to grey/slate when selected
+3. **Blue hover for all states** - Electric blue hover (already done, just verify)
+4. **Fix "Country Required" text** - Ensure proper capitalization in fallback
+5. **Fix "Search Country" placeholder** - Ensure proper capitalization in fallback
+6. **Ensure mobile matches desktop exactly** - Same solid backgrounds, borders, animations
 
 ---
 
-## Issues Found During Testing
+## Changes Summary
 
-| Issue | Current State | Required Fix |
-|-------|---------------|--------------|
-| Selected country hover border | `hover:border-teal-500` (green) | Change to `hover:border-electric-blue` (blue) |
-| Selected country border | `border-teal-400` | Keep teal OR change to electric-blue |
-| "countryRequired" fallback | May show key instead of fallback | Ensure fallback "Country Required" works |
-| Payment persistence after refresh | Shows payment details even when amount is cleared | Fix initialization logic |
+| Issue | Current State | Fix |
+|-------|---------------|-----|
+| Amount reset on country change | Amount persists when country changes | Clear amount when user selects different country |
+| Selected country border | `border-teal-400` (green tint) | Change to `border-slate-400` (grey) |
+| Hover border | `hover:border-electric-blue` | Keep (already correct) |
+| "Country Required" text | `t('countryRequired') \|\| 'Country Required'` | Already correct, just verify rendering |
+| Mobile drawer styling | Using solid backgrounds | Verify identical to desktop |
 
 ---
 
 ## File Changes
 
-### 1. `src/components/InvestmentCountrySelector.tsx`
+### 1. `src/pages/Dashboard.tsx`
 
-**Fix trigger button border colors - use electric-blue for hover on all states:**
+**Add handler to clear amount when country changes:**
+
+Create a new handler function that wraps `setInvestCountry`:
 
 ```typescript
-// Line 342-346 - Change hover to electric-blue for consistency
-className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
-  selectedCountry 
-    ? 'border-teal-400 hover:border-electric-blue' 
-    : 'border-slate-400 hover:border-electric-blue'
-}`}
+// Handler to clear amount when country changes (to reload payment for new country)
+const handleInvestCountryChange = (countryCode: string) => {
+  // If changing to a different country, clear the amount so user must re-enter
+  if (countryCode !== investCountry) {
+    setInvestAmount('');
+    setShowPaymentDetails(false);
+    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+  }
+  setInvestCountry(countryCode);
+};
+```
+
+Then update the InvestmentCountrySelector usage:
+
+```typescript
+<InvestmentCountrySelector
+  selectedCountry={investCountry}
+  onCountrySelect={handleInvestCountryChange}  // Changed from setInvestCountry
+  countries={allCountries}
+/>
 ```
 
 This ensures:
-- When **no country selected**: grey border, blue on hover
-- When **country selected**: teal border (soft confirmation), blue on hover
+- When user selects Albania, enters 800 → payment details appear
+- When user changes to Germany → amount clears, payment details hide
+- User must re-enter amount for Germany → payment details appear for Germany
 
-**Alternative (if user wants all blue):**
+---
+
+### 2. `src/components/InvestmentCountrySelector.tsx`
+
+**Fix trigger button border - grey when selected (not teal):**
 
 ```typescript
-className={`... ${
+// Line 342-346 - Change from teal to slate grey
+className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
   selectedCountry 
-    ? 'border-electric-blue hover:border-electric-blue/80' 
+    ? 'border-slate-400 hover:border-electric-blue'  // Changed from border-teal-400
     : 'border-slate-400 hover:border-electric-blue'
 }`}
 ```
 
----
+This makes both selected and unselected states have grey border with blue hover.
 
-### 2. `src/pages/Dashboard.tsx`
+**Verify/fix text labels:**
 
-**Fix payment details initialization to respect empty amount:**
-
-The current initialization at lines 590-595 reads from localStorage, but if the user cleared the amount previously, the payment flag might still be set. We need to add a check:
-
+Desktop placeholder (line 291):
 ```typescript
-// Line 590-595 - Add validation that amount exists
-const [showPaymentDetails, setShowPaymentDetails] = useState(() => {
-  if (typeof window !== 'undefined') {
-    const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
-    const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
-    // Only show payment if we have a valid saved amount AND the flag is true
-    if (savedAmount && parseFloat(savedAmount) >= 100 && savedShowPayment === 'true') {
-      return true;
-    }
-  }
-  return false;
-});
+placeholder={t('searchCountry') || 'Search Country'}
 ```
 
-This ensures payment details only show on page load if:
-- There IS a saved amount in localStorage
-- The amount is >= 100
-- The show payment flag is true
+Mobile placeholder (line 230):
+```typescript
+placeholder={t('searchCountry') || 'Search Country'}
+```
+
+Country Required text (line 367):
+```typescript
+{t('countryRequired') || 'Country Required'}
+```
+
+These are already correct. Just ensure they render properly.
 
 ---
 
-## Visual Summary
+## Visual Flow After Changes
 
-| Element | Before | After |
-|---------|--------|-------|
-| Unselected country hover | `hover:border-electric-blue/60` | `hover:border-electric-blue` (full opacity) |
-| Selected country hover | `hover:border-teal-500` | `hover:border-electric-blue` |
-| Selected country border | `border-teal-400` | Keep (soft confirmation color) |
-| Payment on refresh (no amount) | Shows payment details | Hidden (correct) |
+```text
+User Flow: Country Change Clears Amount
+───────────────────────────────────────
+1. Select Albania → country saved
+2. Enter "800" → amount saved, payment details appear
+3. Change to Germany → amount CLEARED, payment HIDDEN
+4. Enter "500" → amount saved, payment details appear for Germany
+5. Submit → all cleared
+```
 
 ---
 
-## Mobile & Responsiveness Notes
+## Mobile/Desktop Consistency Check
 
-From testing, the mobile drawer:
-- Uses solid `bg-white dark:bg-slate-900` backgrounds ✓
-- Has proper z-index and animations ✓
-- Search input has "Search Country" placeholder ✓
-- Drawer scrolls properly within content area ✓
+Both mobile drawer and desktop dropdown already use:
 
-The dropdown on desktop:
-- Has `z-[200]` to stay above investment history ✓
-- Solid backgrounds prevent transparency issues ✓
-- Proper border colors and animations ✓
+| Element | Desktop | Mobile | Status |
+|---------|---------|--------|--------|
+| Background | `bg-white dark:bg-slate-900` | `bg-white dark:bg-slate-900` | Consistent |
+| Search border | `border-slate-400` | `border-slate-400` | Consistent |
+| Focus border | `focus:border-electric-blue` | `focus:border-electric-blue` | Consistent |
+| Country list bg | `bg-white dark:bg-slate-900` | `bg-white dark:bg-slate-900` | Consistent |
+| Animation | `animate-in fade-in` | `animate-in fade-in` | Consistent |
+| Z-index | `z-[200]` | Drawer handles | N/A (drawer is modal) |
 
 ---
 
@@ -113,6 +134,6 @@ The dropdown on desktop:
 
 | File | Action | Key Changes |
 |------|--------|-------------|
-| `src/components/InvestmentCountrySelector.tsx` | UPDATE | Change hover border from teal to electric-blue |
-| `src/pages/Dashboard.tsx` | UPDATE | Fix showPaymentDetails initialization to validate saved amount |
+| `src/pages/Dashboard.tsx` | UPDATE | Add `handleInvestCountryChange` handler to clear amount on country change |
+| `src/components/InvestmentCountrySelector.tsx` | UPDATE | Change selected border from teal to slate-400 (grey) |
 
