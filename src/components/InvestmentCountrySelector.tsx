@@ -339,10 +339,8 @@ const InvestmentCountrySelector = ({
       <button
         type="button"
         onClick={() => setShowDropdown(!showDropdown)}
-         className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
-          selectedCountry 
-            ? 'border-teal-400 hover:border-electric-blue' 
-           : 'border-slate-400 hover:border-electric-blue'
+        className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
+          'border-slate-400 hover:border-electric-blue'
         }`}
       >
         {selectedCountryData ? (
