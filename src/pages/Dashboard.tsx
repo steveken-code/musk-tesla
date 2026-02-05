@@ -641,7 +641,17 @@ const Dashboard = () => {
 
   // Persist investment amount to localStorage
   useEffect(() => {
-    if (investAmount && investCountry) {
+   // If user has cleared the amount, clear all investment form data from localStorage
+   if (!investAmount || investAmount.trim() === '') {
+     localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+     localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+     localStorage.removeItem('tesla_invest_country');
+     setShowPaymentDetails(false);
+     return;
+   }
+   
+   // Only persist if both country and amount are set
+   if (investAmount && investCountry) {
       localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
       // Show payment details if amount is valid (>= 100) and country is selected
       if (parseFloat(investAmount) >= 100) {
