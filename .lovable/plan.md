@@ -1,122 +1,135 @@
 
-
-# Plan: Standardize Email Template Styling
+# Plan: Create Shared Email Template Constants & Fix Branding Issues
 
 ## Overview
 
-Fix color inconsistencies and branding across all email templates to ensure a cohesive, professional appearance.
+Create a centralized email constants file to prevent future styling inconsistencies and fix the "Tesla Investment Platform" branding issue in the referral notification email.
 
 ---
 
-## Changes Summary
+## Issues Found
 
-| Issue | Current | Fix |
-|-------|---------|-----|
-| Greeting text color | Purple `#c4b5fd` in some templates | Dark gray `#374151` |
-| Section headers | Mixed colors | Electric Blue `#3b82f6` |
-| Footer branding | "TeslaInvest" in some | "Tesla Stock Platform" everywhere |
+| File | Issue | Current | Fix |
+|------|-------|---------|-----|
+| `send-referral-notification/index.ts` | Subject line (Line 65) | "Tesla Investment Platform" | "Tesla Stock Platform" |
+| `send-referral-notification/index.ts` | Welcome heading (Line 183) | "Tesla Investment Platform" | "Tesla Stock Platform" |
 
----
-
-## Files to Update
-
-### 1. `supabase/functions/send-withdrawal-request/index.ts`
-
-**Greeting text** (Line ~95):
-- Change: `color: #c4b5fd` → `color: #374151`
-
-**Section header "Withdrawal Details"** (Line ~107):
-- Change: `color: #c4b5fd` → `color: #3b82f6`
+The `send-withdrawal-status` template is already correctly styled with:
+- Greeting: `#374151` (dark gray)
+- Section headers: `#3b82f6` (Electric Blue)
+- Footer: "Tesla Stock Platform"
 
 ---
 
-### 2. `supabase/functions/send-withdrawal-status/index.ts`
+## Changes Required
 
-**Greeting text** (multiple status types):
-- Change: `color: #c4b5fd` → `color: #374151`
+### New File: `supabase/functions/_shared/email-constants.ts`
 
-**Section headers** (Withdrawal Details, Transaction Summary):
-- Change: `color: #c4b5fd` → `color: #3b82f6`
+Create a centralized constants file that all email templates can import:
 
----
+```typescript
+// Branding
+export const PLATFORM_NAME = "Tesla Stock Platform";
+export const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
+export const DASHBOARD_URL = "https://msktesla.net/dashboard";
+export const WHATSAPP_DEFAULT = "+12186500840";
 
-### 3. `supabase/functions/send-investment-activation/index.ts`
+// Colors - Light Theme (white background)
+export const COLORS = {
+  // Text
+  greetingText: "#374151",        // Dark gray - "Hello Name,"
+  bodyText: "#374151",            // Dark gray - paragraph text
+  secondaryText: "#6b7280",       // Medium gray - labels, captions
+  mutedText: "#9ca3af",           // Light gray - disclaimers
+  darkText: "#111827",            // Near black - important values
+  
+  // Accents
+  sectionHeader: "#3b82f6",       // Electric Blue - section titles
+  userNameHighlight: "#3b82f6",   // Electric Blue - name highlights (optional)
+  successAmount: "#059669",       // Green - money values
+  successText: "#166534",         // Dark green - success messages
+  
+  // Backgrounds
+  cardBackground: "#f9fafb",      // Light gray - card backgrounds
+  footerBackground: "#f9fafb",    // Light gray - footer
+  
+  // Borders
+  cardBorder: "#e5e7eb",          // Light border
+  divider: "#e5e7eb",             // Row dividers
+  
+  // Tesla Red (primary brand)
+  teslaRed: "#dc2626",
+  teslaRedDark: "#b91c1c",
+  teslaRedDarkest: "#991b1b",
+};
 
-**Greeting text**:
-- Change: `color: #c4b5fd` → `color: #374151`
+// Header gradient (Tesla Red)
+export const HEADER_GRADIENT = "linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%)";
 
-**Section header "Investment Details"**:
-- Change: `color: #c4b5fd` → `color: #3b82f6`
-
----
-
-### 4. `supabase/functions/send-investment-confirmation/index.ts`
-
-**Footer branding**:
-- Change: "TeslaInvest" → "Tesla Stock Platform"
-
----
-
-### 5. `supabase/functions/send-profit-notification/index.ts`
-
-**Greeting text**:
-- Verify and fix if using purple instead of dark gray
-
-**Footer branding**:
-- Standardize to "Tesla Stock Platform"
-
----
-
-### 6. `supabase/functions/send-referral-notification/index.ts`
-
-**Review and fix**:
-- Greeting text color
-- Section headers
-- Footer branding consistency
-
----
-
-### 7. `supabase/functions/send-trade-closed/index.ts`
-
-**Review and fix**:
-- Greeting text color
-- Section headers
-- Footer branding consistency
+// Common styles
+export const FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+```
 
 ---
 
-### 8. `supabase/functions/send-withdrawal-confirmation/index.ts`
+### File: `supabase/functions/send-referral-notification/index.ts`
 
-**Review and fix**:
-- Greeting text color
-- Section headers
-- Footer branding consistency
+#### Fix 1: Update Subject Line (Line 65)
 
----
+**Current:**
+```typescript
+subject = '🎉 New Referral Signup - Tesla Investment Platform';
+```
 
-## Color Reference Guide
+**Updated:**
+```typescript
+subject = '🎉 New Referral Signup - Tesla Stock Platform';
+```
 
-| Element | Color Code | Usage |
-|---------|------------|-------|
-| Greeting text | `#374151` | "Hello [Name]," |
-| User name highlight | `#3b82f6` | Name inside greeting (optional accent) |
-| Section headers | `#3b82f6` | "Withdrawal Details", "Investment Details" |
-| Body text | `#374151` | Main paragraph content |
-| Secondary text | `#6b7280` | Labels, captions |
-| Success amounts | `#059669` | Money values (green) |
-| Footer text | `#6b7280` | Copyright, disclaimers |
+#### Fix 2: Update Welcome Heading (Line 183)
 
----
+**Current:**
+```typescript
+<h2 style="color: #3b82f6; margin: 0 0 20px; font-size: 24px;">Welcome to Tesla Investment Platform!</h2>
+```
 
-## Expected Result
-
-All email templates will have:
-- Consistent dark gray (`#374151`) greeting text on light backgrounds
-- Electric Blue (`#3b82f6`) section headers for brand recognition
-- "Tesla Stock Platform" branding in all footers
-- Professional, cohesive appearance across all user communications
+**Updated:**
+```typescript
+<h2 style="color: #3b82f6; margin: 0 0 20px; font-size: 24px;">Welcome to Tesla Stock Platform!</h2>
+```
 
 ---
 
-## Files Count: 8 edge functions to update
+## Files Summary
+
+| File | Action |
+|------|--------|
+| `supabase/functions/_shared/email-constants.ts` | **CREATE** - New shared constants file |
+| `supabase/functions/send-referral-notification/index.ts` | **UPDATE** - Fix 2 branding references |
+
+---
+
+## Benefits of Shared Constants
+
+1. **Single source of truth** - Change colors/branding in one place
+2. **Consistency** - All emails use the same values
+3. **Easier maintenance** - Future updates only require changing constants file
+4. **Prevents typos** - Import constants instead of hardcoding hex codes
+5. **Documentation** - Constants file serves as a style guide
+
+---
+
+## Color Reference (Standardized)
+
+| Element | Color | Hex Code |
+|---------|-------|----------|
+| Greeting text | Dark Gray | `#374151` |
+| Body text | Dark Gray | `#374151` |
+| Section headers | Electric Blue | `#3b82f6` |
+| User name highlight | Electric Blue | `#3b82f6` |
+| Money amounts | Green | `#059669` |
+| Success text | Dark Green | `#166534` |
+| Labels/captions | Medium Gray | `#6b7280` |
+| Disclaimers | Light Gray | `#9ca3af` |
+| Tesla Red (header) | Red | `#dc2626` |
 
