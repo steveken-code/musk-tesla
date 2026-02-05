@@ -609,6 +609,18 @@ const Dashboard = () => {
     return '';
   });
 
+  // Handler to clear amount when country changes (to reload payment for new country)
+  const handleInvestCountryChange = (countryCode: string) => {
+    // If changing to a different country, clear the amount so user must re-enter
+    if (countryCode !== investCountry) {
+      setInvestAmount('');
+      setShowPaymentDetails(false);
+      localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+      localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+    }
+    setInvestCountry(countryCode);
+  };
+
   // Withdrawal state
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('');
@@ -1475,7 +1487,7 @@ const Dashboard = () => {
                 <div className="relative">
                   <InvestmentCountrySelector
                     selectedCountry={investCountry}
-                    onCountrySelect={setInvestCountry}
+                    onCountrySelect={handleInvestCountryChange}
                     countries={allCountries}
                   />
                 </div>
