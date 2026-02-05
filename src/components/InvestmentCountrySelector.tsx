@@ -159,24 +159,24 @@ const InvestmentCountrySelector = ({
       key={country.code}
       type="button"
       onClick={() => handleSelect(country.code)}
-       className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-slate-200 dark:border-slate-700 last:border-b-0 ${
+      className={`w-full flex items-center gap-3 px-4 py-3 transition-all duration-150 border-b border-border last:border-b-0 ${
         selectedCountry === country.code 
-           ? 'bg-teal-50 dark:bg-teal-900/20 border-l-4 border-l-teal-500' 
+          ? 'bg-electric-blue/10 border-l-4 border-l-electric-blue' 
           : index === highlightedIndex
-             ? 'bg-slate-100 dark:bg-slate-800 border-l-4 border-l-teal-400/50'
-             : 'bg-white dark:bg-slate-900 border-l-4 border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800'
+            ? 'bg-muted border-l-4 border-l-electric-blue/50'
+            : 'bg-popover border-l-4 border-l-transparent hover:bg-muted'
       }`}
     >
       <span className="text-2xl flex-shrink-0">{country.flag}</span>
       <span 
-         className={`font-semibold text-sm flex-1 text-left ${
-           selectedCountry === country.code ? 'text-teal-600 dark:text-teal-400' : 'text-foreground'
+        className={`font-semibold text-sm flex-1 text-left ${
+          selectedCountry === country.code ? 'text-electric-blue' : 'text-foreground'
         }`}
       >
         <HighlightedName name={country.name} query={searchQuery} />
       </span>
       {selectedCountry === country.code && (
-         <Check className="w-5 h-5 text-teal-500 flex-shrink-0" />
+        <Check className="w-5 h-5 text-electric-blue flex-shrink-0" />
       )}
     </button>
   );
@@ -196,9 +196,9 @@ const InvestmentCountrySelector = ({
 
     return (
       <Drawer open={showDropdown} onOpenChange={setShowDropdown} modal={true}>
-         <DrawerContent className="max-h-[85vh] bg-white dark:bg-slate-900">
+        <DrawerContent className="max-h-[85vh] bg-background text-foreground">
           {/* Header */}
-           <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-border bg-background">
             <div className="flex items-center gap-3">
               <Globe className="w-6 h-6 text-primary" />
               <span className="text-lg font-bold text-foreground">
@@ -215,7 +215,7 @@ const InvestmentCountrySelector = ({
           </div>
 
           {/* Search Input */}
-           <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="p-4 border-b border-border bg-background">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
               <input
@@ -227,7 +227,7 @@ const InvestmentCountrySelector = ({
                 autoCorrect="off"
                 autoCapitalize="none"
                 spellCheck={false}
-                placeholder={t('searchCountry') || 'Search country'}
+                placeholder={t('searchCountry') || 'Search Country'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -251,7 +251,7 @@ const InvestmentCountrySelector = ({
           {/* Country List - Flat alphabetical, no continents */}
           <div 
             ref={listRef}
-             className="overflow-y-auto overscroll-contain flex-1 bg-white dark:bg-slate-900"
+            className="overflow-y-auto overscroll-contain flex-1 bg-background"
             style={{ maxHeight: 'calc(85vh - 180px)' }}
           >
             {filteredCountries.length === 0 ? (
@@ -274,10 +274,10 @@ const InvestmentCountrySelector = ({
   // Desktop dropdown content - Flat list, no continents
   const DesktopDropdown = () => (
     <div 
-       className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-[200] animate-in slide-in-from-top-2 fade-in duration-200 border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+      className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-[200] animate-in slide-in-from-top-2 fade-in duration-200 border-2 border-border bg-popover text-popover-foreground"
     >
       {/* Search Input */}
-       <div className="p-3 bg-white dark:bg-slate-900 border-b-2 border-slate-200 dark:border-slate-700">
+      <div className="p-3 bg-popover border-b-2 border-border">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
@@ -288,7 +288,7 @@ const InvestmentCountrySelector = ({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            placeholder={t('searchCountry') || 'Search country'}
+            placeholder={t('searchCountry') || 'Search Country'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -310,7 +310,7 @@ const InvestmentCountrySelector = ({
       {/* Country List - Flat alphabetical */}
       <div 
         ref={listRef} 
-         className="overflow-y-auto bg-white dark:bg-slate-900" 
+        className="overflow-y-auto bg-popover" 
         style={{ maxHeight: '300px' }}
       >
         {filteredCountries.length === 0 ? (
@@ -339,7 +339,7 @@ const InvestmentCountrySelector = ({
       <button
         type="button"
         onClick={() => setShowDropdown(!showDropdown)}
-        className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-white dark:bg-slate-900 ${
+        className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 bg-background ${
           'border-slate-400 hover:border-electric-blue'
         }`}
       >
@@ -362,7 +362,7 @@ const InvestmentCountrySelector = ({
 
       {!selectedCountry && (
         <p className="text-xs text-muted-foreground">
-           {t('countryRequired') || 'Country Required'}
+          {t('countryRequired') || 'Country selection required'}
         </p>
       )}
     </div>
