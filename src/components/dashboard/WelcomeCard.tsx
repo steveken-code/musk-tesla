@@ -86,22 +86,22 @@ const WelcomeCard = ({
           </div>
           
           {/* Action Buttons - Compact, professional sizing */}
-          <div className="flex flex-col xs:flex-row gap-2.5 sm:gap-3 mt-4 sm:mt-5 md:mt-6 items-center xs:justify-center w-full max-w-xs xs:max-w-none mx-auto">
+          <div className="flex flex-row gap-2 sm:gap-2.5 mt-4 sm:mt-5 md:mt-6 items-center justify-start">
             <Button 
-              size="default" 
-              className="h-10 sm:h-11 px-5 sm:px-6 w-full xs:w-auto xs:min-w-[130px] bg-white/20 hover:bg-white/30 hover:scale-[1.02] text-white border-0 backdrop-blur-sm font-medium transition-all duration-300 text-sm rounded-xl shadow-lg"
+              size="sm" 
+              className="h-9 sm:h-10 px-4 sm:px-5 bg-white/20 hover:bg-white/30 hover:scale-[1.02] text-white border-0 backdrop-blur-sm font-medium transition-all duration-300 text-xs sm:text-sm rounded-xl shadow-lg"
               onClick={onInvestClick}
             >
-              <ArrowDownToLine className="w-4 h-4 mr-1.5 shrink-0" />
+              <ArrowDownToLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0" />
               <span>Invest</span>
             </Button>
             <Button 
-              size="default" 
-              className="h-10 sm:h-11 px-5 sm:px-6 w-full xs:w-auto xs:min-w-[130px] bg-white text-purple-700 hover:bg-white/95 hover:scale-[1.02] border-0 font-medium shadow-xl transition-all duration-300 text-sm rounded-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              size="sm" 
+              className="h-9 sm:h-10 px-4 sm:px-5 bg-white text-purple-700 hover:bg-white/95 hover:scale-[1.02] border-0 font-medium shadow-xl transition-all duration-300 text-xs sm:text-sm rounded-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
               onClick={onWithdrawClick}
               disabled={portfolioBalance <= 0}
             >
-              <ArrowUpFromLine className="w-4 h-4 mr-1.5 shrink-0" />
+              <ArrowUpFromLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 shrink-0" />
               <span>Withdraw</span>
             </Button>
           </div>

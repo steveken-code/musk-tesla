@@ -159,15 +159,15 @@ const ProfileCompletionModal = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="bg-card border border-border rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="bg-card border border-border rounded-2xl w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto">
               {/* Header */}
               <div className="relative p-6 pb-4 border-b border-border bg-gradient-to-r from-tesla-red/10 to-electric-blue/10">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted transition-colors"
+                  className="absolute top-4 right-4 p-2.5 rounded-full bg-muted/50 hover:bg-destructive/20 hover:text-destructive transition-all duration-200"
                   aria-label="Cancel"
                 >
-                  <X className="w-5 h-5 text-muted-foreground" />
+                  <X className="w-5 h-5" />
                 </button>
                 <h2 className="text-2xl font-bold text-foreground pr-10">
                   Edit Profile
