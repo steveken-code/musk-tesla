@@ -639,28 +639,15 @@ const Dashboard = () => {
     }
   }, [investCountry]);
 
-  // Persist investment amount to localStorage
-
-  // Function to clear the entire investment form
-  const handleClearInvestmentForm = () => {
-    setInvestAmount('');
-    setInvestCountry('');
-    setShowPaymentDetails(false);
-    localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-    localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-    localStorage.removeItem('tesla_invest_country');
-    toast.info('Form cleared');
-  };
-
-  useEffect(() => {
-   // If user has cleared the amount, clear all investment form data from localStorage
-   if (!investAmount || investAmount.trim() === '') {
-     localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
-     localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
-     localStorage.removeItem('tesla_invest_country');
-     setShowPaymentDetails(false);
-     return;
-   }
+   // Persist investment amount to localStorage (keep country separate so it persists)
+   useEffect(() => {
+    // If user has cleared the amount, only clear amount-related localStorage (not country)
+    if (!investAmount || investAmount.trim() === '') {
+      localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+      localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+      setShowPaymentDetails(false);
+      return; // Don't clear country - user may return after payment
+    }
    
    // Only persist if both country and amount are set
    if (investAmount && investCountry) {
@@ -1491,19 +1478,7 @@ const Dashboard = () => {
                 {/* Step 2: Amount Input - Only show after country is selected */}
                 {investCountry && (
                   <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
-                      {(investAmount || investCountry) && (
-                        <button
-                          type="button"
-                          onClick={handleClearInvestmentForm}
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                          <span>Clear</span>
-                        </button>
-                      )}
-                    </div>
+                     <Label htmlFor="amount" className="text-xs sm:text-sm">{t('investmentAmount')}</Label>
                   <Input
                       id="amount"
                       type="text"
