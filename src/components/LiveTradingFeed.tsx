@@ -176,8 +176,8 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/50">
         <div className="flex items-center gap-2.5">
-          <div className="relative p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
-            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <div className="relative p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
             {hasActiveInvestment && (
               <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse ring-2 ring-slate-800" />
             )}

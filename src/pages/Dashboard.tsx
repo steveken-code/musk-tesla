@@ -850,10 +850,12 @@ const Dashboard = () => {
       
       toast.success('Investment submitted successfully! Your investment is now pending activation.');
       setInvestAmount('');
+      setInvestCountry('');
       setShowPaymentDetails(false);
       // Clear persisted data after successful submission
       localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
       localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+      localStorage.removeItem('tesla_invest_country');
       fetchData();
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit investment');
@@ -1436,8 +1438,8 @@ const Dashboard = () => {
           {/* New Investment Form */}
           <div className={`bg-card/80 backdrop-blur-sm border rounded-xl p-4 sm:p-5 md:p-6 shadow-lg transition-all duration-500 ${highlightInvestForm ? 'ring-2 ring-electric-blue/40 border-electric-blue/30 shadow-[0_0_30px_rgba(59,130,246,0.15)]' : 'border-border'}`}>
             <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <DollarSign className="w-4 h-4 text-primary" />
+              <div className="p-1.5 rounded-lg bg-electric-blue/10">
+                <DollarSign className="w-4 h-4 text-electric-blue" />
               </div>
               {t('makeNewInvestment')}
             </h3>
