@@ -1,139 +1,101 @@
 
-# ✅ COMPLETED
 
-## Goal (what will change)
-Make the **country selector dropdown (mobile drawer + desktop dropdown)** fully **theme-aware** so it uses your app’s design tokens (`bg-background`, `bg-popover`, `text-foreground`, `border-border`) instead of hard-coded `bg-white dark:bg-slate-900`.
+# Plan: Improve Dashboard Responsiveness for Balance & Action Buttons
 
-This fixes the “mobile looks white / not theme-aware” issue and ensures **mobile + desktop match** in both **light** and **dark** modes.
+## Overview
 
-Also fix the placeholder formatting to a clean, professional **“Search Country”** (with space + correct capitalization).
+Enhance the WelcomeCard component to ensure the balance display and Invest/Withdraw buttons are professionally positioned and responsive across all screen sizes (mobile, tablet, and desktop).
 
 ---
 
-## What I found in your current code
-File: `src/components/InvestmentCountrySelector.tsx`
+## Issues Identified
 
-### Current mobile drawer background behavior
-Mobile drawer is currently hard-coded like:
-- `DrawerContent className="... bg-white dark:bg-slate-900"`
-- Header and sections also use `bg-white dark:bg-slate-900`
-- Country rows default to `bg-white dark:bg-slate-900`
-
-This *relies* on the `dark` class being present for the dark styling to apply. When anything about the timing/state is off (especially with portals/drawers), you can get “white surfaces” showing up even when the app is meant to be dark.
-
-### Desktop dropdown is also hard-coded the same way
-Desktop dropdown container/list is also:
-- `bg-white dark:bg-slate-900`
-
-So to be truly consistent and “professional,” we should stop hard-coding and use the theme tokens everywhere inside this selector.
-
-### Placeholder formatting
-Right now both mobile + desktop use:
-- `placeholder={t('searchCountry') || 'Search country'}`
-And `LanguageContext` currently has:
-- `searchCountry: 'Search country'`
-
-You want the professional format: **“Search Country”**.
+| Issue | Current Behavior | Desired Behavior |
+|-------|------------------|------------------|
+| **Button width on mobile** | `max-w-[180px]` restricts buttons, causing them to look cramped when stacked | Full-width buttons on extra-small screens for better touch targets |
+| **Button centering** | Buttons centered but constrained by max-width | On mobile (stacked): full width. On desktop (row): auto-width, centered |
+| **Weekly change layout** | Always shows below balance on mobile | Better integration with the balance row |
+| **Button container alignment** | `justify-center` with individual button centering | Use `items-center` for proper vertical stacking on mobile |
 
 ---
 
-## Implementation approach (what I will update)
-### 1) Make mobile drawer theme-aware (no hard-coded white)
-In `InvestmentCountrySelector.tsx` update these mobile classes:
+## Changes
 
-**A. Drawer surface**
-- Change `DrawerContent` from `bg-white dark:bg-slate-900`
-- To: `bg-background text-foreground` (or `bg-popover text-popover-foreground`)
+### File: `src/components/dashboard/WelcomeCard.tsx`
 
-**B. Header + search section + list container**
-- Change from `bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700`
-- To token-based: `bg-background border-border` (or `bg-popover border-border`)
+**1. Update Button Container Layout (line 89)**
 
-This ensures the mobile drawer always reflects the active theme correctly.
-
----
-
-### 2) Make desktop dropdown match mobile (same theme tokens)
-Update desktop dropdown container + sections:
-
-- Container: from `border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900`
-- To: `border-border bg-popover text-popover-foreground` (still keep your `z-[200]`, shadow, rounded, animation)
-
-- Search section/list wrapper: from `bg-white dark:bg-slate-900`
-- To: `bg-popover`
-
----
-
-### 3) Make country row styling “professional” and theme-safe
-Right now the row uses:
-- `border-slate-200 dark:border-slate-700`
-- Default row: `bg-white dark:bg-slate-900 ... hover:bg-slate-50 dark:hover:bg-slate-800`
-
-Update to tokens so it always works in both themes:
-- Row divider: `border-border`
-- Default row background: `bg-popover`
-- Hover: `hover:bg-muted`
-- Highlighted (keyboard): `bg-muted`
-- Selected: keep a clean accent, but make it consistent with your “electric-blue” standard:
-  - Selected background: `bg-electric-blue/10`
-  - Left border: `border-l-electric-blue`
-  - Selected text/icon: `text-electric-blue`
-
-This removes dependence on `dark:` and avoids mismatched “white” surfaces.
-
----
-
-### 4) Make the trigger button theme-aware too
-The trigger button currently has:
-- `bg-white dark:bg-slate-900`
+Change from:
+```typescript
+<div className="flex flex-col xs:flex-row gap-3 sm:gap-4 mt-5 sm:mt-6 md:mt-8 justify-center">
+```
 
 Change to:
-- `bg-background`
+```typescript
+<div className="flex flex-col xs:flex-row gap-3 sm:gap-4 mt-5 sm:mt-6 md:mt-8 items-center xs:justify-center">
+```
 
-Keep your border standard:
-- `border-slate-400 hover:border-electric-blue`
+This ensures:
+- On mobile (stacked vertically): buttons are centered with `items-center`
+- On larger screens (row layout): buttons are centered with `xs:justify-center`
 
-This prevents the trigger itself from looking “white” in dark contexts if dark variants don’t apply for any reason.
+**2. Update Invest Button (line 90-97)**
+
+Change from:
+```typescript
+className="h-11 sm:h-12 px-6 sm:px-8 max-w-[180px] w-full xs:w-auto bg-white/20 ..."
+```
+
+Change to:
+```typescript
+className="h-11 sm:h-12 px-6 sm:px-8 w-full xs:w-auto xs:min-w-[160px] bg-white/20 ..."
+```
+
+This ensures:
+- On extra-small screens: button is full width for better touch targets
+- On larger screens: button has a minimum width but grows naturally
+
+**3. Update Withdraw Button (line 98-106)**
+
+Change from:
+```typescript
+className="h-11 sm:h-12 px-6 sm:px-8 max-w-[180px] w-full xs:w-auto bg-white ..."
+```
+
+Change to:
+```typescript
+className="h-11 sm:h-12 px-6 sm:px-8 w-full xs:w-auto xs:min-w-[160px] bg-white ..."
+```
+
+Same rationale as Invest button.
+
+**4. Add maximum width container for button row**
+
+Wrap the button container to prevent buttons from stretching too wide on mobile while maintaining full width:
+
+```typescript
+<div className="flex flex-col xs:flex-row gap-3 sm:gap-4 mt-5 sm:mt-6 md:mt-8 items-center xs:justify-center w-full max-w-sm xs:max-w-none mx-auto">
+```
+
+This adds:
+- `w-full max-w-sm xs:max-w-none mx-auto` - limits max width on mobile for aesthetic balance, removes limit on larger screens
 
 ---
 
-### 5) Fix the placeholder text formatting everywhere (“Search Country”)
-Two parts:
+## Visual Summary
 
-**A. In `InvestmentCountrySelector.tsx`**
-Update both placeholders to:
-- `placeholder={t('searchCountry') || 'Search Country'}`
-
-**B. In `src/contexts/LanguageContext.tsx`**
-Update English fallback translation:
-- `searchCountry: 'Search Country'`
-
-This guarantees the correct spacing/capitalization even when translations are used.
+| Screen Size | Balance | Buttons Layout |
+|-------------|---------|----------------|
+| **Extra Small (< 475px)** | 2xl font, full width | Stacked vertically, full width, centered, max-w-sm container |
+| **Small (475-640px)** | 3xl font | Side by side, auto width, min-w-[160px] |
+| **Medium (640-768px)** | 4xl font | Side by side, larger padding |
+| **Large (768px+)** | 5xl font | Side by side, generous spacing |
 
 ---
 
-## QA checklist (what you should test after I implement)
-1. On `/dashboard`, open the country selector on **mobile**:
-   - In **dark mode**: drawer background should be dark (not white)
-   - In **light mode**: drawer should be light, matching the rest of the app
-2. Open the country selector on **desktop**:
-   - Dropdown background + text should match mobile (same theme)
-3. Confirm **Search Country** placeholder is exactly formatted:
-   - “Search Country” (space + capital C)
-4. Check borders:
-   - Trigger border: slate-400, hover electric-blue
-   - Amount input: slate-400, focus electric-blue (already updated)
-5. Keyboard navigation:
-   - Arrow up/down highlights rows
-   - Enter selects
-   - Escape closes
+## Files Summary
 
----
+| File | Action | Key Changes |
+|------|--------|-------------|
+| `src/components/dashboard/WelcomeCard.tsx` | UPDATE | Remove max-width constraint, add min-width for desktop, improve mobile stacking with container constraints |
 
-## Files to change
-- `src/components/InvestmentCountrySelector.tsx`
-  - Replace hard-coded `bg-white dark:bg-slate-900` usage with theme tokens
-  - Update row styling to token-based backgrounds/borders
-  - Fix placeholder fallback text
-- `src/contexts/LanguageContext.tsx`
-  - Update English translation value for `searchCountry` to “Search Country”
