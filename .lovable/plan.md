@@ -1,4 +1,6 @@
 
+# ✅ COMPLETED
+
 ## Goal (what will change)
 Make the **country selector dropdown (mobile drawer + desktop dropdown)** fully **theme-aware** so it uses your app’s design tokens (`bg-background`, `bg-popover`, `text-foreground`, `border-border`) instead of hard-coded `bg-white dark:bg-slate-900`.
 

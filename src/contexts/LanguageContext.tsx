@@ -346,7 +346,7 @@ const englishTranslations: Record<string, string> = {
   'selectCountry': 'Select Your Country',
   'chooseCountry': 'Choose your country',
   'searchCountries': 'Search countries...',
-  'searchCountry': 'Search country',
+  'searchCountry': 'Search Country',
   'countryRequired': 'Country selection required',
   'selectMethod': 'Select Withdrawal Method',
   'bankCard': 'Bank Card',
