@@ -1,217 +1,122 @@
 
 
-# Plan: Fix KYC Management Modal Button Loading States
+# Plan: Standardize Email Template Styling
 
-## Problem
+## Overview
 
-Currently, when you click any KYC action button (Send KYC Request, Approve KYC, Send Settlement Email, Mark Completed, Reset KYC), ALL buttons show a loading spinner because they all share the same `loading` state:
-
-```typescript
-const [loading, setLoading] = useState(false);
-```
-
-**Example**: Click "Send Settlement Email" → "Send KYC Request", "Mark Completed", and all other buttons also show spinners.
+Fix color inconsistencies and branding across all email templates to ensure a cohesive, professional appearance.
 
 ---
 
-## Solution
+## Changes Summary
 
-Replace the single boolean `loading` state with an action-specific loading state that tracks WHICH action is currently in progress.
-
----
-
-## Changes Required
-
-### File: `src/components/admin/KYCManagementModal.tsx`
-
-#### Change 1: Update Loading State Type
-
-**Location**: Line 118
-
-**Current**:
-```typescript
-const [loading, setLoading] = useState(false);
-```
-
-**Updated**:
-```typescript
-const [loadingAction, setLoadingAction] = useState<string | null>(null);
-```
-
-Now we track which specific action is loading: `'send_kyc'`, `'approve'`, `'settlement'`, `'complete'`, or `'reset'`.
-
-#### Change 2: Update `handleSendKycRequest` Function
-
-**Location**: Lines 248, 324
-
-**Current**:
-```typescript
-setLoading(true);
-// ... code ...
-setLoading(false);
-```
-
-**Updated**:
-```typescript
-setLoadingAction('send_kyc');
-// ... code ...
-setLoadingAction(null);
-```
-
-#### Change 3: Update `handleApproveKyc` Function
-
-**Location**: Lines 332, 350
-
-**Current**:
-```typescript
-setLoading(true);
-// ... code ...
-setLoading(false);
-```
-
-**Updated**:
-```typescript
-setLoadingAction('approve');
-// ... code ...
-setLoadingAction(null);
-```
-
-#### Change 4: Update `handleSendSettlementEmail` Function
-
-**Location**: Lines 361, 404
-
-**Current**:
-```typescript
-setLoading(true);
-// ... code ...
-setLoading(false);
-```
-
-**Updated**:
-```typescript
-setLoadingAction('settlement');
-// ... code ...
-setLoadingAction(null);
-```
-
-#### Change 5: Update `handleMarkCompleted` Function
-
-**Location**: Lines 411, 431
-
-**Current**:
-```typescript
-setLoading(true);
-// ... code ...
-setLoading(false);
-```
-
-**Updated**:
-```typescript
-setLoadingAction('complete');
-// ... code ...
-setLoadingAction(null);
-```
-
-#### Change 6: Update `handleResetKyc` Function
-
-**Location**: Lines 439, 465
-
-**Current**:
-```typescript
-setLoading(true);
-// ... code ...
-setLoading(false);
-```
-
-**Updated**:
-```typescript
-setLoadingAction('reset');
-// ... code ...
-setLoadingAction(null);
-```
-
-#### Change 7: Update All Button Loading Conditions
-
-**Send KYC Request Button (Lines 793-804)**:
-```tsx
-<Button
-  onClick={() => setConfirmAction({...})}
-  disabled={loadingAction !== null || !userName.trim() || !bankCountry}
-  className="bg-amber-600 hover:bg-amber-700"
->
-  {loadingAction === 'send_kyc' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-  Send KYC Request
-</Button>
-```
-
-**Approve KYC Button (Lines 808-820)**:
-```tsx
-<Button
-  onClick={() => setConfirmAction({...})}
-  disabled={loadingAction !== null}
-  className="bg-green-600 hover:bg-green-700"
->
-  {loadingAction === 'approve' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-  Approve KYC
-</Button>
-```
-
-**Send Settlement Email Button (Lines 824-836)**:
-```tsx
-<Button
-  onClick={() => setConfirmAction({...})}
-  disabled={loadingAction !== null}
-  className="bg-purple-600 hover:bg-purple-700"
->
-  {loadingAction === 'settlement' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-  Send Settlement Email
-</Button>
-```
-
-**Mark Completed Button (Lines 840-852)**:
-```tsx
-<Button
-  onClick={() => setConfirmAction({...})}
-  disabled={loadingAction !== null}
-  className="bg-emerald-600 hover:bg-emerald-700"
->
-  {loadingAction === 'complete' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-  Mark Completed
-</Button>
-```
-
-**Reset KYC Button (Lines 856-869)**:
-```tsx
-<Button
-  onClick={() => setConfirmAction({...})}
-  disabled={loadingAction !== null}
-  variant="outline"
-  className="border-red-600 text-red-400 hover:bg-red-600/20"
->
-  {loadingAction === 'reset' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RotateCcw className="w-4 h-4 mr-2" />}
-  Reset KYC
-</Button>
-```
+| Issue | Current | Fix |
+|-------|---------|-----|
+| Greeting text color | Purple `#c4b5fd` in some templates | Dark gray `#374151` |
+| Section headers | Mixed colors | Electric Blue `#3b82f6` |
+| Footer branding | "TeslaInvest" in some | "Tesla Stock Platform" everywhere |
 
 ---
 
-## Result
+## Files to Update
 
-| Button Clicked | Loading Spinner Shows On | Other Buttons |
-|----------------|-------------------------|---------------|
-| Send KYC Request | Send KYC Request only | Disabled but no spinner |
-| Approve KYC | Approve KYC only | Disabled but no spinner |
-| Send Settlement Email | Send Settlement Email only | Disabled but no spinner |
-| Mark Completed | Mark Completed only | Disabled but no spinner |
-| Reset KYC | Reset KYC only | Disabled but no spinner |
+### 1. `supabase/functions/send-withdrawal-request/index.ts`
 
-All buttons remain disabled during any action (to prevent conflicts), but only the clicked button shows the spinning loader.
+**Greeting text** (Line ~95):
+- Change: `color: #c4b5fd` → `color: #374151`
+
+**Section header "Withdrawal Details"** (Line ~107):
+- Change: `color: #c4b5fd` → `color: #3b82f6`
 
 ---
 
-## Summary
+### 2. `supabase/functions/send-withdrawal-status/index.ts`
 
-| File | Changes |
-|------|---------|
-| `src/components/admin/KYCManagementModal.tsx` | Replace `loading` boolean with `loadingAction` string, update all handlers and button conditions |
+**Greeting text** (multiple status types):
+- Change: `color: #c4b5fd` → `color: #374151`
+
+**Section headers** (Withdrawal Details, Transaction Summary):
+- Change: `color: #c4b5fd` → `color: #3b82f6`
+
+---
+
+### 3. `supabase/functions/send-investment-activation/index.ts`
+
+**Greeting text**:
+- Change: `color: #c4b5fd` → `color: #374151`
+
+**Section header "Investment Details"**:
+- Change: `color: #c4b5fd` → `color: #3b82f6`
+
+---
+
+### 4. `supabase/functions/send-investment-confirmation/index.ts`
+
+**Footer branding**:
+- Change: "TeslaInvest" → "Tesla Stock Platform"
+
+---
+
+### 5. `supabase/functions/send-profit-notification/index.ts`
+
+**Greeting text**:
+- Verify and fix if using purple instead of dark gray
+
+**Footer branding**:
+- Standardize to "Tesla Stock Platform"
+
+---
+
+### 6. `supabase/functions/send-referral-notification/index.ts`
+
+**Review and fix**:
+- Greeting text color
+- Section headers
+- Footer branding consistency
+
+---
+
+### 7. `supabase/functions/send-trade-closed/index.ts`
+
+**Review and fix**:
+- Greeting text color
+- Section headers
+- Footer branding consistency
+
+---
+
+### 8. `supabase/functions/send-withdrawal-confirmation/index.ts`
+
+**Review and fix**:
+- Greeting text color
+- Section headers
+- Footer branding consistency
+
+---
+
+## Color Reference Guide
+
+| Element | Color Code | Usage |
+|---------|------------|-------|
+| Greeting text | `#374151` | "Hello [Name]," |
+| User name highlight | `#3b82f6` | Name inside greeting (optional accent) |
+| Section headers | `#3b82f6` | "Withdrawal Details", "Investment Details" |
+| Body text | `#374151` | Main paragraph content |
+| Secondary text | `#6b7280` | Labels, captions |
+| Success amounts | `#059669` | Money values (green) |
+| Footer text | `#6b7280` | Copyright, disclaimers |
+
+---
+
+## Expected Result
+
+All email templates will have:
+- Consistent dark gray (`#374151`) greeting text on light backgrounds
+- Electric Blue (`#3b82f6`) section headers for brand recognition
+- "Tesla Stock Platform" branding in all footers
+- Professional, cohesive appearance across all user communications
+
+---
+
+## Files Count: 8 edge functions to update
 
