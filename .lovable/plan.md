@@ -1,186 +1,316 @@
- # Plan: Professional Live Activity Enhancement ✅ COMPLETED
+
+
+# Plan: Investment Form Persistence & Professional Icon Colors
 
 ## Overview
 
- **STATUS: IMPLEMENTED**
- 
- Transformed the Live Activity page into a more believable, professional display that:
-1. Shows realistic growing user counts starting from a credible base
-2. Mixes real platform investments with simulated activity
-3. Adds more countries for global representation
-4. Creates a professional, trustworthy appearance
- 
- ## Files Created/Modified
- 
- - `src/data/liveActivityData.ts` - Shared country data, user names, and utilities (NEW)
- - `src/hooks/useRealInvestments.ts` - Hook to fetch real investments from database (NEW)
- - `src/pages/LiveActivity.tsx` - Updated with realistic stats and mixed real/simulated data
- - `src/components/WorldMapVisualization.tsx` - Refactored to use shared data
+This plan addresses two key improvements:
+1. **Form Persistence**: Make the investment form persist country selection, amount, and payment details on page refresh (unless canceled)
+2. **Professional Icon Colors**: Change specific icons from red to Electric Blue for a more professional, inviting appearance
 
 ---
 
 ## Current Issues
 
-| Issue | Current State |
-|-------|---------------|
-| Active users count | Starts at ~15, only grows by 1 per activity |
-| Real investments | Not shown - completely simulated |
-| Countries | 40+ but could add more emerging markets |
-| Credibility | Looks artificial to observant users |
+### Issue 1: Form State Resets on Refresh
+
+| Current Behavior | Expected Behavior |
+|-----------------|-------------------|
+| Country selection resets on page refresh | Country should persist |
+| Amount input resets on refresh | Amount should persist if entered |
+| Payment details disappear on refresh | Payment details should remain if amount was valid |
+| All state is lost immediately | State only clears when user clears amount or submits |
+
+### Issue 2: Red Icons Create "Fear" Feeling
+
+| Component | Current Icon Color | Proposed Color | Reason |
+|-----------|-------------------|----------------|--------|
+| "Make New Investment" (DollarSign) | Tesla Red (primary) | Electric Blue | Investment is positive action, not warning |
+| "Make Your Move" section header | Tesla Red (primary) | Electric Blue | Section about growth, should feel inviting |
+| "Total Invested" stat card | Tesla Red (primary) | Tesla Red | OK - represents Tesla brand |
+| "Investment Progress" header | Tesla Red (primary) | Electric Blue | Progress tracking is informational |
+| "Performance Overview" header | Tesla Red (primary) | Electric Blue | Analytics/data, should be neutral blue |
+| "Real-Time Activity" header | Tesla Red (primary) | Electric Blue | Live feed, blue feels modern/tech |
+
+---
+
+## Icon Color Philosophy
+
+**Electric Blue should be used for:**
+- Informational content (charts, analytics, progress)
+- Positive action CTAs (investing, deposits)
+- Technical/data displays
+- Modern, trustworthy appearance
+
+**Tesla Red should be reserved for:**
+- Brand identity elements (logo, main branding)
+- High-priority alerts or urgent actions
+- Key Tesla-brand focal points (like "Get Started" hero button)
 
 ---
 
 ## Changes Required
 
-### 1. Database Integration - Fetch Real Investments
+### File 1: `src/pages/Dashboard.tsx`
 
-**New approach:** Periodically fetch recent real investments from the database and inject them into the activity feed alongside simulated activities.
+#### Change 1.1: Add localStorage Persistence for Country
 
-```text
-Real Investment Flow:
-┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
-│ investments DB  │───▶│ Fetch recent │───▶│ Mix with fake   │
-│ (active/done)   │    │ investments  │    │ activities      │
-└─────────────────┘    └──────────────┘    └─────────────────┘
-```
-
-**Data to fetch:**
-- User's first name (from `profiles.full_name`)
-- Investment amount
-- User's country (from `withdrawals.country` or default mapping)
-- Created timestamp
-
-**Privacy protection:**
-- Only show first name (e.g., "Eric" not "Eric Ben")
-- Round amounts slightly (e.g., $2,000 instead of exact $2,047)
-- Don't show exact timestamps
-
----
-
-### 2. Realistic User Counter
-
-**Current:** Starts at 15, adds 1 per activity = not believable
-
-**New approach:**
-- Base count: **148,500+** (established platform feel)
-- Increment randomly: **+1 to +5** every 15-30 seconds
-- Display format: **148,573+** (specific but with + indicates live)
-- Never decreases, only grows
+Add new storage key and persist country selection:
 
 ```typescript
-// Example logic
-const [activeUsers, setActiveUsers] = useState(148500 + Math.floor(Math.random() * 500));
+// Add new storage key
+const STORAGE_KEY_INVEST_COUNTRY = 'tesla_invest_country';
 
+// In state initialization, read from localStorage
+const [investCountry, setInvestCountry] = useState(() => {
+  return localStorage.getItem(STORAGE_KEY_INVEST_COUNTRY) || '';
+});
+
+// Add effect to persist country changes
 useEffect(() => {
-  const interval = setInterval(() => {
-    setActiveUsers(prev => prev + Math.floor(Math.random() * 5) + 1);
-  }, 15000 + Math.random() * 15000); // 15-30 seconds
-  return () => clearInterval(interval);
+  if (investCountry) {
+    localStorage.setItem(STORAGE_KEY_INVEST_COUNTRY, investCountry);
+  } else {
+    localStorage.removeItem(STORAGE_KEY_INVEST_COUNTRY);
+  }
+}, [investCountry]);
+```
+
+#### Change 1.2: Fix Amount Persistence to Trigger Payment Details
+
+Currently `showPaymentDetails` is not properly restored on load. Add logic to restore payment details visibility based on persisted amount:
+
+```typescript
+// On component mount, check if we should show payment details
+useEffect(() => {
+  const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
+  const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
+  const savedCountry = localStorage.getItem(STORAGE_KEY_INVEST_COUNTRY);
+  
+  if (savedAmount && parseFloat(savedAmount) >= 100 && savedCountry) {
+    setInvestAmount(savedAmount);
+    setInvestCountry(savedCountry);
+    if (savedShowPayment === 'true') {
+      setShowPaymentDetails(true);
+    }
+  }
 }, []);
 ```
 
----
+#### Change 1.3: Clear All Persisted Data Only on Cancel or Submit
 
-### 3. Expanded Country List
+Update the cancel/clear behavior:
 
-Add these additional countries with culturally appropriate names:
+```typescript
+// Add a function to clear the investment form
+const handleClearInvestmentForm = () => {
+  setInvestAmount('');
+  setInvestCountry('');
+  setShowPaymentDetails(false);
+  localStorage.removeItem(STORAGE_KEY_INVEST_AMOUNT);
+  localStorage.removeItem(STORAGE_KEY_INVEST_COUNTRY);
+  localStorage.removeItem(STORAGE_KEY_SHOW_PAYMENT);
+};
+```
 
-| Region | Countries to Add |
-|--------|------------------|
-| Africa | Ethiopia, Zimbabwe, Senegal, Tanzania |
-| Middle East | Bahrain, Oman, Jordan, Lebanon |
-| Asia | Sri Lanka, Nepal, Cambodia, Myanmar |
-| Europe | Croatia, Serbia, Bosnia, Iceland |
-| Americas | Ecuador, Costa Rica, Dominican Republic |
+Already clears on successful submit (verified in `handleInvest`).
 
-This brings the total to **55+ countries** for true global representation.
+#### Change 1.4: Update "Make New Investment" Icon Color
 
----
+Change from `text-primary` (Tesla Red) to `text-electric-blue`:
 
-### 4. Improved Stats Display
+**Current (Line ~1439-1441):**
+```tsx
+<div className="p-1.5 rounded-lg bg-primary/10">
+  <DollarSign className="w-4 h-4 text-primary" />
+</div>
+```
 
-| Stat | Current | Proposed |
-|------|---------|----------|
-| Total Invested | Calculated live | Start at $847.2M+ |
-| Total Withdrawn | Calculated live | Start at $312.5M+ |
-| Active Users | Starts at 15 | Starts at ~148,500 |
-| Countries | Counts unique shown | Fixed at 55+ |
-
----
-
-## Files to Modify
-
-### `src/pages/LiveActivity.tsx`
-- Add database query for recent real investments
-- Implement realistic base stats
-- Add growing user counter logic
-- Expand `allUsers` array with new countries
-- Mix real + simulated activities in feed
-
-### `src/components/WorldMapVisualization.tsx`
-- Add coordinates for new countries
-- Add user names for new countries
-- Sync with LiveActivity page data
+**Updated:**
+```tsx
+<div className="p-1.5 rounded-lg bg-electric-blue/10">
+  <DollarSign className="w-4 h-4 text-electric-blue" />
+</div>
+```
 
 ---
 
-## Real Investment Display Logic
+### File 2: `src/components/dashboard/DashboardSectionHeader.tsx`
 
-When a real investment is fetched:
+#### Change 2.1: Add Color Variant Support
 
+Update component to support different icon colors:
+
+```typescript
+interface DashboardSectionHeaderProps {
+  title: string;
+  subtitle?: string;
+  icon?: LucideIcon;
+  action?: React.ReactNode;
+  color?: 'primary' | 'blue' | 'green'; // NEW: color variant
+}
+
+const DashboardSectionHeader = ({ 
+  title, 
+  subtitle, 
+  icon: Icon, 
+  action,
+  color = 'blue' // Default to blue (Electric Blue)
+}: DashboardSectionHeaderProps) => {
+  
+  const colorClasses = {
+    primary: {
+      gradient: 'from-primary/20 to-electric-blue/10',
+      icon: 'text-primary',
+      line: 'from-primary via-electric-blue to-transparent'
+    },
+    blue: {
+      gradient: 'from-electric-blue/20 to-blue-500/10',
+      icon: 'text-electric-blue',
+      line: 'from-electric-blue via-blue-400 to-transparent'
+    },
+    green: {
+      gradient: 'from-green-500/20 to-emerald-500/10',
+      icon: 'text-green-500',
+      line: 'from-green-500 via-emerald-400 to-transparent'
+    }
+  };
+  
+  const colors = colorClasses[color];
+  // Apply to icon wrapper and decorative line
+}
+```
+
+---
+
+### File 3: `src/pages/Dashboard.tsx` (Section Headers)
+
+#### Change 3.1: Update Section Header Colors
+
+Update all section header usages to use appropriate colors:
+
+```tsx
+// Real-Time Activity - Blue (tech/modern)
+<DashboardSectionHeader 
+  title="Real-Time Activity" 
+  subtitle="Live trading updates and investment progress"
+  icon={Activity}
+  color="blue"
+/>
+
+// Performance Overview - Blue (analytics/data)
+<DashboardSectionHeader 
+  title="Performance Overview" 
+  subtitle="Your investment portfolio analytics"
+  icon={PieChart}
+  color="blue"
+/>
+
+// Make Your Move - Blue (positive action)
+<DashboardSectionHeader 
+  title="Make Your Move" 
+  subtitle="Invest or manage your portfolio"
+  icon={TrendingUp}
+  color="blue"
+/>
+```
+
+---
+
+### File 4: `src/components/InvestmentProgressTracker.tsx`
+
+#### Change 4.1: Update Header Icon Color
+
+**Current (Line ~134-137):**
+```tsx
+<div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
+  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+</div>
+```
+
+**Updated:**
+```tsx
+<div className="p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
+  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+</div>
+```
+
+---
+
+### File 5: `src/components/LiveTradingFeed.tsx`
+
+#### Change 5.1: Update Header Icon Color
+
+**Current (Line ~178-180):**
+```tsx
+<div className="relative p-2 rounded-xl bg-gradient-to-br from-primary/20 to-electric-blue/10 border border-primary/20">
+  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+```
+
+**Updated:**
+```tsx
+<div className="relative p-2 rounded-xl bg-gradient-to-br from-electric-blue/20 to-blue-500/10 border border-electric-blue/20">
+  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-electric-blue" />
+```
+
+---
+
+## Summary of Icon Color Changes
+
+| Component | Location | Old Color | New Color |
+|-----------|----------|-----------|-----------|
+| Make New Investment header | Dashboard.tsx | `text-primary` | `text-electric-blue` |
+| DashboardSectionHeader (all) | DashboardSectionHeader.tsx | `text-primary` | `text-electric-blue` (default) |
+| Investment Progress header | InvestmentProgressTracker.tsx | `text-primary` | `text-electric-blue` |
+| Live Trading Feed header | LiveTradingFeed.tsx | `text-primary` | `text-electric-blue` |
+
+---
+
+## Technical Details: Form Persistence Logic
+
+### On Page Load:
 ```text
-Input:  { full_name: "Eric Ben", amount: 2000, country: "ES" }
-Output: "Eric from Spain invested $2,000"
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Check localStorage for:                                  │
+│    - STORAGE_KEY_INVEST_COUNTRY (country code)              │
+│    - STORAGE_KEY_INVEST_AMOUNT (amount string)              │
+│    - STORAGE_KEY_SHOW_PAYMENT (boolean string)              │
+│                                                             │
+│ 2. If country + amount >= 100 exist:                        │
+│    - Restore investCountry state                            │
+│    - Restore investAmount state                             │
+│    - Restore showPaymentDetails state                       │
+│    - Payment details component renders with saved values    │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Country code mapping:** Convert ISO codes (ES, RU, US) to full names and flags
+### On User Actions:
+```text
+┌─────────────────────────────────┐
+│ User selects country            │──▶ Save to localStorage
+└─────────────────────────────────┘
 
-**Mixing strategy:**
-- Show 1 real investment for every 3-4 simulated ones
-- Prioritize recent investments (last 30 days)
-- Cache real investments to avoid constant DB calls
+┌─────────────────────────────────┐
+│ User enters amount >= $100      │──▶ Save amount + show payment
+└─────────────────────────────────┘
 
----
+┌─────────────────────────────────┐
+│ User clears amount or country   │──▶ Hide payment, DON'T clear storage yet
+└─────────────────────────────────┘
 
-## Technical Implementation
-
-### Database Query (Supabase)
-```sql
-SELECT 
-  p.full_name,
-  i.amount,
-  COALESCE(w.country, 'US') as country_code
-FROM investments i
-JOIN profiles p ON i.user_id = p.user_id
-LEFT JOIN withdrawals w ON i.user_id = w.user_id
-WHERE i.status IN ('active', 'completed')
-  AND i.created_at > NOW() - INTERVAL '30 days'
-ORDER BY i.created_at DESC
-LIMIT 50
+┌─────────────────────────────────┐
+│ User submits investment         │──▶ Clear ALL localStorage
+└─────────────────────────────────┘
 ```
 
-### Privacy Safeguards
-- Extract only first name from full_name
-- Round investment amounts to nearest $50
-- Show "Xm ago" instead of exact times
-- Never expose user IDs or emails
-
 ---
 
-## Expected Result
+## Files Summary
 
-New visitors will see:
-- Professional stats: **$847M+ invested**, **148K+ users**, **55+ countries**
-- Mix of real platform activity (Eric from Spain invested $2,000)
-- Simulated global activity from 55+ countries
-- Steadily growing counters that feel alive
-- World map with activity pings from real + simulated sources
-
----
-
-## Security Considerations
-
-- Real investments fetched client-side use existing RLS policies
-- Only public-safe data displayed (first name, country, rounded amount)
-- No PII exposure (no emails, IDs, exact timestamps)
+| File | Action | Changes |
+|------|--------|---------|
+| `src/pages/Dashboard.tsx` | UPDATE | Add country persistence, fix payment restoration, update icon colors |
+| `src/components/dashboard/DashboardSectionHeader.tsx` | UPDATE | Add color variant prop, default to Electric Blue |
+| `src/components/InvestmentProgressTracker.tsx` | UPDATE | Change header icon to Electric Blue |
+| `src/components/LiveTradingFeed.tsx` | UPDATE | Change header icon to Electric Blue |
 
