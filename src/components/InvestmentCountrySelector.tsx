@@ -227,7 +227,7 @@ const InvestmentCountrySelector = ({
                 autoCorrect="off"
                 autoCapitalize="none"
                 spellCheck={false}
-                placeholder={t('searchCountry') || 'Search Country'}
+                placeholder={t('searchCountry') || 'Search country'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -288,7 +288,7 @@ const InvestmentCountrySelector = ({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            placeholder={t('searchCountry') || 'Search Country'}
+            placeholder={t('searchCountry') || 'Search country'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
