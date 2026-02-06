@@ -128,10 +128,10 @@ const ENGLISH_TRANSLATIONS: Record<string, string> = {
   'compliance': 'Compliance',
   'amlPolicy': 'AML Policy',
   'investorProtection': 'Investor Protection',
-  'regulatedEntity': 'Regulated Stock Platform',
+  'regulatedEntity': 'SEC-Regulated Public Company',
   'licenseNumber': 'License Number',
   'allRightsReserved': 'All rights reserved.',
-  'registrationInfo': 'Established 2010 | Palo Alto, California, USA',
+  'registrationInfo': 'Texas Registered Entity. Established 2003 (Palo Alto, CA). IPO Date: June 29, 2010.',
   
   // Testimonials
   'testimonialTitle': 'What Our Investors Say',
