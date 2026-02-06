@@ -92,7 +92,7 @@ const Metrics = () => {
       prefix: "",
       suffix: "M+",
       decimals: 1,
-      change: "2024 Target",
+      change: "2026 Target",
       positive: true,
     },
     {

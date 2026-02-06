@@ -202,7 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
                         Please do not reply to this email.
                       </p>
                       <p style="color: #3f3f46; font-size: 11px; margin: 16px 0 0 0;">
-                        © 2024 Tesla Stock Platform. All rights reserved.
+                        © 2026 Tesla Stock Platform. All rights reserved.
                       </p>
                     </td>
                   </tr>
