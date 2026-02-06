@@ -152,14 +152,14 @@ const Footer = () => {
               <Shield className="w-14 h-14 text-electric-blue" />
               <div>
                 <p className="font-semibold text-sm text-white">{t('regulatedEntity')}</p>
-                <p className="text-xs text-slate-500">{t('licenseNumber')}: 2024/INV/001234</p>
+                <p className="text-xs text-slate-500">Since 2010</p>
               </div>
             </div>
             
             
             <div className="text-center md:text-right">
               <p className="text-sm text-slate-400">
-                © 2025 Tesla Stock. {t('allRightsReserved')}
+                © 2026 Tesla Stock. {t('allRightsReserved')}
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 {t('registrationInfo')}

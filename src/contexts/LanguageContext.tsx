@@ -161,10 +161,10 @@ const englishTranslations: Record<string, string> = {
   'compliance': 'Compliance',
   'amlPolicy': 'AML Policy',
   'investorProtection': 'Investor Protection',
-  'regulatedEntity': 'Regulated Investment Platform',
+  'regulatedEntity': 'Regulated Stock Platform',
   'licenseNumber': 'License Number',
   'allRightsReserved': 'All rights reserved.',
-  'registrationInfo': 'Registered in California, USA. Registration No. 2024-INV-001234',
+  'registrationInfo': 'Established 2010 | Palo Alto, California, USA',
   
   // Testimonials
   'testimonialTitle': 'What Our Investors Say',
