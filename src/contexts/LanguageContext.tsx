@@ -109,7 +109,7 @@ const englishTranslations: Record<string, string> = {
   // Hero
   'heroTitle': 'Invest in the',
   'heroTitleHighlight': 'Future of Electric Mobility',
-  'heroSubtitle': 'Trade and track Tesla stocks in real-time. Join thousands of investors capitalizing on Tesla\'s revolutionary growth.',
+  'heroSubtitle': 'Trade and track Tesla stocks in real-time. Join millions of investors capitalizing on Tesla\'s revolutionary growth.',
   'getStarted': 'Get Started',
   'learnMore': 'Learn More',
   
