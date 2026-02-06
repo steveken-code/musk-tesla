@@ -185,45 +185,6 @@ const Testimonials = () => {
       <div className="absolute bottom-20 right-0 w-72 md:w-96 h-72 md:h-96 bg-electric-blue/10 rounded-full blur-3xl" />
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* CEO Quote Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.98 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          <div className="max-w-4xl mx-auto mb-16 md:mb-20">
-            <Card className="p-6 md:p-8 lg:p-12 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 shadow-xl shadow-black/30 group transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
-              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
-                <div className="relative flex-shrink-0">
-                  <div className="w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-tesla-red/50 group-hover:border-tesla-red transition-colors duration-500">
-                    <img 
-                      src={elonCeo} 
-                      alt="Elon Musk" 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 bg-tesla-red rounded-full p-2">
-                    <Quote className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <blockquote className="text-lg md:text-xl lg:text-2xl font-light text-slate-200 mb-4 italic leading-relaxed">
-                    "{t('ceoQuote')}"
-                  </blockquote>
-                  <div className="flex items-center gap-4 justify-center md:justify-start">
-                    <div className="h-1 w-12 md:w-16 bg-gradient-to-r from-tesla-red to-electric-blue rounded-full" />
-                    <div>
-                      <p className="font-bold text-lg md:text-xl text-white">Elon Musk</p>
-                      <p className="text-slate-400 text-sm md:text-base">CEO, Tesla & SpaceX</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </motion.div>
-
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

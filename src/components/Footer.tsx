@@ -60,10 +60,10 @@ const Footer = () => {
                   key={index}
                   href={social.href}
                   whileHover={{ scale: 1.1 }}
-                  className="p-5 bg-slate-800/50 rounded-lg hover:bg-electric-blue/20 transition-colors group"
+                  className="p-3 bg-slate-800/50 rounded-lg hover:bg-electric-blue/20 transition-colors group"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-9 h-9 text-slate-400 group-hover:text-electric-blue transition-colors" />
+                  <social.icon className="w-5 h-5 text-slate-400 group-hover:text-electric-blue transition-colors" />
                 </motion.a>
               ))}
             </div>
@@ -159,7 +159,7 @@ const Footer = () => {
             
             <div className="text-center md:text-right">
               <p className="text-sm text-slate-400">
-                © 2024 Tesla Stock. {t('allRightsReserved')}
+                © 2025 Tesla Stock. {t('allRightsReserved')}
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 {t('registrationInfo')}
