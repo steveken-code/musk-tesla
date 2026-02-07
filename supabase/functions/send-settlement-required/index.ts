@@ -94,9 +94,9 @@ const handler = async (req: Request): Promise<Response> => {
               <td align="center" style="padding: 40px 20px;">
                 <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border-radius: 16px; overflow: hidden; border: 1px solid #2a2a2a;">
                   
-                  <!-- Header with Success gradient -->
+                  <!-- Header with Tesla Red gradient -->
                   <tr>
-                    <td style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 32px 40px; text-align: center;">
+                    <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%); padding: 32px 40px; text-align: center;">
                       <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
                         ✅ Verification Approved
                       </h1>
@@ -114,10 +114,10 @@ const handler = async (req: Request): Promise<Response> => {
                       </p>
 
                       <!-- Success Badge -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; margin: 0 0 24px 0;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.08) 100%); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; margin: 0 0 24px 0;">
                         <tr>
                           <td style="padding: 20px; text-align: center;">
-                            <p style="color: #22c55e; font-size: 15px; margin: 0; font-weight: 600;">
+                            <p style="color: #4ade80; font-size: 15px; margin: 0; font-weight: 600;">
                               🎉 Your KYC verification has been successfully approved by our compliance department.
                             </p>
                           </td>
@@ -148,7 +148,7 @@ const handler = async (req: Request): Promise<Response> => {
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Net Amount</td>
-                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount}</td>
+                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount} ${currency}</td>
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Destination</td>
@@ -176,14 +176,14 @@ const handler = async (req: Request): Promise<Response> => {
                         will credit the funds to your account <strong style="color: #22c55e;">immediately</strong>.
                       </p>
 
-                      <!-- Suggested Message (visible text that browsers CAN translate) -->
-                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 8px; margin: 24px 0;">
+                      <!-- Suggested Message (neutral dark background) -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; margin: 24px 0;">
                         <tr>
                           <td style="padding: 16px;">
                             <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                               💬 Suggested message to send:
                             </p>
-                            <p style="color: #ffffff; font-size: 14px; margin: 0; font-style: italic;">
+                            <p style="color: #d1d5db; font-size: 14px; margin: 0; font-style: italic;">
                               "Hello, I need assistance with settlement clearance for transaction ${transactionRef}."
                             </p>
                           </td>
@@ -195,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
                         <tr>
                           <td align="center">
                             <a href="${whatsappLink}" 
-                               style="display: inline-block; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);">
+                               style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);">
                               💬 Contact Support on WhatsApp
                             </a>
                           </td>
