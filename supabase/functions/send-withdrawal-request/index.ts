@@ -67,19 +67,19 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="margin: 0; padding: 0; background-color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
+    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
         <tr>
           <td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <table width="650" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
               
               <!-- Header - Tesla Red -->
               <tr>
-                <td style="padding: 50px 40px 35px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
-                  <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                <td style="padding: 40px 50px 30px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
-                  <p style="margin: 12px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
+                  <p style="margin: 12px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500;">
                     Withdrawal Status Update
                   </p>
                 </td>
@@ -87,7 +87,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Greeting -->
               <tr>
-                <td style="padding: 35px 40px 10px;">
+                <td style="padding: 40px 50px 10px;">
                   <p style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">
                     Hello ${name || (email ? email.split('@')[0] : 'there')},
                   </p>
@@ -96,7 +96,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Status Message -->
               <tr>
-                <td style="padding: 10px 40px 25px;">
+                <td style="padding: 10px 50px 25px;">
                   <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.7;">
                     Your withdrawal request has been received and is currently being processed.
                   </p>
@@ -105,8 +105,8 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Withdrawal Details Card -->
               <tr>
-                <td style="padding: 0 40px 30px;">
-                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; margin: 0;">
+                <td style="padding: 0 50px 30px;">
+                  <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px;">
                     <h3 style="margin: 0 0 22px; color: #3b82f6; font-size: 18px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
@@ -181,8 +181,8 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Contact Support Button -->
               <tr>
-                <td style="padding: 0 40px 35px; text-align: center;">
-                  <a href="${supportLink}" style="display: inline-block; background: #3b82f6; color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                <td style="padding: 0 50px 40px; text-align: center;">
+                  <a href="${supportLink}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.5);">
                     💬 Contact Support on ${supportLabel}
                   </a>
                 </td>
@@ -190,7 +190,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Footer -->
               <tr>
-                <td style="background: #f9fafb; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <td style="background: #f9fafb; padding: 30px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
                   <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
                     © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                   </p>
