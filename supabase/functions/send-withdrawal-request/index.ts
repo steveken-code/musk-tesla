@@ -10,7 +10,7 @@ const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/new_tesla-removebg-preview.png";
+// No logo in header - matches platform standard
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
@@ -75,12 +75,11 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Header - Tesla Red -->
               <tr>
-                <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
-                  <img src="${TESLA_LOGO_URL}" alt="Tesla Stock" style="width: 100px; height: 100px; margin-bottom: 20px; border-radius: 16px;" />
+                <td style="padding: 50px 40px 35px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
                   <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
                     Tesla Stock Platform
                   </h1>
-                  <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 18px; font-weight: 600;">
+                  <p style="margin: 12px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
                     Withdrawal Status Update
                   </p>
                 </td>
@@ -88,7 +87,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Greeting -->
               <tr>
-                <td style="padding: 30px 40px 10px;">
+                <td style="padding: 35px 40px 10px;">
                   <p style="margin: 0; color: #374151; font-size: 18px; font-weight: 600;">
                     Hello ${name || (email ? email.split('@')[0] : 'there')},
                   </p>
@@ -97,9 +96,9 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               
               <!-- Status Message -->
               <tr>
-                <td style="padding: 10px 40px 20px;">
-                  <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.6;">
-                    Your withdrawal request has been received and is currently being processed. Please contact our support team to complete your withdrawal.
+                <td style="padding: 10px 40px 25px;">
+                  <p style="margin: 0; color: #374151; font-size: 16px; line-height: 1.7;">
+                    Your withdrawal request has been received and is currently being processed.
                   </p>
                 </td>
               </tr>
@@ -107,14 +106,14 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               <!-- Withdrawal Details Card -->
               <tr>
                 <td style="padding: 0 40px 30px;">
-                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 25px; margin: 0;">
-                    <h3 style="margin: 0 0 20px; color: #3b82f6; font-size: 18px; font-weight: 700;">
+                  <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; margin: 0;">
+                    <h3 style="margin: 0 0 22px; color: #3b82f6; font-size: 18px; font-weight: 700;">
                       📋 Withdrawal Details
                     </h3>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Reference ID</td>
@@ -124,7 +123,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Amount</td>
@@ -134,7 +133,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Request Date</td>
@@ -144,7 +143,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Country</td>
@@ -154,7 +153,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 14px 0; border-bottom: 1px solid #e5e7eb;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Payment Method</td>
@@ -164,7 +163,7 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px 0;">
+                        <td style="padding: 14px 0;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="color: #6b7280; font-size: 14px; font-weight: 500;">Status</td>
@@ -180,20 +179,12 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
                 </td>
               </tr>
               
-              <!-- Important Notice -->
+              <!-- Contact Support Button -->
               <tr>
-                <td style="padding: 0 40px 30px;">
-                  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 16px; padding: 25px; text-align: center;">
-                    <p style="margin: 0 0 15px; color: #92400e; font-size: 16px; font-weight: 700;">
-                      ⚠️ Action Required
-                    </p>
-                    <p style="margin: 0 0 20px; color: #78350f; font-size: 14px; line-height: 1.6;">
-                      Please contact our Customer Support Team to complete your withdrawal process.
-                    </p>
-                    <a href="${supportLink}" style="display: inline-block; background: ${supportType === 'telegram' ? '#0088cc' : '#25D366'}; color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
-                      💬 Contact Support on ${supportLabel}
-                    </a>
-                  </div>
+                <td style="padding: 0 40px 35px; text-align: center;">
+                  <a href="${supportLink}" style="display: inline-block; background: #3b82f6; color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                    💬 Contact Support on ${supportLabel}
+                  </a>
                 </td>
               </tr>
               
