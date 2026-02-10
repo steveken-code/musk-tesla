@@ -108,11 +108,10 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
                   
                   <!-- Welcome Message -->
                   <tr>
-                    <td style="padding: 40px 50px 20px; text-align: center;">
-                      <p style="margin: 0; color: #6b7280; font-size: 16px;">Welcome aboard,</p>
-                      <h2 style="margin: 10px 0 0; color: #1e40af; font-size: 26px; font-weight: 700;">
-                        ${name}! 🎉
-                      </h2>
+                    <td style="padding: 40px 50px 20px;">
+                      <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
+                        Hello ${name}, 🎉
+                      </p>
                       <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 25px auto; border-radius: 2px;"></div>
                     </td>
                   </tr>

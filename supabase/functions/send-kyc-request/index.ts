@@ -118,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 40px;">
                       <p style="color: #ffffff; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                        Dear <span style="color: #3b82f6; font-weight: 600;">${userName}</span>,
+                        Hello <span style="color: #3b82f6; font-weight: 600;">${userName}</span>,
                       </p>
 
                       <p style="color: #a1a1aa; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
