@@ -42,10 +42,10 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
   
   console.log(`Sending withdrawal request email to ${email} for $${amount}`);
 
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+  const formattedAmount = `$${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
 
   const formattedDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
