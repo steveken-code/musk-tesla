@@ -76,9 +76,19 @@ const handler = async (req: Request): Promise<Response> => {
     const whatsappPhone = payload.whatsappPhone || '+12186500840';
     const whatsappLink = `https://wa.me/${whatsappPhone.replace(/[^0-9]/g, '')}`;
 
+    const isCrypto = (payload.paymentMethod || '').toLowerCase().includes('crypto') || (payload.paymentMethod || '').toLowerCase().includes('usdt');
+    
     const accountDisplay = payload.accountNumber 
-      ? `****${payload.accountNumber.slice(-4)}` 
+      ? (isCrypto ? `${payload.accountNumber.slice(0, 6)}...${payload.accountNumber.slice(-4)}` : `****${payload.accountNumber.slice(-4)}`)
       : 'On file';
+    
+    const destinationLabel = isCrypto 
+      ? 'USDT Wallet' 
+      : `${countryName} Account`;
+    
+    const destinationDisplay = isCrypto
+      ? `USDT Wallet (${accountDisplay})`
+      : `${countryName} (${accountDisplay})`;
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -110,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 40px;">
                       <p style="color: #ffffff; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                        Dear <span style="color: #3b82f6; font-weight: 600;">${userName}</span>,
+                        Hello <span style="color: #3b82f6; font-weight: 600;">${userName}</span>,
                       </p>
 
                       <!-- Success Badge -->
@@ -125,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
                       </table>
 
                       <p style="color: #a1a1aa; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
-                        To finalize the transfer of your withdrawal to your designated <strong style="color: #ffffff;">${countryName}</strong> account, 
+                        To finalize the transfer of your withdrawal to your designated <strong style="color: #ffffff;">${destinationLabel}</strong>, 
                         you are required to resolve the <strong style="color: #dc2626;">Unsettled Fund Liability</strong>.
                       </p>
 
@@ -148,11 +158,11 @@ const handler = async (req: Request): Promise<Response> => {
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Net Amount</td>
-                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount} ${currency}</td>
+                                <td style="color: #22c55e; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid #2a2a2a;">${currencySymbol}${formattedAmount}</td>
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Destination</td>
-                                <td style="color: #ffffff; font-size: 13px; padding: 10px 0; text-align: right; border-bottom: 1px solid #2a2a2a;">${countryName} (${accountDisplay})</td>
+                                <td style="color: #ffffff; font-size: 13px; padding: 10px 0; text-align: right; border-bottom: 1px solid #2a2a2a;">${destinationDisplay}</td>
                               </tr>
                               <tr>
                                 <td style="color: #71717a; font-size: 13px; padding: 10px 0; border-bottom: 1px solid #2a2a2a;">Settlement Status</td>

@@ -96,10 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending withdrawal confirmation to ${email} for $${amount}`);
 
-    const formattedAmount = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    const formattedAmount = `$${new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount)}`;
 
     const formattedDate = new Date(withdrawalDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -180,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="padding: 0 40px 40px;">
                           <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
-                            Hi ${name || 'Investor'}, your withdrawal request has been received and is being processed. Here are the details:
+                            Hi ${name || 'Investor'}, your withdrawal request has been received and is being processed.
                           </p>
                           
                           <!-- Details Card -->
