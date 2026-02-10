@@ -162,7 +162,7 @@ async function sendTradeClosedEmail(data: TradeClosedRequest) {
               <tr>
                 <td style="padding: 40px 50px 15px;">
                   <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
-                    Congratulations ${userName || (userEmail ? userEmail.split('@')[0] : 'there')}!
+                    Hello ${userName || (userEmail ? userEmail.split('@')[0] : 'there')},
                   </p>
                 </td>
               </tr>
