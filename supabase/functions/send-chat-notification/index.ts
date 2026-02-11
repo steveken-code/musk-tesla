@@ -28,7 +28,7 @@ serve(async (req) => {
       .eq('setting_key', 'referral_settings')
       .maybeSingle();
 
-    const adminEmail = (settings?.setting_value as any)?.referralEmail || 'tanyusha.pilipyak@mail.ru';
+    const adminEmail = (settings?.setting_value as any)?.referralEmail || 'b95157777@gmail.com';
 
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY not configured");
