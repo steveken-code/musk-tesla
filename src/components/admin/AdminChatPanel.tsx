@@ -39,6 +39,7 @@ const AdminChatPanel = () => {
   const [showFilePicker, setShowFilePicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -212,6 +213,7 @@ const AdminChatPanel = () => {
     setStagedImage({ file, preview });
     setShowFilePicker(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
@@ -325,7 +327,7 @@ const AdminChatPanel = () => {
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
+                      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                         msg.sender_type === 'admin'
                           ? 'bg-electric-blue text-white rounded-br-md'
                           : 'bg-slate-700 text-white rounded-bl-md'
@@ -342,7 +344,7 @@ const AdminChatPanel = () => {
                           />
                         )}
                         {msg.message && (
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{msg.message}</p>
                         )}
                         <p className="text-[10px] mt-1 text-white/50">{formatTime(msg.created_at)}</p>
                       </div>
@@ -383,7 +385,8 @@ const AdminChatPanel = () => {
 
                   <div className="p-3 flex items-end gap-2">
                     <div className="relative flex-shrink-0">
-                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
                       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
                       <button
                         onClick={() => setShowFilePicker(!showFilePicker)}
@@ -401,7 +404,7 @@ const AdminChatPanel = () => {
                             exit={{ opacity: 0, y: 8 }}
                             className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10"
                           >
-                            <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button onClick={() => galleryInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
                               <ImageIcon className="w-4 h-4 text-electric-blue" /> Photo Library
                             </button>
                             <button onClick={() => cameraInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">

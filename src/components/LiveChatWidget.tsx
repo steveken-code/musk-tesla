@@ -31,6 +31,7 @@ const LiveChatWidget = () => {
   const [showFilePicker, setShowFilePicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -255,6 +256,7 @@ const LiveChatWidget = () => {
     setStagedImage({ file, preview });
     setShowFilePicker(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
@@ -291,7 +293,7 @@ const LiveChatWidget = () => {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-110 overflow-hidden bg-white"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-110 overflow-hidden bg-white"
             aria-label="Open live chat"
           >
             <img src={liveSupportIcon} alt="Live Support" className="w-14 h-14 object-cover" />
@@ -322,7 +324,7 @@ const LiveChatWidget = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-white font-semibold text-sm truncate">Live Support</h3>
-                  <p className="text-white/70 text-[11px] truncate">We typically reply instantly</p>
+                  <p className="text-white/70 text-[11px] truncate">Tesla Stock Platform</p>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors p-1 flex-shrink-0">
@@ -331,7 +333,7 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-muted/30">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-muted/30" style={{ WebkitOverflowScrolling: 'touch' as any }}>
               {!user && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
@@ -350,7 +352,7 @@ const LiveChatWidget = () => {
 
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
+                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                     msg.sender_type === 'user'
                       ? 'bg-electric-blue text-white rounded-br-md'
                       : 'bg-card border border-border text-foreground rounded-bl-md'
@@ -367,7 +369,7 @@ const LiveChatWidget = () => {
                       />
                     )}
                     {msg.message && (
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{msg.message}</p>
                     )}
                     <p className={`text-[10px] mt-1 ${msg.sender_type === 'user' ? 'text-white/60' : 'text-muted-foreground'}`}>
                       {formatTime(msg.created_at)}
@@ -412,7 +414,8 @@ const LiveChatWidget = () => {
                 <div className="p-3 flex items-end gap-2">
                   {/* File picker */}
                   <div className="relative flex-shrink-0">
-                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                  <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                    <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
                     <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
                     <button
                       onClick={() => setShowFilePicker(!showFilePicker)}
@@ -432,7 +435,7 @@ const LiveChatWidget = () => {
                           className="absolute bottom-12 left-0 bg-popover border border-border rounded-xl shadow-xl py-1 min-w-[160px] z-10"
                         >
                           <button
-                            onClick={() => { fileInputRef.current?.click(); }}
+                            onClick={() => { galleryInputRef.current?.click(); }}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
                           >
                             <ImageIcon className="w-4 h-4 text-electric-blue" />
