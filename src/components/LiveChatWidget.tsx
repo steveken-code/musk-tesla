@@ -5,6 +5,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import liveSupportIcon from '@/assets/live-support-icon.png';
 
+// Preload notification sound
+const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
+const notificationAudio = typeof window !== 'undefined' ? new Audio(NOTIFICATION_SOUND_URL) : null;
+if (notificationAudio) {
+  notificationAudio.volume = 0.4;
+  notificationAudio.preload = 'auto';
+}
+
 interface ChatMessage {
   id: string;
   conversation_id: string;
@@ -50,6 +58,8 @@ const LiveChatWidget = () => {
   const [stagedImage, setStagedImage] = useState<{ file: File; preview: string } | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showFilePicker, setShowFilePicker] = useState(false);
+  const [proactiveTyping, setProactiveTyping] = useState(false);
+  const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -238,6 +248,35 @@ const LiveChatWidget = () => {
     }
   }, [message]);
 
+  // Proactive greeting: typing dots → message → sound (once per session)
+  useEffect(() => {
+    if (!isOpen) return;
+    if (sessionStorage.getItem('chat-greeted')) return;
+    if (messages.length > 0) return; // Don't show if conversation already has messages
+
+    sessionStorage.setItem('chat-greeted', 'true');
+    const greeting = getGreeting();
+    const greetingText = `${greeting.hi} 👋\n${greeting.help}`;
+
+    // Show typing dots after a short delay
+    const typingTimer = setTimeout(() => {
+      setProactiveTyping(true);
+    }, 800);
+
+    // Replace dots with message after 2s
+    const messageTimer = setTimeout(() => {
+      setProactiveTyping(false);
+      setProactiveMessage(greetingText);
+      // Play sound
+      notificationAudio?.play().catch(() => {});
+    }, 2600);
+
+    return () => {
+      clearTimeout(typingTimer);
+      clearTimeout(messageTimer);
+    };
+  }, [isOpen, messages.length]);
+
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
     if (!conversationId) return;
     const typingUserId = user?.id || getGuestId();
@@ -398,11 +437,44 @@ const LiveChatWidget = () => {
               maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
             }}>
-              {messages.length === 0 && (
+              {messages.length === 0 && !proactiveTyping && !proactiveMessage && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
-                  <p className="text-foreground font-medium text-sm">{getGreeting().hi} 👋</p>
-                  <p className="text-muted-foreground text-xs mt-1">{getGreeting().help}</p>
+                  <p className="text-muted-foreground text-xs mt-1">Send us a message</p>
+                </div>
+              )}
+
+              {/* Proactive typing indicator */}
+              {messages.length === 0 && proactiveTyping && (
+                <div className="flex justify-start">
+                  <div className="flex items-start gap-2">
+                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Proactive greeting message */}
+              {messages.length === 0 && proactiveMessage && (
+                <div className="flex justify-start">
+                  <div className="flex items-start gap-2">
+                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <motion.div
+                      initial={{ scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className="max-w-[80%] bg-card border border-border rounded-2xl rounded-bl-md px-3.5 py-2.5"
+                    >
+                      <p className="text-[10px] font-semibold text-electric-blue mb-1">Support</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{proactiveMessage}</p>
+                    </motion.div>
+                  </div>
                 </div>
               )}
 
