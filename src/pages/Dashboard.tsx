@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SupportButtons from '@/components/SupportButtons';
+import LiveChatWidget from '@/components/LiveChatWidget';
 // TeslaChart removed from dashboard layout
 import InvestmentChart from '@/components/InvestmentChart';
 import PaymentDetails from '@/components/PaymentDetails';
@@ -2087,6 +2088,7 @@ const Dashboard = () => {
       )}
 
       <SupportButtons />
+      <LiveChatWidget />
 
       {/* Profile Completion Modal */}
       <ProfileCompletionModal
