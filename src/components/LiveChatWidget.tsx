@@ -174,6 +174,7 @@ const LiveChatWidget = () => {
   // Subscribe to admin typing
   useEffect(() => {
     if (!conversationId) return;
+    const currentUserId = user?.id || getGuestId();
     const channel = supabase
       .channel(`typing-${conversationId}`)
       .on('postgres_changes', {
@@ -183,7 +184,8 @@ const LiveChatWidget = () => {
         filter: `conversation_id=eq.${conversationId}`,
       }, (payload) => {
         const row = payload.new as any;
-        if (row.user_id !== user?.id) {
+        // Only show typing if it's NOT from the current user (i.e. it's from admin)
+        if (row.user_id !== currentUserId) {
           setAdminTyping(row.is_typing || false);
         }
       })
