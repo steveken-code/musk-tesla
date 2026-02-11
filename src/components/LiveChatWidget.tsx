@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Send, ImagePlus, Loader2, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { X, Send, Plus, Loader2, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,7 +101,7 @@ const LiveChatWidget = () => {
     const { data: newConv, error } = await supabase
       .from('chat_conversations')
       .insert({
-        user_id: user?.id || identifier,
+        user_id: user?.id || null,
         user_name: user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : 'Guest',
         user_email: user ? (profileData?.email || user.email) : null,
       })
@@ -374,6 +374,7 @@ const LiveChatWidget = () => {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className="fixed bottom-4 right-4 sm:right-6 z-[60] w-[calc(100vw-32px)] sm:w-[380px] h-[min(520px,calc(100vh-80px))] flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => { if (showFilePicker) { setShowFilePicker(false); } }}
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
@@ -472,12 +473,12 @@ const LiveChatWidget = () => {
                     <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
                     <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
                     <button
-                      onClick={() => setShowFilePicker(!showFilePicker)}
+                      onClick={(e) => { e.stopPropagation(); setShowFilePicker(!showFilePicker); }}
                       disabled={uploading}
                       className="p-2 text-muted-foreground hover:text-electric-blue transition-colors rounded-lg hover:bg-muted/50"
                       aria-label="Attach image"
                     >
-                      {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
+                      {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
                     </button>
 
                     <AnimatePresence>
@@ -537,10 +538,6 @@ const LiveChatWidget = () => {
         )}
       </AnimatePresence>
 
-      {/* Close file picker when clicking outside - covers entire screen */}
-      {showFilePicker && (
-        <div className="fixed inset-0 z-[59]" onClick={() => setShowFilePicker(false)} onTouchEnd={() => setShowFilePicker(false)} />
-      )}
     </>
   );
 };
