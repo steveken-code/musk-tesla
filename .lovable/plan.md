@@ -1,107 +1,85 @@
 
 
-# Live Chat Widget Enhancement Plan
+# Live Chat Widget Mobile and UX Fixes
 
-## Issues Identified
+## Issues Found
 
-1. **Notification email goes to wrong address** -- The `send-chat-notification` edge function pulls admin email from `referral_settings` which has `b951577777@gmail.com` (extra 7). Need to use a dedicated chat notification email setting, or update the existing one.
+1. **Long messages can overflow** -- The message bubble uses `whitespace-pre-wrap` but lacks `word-break: break-word` or `overflow-wrap: break-word`, meaning very long unbroken strings (like URLs) can extend outside the bubble container.
 
-2. **Image viewing broken** -- Images open in a new tab pointing to the raw storage URL. The URL works (public bucket), but the UX needs improvement -- images should open in a lightbox/modal overlay instead.
+2. **Chat bubble icon positioning** -- The chat bubble sits at `bottom-24` which overlaps with the WhatsApp support button at `bottom-6`. Need to adjust spacing so they don't overlap.
 
-3. **Chat header text overflows** -- "We typically reply instantly" collapses in the small header. Need to fix text sizing and layout.
+3. **Messages area scrolling** -- The messages container needs `-webkit-overflow-scrolling: touch` for smoother iOS scrolling.
 
-4. **Message input too tight** -- Single-line `<input>` should become a resizable `<textarea>` that scrolls for long messages, with more padding.
+4. **File picker buttons not fully activated** -- The "Photo Library", "Take Photo", and "Choose File" buttons all work via hidden file inputs, but "Photo Library" and "Choose File" both point to the same `fileInputRef`. "Choose File" should accept all file types (not just images) to differentiate it, or at minimum use a different `accept` attribute.
 
-5. **Image upload sends automatically** -- Images should be staged (previewed) before sending so the user can add a caption text.
-
-6. **No typing indicators** -- Need real-time typing indicators for both user and admin sides.
-
-7. **Chat bubble icon** -- Replace the generic `MessageCircle` icon with the uploaded live support agent image.
-
-8. **File picker options** -- The image button should offer Photo Library / Take Photo / Choose File options (use `capture` attribute on mobile).
-
-9. **Live chat not on homepage for logged-out users** -- Currently `LiveChatWidget` returns null if no user. It already exists in `Index.tsx`, but it's hidden for non-logged-in visitors. We should still show it on the homepage (the widget is already imported there).
-
-10. **Mobile responsiveness** -- Ensure chat widget works well on all screen sizes.
+5. **Header subtitle** -- "We typically reply instantly" text needs to be updated to "Tesla Stock Platform" as requested.
 
 ---
 
-## Implementation Steps
+## Changes
 
-### Step 1: Copy the support agent image
-- Copy `user-uploads://live_img-removebg-preview.png` to `src/assets/live-support-icon.png`
-- Use this as the chat bubble icon and header avatar
+### File: `src/components/LiveChatWidget.tsx`
 
-### Step 2: Database migration for typing indicators
-- Add a `chat_typing_status` table with columns: `id`, `conversation_id`, `user_id`, `is_typing`, `updated_at`
-- Enable realtime on this table
-- Add RLS policies so users can manage their own typing status and admins can manage theirs
+1. **Fix message text overflow**: Add `break-words overflow-hidden` to message bubble text to prevent long words/URLs from exceeding the bubble width.
 
-### Step 3: Rewrite `LiveChatWidget.tsx`
-- **Header**: Use the support agent image as avatar, fix text layout so "Live Support" and "We typically reply instantly" don't overflow
-- **Textarea input**: Replace `<input type="text">` with a scrollable `<textarea>` that auto-grows, with comfortable padding
-- **Image staging**: When user picks an image, show a preview with option to add caption text before sending (don't auto-send)
-- **File picker**: Add `capture="environment"` support for mobile camera; keep standard file picker for desktop
-- **Typing indicator**: Subscribe to `chat_typing_status` table; show animated dots when admin is typing; broadcast user's typing status
-- **Send button**: Styled professionally, no character limit indicator shown
-- **Responsiveness**: Full-width on mobile (< 420px), proper bottom positioning to not overlap WhatsApp button
-- **Logged-out users**: Allow viewing the widget but show a "Please log in to chat" prompt instead of hiding entirely
-- **Image lightbox**: When clicking a sent/received image, show it in a full-screen overlay modal instead of opening a new tab
+2. **Update header subtitle**: Change "We typically reply instantly" to "Tesla Stock Platform".
 
-### Step 4: Update `AdminChatPanel.tsx`
-- **Image staging**: Same image preview + caption flow before sending
-- **Typing indicator**: Show when user is typing; broadcast admin typing status
-- **Image lightbox**: Modal overlay for viewing images instead of new tab
-- **Textarea**: Replace single-line input with scrollable textarea for longer replies
+3. **Improve messages scroll area**: Add `-webkit-overflow-scrolling: touch` style for smooth iOS scrolling.
 
-### Step 5: Update `send-chat-notification` edge function
-- Change the admin email lookup to use a dedicated `notification_email` field, or look for the admin's profile email directly
-- Ensure the hardcoded fallback matches the correct email `b95157777@gmail.com`
+4. **Differentiate file picker options**:
+   - "Photo Library" -- `accept="image/*"` (gallery only, no capture)
+   - "Take a Photo" -- `accept="image/*" capture="environment"` (camera)
+   - "Choose File" -- `accept="image/*,.pdf,.doc,.docx"` (broader file types)
 
-### Step 6: Responsive and positioning fixes
-- Position chat bubble above the WhatsApp button without overlapping
-- On mobile, chat window takes near-full width with proper safe area padding
-- Ensure z-index layering is correct (chat above support buttons)
+5. **Fix chat bubble positioning**: Move from `bottom-24` to `bottom-[88px]` to sit above the WhatsApp button without overlapping.
+
+6. **Add word-break CSS to message bubbles**: Apply `break-all` or `overflow-wrap: anywhere` so long unbroken text wraps inside the bubble.
+
+### File: `src/components/admin/AdminChatPanel.tsx`
+
+1. **Fix message text overflow**: Same `break-words` fix for admin-side message bubbles.
+
+2. **Differentiate file picker options**: Same fix as user widget -- separate accept types for the three buttons.
 
 ---
 
 ## Technical Details
 
-### Typing Status Table Schema
-```sql
-CREATE TABLE public.chat_typing_status (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  conversation_id UUID NOT NULL,
-  user_id UUID NOT NULL,
-  is_typing BOOLEAN DEFAULT false,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
--- RLS + realtime enabled
+### Message bubble overflow fix (both files)
+```tsx
+// Current
+<p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+
+// Fixed - add overflow-wrap
+<p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.message}</p>
 ```
 
-### Image Staging Flow
-```text
-User clicks image button
-  -> File picker opens (Photo Library / Camera / File)
-  -> Image selected
-  -> Preview shown in input area with X to cancel
-  -> User can type optional caption
-  -> User clicks Send to upload + send both image and text
+Also add `overflow-hidden` to the outer bubble container to prevent any edge-case overflow.
+
+### File picker differentiation
+```tsx
+// Dedicated file input for "Choose File" with broader accept
+<input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
+
+// Separate gallery input (images only, no capture)
+<input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+
+// Camera input stays the same
+<input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
 ```
 
-### Typing Indicator Flow
-```text
-User starts typing
-  -> Upsert typing status (is_typing = true)
-  -> Debounce: after 3s of no typing, set is_typing = false
-  -> Other side subscribes to realtime changes
-  -> Shows "typing..." animation
+### Header text update
+```tsx
+<p className="text-white/70 text-[11px] truncate">Tesla Stock Platform</p>
 ```
 
-### Files to Create/Modify
-- **Create**: `src/assets/live-support-icon.png` (copy from upload)
-- **Create**: Migration for `chat_typing_status` table
-- **Modify**: `src/components/LiveChatWidget.tsx` (major rewrite)
-- **Modify**: `src/components/admin/AdminChatPanel.tsx` (typing + image staging)
-- **Modify**: `supabase/functions/send-chat-notification/index.ts` (fix email)
+### Scroll smoothness
+```tsx
+<div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-muted/30"
+  style={{ WebkitOverflowScrolling: 'touch' }}>
+```
+
+### Files to modify
+- `src/components/LiveChatWidget.tsx` -- 6 targeted edits
+- `src/components/admin/AdminChatPanel.tsx` -- 2 targeted edits
 
