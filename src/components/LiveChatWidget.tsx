@@ -60,6 +60,7 @@ const LiveChatWidget = () => {
   const [showFilePicker, setShowFilePicker] = useState(false);
   const [proactiveTyping, setProactiveTyping] = useState(false);
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
+  const [customGreeting, setCustomGreeting] = useState<{ mode: string; guestGreeting: string; userGreeting: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +81,21 @@ const LiveChatWidget = () => {
     };
     loadProfile();
   }, [user]);
+
+  // Fetch custom greeting settings
+  useEffect(() => {
+    const fetchGreeting = async () => {
+      const { data } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'chat_greeting_settings')
+        .maybeSingle();
+      if (data?.setting_value) {
+        setCustomGreeting(data.setting_value as any);
+      }
+    };
+    fetchGreeting();
+  }, []);
 
   // Load or create conversation
   const getOrCreateConversation = useCallback(async () => {
@@ -255,8 +271,22 @@ const LiveChatWidget = () => {
     if (messages.length > 0) return; // Don't show if conversation already has messages
 
     sessionStorage.setItem('chat-greeted', 'true');
-    const greeting = getGreeting();
-    const greetingText = `${greeting.hi} 👋\n${greeting.help}`;
+
+    // Determine greeting text
+    let greetingText: string;
+    if (customGreeting && customGreeting.mode === 'custom') {
+      if (user && customGreeting.userGreeting) {
+        greetingText = customGreeting.userGreeting.replace(
+          /\{\{user_name\}\}/g,
+          profileData?.full_name || 'there'
+        );
+      } else {
+        greetingText = customGreeting.guestGreeting;
+      }
+    } else {
+      const greeting = getGreeting();
+      greetingText = `${greeting.hi} 👋\n${greeting.help}`;
+    }
 
     // Show typing dots after a short delay
     const typingTimer = setTimeout(() => {
@@ -275,7 +305,7 @@ const LiveChatWidget = () => {
       clearTimeout(typingTimer);
       clearTimeout(messageTimer);
     };
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages.length, customGreeting, user, profileData]);
 
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
     if (!conversationId) return;

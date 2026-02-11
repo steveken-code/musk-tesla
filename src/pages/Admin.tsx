@@ -68,6 +68,12 @@ interface CryptoSettings {
   network: string;
 }
 
+interface ChatGreetingSettings {
+  mode: 'default' | 'custom';
+  guestGreeting: string;
+  userGreeting: string;
+}
+
 interface KYCVerification {
   id: string;
   user_id: string;
@@ -127,6 +133,12 @@ const DEFAULT_REFERRAL_SETTINGS: ReferralSettings = {
 const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
   walletAddress: 'TFbr4FWR98Z8UWvVSouVMqrZ2mrLkrjsKA',
   network: 'TRON (TRC20)',
+};
+
+const DEFAULT_CHAT_GREETING_SETTINGS: ChatGreetingSettings = {
+  mode: 'default',
+  guestGreeting: 'Welcome to Tesla Stock Platform! 📈 A verified support agent will be with you shortly.',
+  userGreeting: 'Welcome back, {{user_name}}! 👋 How can we assist you today? A verified agent will be with you shortly.',
 };
 
 // Country code to full name mapping
@@ -194,6 +206,9 @@ const Admin = () => {
   const [savingSupport, setSavingSupport] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
   const [savingCrypto, setSavingCrypto] = useState(false);
+  const [chatGreetingSettings, setChatGreetingSettings] = useState<ChatGreetingSettings>(DEFAULT_CHAT_GREETING_SETTINGS);
+  const [savingGreeting, setSavingGreeting] = useState(false);
+  const [showGreetingPreview, setShowGreetingPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
@@ -359,6 +374,13 @@ const Admin = () => {
             setCryptoSettings({
               walletAddress: value.walletAddress || DEFAULT_CRYPTO_SETTINGS.walletAddress,
               network: value.network || DEFAULT_CRYPTO_SETTINGS.network,
+            });
+          } else if (setting.setting_key === 'chat_greeting_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as ChatGreetingSettings;
+            setChatGreetingSettings({
+              mode: value.mode || 'default',
+              guestGreeting: value.guestGreeting || DEFAULT_CHAT_GREETING_SETTINGS.guestGreeting,
+              userGreeting: value.userGreeting || DEFAULT_CHAT_GREETING_SETTINGS.userGreeting,
             });
           }
         });
@@ -880,7 +902,45 @@ const Admin = () => {
     }
   };
 
-  // Fetch KYC verifications
+  const saveChatGreetingSettings = async () => {
+    setSavingGreeting(true);
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'chat_greeting_settings')
+        .maybeSingle();
+
+      const payload = JSON.parse(JSON.stringify(chatGreetingSettings));
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({
+            setting_value: payload,
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'chat_greeting_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({
+            setting_key: 'chat_greeting_settings',
+            setting_value: payload,
+            updated_by: user?.id
+          });
+      }
+
+      toast.success('Chat greeting settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save greeting settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingGreeting(false);
+    }
+  };
+
   const fetchKycVerifications = async () => {
     try {
       const { data: kycData, error: kycError } = await supabase
@@ -1609,7 +1669,138 @@ const Admin = () => {
         </div>
 
         {/* Chat Tab */}
-        {activeTab === 'chat' && <AdminChatPanel />}
+        {activeTab === 'chat' && (
+          <div className="space-y-4">
+            {/* Chat Greeting Settings Card */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 animate-fade-in">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-electric-blue" />
+                Chat Greeting Settings
+              </h3>
+
+              {/* Mode Toggle */}
+              <div className="flex gap-2 mb-5">
+                <button
+                  onClick={() => setChatGreetingSettings(prev => ({ ...prev, mode: 'default' }))}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    chatGreetingSettings.mode === 'default'
+                      ? 'bg-electric-blue text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Default Greeting
+                </button>
+                <button
+                  onClick={() => setChatGreetingSettings(prev => ({ ...prev, mode: 'custom' }))}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    chatGreetingSettings.mode === 'custom'
+                      ? 'bg-electric-blue text-white'
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  Custom Auto-Reply
+                </button>
+              </div>
+
+              {chatGreetingSettings.mode === 'custom' && (
+                <div className="space-y-4">
+                  {/* Guest Greeting */}
+                  <div>
+                    <Label className="text-slate-300 text-sm mb-1.5 block">Guest Greeting</Label>
+                    <textarea
+                      value={chatGreetingSettings.guestGreeting}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 300) {
+                          setChatGreetingSettings(prev => ({ ...prev, guestGreeting: e.target.value }));
+                        }
+                      }}
+                      rows={3}
+                      className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      style={{ color: '#000000', fontWeight: 500 }}
+                      placeholder="Welcome message for guests..."
+                    />
+                    <p className="text-slate-500 text-xs mt-1">{chatGreetingSettings.guestGreeting.length}/300 characters</p>
+                  </div>
+
+                  {/* User Greeting */}
+                  <div>
+                    <Label className="text-slate-300 text-sm mb-1.5 block">Logged-in User Greeting</Label>
+                    <textarea
+                      value={chatGreetingSettings.userGreeting}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 300) {
+                          setChatGreetingSettings(prev => ({ ...prev, userGreeting: e.target.value }));
+                        }
+                      }}
+                      rows={3}
+                      className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      style={{ color: '#000000', fontWeight: 500 }}
+                      placeholder="Welcome back, {{user_name}}! ..."
+                    />
+                    <p className="text-slate-500 text-xs mt-1">
+                      {chatGreetingSettings.userGreeting.length}/300 characters
+                      <span className="ml-2 text-electric-blue">Supports: {'{{user_name}}'}</span>
+                    </p>
+                  </div>
+
+                  {/* Preview */}
+                  {showGreetingPreview && (
+                    <div className="bg-slate-900/60 border border-slate-600 rounded-xl p-4 space-y-3">
+                      <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Preview</p>
+                      <div className="space-y-2">
+                        <p className="text-slate-500 text-[10px]">Guest sees:</p>
+                        <div className="bg-slate-700 border border-slate-600 rounded-2xl rounded-bl-md px-3.5 py-2.5 max-w-[80%]">
+                          <p className="text-[10px] font-semibold text-electric-blue mb-1">Support</p>
+                          <p className="text-sm text-white whitespace-pre-wrap">{chatGreetingSettings.guestGreeting}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-slate-500 text-[10px]">Logged-in user sees:</p>
+                        <div className="bg-slate-700 border border-slate-600 rounded-2xl rounded-bl-md px-3.5 py-2.5 max-w-[80%]">
+                          <p className="text-[10px] font-semibold text-electric-blue mb-1">Support</p>
+                          <p className="text-sm text-white whitespace-pre-wrap">
+                            {chatGreetingSettings.userGreeting.replace('{{user_name}}', 'John')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowGreetingPreview(!showGreetingPreview)}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      {showGreetingPreview ? 'Hide Preview' : 'Preview'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={saveChatGreetingSettings}
+                      disabled={savingGreeting}
+                      className="bg-electric-blue hover:bg-electric-blue/90"
+                    >
+                      {savingGreeting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {chatGreetingSettings.mode === 'default' && (
+                <p className="text-slate-400 text-sm">
+                  Using the default localized greeting based on the user's browser language.
+                </p>
+              )}
+            </div>
+
+            {/* Admin Chat Panel */}
+            <AdminChatPanel />
+          </div>
+        )}
 
         {/* KYC Tab */}
         {activeTab === 'kyc' && (
