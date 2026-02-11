@@ -74,7 +74,7 @@ const Navbar = () => {
             to="/" 
             className="flex items-center gap-3 group pt-1"
           >
-            <img src={teslaLogo} alt="Tesla" className="h-14 md:h-16 w-auto brightness-150 drop-shadow-lg" />
+            <img src={teslaLogo} alt="Tesla" className="h-16 md:h-20 w-auto brightness-150 drop-shadow-lg" />
           </Link>
 
           {/* Desktop Navigation */}
