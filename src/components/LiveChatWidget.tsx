@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Send, Plus, Loader2, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { X, Send, Plus, Loader2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -444,7 +444,7 @@ const LiveChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 sm:bottom-4 sm:right-6 sm:left-auto sm:top-auto sm:inset-auto z-[60] w-full h-full sm:w-[380px] sm:h-[min(520px,calc(100vh-80px))] flex flex-col bg-white border border-gray-200 rounded-none sm:rounded-2xl shadow-2xl overflow-hidden"
+            className="fixed inset-0 sm:bottom-4 sm:right-6 sm:left-auto sm:top-auto sm:inset-auto z-[60] w-full h-full sm:w-[380px] sm:h-[min(520px,calc(100vh-80px))] flex flex-col bg-white sm:border sm:border-gray-200 border-0 rounded-none sm:rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => { if (showFilePicker) { setShowFilePicker(false); } }}
           >
             {/* Header */}
@@ -503,7 +503,7 @@ const LiveChatWidget = () => {
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       className="max-w-[80%] bg-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5"
                     >
-                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Support</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Tesla Stock Platform</p>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-900">{proactiveMessage}</p>
                     </motion.div>
                   </div>
@@ -518,7 +518,7 @@ const LiveChatWidget = () => {
                       : 'bg-gray-100 text-gray-900 rounded-bl-md'
                   }`}>
                     {msg.sender_type === 'admin' && (
-                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Support</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Tesla Stock Platform</p>
                     )}
                     {msg.image_url && (
                       <img
@@ -602,20 +602,6 @@ const LiveChatWidget = () => {
                           >
                             <ImageIcon className="w-4 h-4 text-electric-blue" />
                             Photo Library
-                          </button>
-                          <button
-                            onClick={() => { cameraInputRef.current?.click(); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
-                          >
-                            <Camera className="w-4 h-4 text-green-500" />
-                            Take a Photo
-                          </button>
-                          <button
-                            onClick={() => { fileInputRef.current?.click(); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
-                          >
-                            <Paperclip className="w-4 h-4 text-amber-500" />
-                            Choose File
                           </button>
                         </motion.div>
                       )}
