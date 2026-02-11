@@ -15,6 +15,18 @@ interface ChatMessage {
   created_at: string;
 }
 
+const getGreeting = () => {
+  const lang = navigator.language.split('-')[0];
+  const translations: Record<string, { hi: string; help: string }> = {
+    en: { hi: "Hello there!", help: "How can we help you?" },
+    es: { hi: "¡Hola!", help: "¿Cómo podemos ayudarte?" },
+    fr: { hi: "Bonjour !", help: "Comment pouvons-nous vous aider ?" },
+    de: { hi: "Hallo!", help: "Wie können wir Ihnen helfen?" },
+    zh: { hi: "你好！", help: "我们能为您提供什么帮助？" },
+  };
+  return translations[lang] || translations['en'];
+};
+
 const LiveChatWidget = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -289,14 +301,18 @@ const LiveChatWidget = () => {
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
+            initial={{ y: 60, opacity: 0, scale: 0.8 }}
+            animate={unreadCount > 0 
+              ? { y: 0, opacity: 1, scale: [1, 1.08, 1], transition: { scale: { duration: 0.4, repeat: Infinity, repeatDelay: 3 }, y: { type: "spring", stiffness: 100, damping: 15, delay: typeof window !== 'undefined' && localStorage.getItem('chat-avatar-visited') ? 0 : 3 }, opacity: { delay: typeof window !== 'undefined' && localStorage.getItem('chat-avatar-visited') ? 0 : 3 } } }
+              : { y: [0, -4, 0], opacity: 1, scale: 1, transition: { y: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: typeof window !== 'undefined' && localStorage.getItem('chat-avatar-visited') ? 0 : 3 }, opacity: { duration: 0.4, delay: typeof window !== 'undefined' && localStorage.getItem('chat-avatar-visited') ? 0 : 3 }, scale: { type: "spring", stiffness: 100, damping: 15, delay: typeof window !== 'undefined' && localStorage.getItem('chat-avatar-visited') ? 0 : 3 } } }
+            }
+            exit={{ scale: 0, opacity: 0 }}
+            onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-110 overflow-hidden bg-white"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-12 h-12 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white"
             aria-label="Open live chat"
           >
-            <img src={liveSupportIcon} alt="Live Support" className="w-14 h-14 object-cover" />
+            <img src={liveSupportIcon} alt="Live Support" className="w-12 h-12 object-cover" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-tesla-red text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {unreadCount}
@@ -337,7 +353,7 @@ const LiveChatWidget = () => {
               {!user && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
-                  <p className="text-foreground font-medium text-sm">Hello! 👋</p>
+                  <p className="text-foreground font-medium text-sm">{getGreeting().hi} 👋</p>
                   <p className="text-muted-foreground text-xs mt-1 mb-4">Please log in to start a conversation</p>
                 </div>
               )}
@@ -345,8 +361,8 @@ const LiveChatWidget = () => {
               {user && messages.length === 0 && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
-                  <p className="text-foreground font-medium text-sm">Hello! 👋</p>
-                  <p className="text-muted-foreground text-xs mt-1">How can we help you today?</p>
+                  <p className="text-foreground font-medium text-sm">{getGreeting().hi} 👋</p>
+                  <p className="text-muted-foreground text-xs mt-1">{getGreeting().help}</p>
                 </div>
               )}
 
