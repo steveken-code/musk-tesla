@@ -471,7 +471,15 @@
     @apply -translate-y-1 shadow-xl;
   }
 
-  /* Modern thin scrollbar for chat */
+  /* Pro-scroll: hidden until hover, thin pill thumb */
+  .chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    scroll-behavior: smooth;
+  }
+  .chat-scrollbar:hover {
+    scrollbar-color: rgba(128,128,128,0.3) transparent;
+  }
   .chat-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
@@ -479,15 +487,12 @@
     background: transparent;
   }
   .chat-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(128, 128, 128, 0.3);
-    border-radius: 4px;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 20px;
+    transition: background 0.3s ease;
   }
-  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(128, 128, 128, 0.5);
-  }
-  .chat-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(128,128,128,0.3) transparent;
+  .chat-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.25);
   }
 }
 
