@@ -444,7 +444,7 @@ const LiveChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-4 right-4 sm:right-6 z-[60] w-[calc(100vw-32px)] sm:w-[380px] h-[min(520px,calc(100vh-80px))] flex flex-col bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
+            className="fixed inset-0 sm:bottom-4 sm:right-6 sm:left-auto sm:top-auto sm:inset-auto z-[60] w-full h-full sm:w-[380px] sm:h-[min(520px,calc(100vh-80px))] flex flex-col bg-white border border-gray-200 rounded-none sm:rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => { if (showFilePicker) { setShowFilePicker(false); } }}
           >
             {/* Header */}
@@ -464,7 +464,7 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-muted/30" style={{ 
+            <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white" style={{ 
               WebkitOverflowScrolling: 'touch' as any,
               maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
@@ -472,7 +472,7 @@ const LiveChatWidget = () => {
               {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
-                  <p className="text-muted-foreground text-xs mt-1">Send us a message</p>
+                  <p className="text-gray-500 text-xs mt-1">Send us a message</p>
                 </div>
               )}
 
@@ -481,11 +481,11 @@ const LiveChatWidget = () => {
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
                     <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
-                    <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   </div>
@@ -501,10 +501,10 @@ const LiveChatWidget = () => {
                       initial={{ scale: 0.6, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="max-w-[80%] bg-card border border-border rounded-2xl rounded-bl-md px-3.5 py-2.5"
+                      className="max-w-[80%] bg-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5"
                     >
-                      <p className="text-[10px] font-semibold text-electric-blue mb-1">Support</p>
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">{proactiveMessage}</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Support</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-900">{proactiveMessage}</p>
                     </motion.div>
                   </div>
                 </div>
@@ -515,10 +515,10 @@ const LiveChatWidget = () => {
                   <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                     msg.sender_type === 'user'
                       ? 'bg-electric-blue text-white rounded-br-md'
-                      : 'bg-card border border-border text-foreground rounded-bl-md'
+                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
                   }`}>
                     {msg.sender_type === 'admin' && (
-                      <p className="text-[10px] font-semibold text-electric-blue mb-1">Support</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Support</p>
                     )}
                     {msg.image_url && (
                       <img
@@ -531,7 +531,7 @@ const LiveChatWidget = () => {
                     {msg.message && (
                       <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{msg.message}</p>
                     )}
-                    <p className={`text-[10px] mt-1 ${msg.sender_type === 'user' ? 'text-white/60' : 'text-muted-foreground'}`}>
+                    <p className={`text-[10px] mt-1 ${msg.sender_type === 'user' ? 'text-white/60' : 'text-gray-500'}`}>
                       {formatTime(msg.created_at)}
                     </p>
                   </div>
@@ -543,11 +543,11 @@ const LiveChatWidget = () => {
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
                     <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
-                    <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   </div>
@@ -557,12 +557,12 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Input Area */}
-              <div className="border-t border-border bg-background flex-shrink-0">
+              <div className="border-t border-gray-200 bg-white flex-shrink-0">
                 {/* Staged Image Preview */}
                 {stagedImage && (
                   <div className="px-3 pt-3 pb-1">
                     <div className="relative inline-block">
-                      <img src={stagedImage.preview} alt="Preview" className="h-20 rounded-lg border border-border" />
+                      <img src={stagedImage.preview} alt="Preview" className="h-20 rounded-lg border border-gray-200" />
                       <button
                         onClick={() => { URL.revokeObjectURL(stagedImage.preview); setStagedImage(null); }}
                         className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white rounded-full flex items-center justify-center text-xs hover:bg-destructive/90"
@@ -573,7 +573,7 @@ const LiveChatWidget = () => {
                   </div>
                 )}
 
-                <div className="p-3 flex items-end gap-2 transition-colors focus-within:bg-muted/20">
+                <div className="p-3 flex items-end gap-2">
                   {/* File picker */}
                   <div className="relative flex-shrink-0">
                   <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
@@ -582,7 +582,7 @@ const LiveChatWidget = () => {
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowFilePicker(!showFilePicker); }}
                       disabled={uploading}
-                      className="p-2 text-muted-foreground hover:text-electric-blue transition-colors rounded-lg hover:bg-muted/50"
+                      className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
                       aria-label="Attach image"
                     >
                       {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
@@ -594,25 +594,25 @@ const LiveChatWidget = () => {
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 8 }}
-                          className="absolute bottom-12 left-0 bg-popover border border-border rounded-xl shadow-xl py-1 min-w-[160px] z-10"
+                          className="absolute bottom-12 left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
                         >
                           <button
                             onClick={() => { galleryInputRef.current?.click(); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
                           >
                             <ImageIcon className="w-4 h-4 text-electric-blue" />
                             Photo Library
                           </button>
                           <button
                             onClick={() => { cameraInputRef.current?.click(); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
                           >
                             <Camera className="w-4 h-4 text-green-500" />
                             Take a Photo
                           </button>
                           <button
                             onClick={() => { fileInputRef.current?.click(); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
                           >
                             <Paperclip className="w-4 h-4 text-amber-500" />
                             Choose File
@@ -629,7 +629,8 @@ const LiveChatWidget = () => {
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                     placeholder="Type a message..."
                     rows={1}
-                    className="flex-1 bg-muted/50 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px] transition-[height] duration-200 ease-in-out"
+                    className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px] transition-[height] duration-200 ease-in-out"
+                    style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
                   />
                   <button
                     onClick={sendMessage}
