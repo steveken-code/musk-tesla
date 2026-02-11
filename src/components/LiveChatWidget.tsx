@@ -333,7 +333,7 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-muted/30" style={{ WebkitOverflowScrolling: 'touch' as any }}>
+            <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-muted/30" style={{ WebkitOverflowScrolling: 'touch' as any }}>
               {!user && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
@@ -488,9 +488,9 @@ const LiveChatWidget = () => {
         )}
       </AnimatePresence>
 
-      {/* Close file picker when clicking outside */}
+      {/* Close file picker when clicking outside - covers entire screen */}
       {showFilePicker && (
-        <div className="fixed inset-0 z-[59]" onClick={() => setShowFilePicker(false)} />
+        <div className="fixed inset-0 z-[59]" onClick={() => setShowFilePicker(false)} onTouchEnd={() => setShowFilePicker(false)} />
       )}
     </>
   );

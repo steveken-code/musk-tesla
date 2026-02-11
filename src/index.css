@@ -470,5 +470,24 @@
   .card-hover-lift:hover {
     @apply -translate-y-1 shadow-xl;
   }
+
+  /* Modern thin scrollbar for chat */
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 4px;
+  }
+  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.5);
+  }
+  .chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128,128,128,0.3) transparent;
+  }
 }
 
