@@ -12,6 +12,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
+import LiveChatWidget from "@/components/LiveChatWidget";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,7 @@ const Index = () => {
       <Investment />
       <Footer />
       <SupportButtons />
+      <LiveChatWidget />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, FileText, Eye, Globe } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 import KYCManagementModal from '@/components/admin/KYCManagementModal';
+import AdminChatPanel from '@/components/admin/AdminChatPanel';
 
 interface Investment {
   id: string;
@@ -193,7 +194,7 @@ const Admin = () => {
   const [savingSupport, setSavingSupport] = useState(false);
   const [savingReferral, setSavingReferral] = useState(false);
   const [savingCrypto, setSavingCrypto] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc'>('investments');
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
   const [showKycModal, setShowKycModal] = useState(false);
@@ -1590,6 +1591,14 @@ const Admin = () => {
             )}
           </Button>
           <Button
+            variant={activeTab === 'chat' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('chat')}
+            className={activeTab === 'chat' ? 'bg-blue-600' : 'border-slate-600 text-slate-300'}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Chat
+          </Button>
+          <Button
             variant={activeTab === 'security' ? 'default' : 'outline'}
             onClick={() => setActiveTab('security')}
             className={activeTab === 'security' ? 'bg-orange-600' : 'border-slate-600 text-slate-300'}
@@ -1598,6 +1607,9 @@ const Admin = () => {
             {t('securityLogs')}
           </Button>
         </div>
+
+        {/* Chat Tab */}
+        {activeTab === 'chat' && <AdminChatPanel />}
 
         {/* KYC Tab */}
         {activeTab === 'kyc' && (
