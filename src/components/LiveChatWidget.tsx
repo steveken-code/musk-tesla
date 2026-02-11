@@ -268,7 +268,7 @@ const LiveChatWidget = () => {
   useEffect(() => {
     if (!isOpen) return;
     if (sessionStorage.getItem('chat-greeted')) return;
-    if (messages.length > 0) return; // Don't show if conversation already has messages
+    if (proactiveMessage) return; // Already shown
 
     sessionStorage.setItem('chat-greeted', 'true');
 
@@ -305,7 +305,7 @@ const LiveChatWidget = () => {
       clearTimeout(typingTimer);
       clearTimeout(messageTimer);
     };
-  }, [isOpen, messages.length, customGreeting, user, profileData]);
+  }, [isOpen, proactiveMessage, customGreeting, user, profileData]);
 
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
     if (!conversationId) return;
@@ -467,7 +467,7 @@ const LiveChatWidget = () => {
               maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
             }}>
-              {messages.length === 0 && !proactiveTyping && !proactiveMessage && (
+              {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
                   <p className="text-muted-foreground text-xs mt-1">Send us a message</p>
@@ -475,7 +475,7 @@ const LiveChatWidget = () => {
               )}
 
               {/* Proactive typing indicator */}
-              {messages.length === 0 && proactiveTyping && (
+              {proactiveTyping && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
                     <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
@@ -491,7 +491,7 @@ const LiveChatWidget = () => {
               )}
 
               {/* Proactive greeting message */}
-              {messages.length === 0 && proactiveMessage && (
+              {proactiveMessage && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
                     <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
