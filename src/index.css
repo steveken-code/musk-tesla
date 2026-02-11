@@ -500,6 +500,10 @@
     display: none;
     height: 0;
     width: 0;
+    background: transparent;
+  }
+  .chat-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
 

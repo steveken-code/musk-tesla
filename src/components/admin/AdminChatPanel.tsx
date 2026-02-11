@@ -127,11 +127,13 @@ const AdminChatPanel = () => {
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'chat_typing_status',
         filter: `conversation_id=eq.${selectedConv.id}`,
-      }, (payload) => {
+      }, async (payload) => {
         const row = payload.new as any;
-        // If it's not us (admin), show typing
-        if (row.user_id !== selectedConv.user_id) return;
-        setUserTyping(row.is_typing || false);
+        // Show typing only from non-admin users (the customer/guest)
+        const { data: { user: adminUser } } = await supabase.auth.getUser();
+        if (adminUser && row.user_id !== adminUser.id) {
+          setUserTyping(row.is_typing || false);
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
