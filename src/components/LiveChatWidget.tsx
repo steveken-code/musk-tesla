@@ -27,6 +27,15 @@ const getGreeting = () => {
   return translations[lang] || translations['en'];
 };
 
+const getGuestId = () => {
+  let guestId = localStorage.getItem('chat-guest-id');
+  if (!guestId) {
+    guestId = 'guest-' + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem('chat-guest-id', guestId);
+  }
+  return guestId;
+};
+
 const LiveChatWidget = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -64,27 +73,37 @@ const LiveChatWidget = () => {
 
   // Load or create conversation
   const getOrCreateConversation = useCallback(async () => {
-    if (!user) return null;
-    const { data: existing } = await supabase
-      .from('chat_conversations')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'open')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (existing) {
-      setConversationId(existing.id);
-      return existing.id;
+    const identifier = user?.id || getGuestId();
+    
+    if (user) {
+      const { data: existing } = await supabase
+        .from('chat_conversations')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) { setConversationId(existing.id); return existing.id; }
+    } else {
+      // Guest: find by user_name matching guest ID
+      const { data: existing } = await supabase
+        .from('chat_conversations')
+        .select('id')
+        .eq('user_name', identifier)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) { setConversationId(existing.id); return existing.id; }
     }
 
     const { data: newConv, error } = await supabase
       .from('chat_conversations')
       .insert({
-        user_id: user.id,
-        user_name: profileData?.full_name || user.email?.split('@')[0] || 'User',
-        user_email: profileData?.email || user.email,
+        user_id: user?.id || identifier,
+        user_name: user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : 'Guest',
+        user_email: user ? (profileData?.email || user.email) : null,
       })
       .select('id')
       .single();
@@ -148,25 +167,47 @@ const LiveChatWidget = () => {
 
   // Check for existing conversation on mount
   useEffect(() => {
-    if (!user) return;
     const init = async () => {
-      const { data } = await supabase
-        .from('chat_conversations')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (data) {
-        setConversationId(data.id);
-        const { count } = await supabase
-          .from('chat_messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', data.id)
-          .eq('sender_type', 'admin')
-          .eq('is_read', false);
-        if (count) setUnreadCount(count);
+      if (user) {
+        const { data } = await supabase
+          .from('chat_conversations')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (data) {
+          setConversationId(data.id);
+          const { count } = await supabase
+            .from('chat_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', data.id)
+            .eq('sender_type', 'admin')
+            .eq('is_read', false);
+          if (count) setUnreadCount(count);
+        }
+      } else {
+        // Guest: check for existing conversation by guest ID
+        const guestId = getGuestId();
+        const { data } = await supabase
+          .from('chat_conversations')
+          .select('id')
+          .eq('user_name', guestId)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (data) {
+          setConversationId(data.id);
+          const { count } = await supabase
+            .from('chat_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', data.id)
+            .eq('sender_type', 'admin')
+            .eq('is_read', false);
+          if (count) setUnreadCount(count);
+        }
       }
     };
     init();
@@ -198,10 +239,11 @@ const LiveChatWidget = () => {
   }, [message]);
 
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
-    if (!conversationId || !user) return;
+    if (!conversationId) return;
+    const typingUserId = user?.id || getGuestId();
     await supabase.from('chat_typing_status').upsert({
       conversation_id: conversationId,
-      user_id: user.id,
+      user_id: typingUserId,
       is_typing: isTyping,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'conversation_id,user_id' }).then(() => {});
@@ -223,7 +265,8 @@ const LiveChatWidget = () => {
       let imageUrl: string | null = null;
       if (stagedImage) {
         const ext = stagedImage.file.name.split('.').pop();
-        const path = `${user?.id}/${Date.now()}.${ext}`;
+        const uploadId = user?.id || getGuestId();
+        const path = `${uploadId}/${Date.now()}.${ext}`;
         const { error: uploadError } = await supabase.storage.from('chat-images').upload(path, stagedImage.file);
         if (uploadError) throw uploadError;
         const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(path);
@@ -245,8 +288,8 @@ const LiveChatWidget = () => {
 
       supabase.functions.invoke('send-chat-notification', {
         body: {
-          userName: profileData?.full_name || user?.email?.split('@')[0],
-          userEmail: profileData?.email || user?.email,
+          userName: user ? (profileData?.full_name || user.email?.split('@')[0]) : 'Guest',
+          userEmail: user ? (profileData?.email || user.email) : 'Anonymous',
           message: message.trim() || '[Image sent]',
         },
       }).catch(() => {});
@@ -349,16 +392,12 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-muted/30" style={{ WebkitOverflowScrolling: 'touch' as any }}>
-              {!user && (
-                <div className="text-center py-8">
-                  <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
-                  <p className="text-foreground font-medium text-sm">{getGreeting().hi} 👋</p>
-                  <p className="text-muted-foreground text-xs mt-1 mb-4">Please log in to start a conversation</p>
-                </div>
-              )}
-
-              {user && messages.length === 0 && (
+            <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-muted/30" style={{ 
+              WebkitOverflowScrolling: 'touch' as any,
+              maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
+            }}>
+              {messages.length === 0 && (
                 <div className="text-center py-8">
                   <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
                   <p className="text-foreground font-medium text-sm">{getGreeting().hi} 👋</p>
@@ -410,7 +449,6 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Input Area */}
-            {user ? (
               <div className="border-t border-border bg-background flex-shrink-0">
                 {/* Staged Image Preview */}
                 {stagedImage && (
@@ -427,7 +465,7 @@ const LiveChatWidget = () => {
                   </div>
                 )}
 
-                <div className="p-3 flex items-end gap-2">
+                <div className="p-3 flex items-end gap-2 transition-colors focus-within:bg-muted/20">
                   {/* File picker */}
                   <div className="relative flex-shrink-0">
                   <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
@@ -483,7 +521,7 @@ const LiveChatWidget = () => {
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                     placeholder="Type a message..."
                     rows={1}
-                    className="flex-1 bg-muted/50 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px]"
+                    className="flex-1 bg-muted/50 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px] transition-[height] duration-200 ease-in-out"
                   />
                   <button
                     onClick={sendMessage}
@@ -495,11 +533,6 @@ const LiveChatWidget = () => {
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="p-4 border-t border-border bg-background text-center">
-                <p className="text-muted-foreground text-sm">Log in to start chatting</p>
-              </div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
