@@ -392,9 +392,10 @@ const AdminChatPanel = () => {
 
                   <div className="p-3 flex items-end gap-2">
                     <div className="relative flex-shrink-0">
-                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
-                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
+                      {/* Mobile note: file inputs must not be display:none (iOS) */}
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
                       <button
                         onClick={() => setShowFilePicker(!showFilePicker)}
                         disabled={uploading}
@@ -411,13 +412,37 @@ const AdminChatPanel = () => {
                             exit={{ opacity: 0, y: 8 }}
                             className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
                           >
-                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => galleryInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                galleryInputRef.current?.click();
+                                setShowFilePicker(false);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
+                            >
                               <ImageIcon className="w-4 h-4 text-electric-blue" /> Photo Library
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => cameraInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                cameraInputRef.current?.click();
+                                setShowFilePicker(false);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
+                            >
                               <Camera className="w-4 h-4 text-green-400" /> Take a Photo
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => fileInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fileInputRef.current?.click();
+                                setShowFilePicker(false);
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
+                            >
                               <Paperclip className="w-4 h-4 text-amber-400" /> Choose File
                             </button>
                           </motion.div>
