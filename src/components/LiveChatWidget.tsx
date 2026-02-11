@@ -426,7 +426,7 @@ const LiveChatWidget = () => {
           >
             <img src={liveSupportIcon} alt="Live Support" className="w-12 h-12 object-cover" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-tesla-red text-white text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-tesla-red text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                 {unreadCount}
               </span>
             )}
@@ -539,11 +539,14 @@ const LiveChatWidget = () => {
               {/* Admin typing indicator */}
               {adminTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="flex items-start gap-2">
+                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-[6px] h-[6px] bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
                     </div>
                   </div>
                 </div>

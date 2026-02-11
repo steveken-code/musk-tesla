@@ -496,5 +496,10 @@
   .chat-scrollbar:hover::-webkit-scrollbar-thumb {
     background-color: rgba(128,128,128,0.5);
   }
+  .chat-scrollbar::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
+  }
 }
 
