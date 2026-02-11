@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, ImagePlus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -400,7 +400,7 @@ const AdminChatPanel = () => {
                         disabled={uploading}
                         className="p-2 text-slate-400 hover:text-electric-blue transition-colors"
                       >
-                        {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
+                        {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
                       </button>
 
                       <AnimatePresence>
@@ -409,7 +409,7 @@ const AdminChatPanel = () => {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 8 }}
-                            className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10"
+                            className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
                           >
                             <button onClick={() => galleryInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
                               <ImageIcon className="w-4 h-4 text-electric-blue" /> Photo Library
@@ -433,6 +433,7 @@ const AdminChatPanel = () => {
                       placeholder="Type a reply..."
                       rows={1}
                       className="flex-1 bg-slate-700/50 border border-slate-600 text-white rounded-xl px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px]"
+                      style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff', opacity: 1 }}
                     />
                     <Button
                       onClick={sendReply}
