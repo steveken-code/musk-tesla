@@ -354,11 +354,16 @@ const AdminChatPanel = () => {
                   {/* User typing indicator */}
                   {userTyping && (
                     <div className="flex justify-start">
-                      <div className="bg-slate-700 rounded-2xl rounded-bl-md px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <div className="flex items-start gap-2">
+                        <div className="w-7 h-7 rounded-full bg-electric-blue/20 flex items-center justify-center flex-shrink-0 mt-1">
+                          <User className="w-3.5 h-3.5 text-electric-blue" />
+                        </div>
+                        <div className="bg-slate-700 rounded-2xl rounded-bl-md px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <span className="w-[6px] h-[6px] bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-[6px] h-[6px] bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-[6px] h-[6px] bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
                         </div>
                       </div>
                     </div>
