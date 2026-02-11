@@ -392,9 +392,9 @@ const AdminChatPanel = () => {
 
                   <div className="p-3 flex items-end gap-2">
                     <div className="relative flex-shrink-0">
-                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
+                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} tabIndex={-1} />
                       <button
                         onClick={() => setShowFilePicker(!showFilePicker)}
                         disabled={uploading}
@@ -411,13 +411,13 @@ const AdminChatPanel = () => {
                             exit={{ opacity: 0, y: 8 }}
                             className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
                           >
-                            <button onClick={() => galleryInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => galleryInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
                               <ImageIcon className="w-4 h-4 text-electric-blue" /> Photo Library
                             </button>
-                            <button onClick={() => cameraInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => cameraInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
                               <Camera className="w-4 h-4 text-green-400" /> Take a Photo
                             </button>
-                            <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); setTimeout(() => fileInputRef.current?.click(), 100); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors">
                               <Paperclip className="w-4 h-4 text-amber-400" /> Choose File
                             </button>
                           </motion.div>
@@ -432,8 +432,8 @@ const AdminChatPanel = () => {
                       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                       placeholder="Type a reply..."
                       rows={1}
-                      className="flex-1 bg-slate-700/50 border border-slate-600 text-white rounded-xl px-3 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px]"
-                      style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff', opacity: 1 }}
+                      className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px]"
+                      style={{ color: '#000000', WebkitTextFillColor: '#000000', opacity: 1 }}
                     />
                     <Button
                       onClick={sendReply}
