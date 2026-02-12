@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -127,34 +128,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (referralCode && referralCode.trim()) {
       const normalizedCode = normalizeReferralCode(referralCode);
       
-      // Query profiles to find a user whose user_id starts with this code (case-insensitive)
-      // Uses explicit UUID::text cast since user_id is UUID type in PostgreSQL
       try {
         console.log('Validating referral code:', { 
           original: referralCode, 
           normalized: normalizedCode
         });
         
-        // Use RPC function for server-side UUID-to-text validation
         const { data: referrerId, error: rpcError } = await supabase
           .rpc('validate_referral_code', { p_code: normalizedCode });
         
         if (rpcError) {
-          console.error('Referral code query error:', rpcError);
-          return { error: { message: 'Error validating referral code. Please try again.' } };
+          console.warn('Referral code validation error, proceeding without referral:', rpcError);
+        } else if (!referrerId) {
+          console.warn('Referral code not recognized, proceeding without referral:', normalizedCode);
+          toast.warning('Referral code not recognized, continuing without it.');
+        } else {
+          validReferrerUserId = referrerId;
+          canonicalReferralCode = normalizedCode;
+          console.log('Referral code validated:', { code: normalizedCode, referrer: validReferrerUserId });
         }
-        
-        if (!referrerId) {
-          console.log('Referral code not found:', normalizedCode);
-          return { error: { message: 'Invalid referral code. The code may have expired or was entered incorrectly.' } };
-        }
-        
-        validReferrerUserId = referrerId;
-        canonicalReferralCode = normalizedCode;
-        console.log('Referral code validated:', { code: normalizedCode, referrer: validReferrerUserId });
       } catch (err) {
-        console.error('Error validating referral code:', err);
-        return { error: { message: 'Invalid referral code. Please check the link and try again.' } };
+        console.warn('Error validating referral code, proceeding without referral:', err);
       }
     }
 

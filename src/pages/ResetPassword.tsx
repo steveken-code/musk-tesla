@@ -93,7 +93,19 @@ const ResetPassword = () => {
       });
 
       if (error) {
-        toast.error(error.message || 'Failed to reset password');
+        // Edge function errors wrap the response - extract the actual error message
+        let errorMsg = 'Failed to reset password';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            errorMsg = body?.error || errorMsg;
+          } else {
+            errorMsg = error.message || errorMsg;
+          }
+        } catch {
+          errorMsg = error.message || errorMsg;
+        }
+        toast.error(errorMsg);
       } else if (data?.success) {
         setResetComplete(true);
         toast.success('Password reset successfully!');
@@ -222,6 +234,7 @@ const ResetPassword = () => {
                   placeholder="Enter new password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="pl-12 pr-12 h-12 bg-white border-slate-300 rounded-xl hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:border-slate-400 transition-[border] duration-300 ease-in-out [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                   minLength={8}
@@ -283,6 +296,7 @@ const ResetPassword = () => {
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   className="pl-12 pr-12 h-12 bg-white border-slate-300 rounded-xl hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:border-slate-400 transition-[border] duration-300 ease-in-out [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] [caret-color:#1a1a1a] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
                   required
                   minLength={8}
