@@ -1,44 +1,29 @@
 
 
-# Use 24/7 Chat Icon for Welcome, Agent Avatar for Replies
+# Fix Password Reset and Referral Code Issues
 
-## What Changes
+## Issue 1: Password Reset Fails with Custom Passwords
 
-### 1. New 24/7 Chat Icon Asset
-Copy the uploaded purple 24/7 speech bubble icon into the project as `src/assets/chat-247-icon.png`. This replaces the current support avatar on the **floating chat bubble** and the **welcome card only**.
+**Root Cause:** Two problems working together:
 
-### 2. Floating Chat Bubble (bottom-right corner)
-- Currently shows the support agent avatar
-- **Change to**: The 24/7 chat icon -- clearly visible, polished, with a clean white background and subtle border
-- This is what guests see before opening the chat, so the 24/7 branding builds trust
+1. **Error handling is broken** -- When the `complete-password-reset` backend function returns an error (status 400), the SDK wraps it in a generic `FunctionsHttpError` object. The code tries to read `error.message`, but that gives a generic SDK message like "Edge Function returned a non-2xx status code" -- NOT the actual error details from the function. This hides the real issue from the user.
 
-### 3. Welcome Card (empty state inside chat)
-- Currently shows the support agent avatar in a large circle
-- **Change to**: The 24/7 chat icon as the centerpiece
-- Keep the support name and "Typically replies under..." text below it
-- Keep the "Start a conversation" prompt
+2. **Missing `autoComplete` attributes** -- The password inputs don't have `autoComplete="new-password"`, which causes some browsers (especially mobile) to interfere with manual password entry on password reset forms. Browser-suggested passwords bypass this because they fill the fields directly.
 
-### 4. Admin Reply Messages -- Use Agent Avatar
-When the admin sends a message, the small avatar next to their message bubble will show:
-- The **admin-configured support avatar** (from Admin > Support Profile settings)
-- Falls back to the `support-avatar.png` if no custom URL is set
-- This creates a natural flow: **24/7 icon greets you, then a real agent (with name and photo) joins the conversation**
+**Fix:**
+- Add `autoComplete="new-password"` to both password inputs in `ResetPassword.tsx`
+- Fix the error handling to properly extract the response body from edge function errors, so users see the actual error message instead of a generic one
 
-### 5. Proactive Greeting + Typing Indicator
-- The initial proactive typing dots and greeting message will also use the **24/7 icon** (since it's the system greeting, not a specific agent)
-- Once admin replies, those messages use the agent avatar
+## Issue 2: Signup Blocked by Invalid Referral Code
 
-## Summary of Avatar Usage
+**Root Cause:** In `AuthContext.tsx` (lines 127-158), when a referral code is provided (even auto-filled from a `?ref=CODE` URL), the code validates it server-side. If validation fails, signup is **blocked entirely** with an error message. This means:
+- Someone clicking a referral link with a typo or expired code cannot create an account at all
+- The referral code field looks required even though it says "optional"
 
-| Location | Current | New |
-|----------|---------|-----|
-| Floating chat bubble | Agent avatar | 24/7 icon |
-| Welcome card (empty state) | Agent avatar | 24/7 icon |
-| Proactive typing dots | Agent avatar | 24/7 icon |
-| Proactive greeting message | Agent avatar | 24/7 icon |
-| Admin reply messages | Agent avatar | Agent avatar (no change) |
-| Admin typing indicator | Agent avatar | Agent avatar (no change) |
-| Chat header | Agent avatar | Agent avatar (no change) |
+**Fix:**
+- When a referral code is provided but invalid, **don't block signup** -- just silently ignore the bad code and proceed without referral
+- Show a gentle warning toast ("Referral code not recognized, continuing without it") instead of blocking
+- Signup without any referral code already works (the code has an `if` check) -- no changes needed there
 
 ## Technical Details
 
@@ -46,9 +31,9 @@ When the admin sends a message, the small avatar next to their message bubble wi
 
 | File | Changes |
 |------|---------|
-| `src/assets/chat-247-icon.png` | Copy the uploaded 24/7 icon into the project |
-| `src/components/LiveChatWidget.tsx` | Import the 24/7 icon, use it for bubble + welcome + proactive greeting; keep `avatarSrc` for admin messages and header |
+| `src/pages/ResetPassword.tsx` | Add `autoComplete="new-password"` to both inputs; fix error handling to parse edge function response body |
+| `src/contexts/AuthContext.tsx` | Change referral validation from blocking to warning -- invalid codes silently skipped, signup proceeds |
 
-### No database changes needed
-This is purely a frontend asset swap with conditional avatar logic.
+### No database or backend changes needed
+Both fixes are purely frontend logic changes.
 
