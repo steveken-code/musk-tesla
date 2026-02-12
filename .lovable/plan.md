@@ -1,39 +1,53 @@
 
 
-# Fix Password Reset and Referral Code Issues
+# Fix Chat Widget UI and Standardize Email Templates
 
-## Issue 1: Password Reset Fails with Custom Passwords
+## Part 1: Chat Widget Fixes
 
-**Root Cause:** Two problems working together:
+### 1A. Match chat bubble size to WhatsApp button
+The chat bubble is currently `w-14 h-14` (56px) while WhatsApp is `w-12 h-12` (48px). Will make the chat bubble `w-12 h-12` to match.
 
-1. **Error handling is broken** -- When the `complete-password-reset` backend function returns an error (status 400), the SDK wraps it in a generic `FunctionsHttpError` object. The code tries to read `error.message`, but that gives a generic SDK message like "Edge Function returned a non-2xx status code" -- NOT the actual error details from the function. This hides the real issue from the user.
+### 1B. Add tap/hover animation to both icons
+Add `active:scale-95` press effect and improve the hover animation on both the chat bubble and WhatsApp/Telegram buttons so they feel interactive when tapped.
 
-2. **Missing `autoComplete` attributes** -- The password inputs don't have `autoComplete="new-password"`, which causes some browsers (especially mobile) to interfere with manual password entry on password reset forms. Browser-suggested passwords bypass this because they fill the fields directly.
+### 1C. Remove glassmorphism from chat header
+The blue header currently has:
+- `border-2 border-white/40` on the avatar container -- causing a bright white ring
+- The gradient + white borders create a washed-out glassmorphism look
 
-**Fix:**
-- Add `autoComplete="new-password"` to both password inputs in `ResetPassword.tsx`
-- Fix the error handling to properly extract the response body from edge function errors, so users see the actual error message instead of a generic one
+Will change to a solid, clean blue header:
+- Remove `border-white/40` from avatar, use a subtle `border-white/20` or no border
+- Keep the gradient solid without transparency effects
 
-## Issue 2: Signup Blocked by Invalid Referral Code
+### 1D. Clean up the mask-image fade at top of messages area
+The messages area has a `maskImage` gradient that fades to transparent at the top 8%, which creates a white/bright fade effect near the header. Will reduce or adjust this so the transition between header and messages is clean.
 
-**Root Cause:** In `AuthContext.tsx` (lines 127-158), when a referral code is provided (even auto-filled from a `?ref=CODE` URL), the code validates it server-side. If validation fails, signup is **blocked entirely** with an error message. This means:
-- Someone clicking a referral link with a typo or expired code cannot create an account at all
-- The referral code field looks required even though it says "optional"
+---
 
-**Fix:**
-- When a referral code is provided but invalid, **don't block signup** -- just silently ignore the bad code and proceed without referral
-- Show a gentle warning toast ("Referral code not recognized, continuing without it") instead of blocking
-- Signup without any referral code already works (the code has an `if` check) -- no changes needed there
+## Part 2: Email Template Standardization
 
-## Technical Details
+After reviewing all email templates, most follow the standard (Tesla Red header, white bg, 650px). Two templates have issues:
 
-### Files to Modify
+### 2A. `send-investment-confirmation` -- Convert from dark theme to light theme
+Currently uses a dark theme (#000000 bg, green header, 600px width) which is inconsistent with every other email. Will convert to the standard:
+- White background (#f3f4f6 outer, #ffffff card)
+- Tesla Red gradient header
+- 650px width
+- Standard greeting style ("Hello Name,")
+- Electric Blue section headers
+- Green for money values only
+
+### 2B. `send-withdrawal-status` -- Remove logo image reference
+This template references a `TESLA_LOGO_URL` for an image in the header, while all other templates use text-only headers. Will align it to use the same text-only Tesla Red gradient header for consistency and reliability (no broken image risks).
+
+---
+
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/ResetPassword.tsx` | Add `autoComplete="new-password"` to both inputs; fix error handling to parse edge function response body |
-| `src/contexts/AuthContext.tsx` | Change referral validation from blocking to warning -- invalid codes silently skipped, signup proceeds |
-
-### No database or backend changes needed
-Both fixes are purely frontend logic changes.
+| `src/components/LiveChatWidget.tsx` | Resize bubble to w-12 h-12, add active:scale-95, remove white border from header avatar, adjust mask-image fade |
+| `src/components/SupportButtons.tsx` | Add active:scale-95 press effect to WhatsApp and Telegram buttons |
+| `supabase/functions/send-investment-confirmation/index.ts` | Convert dark theme to standard light theme with Tesla Red header |
+| `supabase/functions/send-withdrawal-status/index.ts` | Remove logo image, use standard text-only Tesla Red header |
 
