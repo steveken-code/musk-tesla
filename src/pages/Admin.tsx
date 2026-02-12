@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, FileText, Eye, Globe } from 'lucide-react';
+import { LogOut, Loader2, CheckCircle, XCircle, DollarSign, TrendingUp, Lock, CreditCard, Save, Wallet, AlertCircle, Clock, MessageSquare, Phone, Send, X, Mail, ShieldAlert, RefreshCw, Gift, Users, Search, FileText, Eye, Globe, Camera } from 'lucide-react';
 import EmailMonitoringDashboard from '@/components/EmailMonitoringDashboard';
 import KYCManagementModal from '@/components/admin/KYCManagementModal';
 import AdminChatPanel from '@/components/admin/AdminChatPanel';
@@ -1913,15 +1913,57 @@ const Admin = () => {
                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                       />
                     </div>
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        value={supportProfileSettings.avatarUrl}
-                        onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, avatarUrl: e.target.value }))}
-                        placeholder="https://example.com/avatar.png"
-                        className="bg-white border-slate-600 focus:ring-electric-blue"
-                        style={{ color: '#000000', fontWeight: 500 }}
-                      />
-                      <p className="text-slate-500 text-xs">Leave empty to use the default support avatar.</p>
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={supportProfileSettings.avatarUrl}
+                          onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, avatarUrl: e.target.value }))}
+                          placeholder="Paste URL or upload below"
+                          className="bg-white border-slate-600 focus:ring-electric-blue flex-1"
+                          style={{ color: '#000000', fontWeight: 500 }}
+                        />
+                      </div>
+                      <div>
+                        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-electric-blue/20 text-electric-blue text-sm font-medium cursor-pointer hover:bg-electric-blue/30 transition-colors border border-electric-blue/30">
+                          <Camera className="w-4 h-4" />
+                          Upload from Gallery
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              if (!file.type.startsWith('image/')) {
+                                toast.error('Please select an image file');
+                                return;
+                              }
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast.error('Image must be less than 5MB');
+                                return;
+                              }
+                              try {
+                                const fileExt = file.name.split('.').pop();
+                                const fileName = `support-avatar/avatar-${Date.now()}.${fileExt}`;
+                                const { error: uploadError } = await supabase.storage
+                                  .from('avatars')
+                                  .upload(fileName, file, { upsert: true });
+                                if (uploadError) throw uploadError;
+                                const { data: { publicUrl } } = supabase.storage
+                                  .from('avatars')
+                                  .getPublicUrl(fileName);
+                                const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+                                setSupportProfileSettings(prev => ({ ...prev, avatarUrl: urlWithCacheBust }));
+                                toast.success('Avatar uploaded!');
+                              } catch (err: any) {
+                                console.error('Avatar upload error:', err);
+                                toast.error('Failed to upload avatar');
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-slate-500 text-xs">Upload an image or paste a URL. Leave empty for default.</p>
                     </div>
                   </div>
                 </div>
