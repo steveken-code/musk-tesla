@@ -143,8 +143,8 @@ const DEFAULT_CRYPTO_SETTINGS: CryptoSettings = {
 
 const DEFAULT_CHAT_GREETING_SETTINGS: ChatGreetingSettings = {
   mode: 'default',
-  guestGreeting: 'Welcome to Tesla Stock Platform! 📈 A verified support agent will be with you shortly.',
-  userGreeting: 'Welcome back, {{user_name}}! 👋 How can we assist you today? A verified agent will be with you shortly.',
+  guestGreeting: 'Hi there! 👋 How can we help you today?',
+  userGreeting: 'Welcome back, {{user_name}}! How can we help?',
 };
 
 const DEFAULT_SUPPORT_PROFILE: SupportProfileSettings = {
@@ -1901,17 +1901,29 @@ const Admin = () => {
                   </div>
                 </div>
 
-                {/* Avatar URL */}
+                {/* Avatar */}
                 <div>
-                  <Label className="text-slate-300 text-sm mb-1.5 block">Avatar Image URL (optional)</Label>
-                  <Input
-                    value={supportProfileSettings.avatarUrl}
-                    onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, avatarUrl: e.target.value }))}
-                    placeholder="https://example.com/avatar.png"
-                    className="bg-white border-slate-600 focus:ring-electric-blue"
-                    style={{ color: '#000000', fontWeight: 500 }}
-                  />
-                  <p className="text-slate-500 text-xs mt-1">Leave empty to use the default support avatar.</p>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Avatar Image</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-700 flex-shrink-0">
+                      <img 
+                        src={supportProfileSettings.avatarUrl || '/placeholder.svg'} 
+                        alt="Support Avatar" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        value={supportProfileSettings.avatarUrl}
+                        onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, avatarUrl: e.target.value }))}
+                        placeholder="https://example.com/avatar.png"
+                        className="bg-white border-slate-600 focus:ring-electric-blue"
+                        style={{ color: '#000000', fontWeight: 500 }}
+                      />
+                      <p className="text-slate-500 text-xs">Leave empty to use the default support avatar.</p>
+                    </div>
+                  </div>
                 </div>
 
                 <Button

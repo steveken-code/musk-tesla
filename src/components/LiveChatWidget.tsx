@@ -37,12 +37,12 @@ const DEFAULT_SUPPORT_PROFILE: SupportProfile = {
 
 const getGreeting = () => {
   const lang = navigator.language.split('-')[0];
-  const translations: Record<string, { hi: string; help: string }> = {
-    en: { hi: "Hello there!", help: "How can we help you?" },
-    es: { hi: "¡Hola!", help: "¿Cómo podemos ayudarte?" },
-    fr: { hi: "Bonjour !", help: "Comment pouvons-nous vous aider ?" },
-    de: { hi: "Hallo!", help: "Wie können wir Ihnen helfen?" },
-    zh: { hi: "你好！", help: "我们能为您提供什么帮助？" },
+  const translations: Record<string, string> = {
+    en: "Hi there! 👋 How can we help you today?",
+    es: "¡Hola! 👋 ¿En qué podemos ayudarte?",
+    fr: "Bonjour ! 👋 Comment pouvons-nous vous aider ?",
+    de: "Hallo! 👋 Wie können wir Ihnen helfen?",
+    zh: "你好！👋 我们能为您提供什么帮助？",
   };
   return translations[lang] || translations['en'];
 };
@@ -310,8 +310,7 @@ const LiveChatWidget = () => {
         greetingText = customGreeting.guestGreeting;
       }
     } else {
-      const greeting = getGreeting();
-      greetingText = `${greeting.hi} 👋\n${greeting.help}`;
+      greetingText = getGreeting();
     }
 
     const typingTimer = setTimeout(() => { setProactiveTyping(true); }, 800);
@@ -493,10 +492,21 @@ const LiveChatWidget = () => {
               WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
             }}>
               {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
-                <div className="text-center py-8">
-                  <img src={avatarSrc} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full border-2 border-electric-blue/20" />
-                  <p className="text-gray-900 text-sm font-medium">{displayName}</p>
-                  <p className="text-gray-500 text-xs mt-1">Send us a message</p>
+                <div className="flex flex-col items-center justify-center py-10 px-4">
+                  <div className="relative mb-4">
+                    <img src={avatarSrc} alt="Support" className="w-20 h-20 rounded-full border-[3px] border-electric-blue/30 shadow-lg" />
+                    <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+                  </div>
+                  <h4 className="text-gray-900 font-semibold text-base">{displayName}</h4>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                    <p className="text-gray-500 text-xs">Typically replies under {supportProfile.replyTime}</p>
+                  </div>
+                  <div className="mt-5 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3 max-w-[260px]">
+                    <p className="text-gray-600 text-sm text-center leading-relaxed">
+                      👋 Start a conversation — we're here to help!
+                    </p>
+                  </div>
                 </div>
               )}
 

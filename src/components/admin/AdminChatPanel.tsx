@@ -44,6 +44,8 @@ const AdminChatPanel = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
+
   // Load conversations
   useEffect(() => {
     const load = async () => {
@@ -57,6 +59,7 @@ const AdminChatPanel = () => {
 
       if (data) {
         const counts: Record<string, number> = {};
+        const previews: Record<string, string> = {};
         for (const conv of data) {
           const { count } = await supabase
             .from('chat_messages')
@@ -65,8 +68,24 @@ const AdminChatPanel = () => {
             .eq('sender_type', 'user')
             .eq('is_read', false);
           if (count && count > 0) counts[conv.id] = count;
+
+          // Fetch last message preview
+          const { data: lastMsg } = await supabase
+            .from('chat_messages')
+            .select('message, sender_type, image_url')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (lastMsg) {
+            const prefix = lastMsg.sender_type === 'admin' ? 'You: ' : '';
+            previews[conv.id] = lastMsg.message 
+              ? `${prefix}${lastMsg.message}` 
+              : `${prefix}📷 Photo`;
+          }
         }
         setUnreadCounts(counts);
+        setLastMessages(previews);
       }
       setLoading(false);
     };
@@ -224,6 +243,20 @@ const AdminChatPanel = () => {
     return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatRelativeTime = (dateStr: string) => {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diffMs = now - then;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return `${diffDay}d ago`;
+    return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+
   const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
 
   if (loading) {
@@ -296,9 +329,12 @@ const AdminChatPanel = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 mt-1 ml-12">
+                    {lastMessages[conv.id] && (
+                      <p className="text-slate-400 text-xs truncate mt-1 ml-12 max-w-[200px]">{lastMessages[conv.id]}</p>
+                    )}
+                    <div className="flex items-center gap-1 mt-0.5 ml-12">
                       <Clock className="w-3 h-3 text-slate-500" />
-                      <span className="text-slate-500 text-[10px]">{formatTime(conv.last_message_at)}</span>
+                      <span className="text-slate-500 text-[10px]">{formatRelativeTime(conv.last_message_at)}</span>
                     </div>
                   </button>
                 ))
