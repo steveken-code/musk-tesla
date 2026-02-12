@@ -106,6 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric',
     });
 
+    const transactionId = investmentId.substring(0, 8).toUpperCase();
+
     const sendTask = async () => {
       if (!RESEND_API_KEY) {
         throw new Error('RESEND_API_KEY is not configured');
@@ -131,78 +133,82 @@ const handler = async (req: Request): Promise<Response> => {
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
             </head>
-            <body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #000000; padding: 40px 20px;">
+            <body style="margin: 0; padding: 0; background-color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
                 <tr>
                   <td align="center">
-                    <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #171717 0%, #0a0a0a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #262626;">
+                    <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
                       
-                      <!-- Header -->
+                      <!-- Header - Tesla Red -->
                       <tr>
-                        <td style="padding: 50px 40px 30px; text-align: center; background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);">
-                          <div style="display: inline-block; background: #ffffff; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
-                            <span style="color: #16a34a; font-size: 40px; font-weight: bold;">✓</span>
-                          </div>
-                          <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                            INVESTMENT CONFIRMED
+                        <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
+                          <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
+                            Tesla Stock Platform
                           </h1>
-                          <p style="margin: 15px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 16px; font-weight: 500; letter-spacing: 1px;">
-                            Your funds are now working for you
+                          <p style="margin: 15px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
+                            Investment Confirmation
                           </p>
                         </td>
                       </tr>
                       
-                      <!-- Amount Display -->
+                      <!-- Greeting -->
                       <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center;">
-                          <p style="margin: 0 0 10px; color: #737373; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Investment Amount</p>
-                          <h2 style="margin: 0; color: #22c55e; font-size: 48px; font-weight: 800;">
-                            ${formattedAmount}
-                          </h2>
-                          <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #22c55e, #16a34a); margin: 20px auto; border-radius: 2px;"></div>
+                        <td style="padding: 40px 50px 15px;">
+                          <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
+                            Hello ${name || 'Investor'},
+                          </p>
+                        </td>
+                      </tr>
+
+                      <!-- Success Badge -->
+                      <tr>
+                        <td style="padding: 15px 50px 25px;">
+                          <div style="text-align: center; margin: 25px 0;">
+                            <span style="background: #dcfce7; color: #166534; padding: 14px 35px; border-radius: 50px; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block;">
+                              ✅ INVESTMENT ACTIVE
+                            </span>
+                          </div>
+                          <p style="margin: 25px 0 0; color: #374151; font-size: 16px; line-height: 1.7; text-align: center;">
+                            Your investment has been successfully processed and is now active in your portfolio.
+                          </p>
                         </td>
                       </tr>
                       
-                      <!-- Investment Details -->
+                      <!-- Investment Details Card -->
                       <tr>
-                        <td style="padding: 0 40px 40px;">
-                          <p style="margin: 0 0 25px; color: #a3a3a3; font-size: 17px; line-height: 1.7; text-align: center;">
-                            Congratulations ${name || 'Investor'}! Your investment has been successfully processed and is now active in your portfolio.
-                          </p>
-                          
-                          <!-- Details Card -->
-                          <div style="background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%); border: 1px solid #262626; border-radius: 16px; padding: 30px; margin: 30px 0;">
-                            <h3 style="margin: 0 0 20px; color: #ffffff; font-size: 18px; font-weight: 700; text-align: center;">
+                        <td style="padding: 0 50px 35px;">
+                          <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
+                            <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
                               📋 Investment Details
                             </h3>
                             
                             <table width="100%" cellpadding="0" cellspacing="0">
                               <tr>
-                                <td style="padding: 15px 0; border-bottom: 1px solid #262626;">
+                                <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                                   <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                      <td style="color: #737373; font-size: 14px;">Transaction ID</td>
-                                      <td style="color: #ffffff; font-size: 14px; text-align: right; font-family: monospace;">${investmentId}</td>
+                                      <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Transaction ID</td>
+                                      <td style="color: #111827; font-size: 15px; text-align: right; font-weight: 700; font-family: monospace;">#${transactionId}</td>
                                     </tr>
                                   </table>
                                 </td>
                               </tr>
                               <tr>
-                                <td style="padding: 15px 0; border-bottom: 1px solid #262626;">
+                                <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                                   <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                      <td style="color: #737373; font-size: 14px;">Amount</td>
-                                      <td style="color: #22c55e; font-size: 14px; text-align: right; font-weight: 700;">${formattedAmount}</td>
+                                      <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Amount</td>
+                                      <td style="color: #059669; font-size: 22px; text-align: right; font-weight: 800;">${formattedAmount}</td>
                                     </tr>
                                   </table>
                                 </td>
                               </tr>
                               <tr>
-                                <td style="padding: 15px 0; border-bottom: 1px solid #262626;">
+                                <td style="padding: 15px 0; border-bottom: 1px solid #e5e7eb;">
                                   <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                      <td style="color: #737373; font-size: 14px;">Date</td>
-                                      <td style="color: #ffffff; font-size: 14px; text-align: right;">${formattedDate}</td>
+                                      <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Date</td>
+                                      <td style="color: #111827; font-size: 15px; text-align: right;">${formattedDate}</td>
                                     </tr>
                                   </table>
                                 </td>
@@ -211,9 +217,9 @@ const handler = async (req: Request): Promise<Response> => {
                                 <td style="padding: 15px 0;">
                                   <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
-                                      <td style="color: #737373; font-size: 14px;">Status</td>
+                                      <td style="color: #6b7280; font-size: 15px; font-weight: 600;">Status</td>
                                       <td style="text-align: right;">
-                                        <span style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">ACTIVE</span>
+                                        <span style="background: #dcfce7; color: #166534; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; text-transform: uppercase;">✅ ACTIVE</span>
                                       </td>
                                     </tr>
                                   </table>
@@ -224,13 +230,22 @@ const handler = async (req: Request): Promise<Response> => {
                         </td>
                       </tr>
 
+                      <!-- Dashboard CTA - Tesla Red -->
+                      <tr>
+                        <td style="padding: 0 50px 35px; text-align: center;">
+                          <a href="https://msktesla.net/dashboard" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 18px 55px; border-radius: 50px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">
+                            View Dashboard →
+                          </a>
+                        </td>
+                      </tr>
+
                       <!-- Footer -->
                       <tr>
-                        <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
-                          <p style="margin: 0 0 10px; color: #525252; font-size: 13px; font-weight: 500;">
+                        <td style="background: #f9fafb; padding: 35px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
+                          <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px; font-weight: 600;">
                             © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
                           </p>
-                          <p style="margin: 0 0 15px; color: #404040; font-size: 12px;">
+                          <p style="margin: 0; color: #9ca3af; font-size: 13px;">
                             This email was sent to ${email}
                           </p>
                         </td>
@@ -268,7 +283,6 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-investment-confirmation function:", error);
-    // Return generic error message to client
     return new Response(
       JSON.stringify({ error: "An error occurred while processing your request. Please try again." }),
       {

@@ -78,7 +78,7 @@ const SupportButtons = () => {
           href={telegramUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-12 h-12 bg-[#0088cc] rounded-full shadow-lg hover:scale-105 transition-transform"
+          className="flex items-center justify-center w-12 h-12 bg-[#0088cc] rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform"
           aria-label="Contact us on Telegram"
         >
           <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
@@ -92,7 +92,7 @@ const SupportButtons = () => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center hover:scale-105 transition-transform"
+          className="flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
           aria-label="Contact us on WhatsApp"
         >
           <img src={whatsappIcon} alt="WhatsApp" className="w-12 h-12 rounded-full shadow-lg" />

@@ -441,7 +441,7 @@ const LiveChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-1"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-12 h-12 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-1 hover:scale-105 active:scale-95 transition-transform"
             aria-label="Open live chat"
           >
             <img src={chat247Icon} alt="24/7 Live Support" className="w-full h-full object-contain" />
@@ -469,7 +469,7 @@ const LiveChatWidget = () => {
             <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/40 bg-white">
+                  <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border border-white/20 bg-white">
                     <img src={avatarSrc} alt="Support" className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
@@ -489,8 +489,8 @@ const LiveChatWidget = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white" style={{ 
               WebkitOverflowScrolling: 'touch' as any,
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 92%, transparent 100%)',
             }}>
               {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 px-4">
