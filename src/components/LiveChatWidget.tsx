@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import supportAvatar from '@/assets/support-avatar.png';
+import chat247Icon from '@/assets/chat-247-icon.png';
 
 // Preload notification sound
 const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
@@ -440,10 +441,10 @@ const LiveChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-1"
             aria-label="Open live chat"
           >
-            <img src={avatarSrc} alt="Live Support" className="w-full h-full object-cover" />
+            <img src={chat247Icon} alt="24/7 Live Support" className="w-full h-full object-contain" />
             {unreadCount > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 bg-tesla-red text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                 {unreadCount}
@@ -494,8 +495,7 @@ const LiveChatWidget = () => {
               {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 px-4">
                   <div className="relative mb-4">
-                    <img src={avatarSrc} alt="Support" className="w-20 h-20 rounded-full border-[3px] border-electric-blue/30 shadow-lg" />
-                    <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+                    <img src={chat247Icon} alt="24/7 Support" className="w-20 h-20 object-contain" />
                   </div>
                   <h4 className="text-gray-900 font-semibold text-base">{displayName}</h4>
                   <div className="flex items-center gap-1.5 mt-1">
@@ -514,7 +514,7 @@ const LiveChatWidget = () => {
               {proactiveTyping && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
-                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200" />
+                    <img src={chat247Icon} alt="24/7 Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
                     <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-1">
                         <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -530,7 +530,7 @@ const LiveChatWidget = () => {
               {proactiveMessage && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
-                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200" />
+                    <img src={chat247Icon} alt="24/7 Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
                     <motion.div
                       initial={{ scale: 0.6, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
