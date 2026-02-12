@@ -1,53 +1,44 @@
 
 
-# Make Live Chat Look Real and Professional
+# Use 24/7 Chat Icon for Welcome, Agent Avatar for Replies
 
-## Current Issues Identified
+## What Changes
 
-1. **Greeting message is generic and unprofessional** -- "Welcome back, Admin!" shows when you (the admin) open the chat as a logged-in user. For real visitors, it says the guest greeting. The default guest greeting is too long and templated.
-2. **No "online/offline" status** -- the green dot always pulses regardless of whether an admin is actually available.
-3. **The welcome screen (empty state) is too plain** -- just shows avatar + "Send us a message".
-4. **No message preview in conversation list** -- admin can't see last message text without clicking.
-5. **No sound notification distinction** -- same sound for all events.
+### 1. New 24/7 Chat Icon Asset
+Copy the uploaded purple 24/7 speech bubble icon into the project as `src/assets/chat-247-icon.png`. This replaces the current support avatar on the **floating chat bubble** and the **welcome card only**.
 
-## Plan: Professional Chat Overhaul
+### 2. Floating Chat Bubble (bottom-right corner)
+- Currently shows the support agent avatar
+- **Change to**: The 24/7 chat icon -- clearly visible, polished, with a clean white background and subtle border
+- This is what guests see before opening the chat, so the 24/7 branding builds trust
 
-### 1. Improve the Welcome/Empty State Screen
-**What changes:** When a guest first opens the chat (before any messages), show a polished welcome card:
-- Large support avatar (the uploaded image)
-- Support agent name from admin settings
-- "Typically replies under [time]" below the name
-- A clear "Start a conversation" prompt
-- Remove the robotic/long auto-greeting text and replace with a short, warm 1-liner like "Hi there! How can we help you today?"
+### 3. Welcome Card (empty state inside chat)
+- Currently shows the support agent avatar in a large circle
+- **Change to**: The 24/7 chat icon as the centerpiece
+- Keep the support name and "Typically replies under..." text below it
+- Keep the "Start a conversation" prompt
 
-**File:** `src/components/LiveChatWidget.tsx` (lines 495-501)
+### 4. Admin Reply Messages -- Use Agent Avatar
+When the admin sends a message, the small avatar next to their message bubble will show:
+- The **admin-configured support avatar** (from Admin > Support Profile settings)
+- Falls back to the `support-avatar.png` if no custom URL is set
+- This creates a natural flow: **24/7 icon greets you, then a real agent (with name and photo) joins the conversation**
 
-### 2. Fix the Default Greeting Messages
-**What changes:** Update the default greeting constants to be shorter and more professional:
-- **Guest:** "Hi there! How can we help you today?"
-- **User:** "Welcome back, {{user_name}}! How can we help?"
+### 5. Proactive Greeting + Typing Indicator
+- The initial proactive typing dots and greeting message will also use the **24/7 icon** (since it's the system greeting, not a specific agent)
+- Once admin replies, those messages use the agent avatar
 
-These are just defaults -- admin can still customize them in Settings.
+## Summary of Avatar Usage
 
-**File:** `src/components/LiveChatWidget.tsx` (lines 38-48, 144-146 in Admin.tsx)
-
-### 3. Add Last Message Preview to Admin Conversation List
-**What changes:** Show a 1-line preview of the last message under each conversation in the admin panel, so admin can triage without clicking each one.
-
-**File:** `src/components/admin/AdminChatPanel.tsx` -- update the conversation list item to fetch/display last message text.
-
-### 4. Show Conversation Timestamps More Clearly
-**What changes:** Use relative time ("2 min ago", "1 hour ago") instead of absolute timestamps in the conversation list for quicker scanning.
-
-**File:** `src/components/admin/AdminChatPanel.tsx` (formatTime function)
-
-### 5. Admin Settings Improvements
-**What changes:** Make the admin greeting/profile settings more intuitive:
-- Add a live preview of what the greeting looks like in the chat
-- Pre-populate the reply time dropdown with common professional options (Already done: 5min to 24h)
-- Allow admin to upload an avatar image directly (not just paste a URL)
-
-**File:** `src/pages/Admin.tsx` (support profile settings section)
+| Location | Current | New |
+|----------|---------|-----|
+| Floating chat bubble | Agent avatar | 24/7 icon |
+| Welcome card (empty state) | Agent avatar | 24/7 icon |
+| Proactive typing dots | Agent avatar | 24/7 icon |
+| Proactive greeting message | Agent avatar | 24/7 icon |
+| Admin reply messages | Agent avatar | Agent avatar (no change) |
+| Admin typing indicator | Agent avatar | Agent avatar (no change) |
+| Chat header | Agent avatar | Agent avatar (no change) |
 
 ## Technical Details
 
@@ -55,13 +46,9 @@ These are just defaults -- admin can still customize them in Settings.
 
 | File | Changes |
 |------|---------|
-| `src/components/LiveChatWidget.tsx` | Improve empty state, fix default greeting, polish welcome card |
-| `src/components/admin/AdminChatPanel.tsx` | Add last message preview, relative timestamps |
-| `src/pages/Admin.tsx` | Update default greeting text, improve avatar upload UX |
+| `src/assets/chat-247-icon.png` | Copy the uploaded 24/7 icon into the project |
+| `src/components/LiveChatWidget.tsx` | Import the 24/7 icon, use it for bubble + welcome + proactive greeting; keep `avatarSrc` for admin messages and header |
 
-### No Database Changes Needed
-All data structures (admin_settings, chat_conversations, chat_messages) already support these improvements. The changes are purely UI/UX.
-
-### Summary
-These changes will transform the chat from looking like a dev prototype into a professional customer support widget that builds trust with visitors -- clean welcome screen, short warm greetings, and a more functional admin panel for faster response times.
+### No database changes needed
+This is purely a frontend asset swap with conditional avatar logic.
 
