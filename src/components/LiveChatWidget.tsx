@@ -3,7 +3,7 @@ import { X, Send, Plus, Loader2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import liveSupportIcon from '@/assets/live-support-icon.png';
+import supportAvatar from '@/assets/support-avatar.png';
 
 // Preload notification sound
 const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
@@ -22,6 +22,18 @@ interface ChatMessage {
   is_read: boolean;
   created_at: string;
 }
+
+interface SupportProfile {
+  supportName: string;
+  replyTime: string;
+  avatarUrl: string;
+}
+
+const DEFAULT_SUPPORT_PROFILE: SupportProfile = {
+  supportName: 'Tesla Stock Platform',
+  replyTime: '30 minutes',
+  avatarUrl: '',
+};
 
 const getGreeting = () => {
   const lang = navigator.language.split('-')[0];
@@ -61,12 +73,16 @@ const LiveChatWidget = () => {
   const [proactiveTyping, setProactiveTyping] = useState(false);
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
   const [customGreeting, setCustomGreeting] = useState<{ mode: string; guestGreeting: string; userGreeting: string } | null>(null);
+  const [supportProfile, setSupportProfile] = useState<SupportProfile>(DEFAULT_SUPPORT_PROFILE);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const avatarSrc = supportProfile.avatarUrl || supportAvatar;
+  const displayName = supportProfile.supportName || 'Tesla Stock Platform';
 
   // Load profile data
   useEffect(() => {
@@ -82,24 +98,35 @@ const LiveChatWidget = () => {
     loadProfile();
   }, [user]);
 
-  // Fetch custom greeting settings
+  // Fetch custom greeting & support profile settings
   useEffect(() => {
-    const fetchGreeting = async () => {
+    const fetchSettings = async () => {
       const { data } = await supabase
         .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_key', 'chat_greeting_settings')
-        .maybeSingle();
-      if (data?.setting_value) {
-        setCustomGreeting(data.setting_value as any);
+        .select('setting_key, setting_value')
+        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings']);
+      if (data) {
+        for (const row of data) {
+          if (row.setting_key === 'chat_greeting_settings' && row.setting_value) {
+            setCustomGreeting(row.setting_value as any);
+          }
+          if (row.setting_key === 'support_profile_settings' && row.setting_value) {
+            const val = row.setting_value as any;
+            setSupportProfile({
+              supportName: val.supportName || DEFAULT_SUPPORT_PROFILE.supportName,
+              replyTime: val.replyTime || DEFAULT_SUPPORT_PROFILE.replyTime,
+              avatarUrl: val.avatarUrl || '',
+            });
+          }
+        }
       }
     };
-    fetchGreeting();
+    fetchSettings();
   }, []);
 
-  // Load or create conversation
+  // Load or create conversation - guests persist via localStorage guest ID
   const getOrCreateConversation = useCallback(async () => {
-    const identifier = user?.id || getGuestId();
+    const guestId = getGuestId();
     
     if (user) {
       const { data: existing } = await supabase
@@ -112,11 +139,11 @@ const LiveChatWidget = () => {
         .maybeSingle();
       if (existing) { setConversationId(existing.id); return existing.id; }
     } else {
-      // Guest: find by user_name matching guest ID
+      // Guest: find by user_name matching guest ID - never wipe
       const { data: existing } = await supabase
         .from('chat_conversations')
         .select('id')
-        .eq('user_name', identifier)
+        .eq('user_name', guestId)
         .eq('status', 'open')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -128,7 +155,7 @@ const LiveChatWidget = () => {
       .from('chat_conversations')
       .insert({
         user_id: user?.id || null,
-        user_name: user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : 'Guest',
+        user_name: user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestId,
         user_email: user ? (profileData?.email || user.email) : null,
       })
       .select('id')
@@ -184,7 +211,6 @@ const LiveChatWidget = () => {
         filter: `conversation_id=eq.${conversationId}`,
       }, (payload) => {
         const row = payload.new as any;
-        // Only show typing if it's NOT from the current user (i.e. it's from admin)
         if (row.user_id !== currentUserId) {
           setAdminTyping(row.is_typing || false);
         }
@@ -193,7 +219,7 @@ const LiveChatWidget = () => {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId, user?.id]);
 
-  // Check for existing conversation on mount
+  // Check for existing conversation on mount - guests persist
   useEffect(() => {
     const init = async () => {
       if (user) {
@@ -216,7 +242,6 @@ const LiveChatWidget = () => {
           if (count) setUnreadCount(count);
         }
       } else {
-        // Guest: check for existing conversation by guest ID
         const guestId = getGuestId();
         const { data } = await supabase
           .from('chat_conversations')
@@ -266,15 +291,14 @@ const LiveChatWidget = () => {
     }
   }, [message]);
 
-  // Proactive greeting: typing dots → message → sound (once per session)
+  // Proactive greeting
   useEffect(() => {
     if (!isOpen) return;
     if (sessionStorage.getItem('chat-greeted')) return;
-    if (proactiveMessage) return; // Already shown
+    if (proactiveMessage) return;
 
     sessionStorage.setItem('chat-greeted', 'true');
 
-    // Determine greeting text
     let greetingText: string;
     if (customGreeting && customGreeting.mode === 'custom') {
       if (user && customGreeting.userGreeting) {
@@ -290,23 +314,14 @@ const LiveChatWidget = () => {
       greetingText = `${greeting.hi} 👋\n${greeting.help}`;
     }
 
-    // Show typing dots after a short delay
-    const typingTimer = setTimeout(() => {
-      setProactiveTyping(true);
-    }, 800);
-
-    // Replace dots with message after 2s
+    const typingTimer = setTimeout(() => { setProactiveTyping(true); }, 800);
     const messageTimer = setTimeout(() => {
       setProactiveTyping(false);
       setProactiveMessage(greetingText);
-      // Play sound
       notificationAudio?.play().catch(() => {});
     }, 2600);
 
-    return () => {
-      clearTimeout(typingTimer);
-      clearTimeout(messageTimer);
-    };
+    return () => { clearTimeout(typingTimer); clearTimeout(messageTimer); };
   }, [isOpen, proactiveMessage, customGreeting, user, profileData]);
 
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
@@ -331,7 +346,10 @@ const LiveChatWidget = () => {
     setSending(true);
     try {
       let convId = conversationId;
-      if (!convId) { convId = await getOrCreateConversation(); if (!convId) return; }
+      if (!convId) {
+        convId = await getOrCreateConversation();
+        if (!convId) { setSending(false); return; }
+      }
 
       let imageUrl: string | null = null;
       if (stagedImage) {
@@ -411,7 +429,7 @@ const LiveChatWidget = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Bubble */}
+      {/* Chat Bubble - 24/7 support avatar */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -423,10 +441,10 @@ const LiveChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-12 h-12 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30"
             aria-label="Open live chat"
           >
-            <img src={liveSupportIcon} alt="Live Support" className="w-12 h-12 object-cover" />
+            <img src={avatarSrc} alt="Live Support" className="w-full h-full object-cover" />
             {unreadCount > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 bg-tesla-red text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                 {unreadCount}
@@ -448,19 +466,24 @@ const LiveChatWidget = () => {
             onClick={(e) => { if (showFilePicker) { setShowFilePicker(false); } }}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30">
-                  <img src={liveSupportIcon} alt="Support" className="w-full h-full object-cover" />
+            <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/40 bg-white">
+                    <img src={avatarSrc} alt="Support" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-white font-semibold text-sm truncate">{displayName}</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 animate-pulse" />
+                      <p className="text-white/80 text-[11px] truncate">Typically replies under {supportProfile.replyTime}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-white font-semibold text-sm truncate">Live Support</h3>
-                  <p className="text-white/70 text-[11px] truncate">Tesla Stock Platform</p>
-                </div>
+                <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors p-1 flex-shrink-0">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors p-1 flex-shrink-0">
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
             {/* Messages */}
@@ -471,7 +494,8 @@ const LiveChatWidget = () => {
             }}>
               {!proactiveTyping && !proactiveMessage && messages.length === 0 && (
                 <div className="text-center py-8">
-                  <img src={liveSupportIcon} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full" />
+                  <img src={avatarSrc} alt="Support" className="w-16 h-16 mx-auto mb-3 rounded-full border-2 border-electric-blue/20" />
+                  <p className="text-gray-900 text-sm font-medium">{displayName}</p>
                   <p className="text-gray-500 text-xs mt-1">Send us a message</p>
                 </div>
               )}
@@ -480,7 +504,7 @@ const LiveChatWidget = () => {
               {proactiveTyping && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
-                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200" />
                     <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-1">
                         <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -496,14 +520,14 @@ const LiveChatWidget = () => {
               {proactiveMessage && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
-                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200" />
                     <motion.div
                       initial={{ scale: 0.6, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       className="max-w-[80%] bg-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5"
                     >
-                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Tesla Stock Platform</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">{displayName}</p>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-900">{proactiveMessage}</p>
                     </motion.div>
                   </div>
@@ -512,13 +536,16 @@ const LiveChatWidget = () => {
 
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
+                  {msg.sender_type === 'admin' && (
+                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200" />
+                  )}
+                  <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                     msg.sender_type === 'user'
                       ? 'bg-electric-blue text-white rounded-br-md'
                       : 'bg-gray-100 text-gray-900 rounded-bl-md'
                   }`}>
                     {msg.sender_type === 'admin' && (
-                      <p className="text-[10px] font-semibold text-blue-600 mb-1">Tesla Stock Platform</p>
+                      <p className="text-[10px] font-semibold text-blue-600 mb-1">{displayName}</p>
                     )}
                     {msg.image_url && (
                       <img
@@ -542,7 +569,7 @@ const LiveChatWidget = () => {
               {adminTyping && (
                 <div className="flex justify-start">
                   <div className="flex items-start gap-2">
-                    <img src={liveSupportIcon} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1" />
+                    <img src={avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200" />
                     <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-1">
                         <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -576,9 +603,9 @@ const LiveChatWidget = () => {
                 <div className="p-3 flex items-end gap-2">
                   {/* File picker */}
                   <div className="relative flex-shrink-0">
-                  <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                    <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={handleFileSelect} />
-                    <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                  <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+                    <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+                    <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowFilePicker(!showFilePicker); }}
                       disabled={uploading}
@@ -597,7 +624,12 @@ const LiveChatWidget = () => {
                           className="absolute bottom-12 left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
                         >
                           <button
-                            onClick={() => { galleryInputRef.current?.click(); }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              galleryInputRef.current?.click();
+                              setShowFilePicker(false);
+                            }}
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
                           >
                             <ImageIcon className="w-4 h-4 text-electric-blue" />

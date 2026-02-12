@@ -74,6 +74,12 @@ interface ChatGreetingSettings {
   userGreeting: string;
 }
 
+interface SupportProfileSettings {
+  supportName: string;
+  replyTime: string;
+  avatarUrl: string;
+}
+
 interface KYCVerification {
   id: string;
   user_id: string;
@@ -140,6 +146,17 @@ const DEFAULT_CHAT_GREETING_SETTINGS: ChatGreetingSettings = {
   guestGreeting: 'Welcome to Tesla Stock Platform! 📈 A verified support agent will be with you shortly.',
   userGreeting: 'Welcome back, {{user_name}}! 👋 How can we assist you today? A verified agent will be with you shortly.',
 };
+
+const DEFAULT_SUPPORT_PROFILE: SupportProfileSettings = {
+  supportName: 'Tesla Stock Platform',
+  replyTime: '30 minutes',
+  avatarUrl: '',
+};
+
+const REPLY_TIME_OPTIONS = [
+  '5 minutes', '10 minutes', '15 minutes', '30 minutes',
+  '1 hour', '2 hours', '3 hours', '24 hours',
+];
 
 // Country code to full name mapping
 const countryNames: Record<string, string> = {
@@ -209,6 +226,8 @@ const Admin = () => {
   const [chatGreetingSettings, setChatGreetingSettings] = useState<ChatGreetingSettings>(DEFAULT_CHAT_GREETING_SETTINGS);
   const [savingGreeting, setSavingGreeting] = useState(false);
   const [showGreetingPreview, setShowGreetingPreview] = useState(false);
+  const [supportProfileSettings, setSupportProfileSettings] = useState<SupportProfileSettings>(DEFAULT_SUPPORT_PROFILE);
+  const [savingSupportProfile, setSavingSupportProfile] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
@@ -381,6 +400,13 @@ const Admin = () => {
               mode: value.mode || 'default',
               guestGreeting: value.guestGreeting || DEFAULT_CHAT_GREETING_SETTINGS.guestGreeting,
               userGreeting: value.userGreeting || DEFAULT_CHAT_GREETING_SETTINGS.userGreeting,
+            });
+          } else if (setting.setting_key === 'support_profile_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as SupportProfileSettings;
+            setSupportProfileSettings({
+              supportName: value.supportName || DEFAULT_SUPPORT_PROFILE.supportName,
+              replyTime: value.replyTime || DEFAULT_SUPPORT_PROFILE.replyTime,
+              avatarUrl: value.avatarUrl || '',
             });
           }
         });
@@ -938,6 +964,45 @@ const Admin = () => {
       toast.error(errorMessage);
     } finally {
       setSavingGreeting(false);
+    }
+  };
+
+  const saveSupportProfileSettings = async () => {
+    setSavingSupportProfile(true);
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'support_profile_settings')
+        .maybeSingle();
+
+      const payload = JSON.parse(JSON.stringify(supportProfileSettings));
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({
+            setting_value: payload,
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'support_profile_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({
+            setting_key: 'support_profile_settings',
+            setting_value: payload,
+            updated_by: user?.id
+          });
+      }
+
+      toast.success('Support profile settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save support profile';
+      toast.error(errorMessage);
+    } finally {
+      setSavingSupportProfile(false);
     }
   };
 
@@ -1795,6 +1860,70 @@ const Admin = () => {
                   Using the default localized greeting based on the user's browser language.
                 </p>
               )}
+            </div>
+
+            {/* Support Profile Settings Card */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 animate-fade-in">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-electric-blue" />
+                Support Agent Profile
+              </h3>
+              <div className="space-y-4">
+                {/* Support Name */}
+                <div>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Support Agent Name</Label>
+                  <Input
+                    value={supportProfileSettings.supportName}
+                    onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, supportName: e.target.value }))}
+                    placeholder="Tesla Stock Platform"
+                    className="bg-white border-slate-600 focus:ring-electric-blue"
+                    style={{ color: '#000000', fontWeight: 500 }}
+                  />
+                </div>
+
+                {/* Reply Time */}
+                <div>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Typical Reply Time</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {REPLY_TIME_OPTIONS.map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => setSupportProfileSettings(prev => ({ ...prev, replyTime: opt }))}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          supportProfileSettings.replyTime === opt
+                            ? 'bg-electric-blue text-white'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Avatar URL */}
+                <div>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Avatar Image URL (optional)</Label>
+                  <Input
+                    value={supportProfileSettings.avatarUrl}
+                    onChange={(e) => setSupportProfileSettings(prev => ({ ...prev, avatarUrl: e.target.value }))}
+                    placeholder="https://example.com/avatar.png"
+                    className="bg-white border-slate-600 focus:ring-electric-blue"
+                    style={{ color: '#000000', fontWeight: 500 }}
+                  />
+                  <p className="text-slate-500 text-xs mt-1">Leave empty to use the default support avatar.</p>
+                </div>
+
+                <Button
+                  size="sm"
+                  onClick={saveSupportProfileSettings}
+                  disabled={savingSupportProfile}
+                  className="bg-electric-blue hover:bg-electric-blue/90"
+                >
+                  {savingSupportProfile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Profile
+                </Button>
+              </div>
             </div>
 
             {/* Admin Chat Panel */}
