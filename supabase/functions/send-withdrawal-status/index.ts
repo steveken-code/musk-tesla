@@ -10,7 +10,7 @@ const FROM_EMAIL = "Tesla Stock Platform <no-reply@msktesla.net>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const TESLA_LOGO_URL = "https://ndvwqmoahasggeobwwld.supabase.co/storage/v1/object/public/assets/new_tesla-removebg-preview.png";
+// Logo URL removed - using text-only header for consistency and reliability
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
