@@ -22,8 +22,7 @@ interface ActionsPanelProps {
 // Investment platform rules
 const investmentRules = [
   { icon: DollarSign, title: 'Minimum Investment', description: '$500 minimum to start investing' },
-  { icon: Percent, title: 'Tier-Based Returns', description: 'Starter: 5-10%, Regular: 10-15%, Gold: 15-25% returns' },
-  { icon: Sparkles, title: 'Auto-Tier Detection', description: 'Your tier is assigned based on your investment amount' },
+  { icon: Percent, title: 'Competitive Returns', description: 'Earn attractive returns on your investments' },
   { icon: Clock, title: 'Withdrawal Processing', description: 'Withdrawals processed within 24-48 hours' },
   { icon: Users, title: 'One Active Investment', description: 'One active investment at a time per account' },
   { icon: Headphones, title: '24/7 Support', description: 'Contact us anytime via WhatsApp or Telegram' },
@@ -98,7 +97,7 @@ const ActionsPanel = ({
             <span className="text-xs font-medium text-white/80">Special Offer</span>
           </div>
           <h4 className="text-sm font-bold text-white mb-1">Tesla Stock Bonus!</h4>
-          <p className="text-xs text-white/70 mb-3">3 tiers: Starter ($500+), Regular ($7K+), Gold ($15K+)</p>
+          <p className="text-xs text-white/70 mb-3">Invest from $500 and earn competitive returns</p>
           <button 
             onClick={() => setShowRules(true)}
             className="text-xs font-medium text-white underline underline-offset-2 hover:no-underline transition-all"
