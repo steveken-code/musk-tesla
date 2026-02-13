@@ -644,6 +644,23 @@ const LiveChatWidget = () => {
     }
   };
 
+  const handleStartNewChat = useCallback(() => {
+    setConversationId(null);
+    setMessages([]);
+    setSessionTimedOut(false);
+    setTimeoutWarning(false);
+    setSpecialistJoined(false);
+    setGuestName('');
+    setGuestEmail('');
+    setVerificationCode('');
+    setVerificationError('');
+    setFirstMessage('');
+    setChatStep('landing');
+    setProactiveMessage(null);
+    sessionStorage.removeItem('chat-greeted');
+    localStorage.removeItem('chat-guest-id');
+  }, []);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -854,6 +871,12 @@ const LiveChatWidget = () => {
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-[300px]">
               <p className="text-red-700 text-sm font-semibold text-center mb-1">Session Timed Out</p>
               <p className="text-red-600 text-xs text-center">Your session has timed out due to inactivity. For your security, please start a new chat to continue.</p>
+              <button
+                onClick={handleStartNewChat}
+                className="mt-3 w-full h-9 bg-electric-blue text-white rounded-lg text-sm font-semibold hover:bg-electric-blue/90 transition-colors"
+              >
+                Start New Chat
+              </button>
             </div>
           </div>
         )}
@@ -977,6 +1000,12 @@ const LiveChatWidget = () => {
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-[300px]">
               <p className="text-red-700 text-sm font-semibold text-center mb-1">Session Timed Out</p>
               <p className="text-red-600 text-xs text-center">Your session has timed out due to inactivity. For your security, please start a new chat to continue.</p>
+              <button
+                onClick={handleStartNewChat}
+                className="mt-3 w-full h-9 bg-electric-blue text-white rounded-lg text-sm font-semibold hover:bg-electric-blue/90 transition-colors"
+              >
+                Start New Chat
+              </button>
             </div>
           </div>
         )}
