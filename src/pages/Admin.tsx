@@ -240,16 +240,7 @@ const Admin = () => {
   const [savingSupportProfile, setSavingSupportProfile] = useState(false);
   const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>(DEFAULT_SPECIALIST_SETTINGS);
   const [savingSpecialist, setSavingSpecialist] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat' | 'tiers'>('investments');
-  
-  // Tier Plans state
-  interface TierPlan { name: string; minAmount: number; maxAmount: number; profitMin: number; profitMax: number; features: string[]; }
-  const [tierPlans, setTierPlans] = useState<TierPlan[]>([
-    { name: 'Starter Plan', minAmount: 500, maxAmount: 6999, profitMin: 5, profitMax: 10, features: ['Basic portfolio tracking', 'Weekly profit reports', 'Email support', 'Standard processing'] },
-    { name: 'Regular Plan', minAmount: 7000, maxAmount: 14999, profitMin: 10, profitMax: 15, features: ['Advanced analytics', 'Daily profit reports', 'Priority support', 'Fast processing'] },
-    { name: 'Gold Plan', minAmount: 15000, maxAmount: 999999, profitMin: 15, profitMax: 25, features: ['VIP analytics suite', 'Real-time profit tracking', 'Dedicated account manager', 'Instant processing'] },
-  ]);
-  const [savingTiers, setSavingTiers] = useState(false);
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
   const [showKycModal, setShowKycModal] = useState(false);
@@ -435,11 +426,6 @@ const Admin = () => {
               specialistName: value.specialistName || DEFAULT_SPECIALIST_SETTINGS.specialistName,
               specialistImageUrl: value.specialistImageUrl || '',
             });
-          } else if (setting.setting_key === 'tier_plans_settings' && setting.setting_value) {
-            const value = setting.setting_value as any;
-            if (value.tiers && Array.isArray(value.tiers)) {
-              setTierPlans(value.tiers);
-            }
           }
         });
       }
@@ -1802,14 +1788,6 @@ const Admin = () => {
             <ShieldAlert className="w-4 h-4 mr-2" />
             {t('securityLogs')}
           </Button>
-          <Button
-            variant={activeTab === 'tiers' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('tiers')}
-            className={activeTab === 'tiers' ? 'bg-amber-600' : 'border-slate-600 text-slate-300'}
-          >
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Tier Plans
-          </Button>
         </div>
 
         {/* Chat Tab */}
@@ -3059,120 +3037,6 @@ const Admin = () => {
         </div>
       )}
 
-        {/* Tier Plans Management Tab */}
-        {activeTab === 'tiers' && (
-          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in">
-            <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-white">
-              <TrendingUp className="w-5 h-5 text-amber-500" />
-              Investment Tier Plans
-            </h2>
-            <p className="text-slate-400 text-sm mb-6">
-              Configure the investment tiers shown on the homepage and dashboard. Changes take effect immediately.
-            </p>
-            <div className="space-y-6">
-              {tierPlans.map((tier, idx) => (
-                <div key={idx} className="bg-slate-900/50 border border-slate-600 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${idx === 0 ? 'bg-slate-500/20 text-slate-300' : idx === 1 ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'}`}>
-                      {idx + 1}
-                    </span>
-                    <Input
-                      value={tier.name}
-                      onChange={(e) => {
-                        const updated = [...tierPlans];
-                        updated[idx] = { ...updated[idx], name: e.target.value };
-                        setTierPlans(updated);
-                      }}
-                      className="bg-white border-2 border-slate-300 [color:#000000_!important] text-base font-semibold h-10 max-w-[250px]"
-                      placeholder="Tier Name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">Min Amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={tier.minAmount}
-                        onChange={(e) => {
-                          const updated = [...tierPlans];
-                          updated[idx] = { ...updated[idx], minAmount: parseInt(e.target.value) || 0 };
-                          setTierPlans(updated);
-                        }}
-                        className="bg-white border-2 border-slate-300 [color:#000000_!important] font-semibold h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">Max Amount ($)</Label>
-                      <Input
-                        type="number"
-                        value={tier.maxAmount}
-                        onChange={(e) => {
-                          const updated = [...tierPlans];
-                          updated[idx] = { ...updated[idx], maxAmount: parseInt(e.target.value) || 0 };
-                          setTierPlans(updated);
-                        }}
-                        className="bg-white border-2 border-slate-300 [color:#000000_!important] font-semibold h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">Profit Min (%)</Label>
-                      <Input
-                        type="number"
-                        value={tier.profitMin}
-                        onChange={(e) => {
-                          const updated = [...tierPlans];
-                          updated[idx] = { ...updated[idx], profitMin: parseInt(e.target.value) || 0 };
-                          setTierPlans(updated);
-                        }}
-                        className="bg-white border-2 border-slate-300 [color:#000000_!important] font-semibold h-10"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-slate-400 text-xs">Profit Max (%)</Label>
-                      <Input
-                        type="number"
-                        value={tier.profitMax}
-                        onChange={(e) => {
-                          const updated = [...tierPlans];
-                          updated[idx] = { ...updated[idx], profitMax: parseInt(e.target.value) || 0 };
-                          setTierPlans(updated);
-                        }}
-                        className="bg-white border-2 border-slate-300 [color:#000000_!important] font-semibold h-10"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button
-              onClick={async () => {
-                setSavingTiers(true);
-                try {
-                  const { error } = await supabase
-                    .from('admin_settings')
-                    .upsert({
-                      setting_key: 'tier_plans_settings',
-                      setting_value: { tiers: tierPlans } as any,
-                      updated_by: user?.id,
-                      updated_at: new Date().toISOString(),
-                    }, { onConflict: 'setting_key' });
-                  if (error) throw error;
-                  toast.success('Tier plans saved successfully!');
-                } catch (err) {
-                  console.error('Error saving tier plans:', err);
-                  toast.error('Failed to save tier plans');
-                } finally {
-                  setSavingTiers(false);
-                }
-              }}
-              className="mt-6 bg-amber-600 hover:bg-amber-700"
-              disabled={savingTiers}
-            >
-              {savingTiers ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              Save Tier Plans
-            </Button>
-          </div>
-        )}
 
       {/* KYC Management Modal */}
       <KYCManagementModal

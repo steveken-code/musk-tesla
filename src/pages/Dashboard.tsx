@@ -35,7 +35,7 @@ import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
 import PopularStocksTable from '@/components/dashboard/PopularStocksTable';
 import ActionsPanel from '@/components/dashboard/ActionsPanel';
 import ReferralBonus from '@/components/dashboard/ReferralBonus';
-import InvestmentPlans, { useTierPlans, getTierForAmount } from '@/components/InvestmentPlans';
+
 
 // StockMarketWidget removed from dashboard layout
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
@@ -1483,12 +1483,6 @@ const Dashboard = () => {
               </div>
             ) : (
               <form onSubmit={handleInvest} className="space-y-4 sm:space-y-5">
-                {/* Tier Plan Cards */}
-                <InvestmentPlans
-                  variant="dashboard"
-                  selectedAmount={investAmount ? parseFloat(investAmount) : undefined}
-                  onSelectTier={(amount) => setInvestAmount(String(amount))}
-                />
 
                 {/* Step 1: Country Selection */}
                 <div className="relative">
