@@ -165,6 +165,23 @@ const AdminChatPanel = () => {
       }
     } catch (err) {
       console.error('AI suggestion error:', err);
+      // Retry once on failure
+      try {
+        const { data: retryData, error: retryError } = await supabase.functions.invoke('ai-chat-suggest', {
+          body: {
+            messages: convMessages.filter(m => m.sender_type !== 'system').map(m => ({
+              sender_type: m.sender_type,
+              message: m.message,
+            })),
+            latestMessage: latestMsg,
+          },
+        });
+        if (!retryError && retryData?.suggestion) {
+          setReply(retryData.suggestion);
+        }
+      } catch (retryErr) {
+        console.error('AI suggestion retry failed:', retryErr);
+      }
     } finally {
       setAiSuggesting(false);
     }
@@ -462,7 +479,7 @@ const AdminChatPanel = () => {
         )}
       </AnimatePresence>
 
-      <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl overflow-hidden animate-fade-in" style={{ height: '600px' }}>
+      <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl overflow-hidden animate-fade-in h-[calc(100vh-200px)] sm:h-[600px]">
         <div className="flex h-full">
           {/* Conversations List */}
           <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 border-r border-slate-700`}>

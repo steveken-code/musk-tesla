@@ -35,6 +35,7 @@ import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
 import PopularStocksTable from '@/components/dashboard/PopularStocksTable';
 import ActionsPanel from '@/components/dashboard/ActionsPanel';
 import ReferralBonus from '@/components/dashboard/ReferralBonus';
+import InvestmentPlans, { useTierPlans, getTierForAmount } from '@/components/InvestmentPlans';
 
 // StockMarketWidget removed from dashboard layout
 import ProfileCompletionModal from '@/components/ProfileCompletionModal';
@@ -592,8 +593,7 @@ const Dashboard = () => {
     if (typeof window !== 'undefined') {
       const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
       const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
-      // Only show payment if we have a valid saved amount AND the flag is true
-      if (savedAmount && parseFloat(savedAmount) >= 100 && savedShowPayment === 'true') {
+      if (savedAmount && parseFloat(savedAmount) >= 500 && savedShowPayment === 'true') {
         return true;
       }
     }
@@ -668,10 +668,9 @@ const Dashboard = () => {
     }
    
    // Only persist if both country and amount are set
-   if (investAmount && investCountry) {
+    if (investAmount && investCountry) {
       localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
-      // Show payment details if amount is valid (>= 100) and country is selected
-      if (parseFloat(investAmount) >= 100) {
+      if (parseFloat(investAmount) >= 500) {
         localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
         setShowPaymentDetails(true);
       } else {
@@ -765,7 +764,7 @@ const Dashboard = () => {
 
   // Show payment details with loading delay
   useEffect(() => {
-    if (investAmount && parseFloat(investAmount) >= 100) {
+    if (investAmount && parseFloat(investAmount) >= 500) {
       setLoadingPayment(true);
       setShowPaymentDetails(false);
       const timer = setTimeout(() => {
@@ -848,8 +847,8 @@ const Dashboard = () => {
     e.preventDefault();
     const amount = parseFloat(investAmount);
     
-    if (isNaN(amount) || amount < 100) {
-      toast.error(t('minInvestment'));
+    if (isNaN(amount) || amount < 500) {
+      toast.error('Minimum investment is $500');
       return;
     }
 
@@ -1484,6 +1483,13 @@ const Dashboard = () => {
               </div>
             ) : (
               <form onSubmit={handleInvest} className="space-y-4 sm:space-y-5">
+                {/* Tier Plan Cards */}
+                <InvestmentPlans
+                  variant="dashboard"
+                  selectedAmount={investAmount ? parseFloat(investAmount) : undefined}
+                  onSelectTier={(amount) => setInvestAmount(String(amount))}
+                />
+
                 {/* Step 1: Country Selection */}
                 <div className="relative">
                   <InvestmentCountrySelector
@@ -1527,7 +1533,7 @@ const Dashboard = () => {
                       </div>
                     )}
                     {/* Only show RUB conversion for Russia */}
-                    {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
+                    {investAmount && parseFloat(investAmount) >= 500 && investCountry === 'RU' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {t('exchangeRate')} {USD_TO_RUB} ₽
                       </div>
@@ -1559,7 +1565,7 @@ const Dashboard = () => {
                 <Button
                   type="submit"
                   className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                  disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
+                  disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 500 || loadingPayment}
                 >
                   {submitting ? (
                     <>
