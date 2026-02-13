@@ -940,7 +940,7 @@ const LiveChatWidget = () => {
             ) : (
               <>
                 {msg.sender_type === 'admin' && (
-                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" />
+                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" />
                 )}
                 <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                   msg.sender_type === 'user'
@@ -974,7 +974,7 @@ const LiveChatWidget = () => {
         {adminTyping && (
           <div className="flex justify-start">
             <div className="flex items-start gap-2">
-              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" className="w-7 h-7 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" />
+              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" />
               <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-1">
                   <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -1163,7 +1163,10 @@ const LiveChatWidget = () => {
                   <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/20 bg-white">
                     <img 
                       src={headerAvatar} 
-                      alt="Support" 
+                      alt="Support"
+                      width={48}
+                      height={48}
+                      loading="eager"
                       className={`w-full h-full ${specialistJoined && specialistProfile.specialistImageUrl ? 'object-cover' : 'object-contain p-0.5'}`} 
                     />
                   </div>
