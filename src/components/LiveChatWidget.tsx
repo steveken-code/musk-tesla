@@ -731,7 +731,7 @@ const LiveChatWidget = () => {
 
   // Render waiting screen
   const renderWaiting = () => (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Messages area for waiting state (shows user's first message) */}
       <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white">
         {messages.map((msg) => (
@@ -768,6 +768,30 @@ const LiveChatWidget = () => {
           </div>
         )}
         <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area so user can send more messages while waiting */}
+      <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+            placeholder="Type a message..."
+            rows={1}
+            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[40px] max-h-[80px]"
+            style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={(!message.trim() && !stagedImage) || sending}
+            className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            aria-label="Send message"
+          >
+            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
     </div>
   );
