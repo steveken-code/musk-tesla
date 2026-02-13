@@ -208,7 +208,16 @@ const AdminChatPanel = () => {
         .select('*')
         .eq('conversation_id', selectedConv.id)
         .order('created_at', { ascending: true });
-      if (data) setMessages(data as ChatMessage[]);
+      if (data) {
+        setMessages(data as ChatMessage[]);
+
+        // Auto-suggest AI reply if the last message is from a user
+        const lastMsg = data[data.length - 1] as ChatMessage | undefined;
+        if (lastMsg && lastMsg.sender_type === 'user' && lastMsg.id !== lastProcessedMsgRef.current) {
+          lastProcessedMsgRef.current = lastMsg.id;
+          fetchAiSuggestion(data as ChatMessage[], lastMsg.message || '');
+        }
+      }
 
       await supabase
         .from('chat_messages')
