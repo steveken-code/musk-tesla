@@ -601,8 +601,8 @@ const AdminChatPanel = () => {
                       onChange={(e) => { setReply(e.target.value); handleTyping(); }}
                       onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
                       placeholder="Type a reply..."
-                      rows={1}
-                      className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px]"
+                      rows={2}
+                      className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[150px] min-h-[52px]"
                       style={{ color: '#000000', WebkitTextFillColor: '#000000', opacity: 1 }}
                     />
                     <Button

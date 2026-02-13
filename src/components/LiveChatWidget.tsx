@@ -1018,8 +1018,8 @@ const LiveChatWidget = () => {
             <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border border-white/20 bg-white">
-                    <img src={headerAvatar} alt="Support" className="w-full h-full object-cover" />
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/20 bg-white">
+                    <img src={headerAvatar} alt="Support" className="w-full h-full object-contain p-0.5" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-white font-semibold text-sm truncate">{headerTitle}</h3>
