@@ -5,6 +5,10 @@ import { checkRateLimit, getClientIP, rateLimitResponse } from "../_shared/rate-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Rate limit configuration
+const RATE_LIMIT_IP_MAX = 10;      // 10 requests per IP
+const RATE_LIMIT_IP_WINDOW = 900;  // 15 minutes
+
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
 
