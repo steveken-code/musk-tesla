@@ -1,164 +1,100 @@
 
 
-# Comprehensive Chat System Overhaul, Email Fixes, and UI Improvements
+## Professional Chat System Upgrades
 
-This is a large set of changes spanning the chat system, email templates, password reset, and the landing page. Here is the full breakdown organized into phases.
-
----
-
-## Phase 1: Chat Support System Overhaul
-
-### 1A. New Chat Flow (User/Guest Side)
-
-The chat widget will be redesigned with a multi-step flow inspired by the Deriv broker reference:
-
-**Step 1 - Support Center Landing**
-- Header shows "Support Center" with the two-chats icon (uploaded image) and 2 overlapping placeholder avatars (one male, one female silhouette)
-- Text: "Questions? Chat with us." with a green dot and "Typically replies under [admin-configured time]"
-- Default/custom greeting bubble appears
-
-**Step 2 - Name and Email Form**
-- When user types their first message, show a form asking for Name and Email
-- Logged-in users skip this step (name/email auto-filled from profile)
-- Clean form layout matching the reference screenshot
-
-**Step 3 - Email Verification (4-digit code)**
-- A 4-digit code is sent to the guest's email from "Tesla Stock Platform no-reply@msktesla.net"
-- Guest enters the code to verify
-- Message: "If you do not see the email in your inbox, please check your spam folder"
-
-**Step 4 - Waiting for Specialist**
-- After verification: "Please hold while we connect you to our customer support specialist."
-- An email notification is sent to the admin email (b95157777@gmail.com)
-- The conversation is created in the database
-
-**Step 5 - Specialist Joins**
-- A divider line appears: "New" followed by "[Specialist Name] joined the conversation"
-- The header changes to show the specialist's name, image, "Active" with green dot
-- The specialist sends their intro message (e.g., "Hi! My name is [Name] from Tesla Stock Platform...")
-
-**Step 6 - Chat Resolution**
-- After resolving, specialist asks "Is there anything else I can help you with?"
-- If user says no or doesn't reply for a configurable timeout, the chat closes
-- Admin can also manually close the chat
-- Once closed, it reverts to the Support Center landing screen
-
-### 1B. Admin Panel Changes
-
-**New Admin Settings: "Customer Support Specialist"**
-- Editable specialist name (label says "Customer Support Specialist Name", not "Agent")
-- Specialist image upload (reuse existing avatar upload functionality)
-- These are separate from the existing "Support Profile" settings which control the Support Center defaults
-
-**Admin Chat Panel Updates**
-- When admin selects a conversation and clicks "Join", a system message "[Specialist Name] joined the conversation" is inserted
-- The specialist name/image from admin settings is used
-- Admin can close conversations with a "Close Chat" button
-
-### 1C. Database Changes
-
-New table or additions needed:
-- Add `guest_verified` boolean column to `chat_conversations` (to track if guest completed email verification)
-- Add `specialist_joined` boolean and `specialist_joined_at` timestamp to `chat_conversations`
-- New table `chat_verification_codes` with columns: id, email, code (4-digit), conversation_id, expires_at, verified, created_at
-- Add `guest_name` column to `chat_conversations` for verified guest display name
-
-### 1D. New Edge Function: `send-chat-verification`
-
-Sends a 4-digit verification code to the guest's email using the standard Tesla Red email template (light theme, 650px width).
+This plan covers 7 major improvements to make the support chat system fully professional.
 
 ---
 
-## Phase 2: Chat Icon Update
+### 1. Fix Duplicate Messages (User/Guest side)
 
-- Copy the uploaded two-chats icon (`2_chats-removebg-preview-2.png`) to `src/assets/chat-support-icon.png`
-- Use this icon for the floating chat bubble and Support Center landing
-- When a specialist joins, the header switches to the specialist's image/name
+**Problem**: When a user sends a message, an optimistic message with a `temp-` ID is added immediately. When the realtime subscription receives the actual inserted message (with a real UUID), it doesn't match the temp ID, so the message appears twice.
 
----
-
-## Phase 3: Password Reset Fix
-
-**Root Cause Investigation**: The `complete-password-reset` edge function returns a generic "Failed to update password. Please try again." when Supabase Auth rejects the password. Supabase may enforce additional password policies (e.g., leaked password detection) that the frontend doesn't know about.
-
-**Fix**:
-- In the edge function, capture and forward the actual Supabase Auth error message (e.g., "Password is too weak" or specific policy violations) instead of hiding it
-- Ensure the frontend properly displays this specific error
-- The CORS in `complete-password-reset` needs to also allow lovable.app/lovableproject.com origins for testing
+**Fix**: Update the realtime handler in `LiveChatWidget.tsx` to detect and replace optimistic (`temp-`) messages when the real message arrives, matching by `sender_type`, `message` content, and close timestamp.
 
 ---
 
-## Phase 4: Chat Message Glitch Fix
+### 2. Scrollable Chat Area (Not Main Page)
 
-**Issue**: User's first message doesn't appear until page refresh.
+**Problem**: When the chat widget is open, scrolling inside the chat can sometimes scroll the main webpage behind it.
 
-**Root Cause**: When a user sends their first message, the conversation is created and the message is inserted. However, the realtime subscription is set up AFTER `setConversationId` - there's a race condition where the INSERT happens before the subscription is active.
-
-**Fix**: After inserting the first message, immediately add it to the local `messages` state (optimistic update) instead of relying solely on the realtime subscription to catch it.
+**Fix**: Add `overflow: hidden` to `document.body` when the chat widget is open, and restore it when closed. Also ensure the chat messages container uses proper `overflow-y-auto` with `overscroll-behavior: contain` to trap scroll events inside the widget.
 
 ---
 
-## Phase 5: Email Template Fixes
+### 3. Auto-Join Greeting Message for Admin
 
-### 5A. Withdrawal Confirmation - Convert to Light Theme
-The `send-withdrawal-confirmation` function currently uses a dark theme (black background). Convert to the standard light theme:
-- White background (#f3f4f6 outer, #ffffff card)
-- Tesla Red gradient header
-- 650px width
-- "Hello [Name]," greeting style
-- Electric Blue section headers
-- Green for money values
+When the admin clicks "Join", automatically send a configurable greeting message like:
+> "Hello! My name is [Specialist Name], your dedicated support specialist. How can I assist you today?"
 
-### 5B. Crypto vs Bank Withdrawal Differentiation
-- Same template layout for both crypto and bank withdrawals
-- Different writeup: crypto shows "USDT Wallet Address" while bank shows "Bank Account"
-- The payment method field already exists - just ensure the template wording adapts
-
-### 5C. KYC Verification Approved Email
-- Review the `send-settlement-required` template to ensure it matches standard sizing (650px) and doesn't feel "tight"
-- Ensure proper spacing and padding
+**Implementation**:
+- Add an editable "Join Greeting" text field in the admin specialist settings section
+- Store it in `admin_settings` under the existing `specialist_settings` key
+- When admin clicks "Join", after the system message, auto-populate the reply textarea with this greeting so admin can review and hit send (not auto-send, giving admin control to edit first)
 
 ---
 
-## Phase 6: Landing Page Updates
+### 4. Session Timeout with Warning
 
-### 6A. Lighten the Hero Background
-- Reduce the overlay opacity from `from-background/95` to approximately `from-background/80`
-- Reduce `via-background/75` to `via-background/55`
-- This keeps the dark theme but lets the background images show through more
+**Timeout duration**: 15 minutes of inactivity (appropriate for a support chat on an investment platform -- keeps sessions secure without being too aggressive).
 
-### 6B. "Create Account" to "Open Account"
-- Change the button text from "Create Account" to "Open Account" in the Hero component
-- When clicked, navigate to `/auth` which shows the signup form (already works this way)
-- Update the translation key `createAccount` usage in Hero to use "Open Account"
+**Implementation**:
+- Track last activity timestamp (message sent/received, typing) in `LiveChatWidget.tsx`
+- At 12 minutes: show a warning banner inside the chat: "Your session will time out in 3 minutes due to inactivity."
+- At 15 minutes: display a timeout message: "Your session has timed out due to inactivity. For your security, please start a new chat to continue." Then close the conversation.
+- Insert a system message so admin can also see the timeout occurred.
 
 ---
 
-## Files to Modify
+### 5. AI Agent Suggested Replies for Admin
 
-| File | Changes |
-|------|---------|
-| `src/components/LiveChatWidget.tsx` | Major rewrite: multi-step flow, verification, specialist joining, Support Center landing |
-| `src/components/admin/AdminChatPanel.tsx` | Add "Join" and "Close Chat" buttons, specialist name system messages |
-| `src/pages/Admin.tsx` | Add specialist settings section in admin panel |
-| `src/components/Hero.tsx` | Lighten background, change "Create Account" to "Open Account" |
-| `supabase/functions/complete-password-reset/index.ts` | Forward actual Supabase Auth error, fix CORS |
-| `supabase/functions/send-withdrawal-confirmation/index.ts` | Convert dark theme to standard light theme |
-| `supabase/functions/send-chat-verification/index.ts` | **New** - sends 4-digit email verification code |
-| Database migration | New columns on chat_conversations, new chat_verification_codes table |
+When a user or guest sends a message, an AI agent will automatically generate a suggested reply and pre-fill the admin's reply textarea.
 
-### New Assets
-| File | Source |
-|------|--------|
-| `src/assets/chat-support-icon.png` | Uploaded two-chats icon for Support Center bubble |
+**Implementation**:
+- Create a new edge function `supabase/functions/ai-chat-suggest/index.ts` that:
+  - Receives the conversation history and latest user message
+  - Calls Lovable AI (google/gemini-3-flash-preview) with a system prompt instructing it to reply as a professional Tesla Stock Platform support specialist
+  - Returns the suggested reply text
+- In `AdminChatPanel.tsx`:
+  - When a new user message arrives (via realtime), automatically call the edge function
+  - Show a small "AI Suggesting..." indicator
+  - Pre-fill the reply textarea with the AI suggestion
+  - Admin reviews, optionally edits, then hits Send manually
+  - The AI never sends automatically -- admin always has final control
 
 ---
 
-## Technical Notes
+### 6. Typing Indicators (Bouncing Dots) -- Both Directions
 
-- The chat verification code uses the same Resend email service already configured
-- RLS policies will be needed for the new `chat_verification_codes` table (allow anon insert/select for verification flow)
-- The specialist "join" action inserts a system message with `sender_type: 'system'` (new type to add)
-- Chat auto-close timeout can be stored in `admin_settings` alongside existing chat settings
-- The optimistic message update for the glitch fix adds the message to local state immediately after successful insert, before the realtime subscription catches it
+**Current state**: Admin already sees user typing dots. User side has `adminTyping` state but needs verification that the bouncing dots render is present.
+
+**Fixes**:
+- Ensure the user/guest chat widget shows 3 bouncing dots when admin is typing (verify the render exists in the chatting view)
+- Ensure the admin panel shows 3 bouncing dots when user/guest is typing (already implemented at line 504-519)
+- Both sides already broadcast typing via `chat_typing_status` table -- just need to confirm the UI renders in all chat states
+
+---
+
+### 7. Increase User/Guest Message Input Size
+
+Make the message input textarea in the user/guest chat widget slightly larger for a better typing experience, matching the admin's updated input size.
+
+---
+
+### Technical Details
+
+**Files to create:**
+- `supabase/functions/ai-chat-suggest/index.ts` -- AI suggestion edge function
+
+**Files to modify:**
+- `src/components/LiveChatWidget.tsx` -- Fix duplicates, scroll lock, timeout logic, typing dots, input size
+- `src/components/admin/AdminChatPanel.tsx` -- AI suggestion integration, auto-join greeting, join greeting settings UI
+
+**Edge function approach (AI suggestions):**
+- Uses `LOVABLE_API_KEY` (already configured)
+- Model: `google/gemini-3-flash-preview`
+- System prompt tailored as a professional support specialist for a Tesla stock investment platform
+- Non-streaming (simple invoke) since we just need the full suggested text
+
+**Database**: No schema changes needed. All new settings stored in existing `admin_settings` table.
 
