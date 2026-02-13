@@ -125,8 +125,12 @@ export type Database = {
       chat_conversations: {
         Row: {
           created_at: string
+          guest_name: string | null
+          guest_verified: boolean | null
           id: string
           last_message_at: string | null
+          specialist_joined: boolean | null
+          specialist_joined_at: string | null
           status: string
           updated_at: string
           user_email: string | null
@@ -135,8 +139,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          guest_name?: string | null
+          guest_verified?: boolean | null
           id?: string
           last_message_at?: string | null
+          specialist_joined?: boolean | null
+          specialist_joined_at?: string | null
           status?: string
           updated_at?: string
           user_email?: string | null
@@ -145,8 +153,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          guest_name?: string | null
+          guest_verified?: boolean | null
           id?: string
           last_message_at?: string | null
+          specialist_joined?: boolean | null
+          specialist_joined_at?: string | null
           status?: string
           updated_at?: string
           user_email?: string | null
@@ -221,6 +233,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chat_typing_status_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_verification_codes: {
+        Row: {
+          code: string
+          conversation_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          conversation_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          conversation_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_verification_codes_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"

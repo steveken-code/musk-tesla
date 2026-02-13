@@ -62,7 +62,7 @@ const Hero = () => {
             className="w-full h-full object-cover scale-105"
           />
           {/* Multi-layer gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/75 to-background"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/55 to-background"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-background/90"></div>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background))_70%)]"></div>
         </div>
@@ -163,7 +163,7 @@ const Hero = () => {
                 className="group w-full sm:w-auto px-8 sm:px-10 py-6 sm:py-7 text-base sm:text-lg font-semibold border-2 border-foreground/30 bg-card/60 backdrop-blur-md text-foreground hover:bg-card/80 hover:border-electric-blue/60 hover:shadow-xl hover:shadow-electric-blue/20 transition-all duration-500 rounded-xl"
               >
                 <User className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                {t('createAccount')}
+                Open Account
               </Button>
             </Link>
           </motion.div>

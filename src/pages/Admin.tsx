@@ -80,6 +80,11 @@ interface SupportProfileSettings {
   avatarUrl: string;
 }
 
+interface SpecialistSettings {
+  specialistName: string;
+  specialistImageUrl: string;
+}
+
 interface KYCVerification {
   id: string;
   user_id: string;
@@ -151,6 +156,11 @@ const DEFAULT_SUPPORT_PROFILE: SupportProfileSettings = {
   supportName: 'Tesla Stock Platform',
   replyTime: '30 minutes',
   avatarUrl: '',
+};
+
+const DEFAULT_SPECIALIST_SETTINGS: SpecialistSettings = {
+  specialistName: 'Support Specialist',
+  specialistImageUrl: '',
 };
 
 const REPLY_TIME_OPTIONS = [
@@ -228,6 +238,8 @@ const Admin = () => {
   const [showGreetingPreview, setShowGreetingPreview] = useState(false);
   const [supportProfileSettings, setSupportProfileSettings] = useState<SupportProfileSettings>(DEFAULT_SUPPORT_PROFILE);
   const [savingSupportProfile, setSavingSupportProfile] = useState(false);
+  const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>(DEFAULT_SPECIALIST_SETTINGS);
+  const [savingSpecialist, setSavingSpecialist] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
@@ -407,6 +419,12 @@ const Admin = () => {
               supportName: value.supportName || DEFAULT_SUPPORT_PROFILE.supportName,
               replyTime: value.replyTime || DEFAULT_SUPPORT_PROFILE.replyTime,
               avatarUrl: value.avatarUrl || '',
+            });
+          } else if (setting.setting_key === 'specialist_settings' && setting.setting_value) {
+            const value = setting.setting_value as unknown as SpecialistSettings;
+            setSpecialistSettings({
+              specialistName: value.specialistName || DEFAULT_SPECIALIST_SETTINGS.specialistName,
+              specialistImageUrl: value.specialistImageUrl || '',
             });
           }
         });
@@ -1003,6 +1021,45 @@ const Admin = () => {
       toast.error(errorMessage);
     } finally {
       setSavingSupportProfile(false);
+    }
+  };
+
+  const saveSpecialistSettings = async () => {
+    setSavingSpecialist(true);
+    try {
+      const { data: existingSetting } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .eq('setting_key', 'specialist_settings')
+        .maybeSingle();
+
+      const payload = JSON.parse(JSON.stringify(specialistSettings));
+
+      if (existingSetting) {
+        await supabase
+          .from('admin_settings')
+          .update({
+            setting_value: payload,
+            updated_by: user?.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', 'specialist_settings');
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({
+            setting_key: 'specialist_settings',
+            setting_value: payload,
+            updated_by: user?.id
+          });
+      }
+
+      toast.success('Customer support specialist settings saved!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save specialist settings';
+      toast.error(errorMessage);
+    } finally {
+      setSavingSpecialist(false);
     }
   };
 
@@ -1976,6 +2033,87 @@ const Admin = () => {
                 >
                   {savingSupportProfile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
                   Save Profile
+                </Button>
+              </div>
+            </div>
+
+            {/* Customer Support Specialist Settings */}
+            <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 animate-fade-in">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-green-400" />
+                Customer Support Specialist
+              </h3>
+              <p className="text-slate-400 text-sm mb-4">
+                Configure the specialist who joins chat conversations. This name and image will be shown to users when the specialist joins.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Customer Support Specialist Name</Label>
+                  <Input
+                    value={specialistSettings.specialistName}
+                    onChange={(e) => setSpecialistSettings(prev => ({ ...prev, specialistName: e.target.value }))}
+                    placeholder="e.g. Sarah Johnson"
+                    className="bg-white border-slate-600 focus:ring-electric-blue"
+                    style={{ color: '#000000', fontWeight: 500 }}
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-300 text-sm mb-1.5 block">Specialist Image</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-700 flex-shrink-0">
+                      <img
+                        src={specialistSettings.specialistImageUrl || '/placeholder.svg'}
+                        alt="Specialist"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      <Input
+                        value={specialistSettings.specialistImageUrl}
+                        onChange={(e) => setSpecialistSettings(prev => ({ ...prev, specialistImageUrl: e.target.value }))}
+                        placeholder="Paste URL or upload below"
+                        className="bg-white border-slate-600 focus:ring-electric-blue"
+                        style={{ color: '#000000', fontWeight: 500 }}
+                      />
+                      <label className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-500/20 text-green-400 text-sm font-medium cursor-pointer hover:bg-green-500/30 transition-colors border border-green-500/30">
+                        <Camera className="w-4 h-4" />
+                        Upload from Gallery
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
+                            if (file.size > 5 * 1024 * 1024) { toast.error('Image must be less than 5MB'); return; }
+                            try {
+                              const fileExt = file.name.split('.').pop();
+                              const fileName = `specialist-avatar/specialist-${Date.now()}.${fileExt}`;
+                              const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
+                              if (uploadError) throw uploadError;
+                              const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+                              setSpecialistSettings(prev => ({ ...prev, specialistImageUrl: `${publicUrl}?t=${Date.now()}` }));
+                              toast.success('Specialist image uploaded!');
+                            } catch (err: any) {
+                              console.error('Specialist image upload error:', err);
+                              toast.error('Failed to upload image');
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={saveSpecialistSettings}
+                  disabled={savingSpecialist}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {savingSpecialist ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Specialist
                 </Button>
               </div>
             </div>
