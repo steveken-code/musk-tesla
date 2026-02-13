@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -45,17 +45,18 @@ const AdminChatPanel = () => {
   const [userTyping, setUserTyping] = useState(false);
   const [stagedImage, setStagedImage] = useState<{ file: File; preview: string } | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [showFilePicker, setShowFilePicker] = useState(false);
+  
   const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>({ 
     specialistName: 'Support Specialist', 
     specialistImageUrl: '',
     joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
   });
   const [aiSuggesting, setAiSuggesting] = useState(false);
+  const [showGreetingSettings, setShowGreetingSettings] = useState(false);
+  const [greetingDraft, setGreetingDraft] = useState('');
+  const [savingGreeting, setSavingGreeting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
@@ -302,6 +303,29 @@ const AdminChatPanel = () => {
     }
   };
 
+  const handleSaveGreeting = async () => {
+    setSavingGreeting(true);
+    try {
+      const updatedSettings = { ...specialistSettings, joinGreeting: greetingDraft };
+      const { error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: 'specialist_settings',
+          setting_value: updatedSettings as any,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'setting_key' });
+      if (error) throw error;
+      setSpecialistSettings(updatedSettings);
+      toast.success('Join greeting saved');
+      setShowGreetingSettings(false);
+    } catch (err) {
+      console.error('Error saving greeting:', err);
+      toast.error('Failed to save greeting');
+    } finally {
+      setSavingGreeting(false);
+    }
+  };
+
   const sendReply = async () => {
     if ((!reply.trim() && !stagedImage) || !selectedConv || sending) return;
     setSending(true);
@@ -346,10 +370,7 @@ const AdminChatPanel = () => {
     if (!file) return;
     const preview = URL.createObjectURL(file);
     setStagedImage({ file, preview });
-    setShowFilePicker(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
     if (galleryInputRef.current) galleryInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const formatTime = (dateStr: string) => {
@@ -410,14 +431,46 @@ const AdminChatPanel = () => {
         <div className="flex h-full">
           {/* Conversations List */}
           <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-80 border-r border-slate-700`}>
-            <div className="p-4 border-b border-slate-700">
-              <h3 className="text-white font-semibold flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-electric-blue" />
-                Chat Messages
-                {totalUnread > 0 && (
-                  <span className="bg-tesla-red text-white text-xs px-2 py-0.5 rounded-full font-bold">{totalUnread}</span>
-                )}
-              </h3>
+             <div className="p-4 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-white font-semibold flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-electric-blue" />
+                  Chat Messages
+                  {totalUnread > 0 && (
+                    <span className="bg-tesla-red text-white text-xs px-2 py-0.5 rounded-full font-bold">{totalUnread}</span>
+                  )}
+                </h3>
+                <button
+                  onClick={() => { setGreetingDraft(specialistSettings.joinGreeting); setShowGreetingSettings(!showGreetingSettings); }}
+                  className="p-1.5 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-700"
+                  title="Greeting Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Join Greeting Settings Panel */}
+              {showGreetingSettings && (
+                <div className="mt-3 bg-slate-700/50 border border-slate-600 rounded-lg p-3 space-y-2">
+                  <label className="text-xs text-slate-300 font-medium">Join Greeting Message</label>
+                  <p className="text-[10px] text-slate-400">Use {'{{name}}'} for specialist name</p>
+                  <textarea
+                    value={greetingDraft}
+                    onChange={(e) => setGreetingDraft(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                    placeholder="Hello! My name is {{name}}, your support specialist..."
+                  />
+                  <button
+                    onClick={handleSaveGreeting}
+                    disabled={savingGreeting}
+                    className="w-full flex items-center justify-center gap-1.5 bg-electric-blue hover:bg-electric-blue/90 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
+                  >
+                    {savingGreeting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                    Save Greeting
+                  </button>
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (
@@ -595,60 +648,14 @@ const AdminChatPanel = () => {
                   <div className="p-3 flex items-end gap-2">
                     <div className="relative flex-shrink-0">
                       <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-                      <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
                       <button
-                        onClick={() => setShowFilePicker(!showFilePicker)}
+                        onClick={() => galleryInputRef.current?.click()}
                         disabled={uploading}
                         className="p-2 text-slate-400 hover:text-electric-blue transition-colors"
+                        title="Attach photo"
                       >
-                        {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
+                        {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
                       </button>
-
-                      <AnimatePresence>
-                        {showFilePicker && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 8 }}
-                            className="absolute bottom-12 left-0 bg-slate-700 border border-slate-600 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
-                          >
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                galleryInputRef.current?.click();
-                                setShowFilePicker(false);
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
-                            >
-                              <ImageIcon className="w-4 h-4 text-electric-blue" /> Photo Library
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                cameraInputRef.current?.click();
-                                setShowFilePicker(false);
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
-                            >
-                              <Camera className="w-4 h-4 text-green-400" /> Take a Photo
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                fileInputRef.current?.click();
-                                setShowFilePicker(false);
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-slate-600 transition-colors"
-                            >
-                              <Paperclip className="w-4 h-4 text-amber-400" /> Choose File
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
                     </div>
 
                     <textarea
@@ -684,9 +691,6 @@ const AdminChatPanel = () => {
         </div>
       </div>
 
-      {showFilePicker && (
-        <div className="fixed inset-0 z-[9]" onClick={() => setShowFilePicker(false)} />
-      )}
     </>
   );
 };
