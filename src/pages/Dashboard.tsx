@@ -847,8 +847,8 @@ const Dashboard = () => {
     e.preventDefault();
     const amount = parseFloat(investAmount);
     
-    if (isNaN(amount) || amount < 500) {
-      toast.error('Minimum investment is $500');
+    if (isNaN(amount) || amount < 100) {
+      toast.error('Minimum investment is $100');
       return;
     }
 
