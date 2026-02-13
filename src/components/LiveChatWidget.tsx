@@ -14,8 +14,8 @@ if (notificationAudio) {
   notificationAudio.preload = 'auto';
 }
 
-const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
-const TIMEOUT_WARNING_MS = 12 * 60 * 1000; // warn at 12 minutes
+const DEFAULT_SESSION_TIMEOUT_MS = 15 * 60 * 1000;
+const WARNING_OFFSET_MS = 3 * 60 * 1000; // warn 3 min before timeout
 
 interface ChatMessage {
   id: string;
@@ -101,6 +101,7 @@ const LiveChatWidget = () => {
   const [firstMessage, setFirstMessage] = useState('');
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
+  const [sessionTimeoutMs, setSessionTimeoutMs] = useState(DEFAULT_SESSION_TIMEOUT_MS);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -137,9 +138,10 @@ const LiveChatWidget = () => {
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
     if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
 
+    const warningAt = Math.max(sessionTimeoutMs - WARNING_OFFSET_MS, 0);
     warningTimerRef.current = setTimeout(() => {
       setTimeoutWarning(true);
-    }, TIMEOUT_WARNING_MS);
+    }, warningAt);
 
     timeoutTimerRef.current = setTimeout(async () => {
       setSessionTimedOut(true);
@@ -153,8 +155,8 @@ const LiveChatWidget = () => {
         });
         await supabase.from('chat_conversations').update({ status: 'closed' }).eq('id', conversationId);
       }
-    }, SESSION_TIMEOUT_MS);
-  }, [conversationId, sessionTimedOut]);
+    }, sessionTimeoutMs);
+  }, [conversationId, sessionTimedOut, sessionTimeoutMs]);
 
   // Start timers when conversation is active
   useEffect(() => {
@@ -194,7 +196,7 @@ const LiveChatWidget = () => {
       const { data } = await supabase
         .from('admin_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings']);
+        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings', 'session_timeout_settings']);
       if (data) {
         for (const row of data) {
           if (row.setting_key === 'chat_greeting_settings' && row.setting_value) {
@@ -214,6 +216,11 @@ const LiveChatWidget = () => {
               specialistName: val.specialistName || DEFAULT_SPECIALIST.specialistName,
               specialistImageUrl: val.specialistImageUrl || '',
             });
+          }
+          if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
+            const val = row.setting_value as any;
+            const mins = val.timeoutMinutes || 15;
+            setSessionTimeoutMs(mins * 60 * 1000);
           }
         }
       }
@@ -872,7 +879,7 @@ const LiveChatWidget = () => {
               ref={textareaRef}
               value={message}
               onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              onKeyDown={() => {}}
               placeholder="Type a message..."
               rows={2}
               className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[48px] max-h-[100px]"
@@ -1037,7 +1044,7 @@ const LiveChatWidget = () => {
               ref={textareaRef}
               value={message}
               onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              onKeyDown={() => {}}
               placeholder="Type a message..."
               rows={2}
               className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[48px] transition-[height] duration-200 ease-in-out"
@@ -1160,7 +1167,7 @@ const LiveChatWidget = () => {
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                      onKeyDown={() => {}}
                       placeholder="Type a message..."
                       rows={1}
                       className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[40px] max-h-[80px]"

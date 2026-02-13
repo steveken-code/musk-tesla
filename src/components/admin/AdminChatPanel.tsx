@@ -51,6 +51,9 @@ const AdminChatPanel = () => {
     specialistImageUrl: '',
     joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
   });
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(15);
+  const [timeoutDraft, setTimeoutDraft] = useState('15');
+  const [savingTimeout, setSavingTimeout] = useState(false);
   const [aiSuggesting, setAiSuggesting] = useState(false);
   const [showGreetingSettings, setShowGreetingSettings] = useState(false);
   const [greetingDraft, setGreetingDraft] = useState('');
@@ -62,21 +65,30 @@ const AdminChatPanel = () => {
   const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
   const lastProcessedMsgRef = useRef<string | null>(null);
 
-  // Load specialist settings
+  // Load specialist settings + timeout config
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
         .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_key', 'specialist_settings')
-        .maybeSingle();
-      if (data?.setting_value) {
-        const val = data.setting_value as any;
-        setSpecialistSettings({
-          specialistName: val.specialistName || 'Support Specialist',
-          specialistImageUrl: val.specialistImageUrl || '',
-          joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
-        });
+        .select('setting_key, setting_value')
+        .in('setting_key', ['specialist_settings', 'session_timeout_settings']);
+      if (data) {
+        for (const row of data) {
+          if (row.setting_key === 'specialist_settings' && row.setting_value) {
+            const val = row.setting_value as any;
+            setSpecialistSettings({
+              specialistName: val.specialistName || 'Support Specialist',
+              specialistImageUrl: val.specialistImageUrl || '',
+              joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
+            });
+          }
+          if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
+            const val = row.setting_value as any;
+            const mins = val.timeoutMinutes || 15;
+            setSessionTimeoutMinutes(mins);
+            setTimeoutDraft(String(mins));
+          }
+        }
       }
     };
     load();
@@ -326,6 +338,29 @@ const AdminChatPanel = () => {
     }
   };
 
+  const handleSaveTimeout = async () => {
+    setSavingTimeout(true);
+    try {
+      const mins = Math.max(5, Math.min(60, parseInt(timeoutDraft) || 15));
+      const { error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: 'session_timeout_settings',
+          setting_value: { timeoutMinutes: mins } as any,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'setting_key' });
+      if (error) throw error;
+      setSessionTimeoutMinutes(mins);
+      setTimeoutDraft(String(mins));
+      toast.success(`Session timeout set to ${mins} minutes`);
+    } catch (err) {
+      console.error('Error saving timeout:', err);
+      toast.error('Failed to save timeout');
+    } finally {
+      setSavingTimeout(false);
+    }
+  };
+
   const sendReply = async () => {
     if ((!reply.trim() && !stagedImage) || !selectedConv || sending) return;
     setSending(true);
@@ -451,24 +486,50 @@ const AdminChatPanel = () => {
 
               {/* Join Greeting Settings Panel */}
               {showGreetingSettings && (
-                <div className="mt-3 bg-slate-700/50 border border-slate-600 rounded-lg p-3 space-y-2">
-                  <label className="text-xs text-slate-300 font-medium">Join Greeting Message</label>
-                  <p className="text-[10px] text-slate-400">Use {'{{name}}'} for specialist name</p>
-                  <textarea
-                    value={greetingDraft}
-                    onChange={(e) => setGreetingDraft(e.target.value)}
-                    rows={3}
-                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
-                    placeholder="Hello! My name is {{name}}, your support specialist..."
-                  />
-                  <button
-                    onClick={handleSaveGreeting}
-                    disabled={savingGreeting}
-                    className="w-full flex items-center justify-center gap-1.5 bg-electric-blue hover:bg-electric-blue/90 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
-                  >
-                    {savingGreeting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                    Save Greeting
-                  </button>
+                <div className="mt-3 bg-slate-700/50 border border-slate-600 rounded-lg p-3 space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-300 font-medium">Join Greeting Message</label>
+                    <p className="text-[10px] text-slate-400">Use {'{{name}}'} for specialist name</p>
+                    <textarea
+                      value={greetingDraft}
+                      onChange={(e) => setGreetingDraft(e.target.value)}
+                      rows={3}
+                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      placeholder="Hello! My name is {{name}}, your support specialist..."
+                    />
+                    <button
+                      onClick={handleSaveGreeting}
+                      disabled={savingGreeting}
+                      className="w-full flex items-center justify-center gap-1.5 bg-electric-blue hover:bg-electric-blue/90 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
+                    >
+                      {savingGreeting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                      Save Greeting
+                    </button>
+                  </div>
+
+                  <div className="border-t border-slate-600 pt-3 space-y-2">
+                    <label className="text-xs text-slate-300 font-medium">Session Timeout (minutes)</label>
+                    <p className="text-[10px] text-slate-400">Inactive sessions auto-close after this duration (5–60 min)</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={5}
+                        max={60}
+                        value={timeoutDraft}
+                        onChange={(e) => setTimeoutDraft(e.target.value)}
+                        className="w-20 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                      />
+                      <span className="text-slate-400 text-xs">min</span>
+                    </div>
+                    <button
+                      onClick={handleSaveTimeout}
+                      disabled={savingTimeout}
+                      className="w-full flex items-center justify-center gap-1.5 bg-electric-blue hover:bg-electric-blue/90 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
+                    >
+                      {savingTimeout ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                      Save Timeout
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -662,7 +723,7 @@ const AdminChatPanel = () => {
                       ref={textareaRef}
                       value={reply}
                       onChange={(e) => { setReply(e.target.value); handleTyping(); }}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); } }}
+                      onKeyDown={() => {}}
                       placeholder="Type a reply..."
                       rows={2}
                       className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[150px] min-h-[52px]"
