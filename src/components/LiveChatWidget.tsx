@@ -343,12 +343,11 @@ const LiveChatWidget = () => {
       greetingText = getGreeting();
     }
 
-    const typingTimer = setTimeout(() => { setProactiveTyping(true); }, 800);
-    const messageTimer = setTimeout(() => {
-      setProactiveTyping(false);
-      setProactiveMessage(greetingText);
-      notificationAudio?.play().catch(() => {});
-    }, 2600);
+    // Show greeting immediately when chat opens
+    setProactiveMessage(greetingText);
+    notificationAudio?.play().catch(() => {});
+    const typingTimer: ReturnType<typeof setTimeout> | null = null;
+    const messageTimer: ReturnType<typeof setTimeout> | null = null;
 
     return () => { clearTimeout(typingTimer); clearTimeout(messageTimer); };
   }, [isOpen, proactiveMessage, customGreeting, user, profileData, chatStep]);
@@ -773,6 +772,17 @@ const LiveChatWidget = () => {
       {/* Input area so user can send more messages while waiting */}
       <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
         <div className="flex items-end gap-2">
+          <div className="relative flex-shrink-0">
+            <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+            <button
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={uploading}
+              className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
+              aria-label="Attach image"
+            >
+              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+            </button>
+          </div>
           <textarea
             ref={textareaRef}
             value={message}
@@ -980,7 +990,7 @@ const LiveChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-12 h-12 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-1 hover:scale-105 active:scale-95 transition-transform"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-12 h-12 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-2.5 hover:scale-105 active:scale-95 transition-transform"
             aria-label="Open live chat"
           >
             <img src={chatSupportIcon} alt="Support Center" className="w-full h-full object-contain" />
@@ -1032,6 +1042,16 @@ const LiveChatWidget = () => {
                 {/* Input at bottom for landing */}
                 <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
                   <div className="flex items-end gap-2">
+                    <div className="relative flex-shrink-0">
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+                      <button
+                        onClick={() => galleryInputRef.current?.click()}
+                        className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
+                        aria-label="Attach image"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
