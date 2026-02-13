@@ -1,100 +1,104 @@
 
 
-## Professional Chat System Upgrades
+## Professional Tier Plans + Chat Fixes + Admin Mobile Responsiveness
 
-This plan covers 7 major improvements to make the support chat system fully professional.
-
----
-
-### 1. Fix Duplicate Messages (User/Guest side)
-
-**Problem**: When a user sends a message, an optimistic message with a `temp-` ID is added immediately. When the realtime subscription receives the actual inserted message (with a real UUID), it doesn't match the temp ID, so the message appears twice.
-
-**Fix**: Update the realtime handler in `LiveChatWidget.tsx` to detect and replace optimistic (`temp-`) messages when the real message arrives, matching by `sender_type`, `message` content, and close timestamp.
+This plan covers 5 major areas: Investment Tier Plans, AI chat improvements, admin mobile responsiveness, specialist avatar fix, and minor chat UX polish.
 
 ---
 
-### 2. Scrollable Chat Area (Not Main Page)
+### 1. Investment Tier Plans System
 
-**Problem**: When the chat widget is open, scrolling inside the chat can sometimes scroll the main webpage behind it.
+Based on your preference: **Auto-tier detection with $500 minimum, admin-editable tiers, displayed on both homepage and dashboard.**
 
-**Fix**: Add `overflow: hidden` to `document.body` when the chat widget is open, and restore it when closed. Also ensure the chat messages container uses proper `overflow-y-auto` with `overscroll-behavior: contain` to trap scroll events inside the widget.
+**How it works:**
+- 3 default tiers: Starter ($500), Regular ($7,000), Gold ($15,000)
+- Users enter any amount starting from $500 (replacing the current $100 minimum)
+- The system automatically assigns them to the matching tier based on the amount
+- Each tier has a name, minimum amount, and expected profit range
+- Tiers are stored in `admin_settings` so admin can edit names, amounts, and profit ranges
 
----
+**Tier assignment logic:**
+- $500 - $6,999 = Starter Plan
+- $7,000 - $14,999 = Regular Plan
+- $15,000+ = Gold Plan
 
-### 3. Auto-Join Greeting Message for Admin
+**UI changes:**
 
-When the admin clicks "Join", automatically send a configurable greeting message like:
-> "Hello! My name is [Specialist Name], your dedicated support specialist. How can I assist you today?"
+**Homepage (landing page):** Add a new `InvestmentPlans` section between existing sections showing 3 professional plan cards styled like the reference image -- dark cards with medal icons, plan names, minimum amounts, bullet-point features, and expected profit ranges. Includes a CTA button linking to signup.
 
-**Implementation**:
-- Add an editable "Join Greeting" text field in the admin specialist settings section
-- Store it in `admin_settings` under the existing `specialist_settings` key
-- When admin clicks "Join", after the system message, auto-populate the reply textarea with this greeting so admin can review and hit send (not auto-send, giving admin control to edit first)
+**Dashboard invest form:** Above the amount input, show the 3 tier cards as selectable options. When a user clicks a tier, the minimum amount pre-fills. The currently matched tier highlights as the user types an amount. The form minimum changes from $100 to $500.
 
----
+**Admin panel:** Add a "Tier Plans" management section (new tab or within settings) where admin can:
+- Edit each tier's name, minimum amount, and profit range (min/max)
+- Save changes to `admin_settings` under `tier_plans_settings`
+- Changes reflect in real-time on homepage and dashboard
 
-### 4. Session Timeout with Warning
-
-**Timeout duration**: 15 minutes of inactivity (appropriate for a support chat on an investment platform -- keeps sessions secure without being too aggressive).
-
-**Implementation**:
-- Track last activity timestamp (message sent/received, typing) in `LiveChatWidget.tsx`
-- At 12 minutes: show a warning banner inside the chat: "Your session will time out in 3 minutes due to inactivity."
-- At 15 minutes: display a timeout message: "Your session has timed out due to inactivity. For your security, please start a new chat to continue." Then close the conversation.
-- Insert a system message so admin can also see the timeout occurred.
-
----
-
-### 5. AI Agent Suggested Replies for Admin
-
-When a user or guest sends a message, an AI agent will automatically generate a suggested reply and pre-fill the admin's reply textarea.
-
-**Implementation**:
-- Create a new edge function `supabase/functions/ai-chat-suggest/index.ts` that:
-  - Receives the conversation history and latest user message
-  - Calls Lovable AI (google/gemini-3-flash-preview) with a system prompt instructing it to reply as a professional Tesla Stock Platform support specialist
-  - Returns the suggested reply text
-- In `AdminChatPanel.tsx`:
-  - When a new user message arrives (via realtime), automatically call the edge function
-  - Show a small "AI Suggesting..." indicator
-  - Pre-fill the reply textarea with the AI suggestion
-  - Admin reviews, optionally edits, then hits Send manually
-  - The AI never sends automatically -- admin always has final control
+**Database:** Store tier configuration in `admin_settings` table (no schema changes needed). Add an RLS policy so all users can read `tier_plans_settings`.
 
 ---
 
-### 6. Typing Indicators (Bouncing Dots) -- Both Directions
+### 2. AI Chat Agent Reliability
 
-**Current state**: Admin already sees user typing dots. User side has `adminTyping` state but needs verification that the bouncing dots render is present.
+The AI suggestion function in `AdminChatPanel.tsx` is already implemented and calls the `ai-chat-suggest` edge function. The issue may be that the edge function needs redeployment or the `LOVABLE_API_KEY` secret needs verification.
 
-**Fixes**:
-- Ensure the user/guest chat widget shows 3 bouncing dots when admin is typing (verify the render exists in the chatting view)
-- Ensure the admin panel shows 3 bouncing dots when user/guest is typing (already implemented at line 504-519)
-- Both sides already broadcast typing via `chat_typing_status` table -- just need to confirm the UI renders in all chat states
+**Fix:** Redeploy the `ai-chat-suggest` edge function and verify it works by testing it directly. Add better error handling and a retry mechanism in the admin panel so the AI suggestion auto-retries once on failure.
 
 ---
 
-### 7. Increase User/Guest Message Input Size
+### 3. Admin Mobile Responsiveness
 
-Make the message input textarea in the user/guest chat widget slightly larger for a better typing experience, matching the admin's updated input size.
+**Current issues:**
+- The admin chat panel has a fixed `height: 600px` which doesn't work well on mobile
+- The conversation list and chat area use `hidden md:flex` toggling but the chat input area needs mobile optimization
+- Image upload button needs to work on mobile
+
+**Fixes in `AdminChatPanel.tsx`:**
+- Change the fixed `600px` height to `h-[calc(100vh-200px)] sm:h-[600px]` so it fills the screen on mobile
+- Ensure the file input (gallery button) works on mobile by keeping `accept="image/*"` 
+- Make the settings panel scrollable on small screens
+- Ensure the conversation list items are touch-friendly with appropriate padding
+
+**Fixes in `Admin.tsx`:**
+- Ensure the tab bar scrolls horizontally on mobile
+- Add responsive padding adjustments
+
+---
+
+### 4. Specialist Avatar Fix
+
+**Problem:** When a specialist uploads their profile image, the header circle in the chat widget shows a white background gap because `object-contain` is used with `p-0.5`.
+
+**Fix in `LiveChatWidget.tsx`:**
+- When `specialistJoined` is true and `specialistImageUrl` exists, use `object-cover` instead of `object-contain` and remove the padding so the specialist's photo fills the entire circle
+- Keep `object-contain` with padding only for the default support icon (which is a logo/icon, not a photo)
+- Apply the same fix to the small avatar circles next to admin messages in the chat
+
+---
+
+### 5. Minor Fixes Summary
+
+- **Investment minimum**: Update from $100 to $500 across the form validation, rules modal, and error messages
+- **ActionsPanel rules**: Update the investment rules to reflect new $500 minimum and tier-based returns
+- **RLS policy**: Add read policy for `tier_plans_settings` key on `admin_settings` table
 
 ---
 
 ### Technical Details
 
 **Files to create:**
-- `supabase/functions/ai-chat-suggest/index.ts` -- AI suggestion edge function
+- `src/components/InvestmentPlans.tsx` -- Tier plan cards component for homepage and dashboard
 
 **Files to modify:**
-- `src/components/LiveChatWidget.tsx` -- Fix duplicates, scroll lock, timeout logic, typing dots, input size
-- `src/components/admin/AdminChatPanel.tsx` -- AI suggestion integration, auto-join greeting, join greeting settings UI
+- `src/pages/Index.tsx` -- Add InvestmentPlans section to homepage
+- `src/pages/Dashboard.tsx` -- Add tier selection above invest form, update $100 min to $500
+- `src/pages/Admin.tsx` -- Add Tier Plans management tab/section
+- `src/components/dashboard/ActionsPanel.tsx` -- Update investment rules to reflect new minimum and tiers
+- `src/components/admin/AdminChatPanel.tsx` -- Mobile responsive height, ensure image upload works on mobile
+- `src/components/LiveChatWidget.tsx` -- Fix specialist avatar display (object-cover vs object-contain)
 
-**Edge function approach (AI suggestions):**
-- Uses `LOVABLE_API_KEY` (already configured)
-- Model: `google/gemini-3-flash-preview`
-- System prompt tailored as a professional support specialist for a Tesla stock investment platform
-- Non-streaming (simple invoke) since we just need the full suggested text
+**Database migration:**
+- Add RLS policy for `tier_plans_settings` read access on `admin_settings`
 
-**Database**: No schema changes needed. All new settings stored in existing `admin_settings` table.
+**Edge function:**
+- Redeploy `ai-chat-suggest` to ensure it's active
 
