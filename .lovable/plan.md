@@ -1,49 +1,41 @@
 
 
-## Fix Slow Chat Loading + Specialist Image Clarity
+## Update AI Chat System Prompt with Accurate Platform Knowledge
 
 ---
 
-### 1. Fix Slow Chat Loading (N+1 Query Problem)
+### Problem
 
-**Root cause:** When loading conversations (lines 98-147 in `AdminChatPanel.tsx`), the code loops through every conversation and makes **2 separate database queries per conversation** -- one for unread count and one for last message preview. With 20 conversations, that is 40+ sequential queries, causing major delays.
+The AI auto-suggestion in the admin chat panel gives generic/incorrect replies because the system prompt lacks specific knowledge about how the Tesla Stock Platform actually works. For example, it told a user to "choose an investment plan" when the platform has no plans -- users simply deposit an amount of their choice.
 
-**Fix:** Replace the per-conversation loop with **two batch queries**:
+### Fix
 
-- **Batch unread counts:** A single query fetching all unread user messages grouped by conversation_id, then counting in JS
-- **Batch last messages:** Use a single RPC call or fetch recent messages across all conversations in one query, then map them by conversation_id
+Update the `SYSTEM_PROMPT` in `supabase/functions/ai-chat-suggest/index.ts` to include detailed, accurate platform knowledge:
 
-Alternatively, use a simpler approach:
-- Fetch all unread messages (sender_type='user', is_read=false) in one query, then group by conversation_id in JS
-- Fetch the latest message per conversation using a single query with `ORDER BY created_at DESC` and deduplication in JS
+**How the platform actually works (to be embedded in the prompt):**
 
-This reduces ~40 queries down to **3 total queries** (conversations + unread messages + last messages).
+1. **Sign Up** -- Create an account on the platform
+2. **Verify Identity** -- Complete KYC verification for security
+3. **Deposit** -- Go to the dashboard, enter any amount (minimum $500), select your country, and you will be shown payment details (bank transfer or crypto) to send your funds to
+4. **Trading** -- Once the admin confirms your deposit, the platform's professional traders invest your funds in Tesla stock. There are NO plans to choose from -- you simply deposit and the team handles the trading
+5. **Profits** -- Your investment grows over time as trades generate returns. You can track your portfolio performance on the dashboard
+6. **Withdraw** -- Request a withdrawal anytime from the dashboard by selecting your country, withdrawal method (bank transfer, mobile money, crypto, etc.), and entering your payment details
 
-**File:** `src/components/admin/AdminChatPanel.tsx` (lines 98-147)
+**Key facts the AI must know:**
+- There are NO investment plans or tiers -- users deposit any amount they want (min $500)
+- The platform trades Tesla stock on behalf of users
+- Users do NOT trade themselves -- professional traders handle it
+- Deposits are made via bank transfer or cryptocurrency
+- Withdrawals support multiple methods depending on the user's country
+- Users can track their investments and profits on the dashboard
+- The platform has a referral program with bonus rewards
 
----
+### Technical Details
 
-### 2. Fix Specialist Image Blurriness
+**File to modify:**
+- `supabase/functions/ai-chat-suggest/index.ts` -- Update the `SYSTEM_PROMPT` constant (lines 8-20) with accurate platform knowledge
 
-**Root cause:** In `Admin.tsx` line 2097, when uploading the specialist image, it is stored in the `avatars` bucket. The image URL gets a cache-buster appended (`?t=${Date.now()}`). The blur is likely caused by:
+**Redeploy:** The `ai-chat-suggest` edge function after updating
 
-1. The image being compressed/resized by the storage bucket
-2. The preview in admin uses a `w-14 h-14` container (56x56px) which is fine, but the chat widget uses `w-7 h-7` (28px) containers for message avatars and `w-10 h-10` (40px) for the header -- these are small enough that any compression artifact becomes visible
-
-**Fix:**
-- Ensure the specialist image in the chat header uses a slightly larger rendered size with explicit `width`/`height` attributes to request proper resolution
-- Add `loading="eager"` and remove any potential lazy-loading that could cause placeholder blur
-- Ensure `object-cover` is consistently applied (already done in most places, but verify the admin preview at line 2067)
-
-**File:** `src/components/LiveChatWidget.tsx` (avatar rendering lines)
-
----
-
-### Technical Summary
-
-**Files to modify:**
-- `src/components/admin/AdminChatPanel.tsx` -- Replace N+1 conversation loop with batch queries
-- `src/components/LiveChatWidget.tsx` -- Minor image rendering improvements for clarity
-
-**No database or edge function changes needed.**
+**No database changes needed.**
 
