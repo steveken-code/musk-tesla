@@ -1132,7 +1132,7 @@ const LiveChatWidget = () => {
             exit={{ scale: 0, opacity: 0 }}
             onAnimationComplete={() => localStorage.setItem('chat-avatar-visited', 'true')}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center overflow-hidden bg-white border-2 border-electric-blue/30 p-1.5 hover:scale-105 active:scale-95 transition-transform"
+            className="fixed bottom-[88px] right-4 sm:right-6 z-[60] w-14 h-14 rounded-full shadow-lg shadow-black/20 flex items-center justify-center bg-white border-2 border-electric-blue/30 p-1.5 hover:scale-105 active:scale-95 transition-transform"
             aria-label="Open live chat"
           >
             <img src={chatSupportIcon} alt="Support Center" className="w-full h-full object-contain" />
