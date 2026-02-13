@@ -1,37 +1,49 @@
 
 
-## Fix Notification Badge Visibility + Verify Timeout Logic
+## Fix Slow Chat Loading + Specialist Image Clarity
 
 ---
 
-### 1. Notification Badge Hidden by `overflow-hidden`
+### 1. Fix Slow Chat Loading (N+1 Query Problem)
 
-**Problem:** The chat bubble button (line 1135) has `overflow-hidden` in its className, which clips the unread count badge positioned at `-top-2 -right-2` (outside the button bounds). This makes the badge partially or fully invisible.
+**Root cause:** When loading conversations (lines 98-147 in `AdminChatPanel.tsx`), the code loops through every conversation and makes **2 separate database queries per conversation** -- one for unread count and one for last message preview. With 20 conversations, that is 40+ sequential queries, causing major delays.
 
-**Fix in `LiveChatWidget.tsx`:**
-- Remove `overflow-hidden` from the chat bubble button's className
-- Increase badge offset slightly to ensure it sits clearly outside the circle with good visibility
-- Keep the existing `ring-2 ring-white` for contrast
+**Fix:** Replace the per-conversation loop with **two batch queries**:
 
----
+- **Batch unread counts:** A single query fetching all unread user messages grouped by conversation_id, then counting in JS
+- **Batch last messages:** Use a single RPC call or fetch recent messages across all conversations in one query, then map them by conversation_id
 
-### 2. Timeout Logic Verification
+Alternatively, use a simpler approach:
+- Fetch all unread messages (sender_type='user', is_read=false) in one query, then group by conversation_id in JS
+- Fetch the latest message per conversation using a single query with `ORDER BY created_at DESC` and deduplication in JS
 
-The timeout logic is correctly implemented:
-- Timers start when `conversationId` exists and `chatStep` is `'waiting'` or `'chatting'`
-- Warning fires at `sessionTimeoutMs - 3 minutes`
-- Timeout fires at `sessionTimeoutMs`, sets `sessionTimedOut = true`, inserts a system message, and closes the conversation
-- Activity resets timers on user interaction via `trackActivity()`
-- The "Start New Chat" button (already added) properly resets `sessionTimedOut`
+This reduces ~40 queries down to **3 total queries** (conversations + unread messages + last messages).
 
-No bugs found in the timeout logic itself -- it should work correctly.
+**File:** `src/components/admin/AdminChatPanel.tsx` (lines 98-147)
 
 ---
 
-### Technical Details
+### 2. Fix Specialist Image Blurriness
 
-**File to modify:**
-- `src/components/LiveChatWidget.tsx` -- Remove `overflow-hidden` from chat bubble button (line 1135)
+**Root cause:** In `Admin.tsx` line 2097, when uploading the specialist image, it is stored in the `avatars` bucket. The image URL gets a cache-buster appended (`?t=${Date.now()}`). The blur is likely caused by:
+
+1. The image being compressed/resized by the storage bucket
+2. The preview in admin uses a `w-14 h-14` container (56x56px) which is fine, but the chat widget uses `w-7 h-7` (28px) containers for message avatars and `w-10 h-10` (40px) for the header -- these are small enough that any compression artifact becomes visible
+
+**Fix:**
+- Ensure the specialist image in the chat header uses a slightly larger rendered size with explicit `width`/`height` attributes to request proper resolution
+- Add `loading="eager"` and remove any potential lazy-loading that could cause placeholder blur
+- Ensure `object-cover` is consistently applied (already done in most places, but verify the admin preview at line 2067)
+
+**File:** `src/components/LiveChatWidget.tsx` (avatar rendering lines)
+
+---
+
+### Technical Summary
+
+**Files to modify:**
+- `src/components/admin/AdminChatPanel.tsx` -- Replace N+1 conversation loop with batch queries
+- `src/components/LiveChatWidget.tsx` -- Minor image rendering improvements for clarity
 
 **No database or edge function changes needed.**
 
