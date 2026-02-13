@@ -95,3 +95,6 @@ verify_jwt = false
 
 [functions.send-chat-notification]
 verify_jwt = false
+
+[functions.ai-chat-suggest]
+verify_jwt = false
