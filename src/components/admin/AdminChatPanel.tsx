@@ -105,33 +105,44 @@ const AdminChatPanel = () => {
 
       if (data) setConversations(data as Conversation[]);
 
-      if (data) {
-        const counts: Record<string, number> = {};
-        const previews: Record<string, string> = {};
-        for (const conv of data) {
-          const { count } = await supabase
-            .from('chat_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('sender_type', 'user')
-            .eq('is_read', false);
-          if (count && count > 0) counts[conv.id] = count;
+      if (data && data.length > 0) {
+        const convIds = data.map(c => c.id);
 
-          const { data: lastMsg } = await supabase
-            .from('chat_messages')
-            .select('message, sender_type, image_url')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (lastMsg) {
-            const prefix = lastMsg.sender_type === 'admin' ? 'You: ' : '';
-            previews[conv.id] = lastMsg.message 
-              ? `${prefix}${lastMsg.message}` 
-              : `${prefix}📷 Photo`;
+        // Batch fetch all unread user messages in one query
+        const { data: unreadMsgs } = await supabase
+          .from('chat_messages')
+          .select('conversation_id')
+          .in('conversation_id', convIds)
+          .eq('sender_type', 'user')
+          .eq('is_read', false);
+
+        const counts: Record<string, number> = {};
+        if (unreadMsgs) {
+          for (const msg of unreadMsgs) {
+            counts[msg.conversation_id] = (counts[msg.conversation_id] || 0) + 1;
           }
         }
         setUnreadCounts(counts);
+
+        // Batch fetch latest messages across all conversations in one query
+        const { data: recentMsgs } = await supabase
+          .from('chat_messages')
+          .select('conversation_id, message, sender_type, image_url, created_at')
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false })
+          .limit(convIds.length * 2);
+
+        const previews: Record<string, string> = {};
+        if (recentMsgs) {
+          for (const msg of recentMsgs) {
+            if (!previews[msg.conversation_id]) {
+              const prefix = msg.sender_type === 'admin' ? 'You: ' : '';
+              previews[msg.conversation_id] = msg.message 
+                ? `${prefix}${msg.message}` 
+                : `${prefix}📷 Photo`;
+            }
+          }
+        }
         setLastMessages(previews);
       }
       setLoading(false);
