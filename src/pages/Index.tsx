@@ -12,6 +12,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import FAQ from "@/components/FAQ";
+import InvestmentPlans from "@/components/InvestmentPlans";
 import LiveChatWidget from "@/components/LiveChatWidget";
 
 const Index = () => {
@@ -31,6 +32,7 @@ const Index = () => {
       <Vision />
       <Innovations />
       <Testimonials />
+      <InvestmentPlans variant="homepage" />
       <FAQ />
       <Investment />
       <Footer />
