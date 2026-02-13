@@ -8,12 +8,9 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = ["https://msktesla.net", "https://www.msktesla.net"];
 
-// Rate limit configuration
-const RATE_LIMIT_IP_MAX = 5;       // 5 requests per IP
-const RATE_LIMIT_IP_WINDOW = 900;  // 15 minutes
-
 function getCorsHeaders(origin: string | null): Record<string, string> {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const isAllowed = origin && (ALLOWED_ORIGINS.includes(origin) || origin.includes('lovableproject.com') || origin.includes('lovable.app'));
+  const allowedOrigin = isAllowed ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -114,10 +111,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (updateError) {
       console.error("Failed to update password:", updateError);
-      // Don't expose internal error details to client
+      // Forward the actual Supabase Auth error message so the user knows what's wrong
+      const errorMessage = updateError.message || "Failed to update password. Please try again.";
       return new Response(
-        JSON.stringify({ success: false, error: "Failed to update password. Please try again." }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ success: false, error: errorMessage }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 

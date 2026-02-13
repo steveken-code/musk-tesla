@@ -89,3 +89,9 @@ verify_jwt = false
 
 [functions.upload-kyc-document]
 verify_jwt = false
+
+[functions.send-chat-verification]
+verify_jwt = false
+
+[functions.send-chat-notification]
+verify_jwt = false

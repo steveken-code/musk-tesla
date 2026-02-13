@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface Conversation {
   id: string;
@@ -12,16 +13,23 @@ interface Conversation {
   status: string;
   last_message_at: string;
   created_at: string;
+  guest_name?: string | null;
+  specialist_joined?: boolean;
 }
 
 interface ChatMessage {
   id: string;
   conversation_id: string;
-  sender_type: 'user' | 'admin';
+  sender_type: 'user' | 'admin' | 'system';
   message: string | null;
   image_url: string | null;
   is_read: boolean;
   created_at: string;
+}
+
+interface SpecialistSettings {
+  specialistName: string;
+  specialistImageUrl: string;
 }
 
 const AdminChatPanel = () => {
@@ -37,14 +45,33 @@ const AdminChatPanel = () => {
   const [stagedImage, setStagedImage] = useState<{ file: File; preview: string } | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showFilePicker, setShowFilePicker] = useState(false);
+  const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>({ specialistName: 'Support Specialist', specialistImageUrl: '' });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
+
+  // Load specialist settings
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'specialist_settings')
+        .maybeSingle();
+      if (data?.setting_value) {
+        const val = data.setting_value as any;
+        setSpecialistSettings({
+          specialistName: val.specialistName || 'Support Specialist',
+          specialistImageUrl: val.specialistImageUrl || '',
+        });
+      }
+    };
+    load();
+  }, []);
 
   // Load conversations
   useEffect(() => {
@@ -69,7 +96,6 @@ const AdminChatPanel = () => {
             .eq('is_read', false);
           if (count && count > 0) counts[conv.id] = count;
 
-          // Fetch last message preview
           const { data: lastMsg } = await supabase
             .from('chat_messages')
             .select('message, sender_type, image_url')
@@ -148,7 +174,6 @@ const AdminChatPanel = () => {
         filter: `conversation_id=eq.${selectedConv.id}`,
       }, async (payload) => {
         const row = payload.new as any;
-        // Show typing only from non-admin users (the customer/guest)
         const { data: { user: adminUser } } = await supabase.auth.getUser();
         if (adminUser && row.user_id !== adminUser.id) {
           setUserTyping(row.is_typing || false);
@@ -162,7 +187,6 @@ const AdminChatPanel = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -186,6 +210,48 @@ const AdminChatPanel = () => {
     broadcastTyping(true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 3000);
+  };
+
+  // Join conversation as specialist
+  const handleJoinConversation = async () => {
+    if (!selectedConv) return;
+    try {
+      // Insert system message
+      await supabase.from('chat_messages').insert({
+        conversation_id: selectedConv.id,
+        sender_type: 'system',
+        message: `${specialistSettings.specialistName} joined the conversation`,
+      });
+
+      // Update conversation
+      await supabase.from('chat_conversations').update({
+        specialist_joined: true,
+        specialist_joined_at: new Date().toISOString(),
+      }).eq('id', selectedConv.id);
+
+      setSelectedConv({ ...selectedConv, specialist_joined: true });
+      toast.success('Joined conversation as specialist');
+    } catch (err) {
+      console.error('Error joining conversation:', err);
+      toast.error('Failed to join conversation');
+    }
+  };
+
+  // Close conversation
+  const handleCloseConversation = async () => {
+    if (!selectedConv) return;
+    try {
+      await supabase.from('chat_conversations').update({
+        status: 'closed',
+      }).eq('id', selectedConv.id);
+
+      setSelectedConv(null);
+      setMessages([]);
+      toast.success('Chat closed');
+    } catch (err) {
+      console.error('Error closing conversation:', err);
+      toast.error('Failed to close conversation');
+    }
   };
 
   const sendReply = async () => {
@@ -257,6 +323,10 @@ const AdminChatPanel = () => {
     return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
+  const getDisplayName = (conv: Conversation) => {
+    return conv.guest_name || conv.user_name || 'User';
+  };
+
   const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
 
   if (loading) {
@@ -319,7 +389,15 @@ const AdminChatPanel = () => {
                           <User className="w-4 h-4 text-electric-blue" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-white font-medium text-sm truncate">{conv.user_name || 'User'}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white font-medium text-sm truncate">{getDisplayName(conv)}</p>
+                            {conv.specialist_joined && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full font-medium">Joined</span>
+                            )}
+                            {conv.status === 'closed' && (
+                              <span className="text-[9px] px-1.5 py-0.5 bg-slate-500/20 text-slate-400 rounded-full font-medium">Closed</span>
+                            )}
+                          </div>
                           <p className="text-slate-400 text-xs truncate">{conv.user_email || 'No email'}</p>
                         </div>
                       </div>
@@ -355,41 +433,74 @@ const AdminChatPanel = () => {
                       <User className="w-4 h-4 text-electric-blue" />
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{selectedConv.user_name || 'User'}</p>
+                      <p className="text-white font-medium text-sm">{getDisplayName(selectedConv)}</p>
                       <p className="text-slate-400 text-xs">{selectedConv.user_email}</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedConv.status === 'open' && !selectedConv.specialist_joined && (
+                      <Button
+                        size="sm"
+                        onClick={handleJoinConversation}
+                        className="bg-green-600 hover:bg-green-700 text-xs"
+                      >
+                        <UserPlus className="w-3.5 h-3.5 mr-1" />
+                        Join
+                      </Button>
+                    )}
+                    {selectedConv.status === 'open' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCloseConversation}
+                        className="border-red-500 text-red-400 hover:bg-red-500/10 text-xs"
+                      >
+                        <XCircle className="w-3.5 h-3.5 mr-1" />
+                        Close Chat
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto chat-scrollbar p-4 space-y-3">
                   {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
-                        msg.sender_type === 'admin'
-                          ? 'bg-electric-blue text-white rounded-br-md'
-                          : 'bg-slate-700 text-white rounded-bl-md'
-                      }`}>
-                        {msg.sender_type === 'admin' && (
-                          <p className="text-[10px] font-semibold text-white/70 mb-1">You</p>
-                        )}
-                        {msg.image_url && (
-                          <img
-                            src={msg.image_url}
-                            alt="Shared"
-                            className="rounded-lg max-w-full max-h-48 mb-1 cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => setLightboxUrl(msg.image_url!)}
-                          />
-                        )}
-                        {msg.message && (
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{msg.message}</p>
-                        )}
-                        <p className="text-[10px] mt-1 text-white/50">{formatTime(msg.created_at)}</p>
-                      </div>
+                    <div key={msg.id} className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : msg.sender_type === 'system' ? 'justify-center' : 'justify-start'}`}>
+                      {msg.sender_type === 'system' ? (
+                        <div className="w-full py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-px bg-slate-600" />
+                            <span className="text-xs text-slate-400 font-medium px-2">New</span>
+                            <div className="flex-1 h-px bg-slate-600" />
+                          </div>
+                          <p className="text-xs text-slate-400 text-center mt-1">{msg.message}</p>
+                        </div>
+                      ) : (
+                        <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
+                          msg.sender_type === 'admin'
+                            ? 'bg-electric-blue text-white rounded-br-md'
+                            : 'bg-slate-700 text-white rounded-bl-md'
+                        }`}>
+                          {msg.sender_type === 'admin' && (
+                            <p className="text-[10px] font-semibold text-white/70 mb-1">You</p>
+                          )}
+                          {msg.image_url && (
+                            <img
+                              src={msg.image_url}
+                              alt="Shared"
+                              className="rounded-lg max-w-full max-h-48 mb-1 cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setLightboxUrl(msg.image_url!)}
+                            />
+                          )}
+                          {msg.message && (
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{msg.message}</p>
+                          )}
+                          <p className="text-[10px] mt-1 text-white/50">{formatTime(msg.created_at)}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
 
-                  {/* User typing indicator */}
                   {userTyping && (
                     <div className="flex justify-start">
                       <div className="flex items-start gap-2">
@@ -411,7 +522,6 @@ const AdminChatPanel = () => {
 
                 {/* Reply Input */}
                 <div className="border-t border-slate-700">
-                  {/* Staged Image Preview */}
                   {stagedImage && (
                     <div className="px-3 pt-3 pb-1">
                       <div className="relative inline-block">
@@ -428,7 +538,6 @@ const AdminChatPanel = () => {
 
                   <div className="p-3 flex items-end gap-2">
                     <div className="relative flex-shrink-0">
-                      {/* Mobile note: file inputs must not be display:none (iOS) */}
                       <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
                       <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
                       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
@@ -519,7 +628,6 @@ const AdminChatPanel = () => {
         </div>
       </div>
 
-      {/* Close file picker overlay */}
       {showFilePicker && (
         <div className="fixed inset-0 z-[9]" onClick={() => setShowFilePicker(false)} />
       )}
