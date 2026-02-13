@@ -14,6 +14,9 @@ if (notificationAudio) {
   notificationAudio.preload = 'auto';
 }
 
+const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+const TIMEOUT_WARNING_MS = 12 * 60 * 1000; // warn at 12 minutes
+
 interface ChatMessage {
   id: string;
   conversation_id: string;
@@ -96,12 +99,17 @@ const LiveChatWidget = () => {
   const [verificationError, setVerificationError] = useState('');
   const [specialistJoined, setSpecialistJoined] = useState(false);
   const [firstMessage, setFirstMessage] = useState('');
+  const [timeoutWarning, setTimeoutWarning] = useState(false);
+  const [sessionTimedOut, setSessionTimedOut] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const avatarSrc = specialistJoined && specialistProfile.specialistImageUrl
     ? specialistProfile.specialistImageUrl
@@ -109,6 +117,62 @@ const LiveChatWidget = () => {
   const displayName = specialistJoined
     ? specialistProfile.specialistName
     : (supportProfile.supportName || 'Tesla Stock Platform');
+
+  // --- Body scroll lock when chat is open ---
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  // --- Session timeout logic ---
+  const resetActivityTimers = useCallback(() => {
+    if (sessionTimedOut) return;
+    lastActivityRef.current = Date.now();
+    setTimeoutWarning(false);
+
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
+
+    warningTimerRef.current = setTimeout(() => {
+      setTimeoutWarning(true);
+    }, TIMEOUT_WARNING_MS);
+
+    timeoutTimerRef.current = setTimeout(async () => {
+      setSessionTimedOut(true);
+      setTimeoutWarning(false);
+      // Insert system message
+      if (conversationId) {
+        await supabase.from('chat_messages').insert({
+          conversation_id: conversationId,
+          sender_type: 'system',
+          message: 'Session timed out due to inactivity.',
+        });
+        await supabase.from('chat_conversations').update({ status: 'closed' }).eq('id', conversationId);
+      }
+    }, SESSION_TIMEOUT_MS);
+  }, [conversationId, sessionTimedOut]);
+
+  // Start timers when conversation is active
+  useEffect(() => {
+    if (conversationId && (chatStep === 'waiting' || chatStep === 'chatting') && !sessionTimedOut) {
+      resetActivityTimers();
+    }
+    return () => {
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+      if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
+    };
+  }, [conversationId, chatStep, sessionTimedOut, resetActivityTimers]);
+
+  // Reset timers on activity
+  const trackActivity = useCallback(() => {
+    if (conversationId && !sessionTimedOut) {
+      resetActivityTimers();
+    }
+  }, [conversationId, sessionTimedOut, resetActivityTimers]);
 
   // Load profile data
   useEffect(() => {
@@ -204,7 +268,7 @@ const LiveChatWidget = () => {
     init();
   }, [user]);
 
-  // Load messages
+  // Load messages + realtime (with duplicate fix)
   useEffect(() => {
     if (!conversationId) return;
     const loadMessages = async () => {
@@ -226,15 +290,28 @@ const LiveChatWidget = () => {
         filter: `conversation_id=eq.${conversationId}`,
       }, (payload) => {
         const newMsg = payload.new as ChatMessage;
+        trackActivity();
         setMessages(prev => {
-          // Prevent duplicates (optimistic update)
+          // Check if exact id already exists
           if (prev.some(m => m.id === newMsg.id)) return prev;
+          
+          // Replace optimistic temp message if it matches
+          const tempIdx = prev.findIndex(m => 
+            m.id.startsWith('temp-') && 
+            m.sender_type === newMsg.sender_type && 
+            m.message === newMsg.message
+          );
+          if (tempIdx !== -1) {
+            const updated = [...prev];
+            updated[tempIdx] = newMsg;
+            return updated;
+          }
+          
           return [...prev, newMsg];
         });
         if (newMsg.sender_type === 'admin' && !isOpen) {
           setUnreadCount(prev => prev + 1);
         }
-        // If system message about specialist joining
         if (newMsg.sender_type === 'system' && newMsg.message?.includes('joined the conversation')) {
           setSpecialistJoined(true);
           setChatStep('chatting');
@@ -242,7 +319,6 @@ const LiveChatWidget = () => {
       })
       .subscribe();
 
-    // Also listen for conversation status changes
     const convChannel = supabase
       .channel(`conv-status-${conversationId}`)
       .on('postgres_changes', {
@@ -257,12 +333,13 @@ const LiveChatWidget = () => {
           setChatStep('chatting');
         }
         if (updated.status === 'closed') {
-          // Chat was closed, reset
           setConversationId(null);
           setMessages([]);
           setSpecialistJoined(false);
           setChatStep('landing');
           setProactiveMessage(null);
+          setSessionTimedOut(false);
+          setTimeoutWarning(false);
           sessionStorage.removeItem('chat-greeted');
         }
       })
@@ -272,7 +349,7 @@ const LiveChatWidget = () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(convChannel);
     };
-  }, [conversationId, isOpen, specialistJoined]);
+  }, [conversationId, isOpen, specialistJoined, trackActivity]);
 
   // Subscribe to admin typing
   useEffect(() => {
@@ -343,7 +420,6 @@ const LiveChatWidget = () => {
       greetingText = getGreeting();
     }
 
-    // Show greeting immediately when chat opens
     setProactiveMessage(greetingText);
     notificationAudio?.play().catch(() => {});
     const typingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -365,15 +441,15 @@ const LiveChatWidget = () => {
 
   const handleTyping = () => {
     broadcastTyping(true);
+    trackActivity();
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 3000);
   };
 
-  // Handle first message from landing — show name/email form for guests, skip for logged-in users
+  // Handle first message from landing
   const handleLandingMessage = (msg: string) => {
     setFirstMessage(msg);
     if (user) {
-      // Logged-in users skip verification
       handleCreateConversationAndSend(msg);
     } else {
       setChatStep('name_email');
@@ -420,20 +496,17 @@ const LiveChatWidget = () => {
         return;
       }
 
-      // Check expiry
       if (new Date(data.expires_at) < new Date()) {
         setVerificationError('Code has expired. Please request a new one.');
         setVerificationSending(false);
         return;
       }
 
-      // Mark as verified
       await supabase
         .from('chat_verification_codes')
         .update({ verified: true })
         .eq('id', data.id);
 
-      // Now create conversation and send first message
       await handleCreateConversationAndSend(firstMessage);
     } catch (err) {
       setVerificationError('Verification failed. Please try again.');
@@ -469,7 +542,6 @@ const LiveChatWidget = () => {
 
     setConversationId(newConv.id);
 
-    // Send the first message with optimistic update
     const optimisticMsg: ChatMessage = {
       id: 'temp-' + Date.now(),
       conversation_id: newConv.id,
@@ -493,7 +565,6 @@ const LiveChatWidget = () => {
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', newConv.id);
 
-    // Notify admin
     supabase.functions.invoke('send-chat-notification', {
       body: {
         userName: userName,
@@ -504,9 +575,8 @@ const LiveChatWidget = () => {
   };
 
   const sendMessage = async () => {
-    if ((!message.trim() && !stagedImage) || sending) return;
+    if ((!message.trim() && !stagedImage) || sending || sessionTimedOut) return;
 
-    // If still on landing, trigger the flow
     if (chatStep === 'landing') {
       handleLandingMessage(message.trim());
       setMessage('');
@@ -514,6 +584,7 @@ const LiveChatWidget = () => {
     }
 
     setSending(true);
+    trackActivity();
     try {
       let convId = conversationId;
       if (!convId) {
@@ -532,7 +603,6 @@ const LiveChatWidget = () => {
         imageUrl = urlData.publicUrl;
       }
 
-      // Optimistic update
       const optimisticMsg: ChatMessage = {
         id: 'temp-' + Date.now(),
         conversation_id: convId,
@@ -586,12 +656,10 @@ const LiveChatWidget = () => {
   // Render the landing/support center screen
   const renderLanding = () => (
     <div className="flex flex-col items-center justify-center py-8 px-4 flex-1">
-      {/* Support Center Header */}
       <div className="relative mb-4">
         <img src={chatSupportIcon} alt="Support Center" className="w-16 h-16 object-contain" />
       </div>
       
-      {/* Stacked Avatars (male/female placeholders) */}
       <div className="flex items-center -space-x-3 mb-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
           👨
@@ -608,7 +676,6 @@ const LiveChatWidget = () => {
         <p className="text-gray-500 text-xs">Typically replies under {supportProfile.replyTime}</p>
       </div>
 
-      {/* Greeting bubble */}
       {proactiveTyping && (
         <div className="mt-5 bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 max-w-[260px]">
           <div className="flex items-center gap-1">
@@ -731,8 +798,7 @@ const LiveChatWidget = () => {
   // Render waiting screen
   const renderWaiting = () => (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Messages area for waiting state (shows user's first message) */}
-      <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white">
+      <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white" style={{ overscrollBehavior: 'contain' }}>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : msg.sender_type === 'system' ? 'justify-center' : 'justify-start'}`}>
             {msg.sender_type === 'system' ? (
@@ -756,8 +822,7 @@ const LiveChatWidget = () => {
           </div>
         ))}
         
-        {/* Waiting message */}
-        {!specialistJoined && (
+        {!specialistJoined && !sessionTimedOut && (
           <div className="flex justify-center">
             <div className="text-center py-4">
               <Loader2 className="w-6 h-6 animate-spin text-electric-blue mx-auto mb-2" />
@@ -766,51 +831,71 @@ const LiveChatWidget = () => {
             </div>
           </div>
         )}
+
+        {/* Timeout warning */}
+        {timeoutWarning && !sessionTimedOut && (
+          <div className="flex justify-center">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 max-w-[300px]">
+              <p className="text-amber-700 text-xs font-medium text-center">⚠️ Your session will time out in 3 minutes due to inactivity.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Session timed out */}
+        {sessionTimedOut && (
+          <div className="flex justify-center">
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-[300px]">
+              <p className="text-red-700 text-sm font-semibold text-center mb-1">Session Timed Out</p>
+              <p className="text-red-600 text-xs text-center">Your session has timed out due to inactivity. For your security, please start a new chat to continue.</p>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area so user can send more messages while waiting */}
-      <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
-        <div className="flex items-end gap-2">
-          <div className="relative flex-shrink-0">
-            <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+      {!sessionTimedOut && (
+        <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
+          <div className="flex items-end gap-2">
+            <div className="relative flex-shrink-0">
+              <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={uploading}
+                className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
+                aria-label="Attach image"
+              >
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+              </button>
+            </div>
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              placeholder="Type a message..."
+              rows={2}
+              className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[48px] max-h-[100px]"
+              style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
+            />
             <button
-              onClick={() => galleryInputRef.current?.click()}
-              disabled={uploading}
-              className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
-              aria-label="Attach image"
+              onClick={sendMessage}
+              disabled={(!message.trim() && !stagedImage) || sending}
+              className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              aria-label="Send message"
             >
-              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </button>
           </div>
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Type a message..."
-            rows={1}
-            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[40px] max-h-[80px]"
-            style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={(!message.trim() && !stagedImage) || sending}
-            className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-            aria-label="Send message"
-          >
-            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 
   // Render active chat
   const renderChat = () => (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white">
+      <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white" style={{ overscrollBehavior: 'contain' }}>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : msg.sender_type === 'system' ? 'justify-center' : 'justify-start'}`}>
             {msg.sender_type === 'system' ? (
@@ -870,84 +955,105 @@ const LiveChatWidget = () => {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white flex-shrink-0">
-        {stagedImage && (
-          <div className="px-3 pt-3 pb-1">
-            <div className="relative inline-block">
-              <img src={stagedImage.preview} alt="Preview" className="h-20 rounded-lg border border-gray-200" />
-              <button
-                onClick={() => { URL.revokeObjectURL(stagedImage.preview); setStagedImage(null); }}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white rounded-full flex items-center justify-center text-xs hover:bg-destructive/90"
-              >
-                <X className="w-3 h-3" />
-              </button>
+        {/* Timeout warning */}
+        {timeoutWarning && !sessionTimedOut && (
+          <div className="flex justify-center">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 max-w-[300px]">
+              <p className="text-amber-700 text-xs font-medium text-center">⚠️ Your session will time out in 3 minutes due to inactivity.</p>
             </div>
           </div>
         )}
 
-        <div className="p-3 flex items-end gap-2">
-          <div className="relative flex-shrink-0">
-            <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-            <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowFilePicker(!showFilePicker); }}
-              disabled={uploading}
-              className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
-              aria-label="Attach image"
-            >
-              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
-            </button>
-
-            <AnimatePresence>
-              {showFilePicker && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  className="absolute bottom-12 left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
-                >
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      galleryInputRef.current?.click();
-                      setShowFilePicker(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
-                  >
-                    <ImageIcon className="w-4 h-4 text-electric-blue" />
-                    Photo Library
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {sessionTimedOut && (
+          <div className="flex justify-center">
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-[300px]">
+              <p className="text-red-700 text-sm font-semibold text-center mb-1">Session Timed Out</p>
+              <p className="text-red-600 text-xs text-center">Your session has timed out due to inactivity. For your security, please start a new chat to continue.</p>
+            </div>
           </div>
+        )}
 
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Type a message..."
-            rows={1}
-            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[40px] transition-[height] duration-200 ease-in-out"
-            style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={(!message.trim() && !stagedImage) || sending}
-            className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-            aria-label="Send message"
-          >
-            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
-        </div>
+        <div ref={messagesEndRef} />
       </div>
+
+      {/* Input Area */}
+      {!sessionTimedOut && (
+        <div className="border-t border-gray-200 bg-white flex-shrink-0">
+          {stagedImage && (
+            <div className="px-3 pt-3 pb-1">
+              <div className="relative inline-block">
+                <img src={stagedImage.preview} alt="Preview" className="h-20 rounded-lg border border-gray-200" />
+                <button
+                  onClick={() => { URL.revokeObjectURL(stagedImage.preview); setStagedImage(null); }}
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white rounded-full flex items-center justify-center text-xs hover:bg-destructive/90"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 flex items-end gap-2">
+            <div className="relative flex-shrink-0">
+              <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+              <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowFilePicker(!showFilePicker); }}
+                disabled={uploading}
+                className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
+                aria-label="Attach image"
+              >
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className={`w-5 h-5 transition-transform duration-200 ${showFilePicker ? 'rotate-45' : ''}`} />}
+              </button>
+
+              <AnimatePresence>
+                {showFilePicker && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute bottom-12 left-0 bg-white border border-gray-200 rounded-xl shadow-xl py-1 min-w-[160px] z-10 will-change-transform"
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        galleryInputRef.current?.click();
+                        setShowFilePicker(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4 text-electric-blue" />
+                      Photo Library
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => { setMessage(e.target.value); handleTyping(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              placeholder="Type a message..."
+              rows={2}
+              className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none overflow-y-auto max-h-[120px] min-h-[48px] transition-[height] duration-200 ease-in-out"
+              style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={(!message.trim() && !stagedImage) || sending}
+              className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              aria-label="Send message"
+            >
+              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -1039,7 +1145,6 @@ const LiveChatWidget = () => {
             {chatStep === 'landing' && (
               <>
                 {renderLanding()}
-                {/* Input at bottom for landing */}
                 <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
                   <div className="flex items-end gap-2">
                     <div className="relative flex-shrink-0">

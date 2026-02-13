@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ interface ChatMessage {
 interface SpecialistSettings {
   specialistName: string;
   specialistImageUrl: string;
+  joinGreeting: string;
 }
 
 const AdminChatPanel = () => {
@@ -45,7 +46,12 @@ const AdminChatPanel = () => {
   const [stagedImage, setStagedImage] = useState<{ file: File; preview: string } | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showFilePicker, setShowFilePicker] = useState(false);
-  const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>({ specialistName: 'Support Specialist', specialistImageUrl: '' });
+  const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>({ 
+    specialistName: 'Support Specialist', 
+    specialistImageUrl: '',
+    joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
+  });
+  const [aiSuggesting, setAiSuggesting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +59,7 @@ const AdminChatPanel = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastMessages, setLastMessages] = useState<Record<string, string>>({});
+  const lastProcessedMsgRef = useRef<string | null>(null);
 
   // Load specialist settings
   useEffect(() => {
@@ -67,6 +74,7 @@ const AdminChatPanel = () => {
         setSpecialistSettings({
           specialistName: val.specialistName || 'Support Specialist',
           specialistImageUrl: val.specialistImageUrl || '',
+          joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
         });
       }
     };
@@ -125,6 +133,30 @@ const AdminChatPanel = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // AI suggestion function
+  const fetchAiSuggestion = useCallback(async (convMessages: ChatMessage[], latestMsg: string) => {
+    setAiSuggesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chat-suggest', {
+        body: {
+          messages: convMessages.filter(m => m.sender_type !== 'system').map(m => ({
+            sender_type: m.sender_type,
+            message: m.message,
+          })),
+          latestMessage: latestMsg,
+        },
+      });
+      if (error) throw error;
+      if (data?.suggestion) {
+        setReply(data.suggestion);
+      }
+    } catch (err) {
+      console.error('AI suggestion error:', err);
+    } finally {
+      setAiSuggesting(false);
+    }
+  }, []);
+
   // Load messages for selected conversation
   useEffect(() => {
     if (!selectedConv) return;
@@ -154,15 +186,28 @@ const AdminChatPanel = () => {
         event: 'INSERT', schema: 'public', table: 'chat_messages',
         filter: `conversation_id=eq.${selectedConv.id}`,
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as ChatMessage]);
-        if ((payload.new as ChatMessage).sender_type === 'user') {
-          supabase.from('chat_messages').update({ is_read: true }).eq('id', (payload.new as ChatMessage).id).then(() => {});
+        const newMsg = payload.new as ChatMessage;
+        setMessages(prev => {
+          if (prev.some(m => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+        if (newMsg.sender_type === 'user') {
+          supabase.from('chat_messages').update({ is_read: true }).eq('id', newMsg.id).then(() => {});
+          // Trigger AI suggestion for new user messages
+          if (newMsg.id !== lastProcessedMsgRef.current) {
+            lastProcessedMsgRef.current = newMsg.id;
+            setMessages(prev => {
+              // Use latest messages for context
+              fetchAiSuggestion(prev, newMsg.message || '');
+              return prev;
+            });
+          }
         }
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [selectedConv]);
+  }, [selectedConv, fetchAiSuggestion]);
 
   // Subscribe to user typing
   useEffect(() => {
@@ -190,7 +235,7 @@ const AdminChatPanel = () => {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
     }
   }, [reply]);
 
@@ -212,25 +257,28 @@ const AdminChatPanel = () => {
     typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 3000);
   };
 
-  // Join conversation as specialist
+  // Join conversation as specialist — pre-fill greeting
   const handleJoinConversation = async () => {
     if (!selectedConv) return;
     try {
-      // Insert system message
       await supabase.from('chat_messages').insert({
         conversation_id: selectedConv.id,
         sender_type: 'system',
         message: `${specialistSettings.specialistName} joined the conversation`,
       });
 
-      // Update conversation
       await supabase.from('chat_conversations').update({
         specialist_joined: true,
         specialist_joined_at: new Date().toISOString(),
       }).eq('id', selectedConv.id);
 
       setSelectedConv({ ...selectedConv, specialist_joined: true });
-      toast.success('Joined conversation as specialist');
+      
+      // Pre-fill greeting
+      const greeting = specialistSettings.joinGreeting.replace(/\{\{name\}\}/g, specialistSettings.specialistName);
+      setReply(greeting);
+      
+      toast.success('Joined conversation — greeting ready to send');
     } catch (err) {
       console.error('Error joining conversation:', err);
       toast.error('Failed to join conversation');
@@ -522,6 +570,14 @@ const AdminChatPanel = () => {
 
                 {/* Reply Input */}
                 <div className="border-t border-slate-700">
+                  {/* AI suggesting indicator */}
+                  {aiSuggesting && (
+                    <div className="px-4 py-2 flex items-center gap-2 bg-slate-700/50 border-b border-slate-600">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                      <span className="text-xs text-amber-300">AI is drafting a suggestion...</span>
+                    </div>
+                  )}
+
                   {stagedImage && (
                     <div className="px-3 pt-3 pb-1">
                       <div className="relative inline-block">
