@@ -523,15 +523,16 @@ const AdminChatPanel = () => {
 
               {/* Join Greeting Settings Panel */}
               {showGreetingSettings && (
-                <div className="mt-3 bg-slate-700/50 border border-slate-600 rounded-lg p-3 space-y-3">
+                <div className="mt-3 bg-white/95 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-3 space-y-3">
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-300 font-medium">Join Greeting Message</label>
-                    <p className="text-[10px] text-slate-400">Use {'{{name}}'} for specialist name</p>
+                    <label className="text-xs text-gray-900 dark:text-white font-semibold" style={{ opacity: 1 }}>Join Greeting Message</label>
+                    <p className="text-[10px] text-gray-600 dark:text-gray-300" style={{ opacity: 1 }}>Use {'{{name}}'} for specialist name</p>
                     <textarea
                       value={greetingDraft}
                       onChange={(e) => setGreetingDraft(e.target.value)}
                       rows={3}
-                      className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      className="w-full bg-white border border-slate-400 rounded-lg px-3 py-2 text-xs text-black placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                       placeholder="Hello! My name is {{name}}, your support specialist..."
                     />
                     <button
@@ -544,9 +545,9 @@ const AdminChatPanel = () => {
                     </button>
                   </div>
 
-                  <div className="border-t border-slate-600 pt-3 space-y-2">
-                    <label className="text-xs text-slate-300 font-medium">Session Timeout (minutes)</label>
-                    <p className="text-[10px] text-slate-400">Inactive sessions auto-close after this duration (5–60 min)</p>
+                  <div className="border-t border-slate-300 dark:border-slate-600 pt-3 space-y-2">
+                    <label className="text-xs text-gray-900 dark:text-white font-semibold" style={{ opacity: 1 }}>Session Timeout (minutes)</label>
+                    <p className="text-[10px] text-gray-600 dark:text-gray-300" style={{ opacity: 1 }}>Inactive sessions auto-close after this duration (5–60 min)</p>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -554,9 +555,10 @@ const AdminChatPanel = () => {
                         max={60}
                         value={timeoutDraft}
                         onChange={(e) => setTimeoutDraft(e.target.value)}
-                        className="w-20 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                        className="w-20 bg-white border border-slate-400 rounded-lg px-3 py-2 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                        style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                       />
-                      <span className="text-slate-400 text-xs">min</span>
+                      <span className="text-gray-900 dark:text-white text-xs font-semibold" style={{ opacity: 1 }}>min</span>
                     </div>
                     <button
                       onClick={handleSaveTimeout}
