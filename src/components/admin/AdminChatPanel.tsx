@@ -523,15 +523,15 @@ const AdminChatPanel = () => {
 
               {/* Join Greeting Settings Panel */}
               {showGreetingSettings && (
-                <div className="mt-3 bg-white/95 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-3 space-y-3">
-                  <div className="space-y-2">
-                    <label className="text-xs text-gray-900 dark:text-white font-semibold" style={{ opacity: 1 }}>Join Greeting Message</label>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-300" style={{ opacity: 1 }}>Use {'{{name}}'} for specialist name</p>
+                <div className="mt-3 bg-white/95 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 sm:p-3 space-y-2.5 sm:space-y-3 max-h-[60vh] overflow-y-auto">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Join Greeting Message</label>
+                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Use {'{{name}}'} for specialist name</p>
                     <textarea
                       value={greetingDraft}
                       onChange={(e) => setGreetingDraft(e.target.value)}
                       rows={3}
-                      className="w-full bg-white border border-slate-400 rounded-lg px-3 py-2 text-xs text-black placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
+                      className="w-full bg-white border border-slate-400 rounded-lg px-2.5 sm:px-3 py-2 text-xs text-black placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none"
                       style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                       placeholder="Hello! My name is {{name}}, your support specialist..."
                     />
@@ -545,9 +545,9 @@ const AdminChatPanel = () => {
                     </button>
                   </div>
 
-                  <div className="border-t border-slate-300 dark:border-slate-600 pt-3 space-y-2">
-                    <label className="text-xs text-gray-900 dark:text-white font-semibold" style={{ opacity: 1 }}>Session Timeout (minutes)</label>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-300" style={{ opacity: 1 }}>Inactive sessions auto-close after this duration (5–60 min)</p>
+                  <div className="border-t border-slate-300 dark:border-slate-600 pt-2.5 sm:pt-3 space-y-1.5 sm:space-y-2">
+                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Session Timeout (minutes)</label>
+                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Inactive sessions auto-close after this duration (5–60 min)</p>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -555,7 +555,7 @@ const AdminChatPanel = () => {
                         max={60}
                         value={timeoutDraft}
                         onChange={(e) => setTimeoutDraft(e.target.value)}
-                        className="w-20 bg-white border border-slate-400 rounded-lg px-3 py-2 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                        className="w-20 bg-white border border-slate-400 rounded-lg px-2.5 sm:px-3 py-2 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
                         style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                       />
                       <span className="text-gray-900 dark:text-white text-xs font-semibold" style={{ opacity: 1 }}>min</span>
@@ -625,41 +625,44 @@ const AdminChatPanel = () => {
           <div className={`${selectedConv ? 'flex' : 'hidden md:flex'} flex-col flex-1`}>
             {selectedConv ? (
               <>
-                <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => setSelectedConv(null)} className="md:hidden text-slate-400 hover:text-white">
-                      <X className="w-5 h-5" />
-                    </button>
-                    <div className="w-9 h-9 rounded-full bg-electric-blue/20 flex items-center justify-center">
-                      <User className="w-4 h-4 text-electric-blue" />
+                <div className="p-3 sm:p-4 border-b border-slate-700">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <button onClick={() => setSelectedConv(null)} className="md:hidden text-slate-400 hover:text-white flex-shrink-0">
+                        <X className="w-5 h-5" />
+                      </button>
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-electric-blue/20 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-electric-blue" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white font-medium text-sm truncate">{getDisplayName(selectedConv)}</p>
+                        <p className="text-slate-400 text-[10px] sm:text-xs truncate">{selectedConv.user_email}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-white font-medium text-sm">{getDisplayName(selectedConv)}</p>
-                      <p className="text-slate-400 text-xs">{selectedConv.user_email}</p>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      {selectedConv.status === 'open' && !selectedConv.specialist_joined && (
+                        <Button
+                          size="sm"
+                          onClick={handleJoinConversation}
+                          className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                        >
+                          <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                          Join
+                        </Button>
+                      )}
+                      {selectedConv.status === 'open' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCloseConversation}
+                          className="border-red-500 text-red-400 hover:bg-red-500/10 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                        >
+                          <XCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                          <span className="hidden sm:inline">Close Chat</span>
+                          <span className="sm:hidden">Close</span>
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedConv.status === 'open' && !selectedConv.specialist_joined && (
-                      <Button
-                        size="sm"
-                        onClick={handleJoinConversation}
-                        className="bg-green-600 hover:bg-green-700 text-xs"
-                      >
-                        <UserPlus className="w-3.5 h-3.5 mr-1" />
-                        Join
-                      </Button>
-                    )}
-                    {selectedConv.status === 'open' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleCloseConversation}
-                        className="border-red-500 text-red-400 hover:bg-red-500/10 text-xs"
-                      >
-                        <XCircle className="w-3.5 h-3.5 mr-1" />
-                        Close Chat
-                      </Button>
-                    )}
                   </div>
                 </div>
 
