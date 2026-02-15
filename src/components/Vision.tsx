@@ -69,7 +69,7 @@ const Vision = () => {
                     "{t('ceoQuote') || 'The future we\'re building is one where sustainable transport isn\'t just an option—it\'s the only way forward.'}"
                   </blockquote>
                   <div className="flex items-center gap-4 justify-center md:justify-start">
-                    <div className="h-1 w-16 md:w-20 bg-gradient-to-r from-tesla-red to-electric-blue rounded-full"></div>
+                    <div className="h-1 w-16 md:w-20 bg-gradient-to-r from-electric-blue to-blue-400 rounded-full"></div>
                     <div>
                       <p className="font-bold text-base md:text-lg text-white">Elon Musk</p>
                       <p className="text-gray-400 text-sm">CEO, Tesla & SpaceX</p>
