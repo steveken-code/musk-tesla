@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -732,8 +732,14 @@ const AdminChatPanel = () => {
 
             {/* Always-visible Team Avatars Row */}
             {(specialistSettings.teamMembers || []).length > 0 && (
-              <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50">
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Team Avatars</p>
+              <div className="mx-3 my-3 border border-slate-600 rounded-lg bg-slate-800/80 p-3 border-l-[3px] border-l-electric-blue">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-electric-blue" />
+                  <div>
+                    <p className="text-xs text-white font-semibold leading-tight">Support Team</p>
+                    <p className="text-[10px] text-slate-400 leading-tight">Click to upload or change photos</p>
+                  </div>
+                </div>
                 <div className="flex items-start gap-3 justify-center">
                   {(specialistSettings.teamMembers || []).slice(0, 5).map((member, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-1 min-w-0" style={{ width: 72 }}>
