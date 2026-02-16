@@ -1,110 +1,57 @@
 
 
-## Enhance Live Chat Support to Look Like a Real Support Center
+## Make Chat Header Show Team Avatars (Intercom-Style)
 
-### What We're Building
+### What Changes
 
-Transform the chat support experience to feel like a professional, real support system with multiple specialists -- similar to how Intercom or Zendesk looks. Here's what changes:
+When no specialist has joined the conversation yet, the chat window header will display the **stacked team avatars** (the same ones from the landing screen) instead of the generic support icon. This creates a consistent, professional Intercom-like feel across all chat steps. Once a specialist joins, the header switches to show that specific specialist's photo and name (existing behavior).
 
-### 1. Multi-Avatar "Team Available" Display
+Also removing the "3 specialists available" text from the landing screen as requested -- replacing it with a cleaner, more professional tagline.
 
-Instead of showing just one specialist avatar, the chat widget's landing/header area will display **3 stacked avatars** (overlapping circles) with a **"+3 more" dots indicator**, giving the impression of a full support team standing by.
+### Changes in Detail
 
-- The 3 avatars will come from admin-configurable settings (stored in the database)
-- If fewer than 3 are configured, fallback placeholder avatars will fill the gaps
-- A subtle "3 dots" or "+N" badge shows there are more specialists available
+**File: `src/components/LiveChatWidget.tsx`**
 
-### 2. Admin Panel: Manage Multiple Specialist Avatars
+1. **Header area (lines 1286-1310)**: When `specialistJoined` is false, replace the single avatar circle with a mini stacked avatar group (3 small overlapping circles, ~28px each) inside the header. When `specialistJoined` is true, keep the current single specialist avatar behavior.
 
-Currently the admin can only set ONE specialist name and ONE avatar. We'll expand this to support a **team roster** of up to 5 specialists:
+2. **Landing screen (lines 768-773)**: Remove the "{totalSpecialists} specialists available" line. Replace with a cleaner subtitle like "We typically reply under {replyTime}" -- no specialist count shown.
 
-- Each specialist entry has: **Name**, **Avatar (photo upload)**, and **Role** (e.g. "Senior Support Agent")
-- The admin can add/remove specialists from the list
-- The first specialist in the list is the "primary" one who actually joins conversations
-- All avatars are used for the team display on the user-facing widget
-- The existing `specialist_settings` key in `admin_settings` will be extended to store an array of specialists alongside the current single-specialist fields (backward compatible)
+3. **Remove the large support icon** from the landing screen top (line 714) since the team avatars already serve that purpose, making the layout cleaner.
 
-### 3. Specialist Join Card Enhancement
+### Visual Result
 
-When the specialist joins, the notification card will now use the **actual specialist's avatar** from the roster (already partially working) and include their role/title for extra professionalism.
+**Header (before specialist joins):**
+```text
++------------------------------------------+
+| [Av1][Av2][Av3]  Support Center      [X] |
+| (green dot) Typically replies under 30m   |
++------------------------------------------+
+```
 
----
+**Header (after specialist joins):**
+```text
++------------------------------------------+
+| [Specialist Photo]  Sarah Mitchell   [X] |
+| (green dot) Active                        |
++------------------------------------------+
+```
 
-### How It Will Look (User Side)
-
+**Landing screen (cleaned up):**
 ```text
 +----------------------------------+
 |  [Avatar1][Avatar2][Avatar3] ... |
-|  Tesla Support Team              |
-|  "3 specialists available"       |
 |                                  |
-|  Hi there! How can we help?      |
+|  Support Center                  |
+|  Questions? Chat with us.        |
+|  (green dot) We typically reply  |
+|  under 30 minutes                |
 +----------------------------------+
 ```
-
-When specialist joins:
-```text
-+----------------------------------+
-|  [Specialist Photo]              |
-|  Sarah Mitchell                  |
-|  Senior Support Agent            |
-|  has joined the conversation     |
-+----------------------------------+
-```
-
-### How It Will Look (Admin Side)
-
-New "Support Team" section in the greeting settings panel:
-```text
-+----------------------------------+
-| Support Team Avatars             |
-| [Photo1] Sarah M.    [X Remove] |
-| [Photo2] James K.    [X Remove] |
-| [Photo3] Lisa R.     [X Remove] |
-| [+ Add Specialist]              |
-+----------------------------------+
-```
-
----
 
 ### Technical Details
 
-**Database**: No new tables needed. The existing `admin_settings` table with `setting_key = 'specialist_settings'` will be extended. The `setting_value` JSON will include a new `teamMembers` array:
-
-```json
-{
-  "specialistName": "Sarah Mitchell",
-  "specialistImageUrl": "https://...",
-  "joinGreeting": "Hello! My name is {{name}}...",
-  "teamMembers": [
-    { "name": "Sarah Mitchell", "imageUrl": "https://...", "role": "Senior Support Agent" },
-    { "name": "James Kim", "imageUrl": "https://...", "role": "Support Specialist" },
-    { "name": "Lisa Rodriguez", "imageUrl": "https://...", "role": "Support Agent" }
-  ]
-}
-```
-
-**Files to modify**:
-
-1. **`src/components/LiveChatWidget.tsx`**
-   - Update the `SpecialistProfile` interface to include `teamMembers` array
-   - Fetch and store team members from settings
-   - Render stacked avatar group (3 overlapping circles) on the landing screen and header
-   - Add "+N more" indicator with animated dots
-   - Update the specialist join card to show the role/title
-
-2. **`src/components/admin/AdminChatPanel.tsx`**
-   - Add a "Support Team" management section in the greeting settings panel
-   - Allow adding up to 5 team members with name, photo upload, and role
-   - Save/load team members to/from `specialist_settings`
-   - Each team member gets a photo upload button that uploads to the existing `avatars` storage bucket
-
-3. **`src/components/LiveChatWidget.tsx` (Landing screen)**
-   - Replace the single avatar with a stacked avatar group component
-   - Show "N specialists available" text below the avatars
-   - Animate the avatars with a subtle scale-in effect
-
-**Storage**: Uses the existing `avatars` bucket (admin already has full access per existing RLS policies).
-
-**Backward Compatibility**: If `teamMembers` is not set, the system falls back to the single `specialistName`/`specialistImageUrl` fields, so nothing breaks for existing setups.
+- Reuse the existing `teamAvatars` array for the header display
+- Header avatars will be smaller (28px) with tighter overlap (-8px spacing) to fit the header bar
+- White border on avatars for contrast against the blue gradient header
+- No new dependencies or database changes needed
 
