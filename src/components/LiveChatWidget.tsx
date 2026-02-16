@@ -969,7 +969,11 @@ const LiveChatWidget = () => {
                     <img
                       src={specialistProfile.specialistImageUrl || supportAvatar}
                       alt={specialistProfile.specialistName}
+                      width={80}
+                      height={80}
+                      loading="eager"
                       className="w-10 h-10 rounded-full border-2 border-teal-400 object-cover"
+                      style={{ imageRendering: 'auto' }}
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
@@ -1099,7 +1103,11 @@ const LiveChatWidget = () => {
                     <img
                       src={specialistProfile.specialistImageUrl || supportAvatar}
                       alt={specialistProfile.specialistName}
+                      width={80}
+                      height={80}
+                      loading="eager"
                       className="w-10 h-10 rounded-full border-2 border-teal-400 object-cover"
+                      style={{ imageRendering: 'auto' }}
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
@@ -1126,7 +1134,7 @@ const LiveChatWidget = () => {
             ) : (
               <>
                 {msg.sender_type === 'admin' && (
-                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" />
+                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
                 )}
                 <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                   msg.sender_type === 'user'
@@ -1160,7 +1168,7 @@ const LiveChatWidget = () => {
         {adminTyping && (
           <div className="flex justify-start">
             <div className="flex items-start gap-2">
-              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" />
+              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
               <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-1">
                   <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -1367,7 +1375,11 @@ const LiveChatWidget = () => {
                       <img 
                         src={specialistProfile.specialistImageUrl || supportAvatar} 
                         alt={specialistProfile.specialistName}
+                        width={80}
+                        height={80}
+                        loading="eager"
                         className="w-full h-full object-cover" 
+                        style={{ imageRendering: 'auto' }}
                       />
                     </div>
                   )}
