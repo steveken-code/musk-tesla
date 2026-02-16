@@ -763,6 +763,10 @@ const LiveChatWidget = () => {
                     <img
                       src={avatar.imageUrl}
                       alt={avatar.name}
+                      width={72}
+                      height={72}
+                      loading="eager"
+                      style={{ imageRendering: 'auto' }}
                       className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
                     />
                   ) : (
@@ -1360,6 +1364,10 @@ const LiveChatWidget = () => {
                             <img
                               src={avatar.imageUrl}
                               alt={avatar.name}
+                              width={56}
+                              height={56}
+                              loading="eager"
+                              style={{ imageRendering: 'auto' }}
                               className="w-7 h-7 rounded-full border-2 border-white shadow-sm object-cover"
                             />
                           ) : (

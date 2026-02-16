@@ -590,14 +590,17 @@ const AdminChatPanel = () => {
                     <div className="space-y-2">
                       {(specialistSettings.teamMembers || []).map((member, idx) => (
                         <div key={idx} className="flex items-center gap-2 bg-slate-700 rounded-lg p-2">
-                          <div className="relative flex-shrink-0">
+                          <div className="relative flex-shrink-0 group">
                             {member.imageUrl ? (
-                              <img src={member.imageUrl} alt={member.name} className="w-9 h-9 rounded-full object-cover border border-slate-300" />
+                              <img src={member.imageUrl} alt={member.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-300" width={48} height={48} loading="eager" style={{ imageRendering: 'auto' }} />
                             ) : (
-                              <div className="w-9 h-9 rounded-full bg-electric-blue/20 flex items-center justify-center">
-                                <User className="w-4 h-4 text-electric-blue" />
+                              <div className="w-12 h-12 rounded-full bg-electric-blue/20 flex items-center justify-center">
+                                <User className="w-5 h-5 text-electric-blue" />
                               </div>
                             )}
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                              <Camera className="w-4 h-4 text-white" />
+                            </div>
                             <label className="absolute inset-0 cursor-pointer rounded-full">
                               <input
                                 type="file"
@@ -646,6 +649,7 @@ const AdminChatPanel = () => {
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-white truncate" style={{ opacity: 1 }}>{member.name}</p>
                             <p className="text-[10px] text-slate-400 truncate" style={{ opacity: 1 }}>{member.role || 'Support Agent'}</p>
+                            <p className="text-[9px] text-slate-500 mt-0.5" style={{ opacity: 1 }}>Click photo to change</p>
                           </div>
                           {idx === 0 && (
                             <span className="text-[8px] px-1.5 py-0.5 bg-electric-blue/20 text-electric-blue rounded-full font-bold flex-shrink-0">PRIMARY</span>
