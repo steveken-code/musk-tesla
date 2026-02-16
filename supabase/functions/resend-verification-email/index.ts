@@ -138,9 +138,9 @@ const handler = async (req: Request): Promise<Response> => {
                           <div style="display: inline-block; background: #ffffff; border-radius: 50%; width: 80px; height: 80px; line-height: 80px; margin-bottom: 20px;">
                             <span style="color: #e31937; font-size: 40px; font-weight: bold;">T</span>
                           </div>
-                          <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                            TESLAINVEST
-                          </h1>
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                            <tr><td align="center" style="color: #ffffff; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;"><span style="color: #ffffff;">TESLAINVEST</span></td></tr>
+                          </table>
                         </td>
                       </tr>
                       
@@ -190,13 +190,9 @@ const handler = async (req: Request): Promise<Response> => {
                       
                       <!-- Footer -->
                       <tr>
-                        <td style="background-color: #000000; padding: 30px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
-                          <p style="margin: 0 0 10px; color: #525252; font-size: 13px;">
-                            © ${new Date().getFullYear()} TeslaInvest. All rights reserved.
-                          </p>
-                          <p style="margin: 0; color: #404040; font-size: 12px;">
-                            This email was sent to ${email}
-                          </p>
+                        <td style="background-color: #000000; padding: 16px 40px; text-align: center; border-top: 1px solid #1a1a1a;">
+                          <p style="color: #525252; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated notification from Tesla Stock Platform.</p>
+                          <p style="color: #404040; font-size: 11px; margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
                         </td>
                       </tr>
                     </table>

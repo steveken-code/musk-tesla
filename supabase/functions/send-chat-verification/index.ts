@@ -83,12 +83,10 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Header -->
           <tr>
             <td style="padding: 32px 40px; text-align: center; background: ${HEADER_GRADIENT};">
-              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">
-                Tesla Stock Platform
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
-                Chat Verification Code
-              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr><td align="center" style="color: #ffffff; font-size: 24px; font-weight: 700;"><span style="color: #ffffff;">Tesla Stock Platform</span></td></tr>
+                <tr><td align="center" style="color: #ffffff; font-size: 14px; padding-top: 8px;"><span style="color: #ffffff;">Chat Verification Code</span></td></tr>
+              </table>
             </td>
           </tr>
           
@@ -122,10 +120,9 @@ const handler = async (req: Request): Promise<Response> => {
 
           <!-- Footer -->
           <tr>
-            <td style="background: #f9fafb; padding: 24px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="color: ${COLORS.secondaryText}; font-size: 13px; margin: 0;">
-                © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
-              </p>
+            <td style="padding: 16px 50px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; border-radius: 0 0 12px 12px;">
+              <p style="color: #9ca3af; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated notification from Tesla Stock Platform.</p>
+              <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
             </td>
           </tr>
         </table>

@@ -43,7 +43,7 @@ serve(async (req) => {
     const emailHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
         <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%); padding: 30px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 22px;">💬 New Chat Message</h1>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="color: #ffffff; font-size: 22px; font-weight: 700;"><span style="color: #ffffff;">💬 New Chat Message</span></td></tr></table>
         </div>
         <div style="padding: 30px;">
           <p style="color: #374151; font-size: 16px; margin: 0 0 20px;">

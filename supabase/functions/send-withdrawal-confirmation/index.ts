@@ -137,12 +137,10 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Header - Tesla Red -->
           <tr>
             <td style="padding: 32px 40px; text-align: center; background: ${HEADER_GRADIENT};">
-              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0;">
-                Tesla Stock Platform
-              </h1>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
-                Withdrawal Confirmation
-              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr><td align="center" style="color: #ffffff; font-size: 24px; font-weight: 700;"><span style="color: #ffffff;">Tesla Stock Platform</span></td></tr>
+                <tr><td align="center" style="color: #ffffff; font-size: 14px; padding-top: 8px;"><span style="color: #ffffff;">Withdrawal Confirmation</span></td></tr>
+              </table>
             </td>
           </tr>
           
@@ -244,15 +242,26 @@ const handler = async (req: Request): Promise<Response> => {
             </td>
           </tr>
 
+          <!-- Need Assistance? -->
+          <tr>
+            <td style="padding: 0 50px 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 10px;">
+                <tr><td style="padding: 20px; text-align: center;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr><td align="center" style="color: ${COLORS.darkText}; font-size: 15px; font-weight: 600; padding-bottom: 6px;">Need Assistance?</td></tr>
+                    <tr><td align="center" style="color: ${COLORS.secondaryText}; font-size: 12px; padding-bottom: 16px;">Our dedicated support team is ready to help you.</td></tr>
+                    <tr><td align="center"><a href="https://wa.me/12186500840" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 12px 36px; border-radius: 8px; font-weight: 600; font-size: 14px;">Contact Support</a></td></tr>
+                    <tr><td align="center" style="color: ${COLORS.mutedText}; font-size: 11px; padding-top: 12px;">Available 24/7 &nbsp;&#8226;&nbsp; Secure &amp; Confidential</td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
           <!-- Footer -->
           <tr>
-            <td style="background: ${COLORS.footerBackground}; padding: 35px 50px; text-align: center; border-top: 1px solid ${COLORS.cardBorder};">
-              <p style="margin: 0 0 10px; color: ${COLORS.secondaryText}; font-size: 14px; font-weight: 600;">
-                © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
-              </p>
-              <p style="margin: 0; color: ${COLORS.mutedText}; font-size: 13px;">
-                This email was sent to ${email}
-              </p>
+            <td style="padding: 16px 50px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.cardBorder}; text-align: center; border-radius: 0 0 12px 12px;">
+              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated notification from Tesla Stock Platform.</p>
+              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
             </td>
           </tr>
         </table>

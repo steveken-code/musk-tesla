@@ -122,12 +122,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Header with Blue/Purple gradient for Admin -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 32px 40px; text-align: center;">
-                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
-                        📄 New KYC Submission
-                      </h1>
-                      <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
-                        Admin Notification - Action Required
-                      </p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr><td align="center" style="color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;"><span style="color: #ffffff;">📄 New KYC Submission</span></td></tr>
+                        <tr><td align="center" style="color: #ffffff; font-size: 14px; padding-top: 8px;"><span style="color: #ffffff;">Admin Notification - Action Required</span></td></tr>
+                      </table>
                     </td>
                   </tr>
 
@@ -212,13 +210,9 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="padding: 24px 40px; border-top: 1px solid #2a2a2a; text-align: center;">
-                      <p style="color: #52525b; font-size: 12px; margin: 0;">
-                        This is an automated admin notification from Tesla Stock Brokerage Platform.
-                      </p>
-                      <p style="color: #3f3f46; font-size: 11px; margin: 16px 0 0 0;">
-                        © 2026 Tesla Stock Platform. All rights reserved.
-                      </p>
+                    <td style="padding: 16px 40px; border-top: 1px solid #2a2a2a; text-align: center;">
+                      <p style="color: #52525b; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated admin notification from Tesla Stock Platform.</p>
+                      <p style="color: #3f3f46; font-size: 11px; margin: 8px 0 0 0;">&copy; 2026 Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
                     </td>
                   </tr>
                 </table>

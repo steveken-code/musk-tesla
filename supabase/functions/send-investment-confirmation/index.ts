@@ -137,17 +137,15 @@ const handler = async (req: Request): Promise<Response> => {
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
                 <tr>
                   <td align="center">
-                    <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-                      
+                    <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); page-break-inside: avoid; min-width: 100%;">
+
                       <!-- Header - Tesla Red -->
                       <tr>
                         <td style="padding: 50px 50px 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
-                          <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 800; letter-spacing: 1px;">
-                            Tesla Stock Platform
-                          </h1>
-                          <p style="margin: 15px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 600;">
-                            Investment Confirmation
-                          </p>
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                            <tr><td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;"><span style="color: #ffffff;">Tesla Stock Platform</span></td></tr>
+                            <tr><td align="center" style="color: #ffffff; font-size: 18px; font-weight: 600; padding-top: 10px;"><span style="color: #ffffff;">Investment Confirmation</span></td></tr>
+                          </table>
                         </td>
                       </tr>
                       
@@ -239,15 +237,26 @@ const handler = async (req: Request): Promise<Response> => {
                         </td>
                       </tr>
 
+                      <!-- Need Assistance? -->
+                      <tr>
+                        <td style="padding: 0 50px 24px;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;">
+                            <tr><td style="padding: 20px; text-align: center;">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr><td align="center" style="color: #111827; font-size: 15px; font-weight: 600; padding-bottom: 6px;">Need Assistance?</td></tr>
+                                <tr><td align="center" style="color: #6b7280; font-size: 12px; padding-bottom: 16px;">Our dedicated support team is ready to help you.</td></tr>
+                                <tr><td align="center"><a href="https://wa.me/12186500840" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 12px 36px; border-radius: 8px; font-weight: 600; font-size: 14px;">Contact Support</a></td></tr>
+                                <tr><td align="center" style="color: #9ca3af; font-size: 11px; padding-top: 12px;">Available 24/7 &nbsp;&#8226;&nbsp; Secure &amp; Confidential</td></tr>
+                              </table>
+                            </td></tr>
+                          </table>
+                        </td>
+                      </tr>
                       <!-- Footer -->
                       <tr>
-                        <td style="background: #f9fafb; padding: 35px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
-                          <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px; font-weight: 600;">
-                            © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
-                          </p>
-                          <p style="margin: 0; color: #9ca3af; font-size: 13px;">
-                            This email was sent to ${email}
-                          </p>
+                        <td style="padding: 16px 50px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; border-radius: 0 0 12px 12px;">
+                          <p style="color: #9ca3af; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated notification from Tesla Stock Platform.</p>
+                          <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
                         </td>
                       </tr>
                     </table>
