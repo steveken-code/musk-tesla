@@ -1,28 +1,33 @@
 
 
-## Improve Team Avatar Upload UI + Image Quality
+## Make the 3 Chat Avatars Editable from Admin Panel
 
 ### Overview
 
-The admin panel already has team avatar upload functionality, but the upload area is small and the landing page avatar images lack quality attributes (no explicit dimensions, no eager loading). This plan enhances the admin UI to make uploading real photos more prominent and improves the rendering quality of the 3 landing avatars.
+The admin panel already has avatar upload functionality hidden inside the Settings gear dropdown, but it's buried among other settings. This plan creates a dedicated, prominent "Team Avatars" section directly visible in the admin chat panel (not hidden behind a toggle), with larger preview images so uploaded photos are clearly visible.
 
-### Changes
+### What Changes
 
 **File: `src/components/admin/AdminChatPanel.tsx`**
 
-1. **Enlarge the existing team member avatar display** from `w-9 h-9` to `w-12 h-12` so uploaded photos are more visible in the admin panel
-2. **Add a camera/upload icon overlay** on each team member avatar to make it obvious they are clickable for photo upload
-3. **Add "Click photo to change" helper text** below each avatar to guide the admin
-4. **Improve the image rendering** with `loading="eager"`, explicit `width/height` attributes, and `imageRendering: 'auto'` style to prevent pixelation
+1. **Extract the 3 team avatar cards into a dedicated, always-visible section** at the top of the conversations sidebar (above the conversation list), showing exactly 3 avatar slots in a horizontal row
+2. Each slot shows:
+   - A large circular preview (64x64px) of the current uploaded photo, or a placeholder with a camera icon if empty
+   - The specialist's name and role below
+   - Click anywhere on the avatar to upload/replace the photo
+   - A small "x" button to remove the photo
+3. This section is always visible (not hidden behind the gear icon) so the admin can immediately see and manage the 3 faces that appear on the chat widget
+4. Keep the existing team management in the settings panel for adding/removing members and editing names/roles, but the quick avatar preview row is always shown
 
 **File: `src/components/LiveChatWidget.tsx`**
 
-1. **Add quality attributes to the 3 landing page avatars** (lines 762-767): add `width={72}`, `height={72}`, `loading="eager"`, and `style={{ imageRendering: 'auto' }}` so uploaded real photos render crisp and clear instead of blurry
-2. **Same fix for header avatars** (lines 1359-1364): add quality attributes there too
+5. No changes needed -- the widget already reads `teamMembers` from `specialist_settings` and renders their `imageUrl` with high-quality attributes. Once the admin uploads photos via the improved admin UI, they automatically appear in the chat widget.
 
 ### Technical Details
 
-- No database changes needed -- the existing `specialist_settings` JSON in `admin_settings` table and the `avatars` storage bucket already handle everything
-- The avatar images are already uploaded to the public `avatars` bucket with correct paths (`team/{timestamp}-{index}.{ext}`)
-- These are purely UI improvements: bigger upload targets in admin, sharper rendering in the chat widget
-- No new dependencies needed
+- Uses the existing `avatars` storage bucket (public) and the existing `specialist_settings` JSON in `admin_settings` table
+- The upload logic already works (upload to `team/{timestamp}-{index}.{ext}`, get public URL, save to specialist_settings)
+- This is purely a UI reorganization: moving the avatar previews out of the hidden settings panel into a prominent always-visible row
+- No database changes, no new dependencies
+- Images render with `width={64} height={64} loading="eager"` and `object-cover` for crisp display
+
