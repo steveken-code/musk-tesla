@@ -1,57 +1,62 @@
 
 
-## Make Chat Header Show Team Avatars (Intercom-Style)
+## Redesign Chat Landing to Match Intercom Layout
 
-### What Changes
+### Overview
 
-When no specialist has joined the conversation yet, the chat window header will display the **stacked team avatars** (the same ones from the landing screen) instead of the generic support icon. This creates a consistent, professional Intercom-like feel across all chat steps. Once a specialist joins, the header switches to show that specific specialist's photo and name (existing behavior).
+Redesign the chat widget's landing screen to closely mirror the Intercom reference images: a **blue hero section** at the top flowing from the header with "Welcome! How can we help?", followed by a **white card section** with "Let's have a conversation", team avatars, reply time, and a prominent "Send us a message" button. This replaces the current centered-on-white layout.
 
-Also removing the "3 specialists available" text from the landing screen as requested -- replacing it with a cleaner, more professional tagline.
+### Visual Target
+
+```text
++------------------------------------------+
+| [Av1][Av2][Av3]  Support Center      [X] |  <-- existing header (kept)
+|                                           |
+|        (blue gradient continues)          |
+|          Welcome!                         |
+|       How can we help?                    |
++------------------------------------------+
+|                                           |
+|  +------------------------------------+  |
+|  | Let's have a conversation          |  |
+|  |                                    |  |
+|  | [Av1][Av2][Av3]  Our usual time    |  |
+|  |                  to reply           |  |
+|  |                  (clock) A few min  |  |
+|  |                                    |  |
+|  | [> Send us a message          ]    |  |
+|  +------------------------------------+  |
+|                                           |
++------------------------------------------+
+```
+
+When user clicks "Send us a message", it proceeds to the name/email step (existing flow).
 
 ### Changes in Detail
 
 **File: `src/components/LiveChatWidget.tsx`**
 
-1. **Header area (lines 1286-1310)**: When `specialistJoined` is false, replace the single avatar circle with a mini stacked avatar group (3 small overlapping circles, ~28px each) inside the header. When `specialistJoined` is true, keep the current single specialist avatar behavior.
+1. **Extend the header/blue area** -- Instead of the header ending at `py-3`, when on the `landing` step, the blue gradient extends downward to include a "Welcome! How can we help?" hero text. This can be done by making the header taller on landing, or by adding a blue section below the header that's part of `renderLanding`.
 
-2. **Landing screen (lines 768-773)**: Remove the "{totalSpecialists} specialists available" line. Replace with a cleaner subtitle like "We typically reply under {replyTime}" -- no specialist count shown.
+2. **Redesign `renderLanding()`** (lines 711-793):
+   - Remove the current centered white layout
+   - Add a **blue hero section** at the top: large "Welcome!" heading + "How can we help?" subtitle in white text on the blue gradient
+   - Below that, a **white card** with rounded corners and shadow containing:
+     - "Let's have a conversation" title
+     - Row with team avatars (3 stacked) + "Our usual time to reply" + clock icon + reply time value
+     - A "Send us a message" button (blue, with play/arrow icon) that triggers the flow to the next step
+   - Remove the bottom text input bar when on landing (the "Send us a message" button replaces it)
 
-3. **Remove the large support icon** from the landing screen top (line 714) since the team avatars already serve that purpose, making the layout cleaner.
+3. **Remove the textarea/input bar from landing step** (lines 1327-1360): The landing screen should only show the "Send us a message" button inside the card, not the full message input. The input bar appears only after the user starts the conversation flow.
 
-### Visual Result
-
-**Header (before specialist joins):**
-```text
-+------------------------------------------+
-| [Av1][Av2][Av3]  Support Center      [X] |
-| (green dot) Typically replies under 30m   |
-+------------------------------------------+
-```
-
-**Header (after specialist joins):**
-```text
-+------------------------------------------+
-| [Specialist Photo]  Sarah Mitchell   [X] |
-| (green dot) Active                        |
-+------------------------------------------+
-```
-
-**Landing screen (cleaned up):**
-```text
-+----------------------------------+
-|  [Avatar1][Avatar2][Avatar3] ... |
-|                                  |
-|  Support Center                  |
-|  Questions? Chat with us.        |
-|  (green dot) We typically reply  |
-|  under 30 minutes                |
-+----------------------------------+
-```
+4. **Keep the specialist join notification** as-is (already professional with teal card, avatar, role).
 
 ### Technical Details
 
-- Reuse the existing `teamAvatars` array for the header display
-- Header avatars will be smaller (28px) with tighter overlap (-8px spacing) to fit the header bar
-- White border on avatars for contrast against the blue gradient header
-- No new dependencies or database changes needed
+- The "Send us a message" button calls the existing flow transition (moves to `name_email` step for guests, or directly to `waiting`/`chatting` for authenticated users)
+- Team avatars reuse the existing `teamAvatars` array
+- Reply time uses existing `supportProfile.replyTime`
+- The proactive typing/message indicators move into the blue hero area or are removed from landing (they'll appear in the chat step)
+- No database changes needed
+- No new dependencies
 
