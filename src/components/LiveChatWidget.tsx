@@ -412,36 +412,21 @@ const LiveChatWidget = () => {
     }
   }, [message]);
 
-  // Proactive greeting
-  useEffect(() => {
-    if (!isOpen) return;
-    if (chatStep !== 'landing') return;
-    if (sessionStorage.getItem('chat-greeted')) return;
-    if (proactiveMessage) return;
-
-    sessionStorage.setItem('chat-greeted', 'true');
-
-    let greetingText: string;
+  // Generate greeting text (reusable)
+  const getGreetingText = useCallback(() => {
     if (customGreeting && customGreeting.mode === 'custom') {
       if (user && customGreeting.userGreeting) {
-        greetingText = customGreeting.userGreeting.replace(
+        return customGreeting.userGreeting.replace(
           /\{\{user_name\}\}/g,
           profileData?.full_name || 'there'
         );
       } else {
-        greetingText = customGreeting.guestGreeting;
+        return customGreeting.guestGreeting;
       }
     } else {
-      greetingText = getGreeting();
+      return getGreeting();
     }
-
-    setProactiveMessage(greetingText);
-    notificationAudio?.play().catch(() => {});
-    const typingTimer: ReturnType<typeof setTimeout> | null = null;
-    const messageTimer: ReturnType<typeof setTimeout> | null = null;
-
-    return () => { clearTimeout(typingTimer); clearTimeout(messageTimer); };
-  }, [isOpen, proactiveMessage, customGreeting, user, profileData, chatStep]);
+  }, [customGreeting, user, profileData]);
 
   const broadcastTyping = useCallback(async (isTyping: boolean) => {
     if (!conversationId) return;
@@ -557,6 +542,18 @@ const LiveChatWidget = () => {
 
     setConversationId(newConv.id);
 
+    // Inject greeting as first admin-style message bubble (local only, not saved to DB)
+    const greetingText = getGreetingText();
+    const greetingMsg: ChatMessage = {
+      id: 'greeting-' + Date.now(),
+      conversation_id: newConv.id,
+      sender_type: 'admin',
+      message: greetingText,
+      image_url: null,
+      is_read: true,
+      created_at: new Date(Date.now() - 1000).toISOString(), // slightly before user msg
+    };
+
     const optimisticMsg: ChatMessage = {
       id: 'temp-' + Date.now(),
       conversation_id: newConv.id,
@@ -566,7 +563,7 @@ const LiveChatWidget = () => {
       is_read: false,
       created_at: new Date().toISOString(),
     };
-    setMessages([optimisticMsg]);
+    setMessages([greetingMsg, optimisticMsg]);
 
     const { error: msgError } = await supabase.from('chat_messages').insert({
       conversation_id: newConv.id,
@@ -788,17 +785,6 @@ const LiveChatWidget = () => {
           </button>
         </motion.div>
 
-        {/* Proactive message below card */}
-        {proactiveMessage && (
-          <motion.div
-            initial={{ scale: 0.6, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.6, type: 'spring', stiffness: 400, damping: 20 }}
-            className="mt-4 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3"
-          >
-            <p className="text-gray-600 text-sm text-center leading-relaxed">{proactiveMessage}</p>
-          </motion.div>
-        )}
       </div>
     </div>
   );

@@ -534,10 +534,10 @@ const AdminChatPanel = () => {
 
               {/* Join Greeting Settings Panel */}
               {showGreetingSettings && (
-                <div className="mt-3 bg-white/95 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 sm:p-3 space-y-2.5 sm:space-y-3 max-h-[60vh] overflow-y-auto">
+                <div className="mt-3 bg-slate-800 border border-slate-600 rounded-lg p-2.5 sm:p-3 space-y-2.5 sm:space-y-3 max-h-[60vh] overflow-y-auto">
                   <div className="space-y-1.5 sm:space-y-2">
-                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Join Greeting Message</label>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Use {'{{name}}'} for specialist name</p>
+                    <label className="text-xs text-white font-semibold block" style={{ opacity: 1 }}>Join Greeting Message</label>
+                    <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Use {'{{name}}'} for specialist name</p>
                     <textarea
                       value={greetingDraft}
                       onChange={(e) => setGreetingDraft(e.target.value)}
@@ -556,9 +556,9 @@ const AdminChatPanel = () => {
                     </button>
                   </div>
 
-                  <div className="border-t border-slate-300 dark:border-slate-600 pt-2.5 sm:pt-3 space-y-1.5 sm:space-y-2">
-                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Session Timeout (minutes)</label>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Inactive sessions auto-close after this duration (5–60 min)</p>
+                  <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-1.5 sm:space-y-2">
+                    <label className="text-xs text-white font-semibold block" style={{ opacity: 1 }}>Session Timeout (minutes)</label>
+                    <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Inactive sessions auto-close after this duration (5–60 min)</p>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -569,7 +569,7 @@ const AdminChatPanel = () => {
                         className="w-20 bg-white border border-slate-400 rounded-lg px-2.5 sm:px-3 py-2 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
                         style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                       />
-                      <span className="text-gray-900 dark:text-white text-xs font-semibold" style={{ opacity: 1 }}>min</span>
+                      <span className="text-white text-xs font-semibold" style={{ opacity: 1 }}>min</span>
                     </div>
                     <button
                       onClick={handleSaveTimeout}
@@ -582,14 +582,14 @@ const AdminChatPanel = () => {
                   </div>
 
                   {/* Support Team Management */}
-                  <div className="border-t border-slate-300 dark:border-slate-600 pt-2.5 sm:pt-3 space-y-2">
-                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Support Team Avatars</label>
-                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Add up to 5 specialists. First one is the primary who joins chats.</p>
+                  <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-2">
+                    <label className="text-xs text-white font-semibold block" style={{ opacity: 1 }}>Support Team Avatars</label>
+                    <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Add up to 5 specialists. First one is the primary who joins chats.</p>
                     
                     {/* Existing team members */}
                     <div className="space-y-2">
                       {(specialistSettings.teamMembers || []).map((member, idx) => (
-                        <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700 rounded-lg p-2">
+                        <div key={idx} className="flex items-center gap-2 bg-slate-700 rounded-lg p-2">
                           <div className="relative flex-shrink-0">
                             {member.imageUrl ? (
                               <img src={member.imageUrl} alt={member.name} className="w-9 h-9 rounded-full object-cover border border-slate-300" />
@@ -644,8 +644,8 @@ const AdminChatPanel = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-gray-900 dark:text-white truncate" style={{ opacity: 1 }}>{member.name}</p>
-                            <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate" style={{ opacity: 1 }}>{member.role || 'Support Agent'}</p>
+                            <p className="text-xs font-semibold text-white truncate" style={{ opacity: 1 }}>{member.name}</p>
+                            <p className="text-[10px] text-slate-400 truncate" style={{ opacity: 1 }}>{member.role || 'Support Agent'}</p>
                           </div>
                           {idx === 0 && (
                             <span className="text-[8px] px-1.5 py-0.5 bg-electric-blue/20 text-electric-blue rounded-full font-bold flex-shrink-0">PRIMARY</span>
@@ -679,7 +679,7 @@ const AdminChatPanel = () => {
 
                     {/* Add new member form */}
                     {(specialistSettings.teamMembers || []).length < 5 && (
-                      <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-2 space-y-1.5">
+                      <div className="bg-slate-700 rounded-lg p-2 space-y-1.5">
                         <input
                           value={teamMemberDraft.name}
                           onChange={(e) => setTeamMemberDraft(d => ({ ...d, name: e.target.value }))}

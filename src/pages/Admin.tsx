@@ -1728,12 +1728,12 @@ const Admin = () => {
           <Button
             variant={activeTab === 'investments' ? 'default' : 'outline'}
             onClick={() => setActiveTab('investments')}
-            className={`relative ${activeTab === 'investments' ? 'bg-tesla-red' : 'border-slate-600 text-slate-300'}`}
+            className={`relative pr-5 ${activeTab === 'investments' ? 'bg-tesla-red' : 'border-slate-600 text-slate-300'}`}
           >
             <DollarSign className="w-4 h-4 mr-2" />
             {t('investments')} ({investments.length})
             {investments.filter(inv => inv.status === 'pending').length > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+              <span className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-amber-500 text-white text-[11px] rounded-full flex items-center justify-center font-bold animate-pulse">
                 {investments.filter(inv => inv.status === 'pending').length}
               </span>
             )}
@@ -1741,12 +1741,12 @@ const Admin = () => {
           <Button
             variant={activeTab === 'withdrawals' ? 'default' : 'outline'}
             onClick={() => setActiveTab('withdrawals')}
-            className={`relative ${activeTab === 'withdrawals' ? 'bg-green-600' : 'border-slate-600 text-slate-300'}`}
+            className={`relative pr-5 ${activeTab === 'withdrawals' ? 'bg-green-600' : 'border-slate-600 text-slate-300'}`}
           >
             <Wallet className="w-4 h-4 mr-2" />
             {t('featureWithdrawals').split(' ')[0]} ({withdrawals.length})
             {withdrawals.filter(w => w.status === 'pending').length > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+              <span className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-red-500 text-white text-[11px] rounded-full flex items-center justify-center font-bold animate-pulse">
                 {withdrawals.filter(w => w.status === 'pending').length}
               </span>
             )}
@@ -1762,12 +1762,12 @@ const Admin = () => {
           <Button
             variant={activeTab === 'kyc' ? 'default' : 'outline'}
             onClick={() => setActiveTab('kyc')}
-            className={`relative ${activeTab === 'kyc' ? 'bg-purple-600' : 'border-slate-600 text-slate-300'}`}
+            className={`relative pr-5 ${activeTab === 'kyc' ? 'bg-purple-600' : 'border-slate-600 text-slate-300'}`}
           >
             <FileText className="w-4 h-4 mr-2" />
             KYC ({kycVerifications.length})
             {kycVerifications.filter(k => k.status === 'pending_kyc' || k.status === 'kyc_submitted').length > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-purple-400 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+              <span className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-purple-400 text-white text-[11px] rounded-full flex items-center justify-center font-bold animate-pulse">
                 {kycVerifications.filter(k => k.status === 'pending_kyc' || k.status === 'kyc_submitted').length}
               </span>
             )}
