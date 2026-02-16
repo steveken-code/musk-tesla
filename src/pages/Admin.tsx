@@ -80,9 +80,16 @@ interface SupportProfileSettings {
   avatarUrl: string;
 }
 
+interface TeamMember {
+  name: string;
+  imageUrl: string;
+  role: string;
+}
+
 interface SpecialistSettings {
   specialistName: string;
   specialistImageUrl: string;
+  teamMembers?: TeamMember[];
 }
 
 interface KYCVerification {
@@ -240,6 +247,8 @@ const Admin = () => {
   const [savingSupportProfile, setSavingSupportProfile] = useState(false);
   const [specialistSettings, setSpecialistSettings] = useState<SpecialistSettings>(DEFAULT_SPECIALIST_SETTINGS);
   const [savingSpecialist, setSavingSpecialist] = useState(false);
+  const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | null>(null);
+  const [savingTeamAvatars, setSavingTeamAvatars] = useState(false);
   const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
   
   // KYC Modal state
@@ -425,6 +434,7 @@ const Admin = () => {
             setSpecialistSettings({
               specialistName: value.specialistName || DEFAULT_SPECIALIST_SETTINGS.specialistName,
               specialistImageUrl: value.specialistImageUrl || '',
+              teamMembers: (value as any).teamMembers || [],
             });
           }
         });
@@ -2117,6 +2127,129 @@ const Admin = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Team Avatars Card */}
+            {(specialistSettings.teamMembers || []).length > 0 && (
+              <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 animate-fade-in border-l-[3px] border-l-electric-blue">
+                <div className="flex items-center gap-3 mb-1">
+                  <Users className="w-5 h-5 text-electric-blue" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Team Avatars</h3>
+                    <p className="text-sm text-slate-400">Manage the photos shown on the chat widget</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-6 justify-center mt-5">
+                  {(specialistSettings.teamMembers || []).slice(0, 5).map((member, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-2" style={{ width: 100 }}>
+                      <div className="relative group">
+                        {member.imageUrl ? (
+                          <img
+                            src={member.imageUrl}
+                            alt={member.name}
+                            className="w-20 h-20 rounded-full object-cover border-2 border-slate-500 group-hover:border-electric-blue transition-colors"
+                            width={80}
+                            height={80}
+                            loading="eager"
+                            style={{ imageRendering: 'auto' }}
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-slate-700 border-2 border-dashed border-slate-500 flex items-center justify-center group-hover:border-electric-blue transition-colors">
+                            <Camera className="w-6 h-6 text-slate-400" />
+                          </div>
+                        )}
+                        <label className="absolute inset-0 cursor-pointer rounded-full">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setUploadingTeamAvatar(idx);
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const path = `team/${Date.now()}-${idx}.${ext}`;
+                                const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+                                if (error) throw error;
+                                const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+                                setSpecialistSettings(prev => {
+                                  const members = [...(prev.teamMembers || [])];
+                                  members[idx] = { ...members[idx], imageUrl: urlData.publicUrl };
+                                  const updated = { ...prev, teamMembers: members };
+                                  if (idx === 0) {
+                                    updated.specialistImageUrl = urlData.publicUrl;
+                                    updated.specialistName = members[0].name;
+                                  }
+                                  return updated;
+                                });
+                                toast.success('Avatar uploaded — click Save to apply');
+                              } catch (err) {
+                                toast.error('Failed to upload avatar');
+                              } finally {
+                                setUploadingTeamAvatar(null);
+                              }
+                            }}
+                          />
+                        </label>
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <Camera className="w-6 h-6 text-white" />
+                        </div>
+                        {uploadingTeamAvatar === idx && (
+                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 text-white animate-spin" />
+                          </div>
+                        )}
+                        {member.imageUrl && (
+                          <button
+                            onClick={() => {
+                              setSpecialistSettings(prev => {
+                                const members = [...(prev.teamMembers || [])];
+                                members[idx] = { ...members[idx], imageUrl: '' };
+                                const updated = { ...prev, teamMembers: members };
+                                if (idx === 0) updated.specialistImageUrl = '';
+                                return updated;
+                              });
+                            }}
+                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            title="Remove photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-xs text-white font-medium truncate w-full text-center">{member.name}</p>
+                      <p className="text-[10px] text-slate-400 truncate w-full text-center -mt-1">{member.role || 'Agent'}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 flex justify-center">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      setSavingTeamAvatars(true);
+                      try {
+                        const payload = JSON.parse(JSON.stringify(specialistSettings));
+                        await supabase.from('admin_settings').upsert({
+                          setting_key: 'specialist_settings',
+                          setting_value: payload,
+                          updated_at: new Date().toISOString(),
+                        }, { onConflict: 'setting_key' });
+                        toast.success('Team avatars saved!');
+                      } catch (err) {
+                        toast.error('Failed to save avatars');
+                      } finally {
+                        setSavingTeamAvatars(false);
+                      }
+                    }}
+                    disabled={savingTeamAvatars}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {savingTeamAvatars ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                    Save Avatars
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Admin Chat Panel */}
             <AdminChatPanel />
