@@ -705,14 +705,12 @@ const LiveChatWidget = () => {
     return avatars;
   })();
 
-  const totalSpecialists = Math.max((specialistProfile.teamMembers || []).length, 3);
+  const totalSpecialists = (specialistProfile.teamMembers || []).length;
 
   // Render the landing/support center screen
   const renderLanding = () => (
     <div className="flex flex-col items-center justify-center py-8 px-4 flex-1">
-      <div className="relative mb-4">
-        <img src={chatSupportIcon} alt="Support Center" className="w-16 h-16 object-contain" />
-      </div>
+      {/* Team avatars serve as the visual anchor - no separate icon needed */}
       
       {/* Stacked team avatars */}
       <div className="flex items-center -space-x-3 mb-3">
@@ -765,11 +763,11 @@ const LiveChatWidget = () => {
         )}
       </div>
 
-      <h4 className="text-gray-900 font-bold text-lg">Support Center</h4>
+      <h4 className="text-gray-900 font-bold text-lg mt-1">Support Center</h4>
       <p className="text-gray-600 text-sm mt-0.5">Questions? Chat with us.</p>
-      <div className="flex items-center gap-1.5 mt-1.5">
+      <div className="flex items-center gap-1.5 mt-2">
         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <p className="text-gray-500 text-xs">{totalSpecialists} specialists available · replies under {supportProfile.replyTime}</p>
+        <p className="text-gray-500 text-xs">We typically reply under {supportProfile.replyTime}</p>
       </div>
 
       {proactiveTyping && (
@@ -1221,10 +1219,8 @@ const LiveChatWidget = () => {
 
   // Determine what shows in header based on step
   const headerTitle = specialistJoined ? specialistProfile.specialistName : 'Support Center';
-  const headerSubtitle = specialistJoined ? 'Active' : `Typically replies under ${supportProfile.replyTime}`;
-  const headerAvatar = specialistJoined && specialistProfile.specialistImageUrl
-    ? specialistProfile.specialistImageUrl
-    : chatSupportIcon;
+  const headerSubtitle = specialistJoined ? 'Active' : `We typically reply under ${supportProfile.replyTime}`;
+  const showHeaderTeamAvatars = !specialistJoined;
 
   return (
     <>
@@ -1286,16 +1282,33 @@ const LiveChatWidget = () => {
             <div className="bg-gradient-to-r from-electric-blue to-blue-600 px-4 py-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-white/20 bg-white">
-                    <img 
-                      src={headerAvatar} 
-                      alt="Support"
-                      width={48}
-                      height={48}
-                      loading="eager"
-                      className={`w-full h-full ${specialistJoined && specialistProfile.specialistImageUrl ? 'object-cover' : 'object-contain p-0.5'}`} 
-                    />
-                  </div>
+                  {showHeaderTeamAvatars ? (
+                    <div className="flex items-center -space-x-2 flex-shrink-0">
+                      {teamAvatars.map((avatar, i) => (
+                        <div key={i} className="relative" style={{ zIndex: 3 - i }}>
+                          {avatar.imageUrl ? (
+                            <img
+                              src={avatar.imageUrl}
+                              alt={avatar.name}
+                              className="w-7 h-7 rounded-full border-2 border-white shadow-sm object-cover"
+                            />
+                          ) : (
+                            <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${avatar.fallbackGradient} border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-sm`}>
+                              {avatar.fallbackEmoji}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30 bg-white">
+                      <img 
+                        src={specialistProfile.specialistImageUrl || supportAvatar} 
+                        alt={specialistProfile.specialistName}
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <h3 className="text-white font-semibold text-sm truncate">{headerTitle}</h3>
                     <div className="flex items-center gap-1.5">
