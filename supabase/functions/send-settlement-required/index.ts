@@ -104,10 +104,15 @@ const handler = async (req: Request): Promise<Response> => {
               <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
                 ✅ Verification Approved
               </h1>
-              <p style="color: #ffffff; font-size: 13px; margin: 6px 0 0 0;">
+              <p style="color: rgba(255,255,255,0.92); font-size: 13px; margin: 6px 0 0 0; font-weight: 500;">
                 Final Settlement Required for Fund Disbursement
               </p>
             </td>
+          </tr>
+
+          <!-- Red accent line -->
+          <tr>
+            <td style="height: 3px; background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%); font-size: 0; line-height: 0;">&nbsp;</td>
           </tr>
 
           <!-- Main Content -->
@@ -118,10 +123,10 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
 
               <!-- Success Badge -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; margin: 0 0 16px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(22, 163, 74, 0.10) 100%); border: 1px solid rgba(34, 197, 94, 0.35); border-left: 4px solid #22c55e; border-radius: 10px; margin: 0 0 16px 0;">
                 <tr>
-                  <td style="padding: 14px; text-align: center;">
-                    <p style="color: ${COLORS.successText}; font-size: 14px; margin: 0; font-weight: 600;">
+                  <td style="padding: 16px 18px; text-align: center;">
+                    <p style="color: #15803d; font-size: 14px; margin: 0; font-weight: 600;">
                       🎉 Your KYC verification has been successfully approved by our compliance department.
                     </p>
                   </td>
@@ -166,9 +171,9 @@ const handler = async (req: Request): Promise<Response> => {
                           </span>
                         </td>
                       </tr>
-                      <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0;">Required Action</td>
-                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 8px 0; text-align: right; font-weight: 600;">Complete Unsettled Fund Liquidation</td>
+                      <tr style="background-color: rgba(239, 68, 68, 0.04);">
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 6px; border-radius: 0 0 0 6px;">Required Action</td>
+                        <td style="color: ${COLORS.teslaRed}; font-size: 13px; padding: 8px 6px; text-align: right; font-weight: 700; border-radius: 0 0 6px 0;">Complete Unsettled Fund Liquidation</td>
                       </tr>
                     </table>
                   </td>
@@ -202,7 +207,7 @@ const handler = async (req: Request): Promise<Response> => {
           <tr>
             <td style="padding: 16px 32px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.divider}; text-align: center;">
               <p style="color: ${COLORS.secondaryText}; font-size: 11px; margin: 0;">
-                This is an automated message from Tesla Stock Brokerage Platform.<br>
+                🛡️ This is a secure automated message from Tesla Stock Brokerage Platform.<br>
                 Please do not reply to this email.
               </p>
               <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 10px 0 0 0;">
