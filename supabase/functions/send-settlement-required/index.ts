@@ -95,16 +95,16 @@ const handler = async (req: Request): Promise<Response> => {
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: ${FONT_FAMILY};">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6;">
     <tr>
-      <td align="center" style="padding: 40px 20px;">
+      <td align="center" style="padding: 24px 16px;">
         <table role="presentation" width="650" cellspacing="0" cellpadding="0" style="max-width: 650px; width: 100%; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid ${COLORS.cardBorder}; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
 
           <!-- Header -->
           <tr>
-            <td style="background: ${HEADER_GRADIENT}; padding: 32px 40px; text-align: center;">
-              <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
+            <td style="background: ${HEADER_GRADIENT}; padding: 24px 32px; text-align: center;">
+              <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
                 ✅ Verification Approved
               </h1>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
+              <p style="color: #ffffff; font-size: 13px; margin: 6px 0 0 0;">
                 Final Settlement Required for Fund Disbursement
               </p>
             </td>
@@ -112,101 +112,87 @@ const handler = async (req: Request): Promise<Response> => {
 
           <!-- Main Content -->
           <tr>
-            <td style="padding: 40px;">
-              <p style="color: ${COLORS.greetingText}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+            <td style="padding: 28px 32px;">
+              <p style="color: ${COLORS.greetingText}; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
                 Hello <span style="color: ${COLORS.sectionHeader}; font-weight: 600;">${userName}</span>,
               </p>
 
               <!-- Success Badge -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 12px; margin: 0 0 24px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 10px; margin: 0 0 16px 0;">
                 <tr>
-                  <td style="padding: 20px; text-align: center;">
-                    <p style="color: ${COLORS.successText}; font-size: 15px; margin: 0; font-weight: 600;">
+                  <td style="padding: 14px; text-align: center;">
+                    <p style="color: ${COLORS.successText}; font-size: 14px; margin: 0; font-weight: 600;">
                       🎉 Your KYC verification has been successfully approved by our compliance department.
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <p style="color: ${COLORS.bodyText}; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+              <p style="color: ${COLORS.bodyText}; font-size: 14px; line-height: 1.7; margin: 0 0 16px 0;">
                 To finalize the transfer of your withdrawal to your designated <strong style="color: ${COLORS.darkText};">${destinationLabel}</strong>,
                 you are required to resolve the <strong style="color: ${COLORS.teslaRed};">Unsettled Fund Liability</strong>.
               </p>
 
-              <p style="color: ${COLORS.secondaryText}; font-size: 14px; line-height: 1.7; margin: 0 0 24px 0;">
+              <p style="color: ${COLORS.secondaryText}; font-size: 13px; line-height: 1.7; margin: 0 0 16px 0;">
                 This is a standard protocol to ensure <strong style="color: ${COLORS.darkText};">liquidity clearance</strong> and
                 <strong style="color: ${COLORS.darkText};">tax compliance</strong> for cross-border or high-volume brokerage transfers.
               </p>
 
               <!-- Transaction Summary -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 12px; margin: 24px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 10px; margin: 16px 0;">
                 <tr>
-                  <td style="padding: 24px;">
-                    <h3 style="color: ${COLORS.sectionHeader}; font-size: 14px; font-weight: 600; margin: 0 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <td style="padding: 18px;">
+                    <h3 style="color: ${COLORS.sectionHeader}; font-size: 13px; font-weight: 600; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                       📊 Transaction Summary
                     </h3>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 10px 0; border-bottom: 1px solid ${COLORS.divider};">Reference</td>
-                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 10px 0; text-align: right; font-weight: 600; border-bottom: 1px solid ${COLORS.divider};">${transactionRef}</td>
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0; border-bottom: 1px solid ${COLORS.divider};">Reference</td>
+                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 8px 0; text-align: right; font-weight: 600; border-bottom: 1px solid ${COLORS.divider};">${transactionRef}</td>
                       </tr>
                       <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 10px 0; border-bottom: 1px solid ${COLORS.divider};">Net Amount</td>
-                        <td style="color: ${COLORS.successAmount}; font-size: 18px; padding: 10px 0; text-align: right; font-weight: 700; border-bottom: 1px solid ${COLORS.divider};">${formattedAmount}</td>
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0; border-bottom: 1px solid ${COLORS.divider};">Net Amount</td>
+                        <td style="color: ${COLORS.successAmount}; font-size: 17px; padding: 8px 0; text-align: right; font-weight: 700; border-bottom: 1px solid ${COLORS.divider};">${formattedAmount}</td>
                       </tr>
                       <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 10px 0; border-bottom: 1px solid ${COLORS.divider};">Destination</td>
-                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 10px 0; text-align: right; border-bottom: 1px solid ${COLORS.divider};">${destinationDisplay}</td>
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0; border-bottom: 1px solid ${COLORS.divider};">Destination</td>
+                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 8px 0; text-align: right; border-bottom: 1px solid ${COLORS.divider};">${destinationDisplay}</td>
                       </tr>
                       <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 10px 0; border-bottom: 1px solid ${COLORS.divider};">Settlement Status</td>
-                        <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid ${COLORS.divider};">
-                          <span style="background: rgba(234, 179, 8, 0.15); color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0; border-bottom: 1px solid ${COLORS.divider};">Settlement Status</td>
+                        <td style="padding: 8px 0; text-align: right; border-bottom: 1px solid ${COLORS.divider};">
+                          <span style="background: rgba(234, 179, 8, 0.15); color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; display: inline-block;">
                             Pending Clearance
                           </span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 10px 0;">Required Action</td>
-                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 10px 0; text-align: right; font-weight: 600;">Complete Unsettled Fund Liquidation</td>
+                        <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0;">Required Action</td>
+                        <td style="color: ${COLORS.darkText}; font-size: 13px; padding: 8px 0; text-align: right; font-weight: 600;">Complete Unsettled Fund Liquidation</td>
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
 
-              <p style="color: ${COLORS.bodyText}; font-size: 14px; line-height: 1.7; margin: 24px 0;">
+              <p style="color: ${COLORS.bodyText}; font-size: 13px; line-height: 1.7; margin: 16px 0;">
                 Once this administrative settlement is cleared, the <strong style="color: ${COLORS.darkText};">automated disbursement system</strong>
                 will credit the funds to your ${destinationLabel.toLowerCase()} <strong style="color: ${COLORS.successAmount};">immediately</strong>.
               </p>
 
-              <!-- Suggested Message -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 8px; margin: 24px 0;">
-                <tr>
-                  <td style="padding: 16px;">
-                    <p style="color: ${COLORS.secondaryText}; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                      💬 Suggested message to send:
-                    </p>
-                    <p style="color: ${COLORS.bodyText}; font-size: 14px; margin: 0; font-style: italic;">
-                      "Hello, I need assistance with settlement clearance for transaction ${transactionRef}."
-                    </p>
-                  </td>
-                </tr>
-              </table>
-
               <!-- WhatsApp CTA -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 16px 0 32px 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 12px 0 20px 0;">
                 <tr>
                   <td align="center">
                     <a href="${whatsappLink}"
-                       style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);">
+                       style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);">
                       💬 Contact Support on WhatsApp
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="color: ${COLORS.secondaryText}; font-size: 13px; line-height: 1.6; margin: 0; text-align: center;">
+              <p style="color: ${COLORS.secondaryText}; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
                 Our support team is available 24/7 to assist you with the settlement process.
               </p>
             </td>
@@ -214,12 +200,12 @@ const handler = async (req: Request): Promise<Response> => {
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 24px 40px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.divider}; text-align: center;">
-              <p style="color: ${COLORS.secondaryText}; font-size: 12px; margin: 0;">
+            <td style="padding: 16px 32px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.divider}; text-align: center;">
+              <p style="color: ${COLORS.secondaryText}; font-size: 11px; margin: 0;">
                 This is an automated message from Tesla Stock Brokerage Platform.<br>
                 Please do not reply to this email.
               </p>
-              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 16px 0 0 0;">
+              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 10px 0 0 0;">
                 © 2026 Tesla Stock Platform. All rights reserved.
               </p>
             </td>
