@@ -826,9 +826,30 @@ const LiveChatWidget = () => {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : msg.sender_type === 'system' ? 'justify-center' : 'justify-start'}`}>
             {msg.sender_type === 'system' ? (
-              <div className="px-3 py-1.5 bg-gray-100 rounded-full">
-                <p className="text-xs text-gray-500 font-medium">{msg.message}</p>
-              </div>
+              msg.message?.includes('joined the conversation') ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-full max-w-[300px] border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={specialistProfile.specialistImageUrl || supportAvatar}
+                      alt={specialistProfile.specialistName}
+                      className="w-10 h-10 rounded-full border-2 border-teal-400 object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      <p className="text-xs text-teal-600 font-medium">has joined the conversation</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="px-3 py-1.5 bg-gray-100 rounded-full">
+                  <p className="text-xs text-gray-500 font-medium">{msg.message}</p>
+                </div>
+              )
             ) : (
               <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                 msg.sender_type === 'user'
@@ -929,14 +950,35 @@ const LiveChatWidget = () => {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender_type === 'user' ? 'justify-end' : msg.sender_type === 'system' ? 'justify-center' : 'justify-start'}`}>
             {msg.sender_type === 'system' ? (
-              <div className="w-full py-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-xs text-gray-400 font-medium px-2">New</span>
-                  <div className="flex-1 h-px bg-gray-200" />
+              msg.message?.includes('joined the conversation') ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-full max-w-[300px] border border-teal-200 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={specialistProfile.specialistImageUrl || supportAvatar}
+                      alt={specialistProfile.specialistName}
+                      className="w-10 h-10 rounded-full border-2 border-teal-400 object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      <p className="text-xs text-teal-600 font-medium">has joined the conversation</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="w-full py-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs text-gray-400 font-medium px-2">New</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+                  <p className="text-xs text-gray-500 text-center mt-1">{msg.message}</p>
                 </div>
-                <p className="text-xs text-gray-500 text-center mt-1">{msg.message}</p>
-              </div>
+              )
             ) : (
               <>
                 {msg.sender_type === 'admin' && (
