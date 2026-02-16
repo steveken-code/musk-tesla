@@ -56,7 +56,7 @@ const DEFAULT_SPECIALIST: SpecialistProfile = {
   specialistImageUrl: '',
 };
 
-type ChatStep = 'landing' | 'name_email' | 'verifying' | 'waiting' | 'chatting';
+type ChatStep = 'landing' | 'compose' | 'name_email' | 'verifying' | 'waiting' | 'chatting';
 
 const getGreeting = () => {
   const lang = navigator.language.split('-')[0];
@@ -446,11 +446,10 @@ const LiveChatWidget = () => {
     typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 3000);
   };
 
-  // Handle first message from landing
-  const handleLandingMessage = (msg: string) => {
-    setFirstMessage(msg);
+  // Handle first message from landing -- go to compose step (greeting first, then type)
+  const handleLandingMessage = () => {
     if (user) {
-      handleCreateConversationAndSend(msg);
+      setChatStep('compose');
     } else {
       setChatStep('name_email');
     }
@@ -507,7 +506,8 @@ const LiveChatWidget = () => {
         .update({ verified: true })
         .eq('id', data.id);
 
-      await handleCreateConversationAndSend(firstMessage);
+      // After verification, go to compose step so greeting shows first
+      setChatStep('compose');
     } catch (err) {
       setVerificationError('Verification failed. Please try again.');
     } finally {
@@ -590,8 +590,18 @@ const LiveChatWidget = () => {
     if ((!message.trim() && !stagedImage) || sending || sessionTimedOut) return;
 
     if (chatStep === 'landing') {
-      handleLandingMessage(message.trim());
+      handleLandingMessage();
       setMessage('');
+      return;
+    }
+
+    // In compose step, create conversation with the user's actual first message
+    if (chatStep === 'compose') {
+      if (!message.trim()) return;
+      setSending(true);
+      await handleCreateConversationAndSend(message.trim());
+      setMessage('');
+      setSending(false);
       return;
     }
 
@@ -774,7 +784,7 @@ const LiveChatWidget = () => {
 
           {/* Send us a message button */}
           <button
-            onClick={() => handleLandingMessage('')}
+            onClick={() => handleLandingMessage()}
             className="w-full flex items-center justify-between bg-gradient-to-r from-electric-blue to-blue-600 text-white rounded-xl px-4 py-3 hover:from-blue-600 hover:to-blue-700 transition-all group"
           >
             <div className="flex items-center gap-2.5">
@@ -785,6 +795,61 @@ const LiveChatWidget = () => {
           </button>
         </motion.div>
 
+      </div>
+    </div>
+  );
+
+  // Render compose step -- greeting shown, user types first real message
+  const renderCompose = () => (
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Messages area with greeting bubble */}
+      <div className="flex-1 overflow-y-auto chat-scrollbar p-3 sm:p-4 space-y-3 bg-white" style={{ overscrollBehavior: 'contain' }}>
+        {/* Admin greeting bubble */}
+        <div className="flex justify-start">
+          <div className="flex items-start gap-2">
+            <img src={avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" />
+            <div className="max-w-[75%] rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-gray-100 text-gray-900">
+              <p className="text-[10px] font-semibold text-blue-600 mb-1">{displayName}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{getGreetingText()}</p>
+            </div>
+          </div>
+        </div>
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input area */}
+      <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
+        <div className="flex items-end gap-2">
+          <div className="relative flex-shrink-0">
+            <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
+            <button
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={uploading}
+              className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
+              aria-label="Attach image"
+            >
+              {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+            </button>
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={() => {}}
+            placeholder="Type your message..."
+            rows={2}
+            className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[48px] max-h-[100px]"
+            style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!message.trim() || sending}
+            className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            aria-label="Send message"
+          >
+            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1322,6 +1387,7 @@ const LiveChatWidget = () => {
 
             {/* Content based on step */}
             {chatStep === 'landing' && renderLanding()}
+            {chatStep === 'compose' && renderCompose()}
             {chatStep === 'name_email' && renderNameEmailForm()}
             {chatStep === 'verifying' && renderVerification()}
             {chatStep === 'waiting' && renderWaiting()}
