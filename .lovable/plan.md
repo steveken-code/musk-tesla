@@ -1,62 +1,39 @@
 
 
-## Redesign Chat Landing to Match Intercom Layout
+## Fix Admin Panel Visibility + Chat Greeting Flow
 
-### Overview
+### Issues Identified
 
-Redesign the chat widget's landing screen to closely mirror the Intercom reference images: a **blue hero section** at the top flowing from the header with "Welcome! How can we help?", followed by a **white card section** with "Let's have a conversation", team avatars, reply time, and a prominent "Send us a message" button. This replaces the current centered-on-white layout.
+1. **Investment/Withdrawal notification badges are tight and numbers not visible** -- The tab notification badges (`w-5 h-5`) are too small and overlap the button edges, making the count hard to read on both desktop and mobile.
 
-### Visual Target
+2. **Join Greeting settings panel on mobile uses white background** -- The `AdminChatPanel.tsx` greeting settings panel uses `bg-white/95 dark:bg-slate-800` but on mobile it renders in white, breaking the dark theme consistency. It should use the same dark slate theme as desktop.
 
-```text
-+------------------------------------------+
-| [Av1][Av2][Av3]  Support Center      [X] |  <-- existing header (kept)
-|                                           |
-|        (blue gradient continues)          |
-|          Welcome!                         |
-|       How can we help?                    |
-+------------------------------------------+
-|                                           |
-|  +------------------------------------+  |
-|  | Let's have a conversation          |  |
-|  |                                    |  |
-|  | [Av1][Av2][Av3]  Our usual time    |  |
-|  |                  to reply           |  |
-|  |                  (clock) A few min  |  |
-|  |                                    |  |
-|  | [> Send us a message          ]    |  |
-|  +------------------------------------+  |
-|                                           |
-+------------------------------------------+
-```
+3. **Greeting message shows immediately when chat opens** -- Currently, when a user/guest clicks the chat bubble, the proactive greeting message appears right away on the landing screen. The user wants the greeting to only appear AFTER they click "Send us a message" and enter the conversation flow (waiting/chatting step), so the landing screen stays clean like Intercom.
 
-When user clicks "Send us a message", it proceeds to the name/email step (existing flow).
+### Changes
 
-### Changes in Detail
+**File: `src/pages/Admin.tsx` (lines 1727-1790)**
 
-**File: `src/components/LiveChatWidget.tsx`**
+- Increase notification badge size from `w-5 h-5` to `w-6 h-6` with larger text (`text-[11px]`) for Investments, Withdrawals, and KYC tabs
+- Add more right-padding (`pr-5`) to tab buttons that have badges so the number doesn't overlap the text
+- Ensure badges are clearly visible with better positioning (`-top-2.5 -right-2.5`)
 
-1. **Extend the header/blue area** -- Instead of the header ending at `py-3`, when on the `landing` step, the blue gradient extends downward to include a "Welcome! How can we help?" hero text. This can be done by making the header taller on landing, or by adding a blue section below the header that's part of `renderLanding`.
+**File: `src/components/admin/AdminChatPanel.tsx` (line 537)**
 
-2. **Redesign `renderLanding()`** (lines 711-793):
-   - Remove the current centered white layout
-   - Add a **blue hero section** at the top: large "Welcome!" heading + "How can we help?" subtitle in white text on the blue gradient
-   - Below that, a **white card** with rounded corners and shadow containing:
-     - "Let's have a conversation" title
-     - Row with team avatars (3 stacked) + "Our usual time to reply" + clock icon + reply time value
-     - A "Send us a message" button (blue, with play/arrow icon) that triggers the flow to the next step
-   - Remove the bottom text input bar when on landing (the "Send us a message" button replaces it)
+- Change the greeting settings panel background from `bg-white/95 dark:bg-slate-800` to `bg-slate-800` consistently (no white variant)
+- Ensure all child labels and text use `text-white` or `text-slate-300` consistently without relying on dark mode selectors that may not apply on mobile
 
-3. **Remove the textarea/input bar from landing step** (lines 1327-1360): The landing screen should only show the "Send us a message" button inside the card, not the full message input. The input bar appears only after the user starts the conversation flow.
+**File: `src/components/LiveChatWidget.tsx` (lines 415-444 and 790-803)**
 
-4. **Keep the specialist join notification** as-is (already professional with teal card, avatar, role).
+- Remove the proactive greeting from the landing step entirely -- the landing screen should be clean with just the "Welcome!" hero, the conversation card, and the "Send us a message" button
+- Move the greeting message display to AFTER the conversation starts: when the user clicks "Send us a message" and transitions to the `waiting` step, inject the greeting as the first message in the chat (either as a system-style bubble or an admin-style bubble) so it feels like a real support agent sending the welcome
+- Remove the `proactiveMessage` display from `renderLanding()`
+- Instead, after `handleCreateConversationAndSend` creates the conversation, insert the greeting as a local message (not a DB insert) so the user sees it as the first thing in the chat thread
 
 ### Technical Details
 
-- The "Send us a message" button calls the existing flow transition (moves to `name_email` step for guests, or directly to `waiting`/`chatting` for authenticated users)
-- Team avatars reuse the existing `teamAvatars` array
-- Reply time uses existing `supportProfile.replyTime`
-- The proactive typing/message indicators move into the blue hero area or are removed from landing (they'll appear in the chat step)
+- The greeting text logic (custom vs default, guest vs user) stays the same -- just moves from landing screen to the chat/waiting screen
+- The greeting appears as a styled message bubble (admin-style, left-aligned with the support avatar) at the top of the message list when the conversation starts
 - No database changes needed
-- No new dependencies
+- No new dependencies needed
 
