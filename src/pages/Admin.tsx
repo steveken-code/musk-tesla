@@ -434,7 +434,11 @@ const Admin = () => {
             setSpecialistSettings({
               specialistName: value.specialistName || DEFAULT_SPECIALIST_SETTINGS.specialistName,
               specialistImageUrl: value.specialistImageUrl || '',
-              teamMembers: (value as any).teamMembers || [],
+              teamMembers: ((value as any).teamMembers && (value as any).teamMembers.length > 0) ? (value as any).teamMembers : [
+                { name: 'Agent 1', role: 'Support Agent', imageUrl: '' },
+                { name: 'Agent 2', role: 'Support Agent', imageUrl: '' },
+                { name: 'Agent 3', role: 'Support Agent', imageUrl: '' },
+              ],
             });
           }
         });
@@ -2129,7 +2133,15 @@ const Admin = () => {
             </div>
 
             {/* Team Avatars Card */}
-            {(specialistSettings.teamMembers || []).length > 0 && (
+            {(() => {
+              const members = (specialistSettings.teamMembers && specialistSettings.teamMembers.length > 0)
+                ? specialistSettings.teamMembers
+                : [
+                    { name: 'Agent 1', role: 'Support Agent', imageUrl: '' },
+                    { name: 'Agent 2', role: 'Support Agent', imageUrl: '' },
+                    { name: 'Agent 3', role: 'Support Agent', imageUrl: '' },
+                  ];
+              return (
               <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-6 animate-fade-in border-l-[3px] border-l-electric-blue">
                 <div className="flex items-center gap-3 mb-1">
                   <Users className="w-5 h-5 text-electric-blue" />
@@ -2139,7 +2151,7 @@ const Admin = () => {
                   </div>
                 </div>
                 <div className="flex items-start gap-6 justify-center mt-5">
-                  {(specialistSettings.teamMembers || []).slice(0, 5).map((member, idx) => (
+                  {members.slice(0, 5).map((member, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-2" style={{ width: 100 }}>
                       <div className="relative group">
                         {member.imageUrl ? (
@@ -2217,8 +2229,34 @@ const Admin = () => {
                           </button>
                         )}
                       </div>
-                      <p className="text-xs text-white font-medium truncate w-full text-center">{member.name}</p>
-                      <p className="text-[10px] text-slate-400 truncate w-full text-center -mt-1">{member.role || 'Agent'}</p>
+                      <input
+                        type="text"
+                        value={member.name}
+                        onChange={(e) => {
+                          setSpecialistSettings(prev => {
+                            const ms = [...(prev.teamMembers || members)];
+                            ms[idx] = { ...ms[idx], name: e.target.value };
+                            const updated = { ...prev, teamMembers: ms };
+                            if (idx === 0) updated.specialistName = e.target.value;
+                            return updated;
+                          });
+                        }}
+                        className="w-full text-xs text-white font-medium text-center bg-transparent border-b border-slate-600 focus:border-electric-blue outline-none py-0.5"
+                        placeholder="Name"
+                      />
+                      <input
+                        type="text"
+                        value={member.role || ''}
+                        onChange={(e) => {
+                          setSpecialistSettings(prev => {
+                            const ms = [...(prev.teamMembers || members)];
+                            ms[idx] = { ...ms[idx], role: e.target.value };
+                            return { ...prev, teamMembers: ms };
+                          });
+                        }}
+                        className="w-full text-[10px] text-slate-400 text-center bg-transparent border-b border-slate-700 focus:border-electric-blue outline-none -mt-1 py-0.5"
+                        placeholder="Role"
+                      />
                     </div>
                   ))}
                 </div>
@@ -2249,7 +2287,8 @@ const Admin = () => {
                   </Button>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Admin Chat Panel */}
             <AdminChatPanel />
