@@ -27,10 +27,17 @@ interface ChatMessage {
   created_at: string;
 }
 
+interface TeamMember {
+  name: string;
+  imageUrl: string;
+  role: string;
+}
+
 interface SpecialistSettings {
   specialistName: string;
   specialistImageUrl: string;
   joinGreeting: string;
+  teamMembers?: TeamMember[];
 }
 
 const AdminChatPanel = () => {
@@ -50,7 +57,10 @@ const AdminChatPanel = () => {
     specialistName: 'Support Specialist', 
     specialistImageUrl: '',
     joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
+    teamMembers: [],
   });
+  const [teamMemberDraft, setTeamMemberDraft] = useState<TeamMember>({ name: '', imageUrl: '', role: '' });
+  const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | 'new' | null>(null);
   const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(15);
   const [timeoutDraft, setTimeoutDraft] = useState('15');
   const [savingTimeout, setSavingTimeout] = useState(false);
@@ -80,6 +90,7 @@ const AdminChatPanel = () => {
               specialistName: val.specialistName || 'Support Specialist',
               specialistImageUrl: val.specialistImageUrl || '',
               joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
+              teamMembers: val.teamMembers || [],
             });
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
@@ -568,6 +579,148 @@ const AdminChatPanel = () => {
                       {savingTimeout ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                       Save Timeout
                     </button>
+                  </div>
+
+                  {/* Support Team Management */}
+                  <div className="border-t border-slate-300 dark:border-slate-600 pt-2.5 sm:pt-3 space-y-2">
+                    <label className="text-xs text-gray-900 dark:text-white font-semibold block" style={{ opacity: 1 }}>Support Team Avatars</label>
+                    <p className="text-[10px] text-gray-600 dark:text-gray-300 leading-tight" style={{ opacity: 1 }}>Add up to 5 specialists. First one is the primary who joins chats.</p>
+                    
+                    {/* Existing team members */}
+                    <div className="space-y-2">
+                      {(specialistSettings.teamMembers || []).map((member, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700 rounded-lg p-2">
+                          <div className="relative flex-shrink-0">
+                            {member.imageUrl ? (
+                              <img src={member.imageUrl} alt={member.name} className="w-9 h-9 rounded-full object-cover border border-slate-300" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-electric-blue/20 flex items-center justify-center">
+                                <User className="w-4 h-4 text-electric-blue" />
+                              </div>
+                            )}
+                            <label className="absolute inset-0 cursor-pointer rounded-full">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingTeamAvatar(idx);
+                                  try {
+                                    const ext = file.name.split('.').pop();
+                                    const path = `team/${Date.now()}-${idx}.${ext}`;
+                                    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+                                    if (error) throw error;
+                                    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+                                    const updated = { ...specialistSettings };
+                                    const members = [...(updated.teamMembers || [])];
+                                    members[idx] = { ...members[idx], imageUrl: urlData.publicUrl };
+                                    // Also sync primary specialist if first member
+                                    if (idx === 0) {
+                                      updated.specialistImageUrl = urlData.publicUrl;
+                                      updated.specialistName = members[0].name;
+                                    }
+                                    updated.teamMembers = members;
+                                    await supabase.from('admin_settings').upsert({
+                                      setting_key: 'specialist_settings',
+                                      setting_value: updated as any,
+                                      updated_at: new Date().toISOString(),
+                                    }, { onConflict: 'setting_key' });
+                                    setSpecialistSettings(updated);
+                                    toast.success('Avatar updated');
+                                  } catch (err) {
+                                    toast.error('Failed to upload avatar');
+                                  } finally {
+                                    setUploadingTeamAvatar(null);
+                                  }
+                                }}
+                              />
+                            </label>
+                            {uploadingTeamAvatar === idx && (
+                              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-gray-900 dark:text-white truncate" style={{ opacity: 1 }}>{member.name}</p>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate" style={{ opacity: 1 }}>{member.role || 'Support Agent'}</p>
+                          </div>
+                          {idx === 0 && (
+                            <span className="text-[8px] px-1.5 py-0.5 bg-electric-blue/20 text-electric-blue rounded-full font-bold flex-shrink-0">PRIMARY</span>
+                          )}
+                          <button
+                            onClick={async () => {
+                              const updated = { ...specialistSettings };
+                              const members = [...(updated.teamMembers || [])];
+                              members.splice(idx, 1);
+                              updated.teamMembers = members;
+                              if (members.length > 0) {
+                                updated.specialistName = members[0].name;
+                                updated.specialistImageUrl = members[0].imageUrl;
+                              }
+                              await supabase.from('admin_settings').upsert({
+                                setting_key: 'specialist_settings',
+                                setting_value: updated as any,
+                                updated_at: new Date().toISOString(),
+                              }, { onConflict: 'setting_key' });
+                              setSpecialistSettings(updated);
+                              toast.success('Specialist removed');
+                            }}
+                            className="text-red-400 hover:text-red-600 transition-colors flex-shrink-0 p-1"
+                            title="Remove"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add new member form */}
+                    {(specialistSettings.teamMembers || []).length < 5 && (
+                      <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-2 space-y-1.5">
+                        <input
+                          value={teamMemberDraft.name}
+                          onChange={(e) => setTeamMemberDraft(d => ({ ...d, name: e.target.value }))}
+                          placeholder="Name (e.g. Sarah Mitchell)"
+                          className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                          style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                        />
+                        <input
+                          value={teamMemberDraft.role}
+                          onChange={(e) => setTeamMemberDraft(d => ({ ...d, role: e.target.value }))}
+                          placeholder="Role (e.g. Senior Support Agent)"
+                          className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                          style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!teamMemberDraft.name.trim()) return;
+                            const updated = { ...specialistSettings };
+                            const members = [...(updated.teamMembers || [])];
+                            members.push({ name: teamMemberDraft.name.trim(), imageUrl: '', role: teamMemberDraft.role.trim() || 'Support Agent' });
+                            updated.teamMembers = members;
+                            if (members.length === 1) {
+                              updated.specialistName = members[0].name;
+                            }
+                            await supabase.from('admin_settings').upsert({
+                              setting_key: 'specialist_settings',
+                              setting_value: updated as any,
+                              updated_at: new Date().toISOString(),
+                            }, { onConflict: 'setting_key' });
+                            setSpecialistSettings(updated);
+                            setTeamMemberDraft({ name: '', imageUrl: '', role: '' });
+                            toast.success('Specialist added');
+                          }}
+                          disabled={!teamMemberDraft.name.trim()}
+                          className="w-full flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-2 rounded-lg disabled:opacity-50 transition-colors"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Add Specialist
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

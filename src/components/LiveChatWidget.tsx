@@ -33,9 +33,16 @@ interface SupportProfile {
   avatarUrl: string;
 }
 
+interface TeamMember {
+  name: string;
+  imageUrl: string;
+  role: string;
+}
+
 interface SpecialistProfile {
   specialistName: string;
   specialistImageUrl: string;
+  teamMembers?: TeamMember[];
 }
 
 const DEFAULT_SUPPORT_PROFILE: SupportProfile = {
@@ -215,6 +222,7 @@ const LiveChatWidget = () => {
             setSpecialistProfile({
               specialistName: val.specialistName || DEFAULT_SPECIALIST.specialistName,
               specialistImageUrl: val.specialistImageUrl || '',
+              teamMembers: val.teamMembers || [],
             });
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
@@ -677,6 +685,28 @@ const LiveChatWidget = () => {
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Build display avatars from team members (up to 3)
+  const teamAvatars = (() => {
+    const members = specialistProfile.teamMembers || [];
+    const fallbackGradients = [
+      'from-blue-400 to-blue-600',
+      'from-pink-400 to-pink-600',
+      'from-teal-400 to-teal-600',
+    ];
+    const fallbackEmojis = ['👨', '👩', '👨‍💼'];
+    const avatars: { imageUrl?: string; name: string; fallbackGradient: string; fallbackEmoji: string }[] = [];
+    for (let i = 0; i < 3; i++) {
+      if (members[i]) {
+        avatars.push({ imageUrl: members[i].imageUrl, name: members[i].name, fallbackGradient: fallbackGradients[i], fallbackEmoji: fallbackEmojis[i] });
+      } else {
+        avatars.push({ name: '', fallbackGradient: fallbackGradients[i], fallbackEmoji: fallbackEmojis[i] });
+      }
+    }
+    return avatars;
+  })();
+
+  const totalSpecialists = Math.max((specialistProfile.teamMembers || []).length, 3);
+
   // Render the landing/support center screen
   const renderLanding = () => (
     <div className="flex flex-col items-center justify-center py-8 px-4 flex-1">
@@ -684,20 +714,62 @@ const LiveChatWidget = () => {
         <img src={chatSupportIcon} alt="Support Center" className="w-16 h-16 object-contain" />
       </div>
       
+      {/* Stacked team avatars */}
       <div className="flex items-center -space-x-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
-          👨
-        </div>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md">
-          👩
-        </div>
+        {teamAvatars.map((avatar, i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 * i, type: 'spring', stiffness: 300, damping: 20 }}
+            className="relative"
+            style={{ zIndex: 3 - i }}
+          >
+            {avatar.imageUrl ? (
+              <img
+                src={avatar.imageUrl}
+                alt={avatar.name}
+                className="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover"
+              />
+            ) : (
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatar.fallbackGradient} border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md`}>
+                {avatar.fallbackEmoji}
+              </div>
+            )}
+          </motion.div>
+        ))}
+        {/* "+N more" indicator */}
+        {totalSpecialists > 3 && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.35, type: 'spring', stiffness: 300, damping: 20 }}
+            className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center shadow-md"
+            style={{ zIndex: 0 }}
+          >
+            <span className="text-gray-600 text-xs font-bold">+{totalSpecialists - 3}</span>
+          </motion.div>
+        )}
+        {/* Animated dots indicator when <=3 */}
+        {totalSpecialists <= 3 && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center gap-0.5 ml-1"
+          >
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
+          </motion.div>
+        )}
       </div>
 
       <h4 className="text-gray-900 font-bold text-lg">Support Center</h4>
       <p className="text-gray-600 text-sm mt-0.5">Questions? Chat with us.</p>
       <div className="flex items-center gap-1.5 mt-1.5">
         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <p className="text-gray-500 text-xs">Typically replies under {supportProfile.replyTime}</p>
+        <p className="text-gray-500 text-xs">{totalSpecialists} specialists available · replies under {supportProfile.replyTime}</p>
       </div>
 
       {proactiveTyping && (
@@ -841,6 +913,12 @@ const LiveChatWidget = () => {
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      {(() => {
+                        const member = (specialistProfile.teamMembers || []).find(m => m.name === specialistProfile.specialistName);
+                        return member?.role ? (
+                          <p className="text-[10px] text-teal-700 font-medium">{member.role}</p>
+                        ) : null;
+                      })()}
                       <p className="text-xs text-teal-600 font-medium">has joined the conversation</p>
                     </div>
                   </div>
@@ -965,6 +1043,12 @@ const LiveChatWidget = () => {
                     />
                     <div>
                       <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      {(() => {
+                        const member = (specialistProfile.teamMembers || []).find(m => m.name === specialistProfile.specialistName);
+                        return member?.role ? (
+                          <p className="text-[10px] text-teal-700 font-medium">{member.role}</p>
+                        ) : null;
+                      })()}
                       <p className="text-xs text-teal-600 font-medium">has joined the conversation</p>
                     </div>
                   </div>
