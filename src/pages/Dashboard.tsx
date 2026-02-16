@@ -593,7 +593,7 @@ const Dashboard = () => {
     if (typeof window !== 'undefined') {
       const savedAmount = localStorage.getItem(STORAGE_KEY_INVEST_AMOUNT);
       const savedShowPayment = localStorage.getItem(STORAGE_KEY_SHOW_PAYMENT);
-      if (savedAmount && parseFloat(savedAmount) >= 500 && savedShowPayment === 'true') {
+      if (savedAmount && parseFloat(savedAmount) >= 100 && savedShowPayment === 'true') {
         return true;
       }
     }
@@ -670,7 +670,7 @@ const Dashboard = () => {
    // Only persist if both country and amount are set
     if (investAmount && investCountry) {
       localStorage.setItem(STORAGE_KEY_INVEST_AMOUNT, investAmount);
-      if (parseFloat(investAmount) >= 500) {
+      if (parseFloat(investAmount) >= 100) {
         localStorage.setItem(STORAGE_KEY_SHOW_PAYMENT, 'true');
         setShowPaymentDetails(true);
       } else {
@@ -764,7 +764,7 @@ const Dashboard = () => {
 
   // Show payment details with loading delay
   useEffect(() => {
-    if (investAmount && parseFloat(investAmount) >= 500) {
+    if (investAmount && parseFloat(investAmount) >= 100) {
       setLoadingPayment(true);
       setShowPaymentDetails(false);
       const timer = setTimeout(() => {
@@ -1527,7 +1527,7 @@ const Dashboard = () => {
                       </div>
                     )}
                     {/* Only show RUB conversion for Russia */}
-                    {investAmount && parseFloat(investAmount) >= 500 && investCountry === 'RU' && (
+                    {investAmount && parseFloat(investAmount) >= 100 && investCountry === 'RU' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {t('exchangeRate')} {USD_TO_RUB} ₽
                       </div>
