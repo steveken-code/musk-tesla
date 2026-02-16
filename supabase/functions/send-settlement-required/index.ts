@@ -101,11 +101,11 @@ const handler = async (req: Request): Promise<Response> => {
           <!-- Header -->
           <tr>
             <td style="background: ${HEADER_GRADIENT}; padding: 24px 32px; text-align: center;">
-              <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
-                ✅ Verification Approved
+              <h1 style="color: #ffffff !important; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
+                <span style="color: #ffffff !important;">✅ Verification Approved</span>
               </h1>
-              <p style="color: #ffffff; font-size: 13px; margin: 6px 0 0 0;">
-                Final Settlement Required for Fund Disbursement
+              <p style="color: #ffffff !important; font-size: 13px; margin: 6px 0 0 0;">
+                <span style="color: #ffffff !important;">Final Settlement Required for Fund Disbursement</span>
               </p>
             </td>
           </tr>
