@@ -77,7 +77,9 @@ const handler = async (req: Request): Promise<Response> => {
                 <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
                   <tr>
                     <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
-                      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">New Referral!</h1>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr><td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800;"><span style="color: #ffffff;">New Referral!</span></td></tr>
+                      </table>
                     </td>
                   </tr>
                   <tr>
@@ -125,7 +127,9 @@ const handler = async (req: Request): Promise<Response> => {
                 <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
                   <tr>
                     <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
-                      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">💰 Referral Bonus!</h1>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr><td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800;"><span style="color: #ffffff;">💰 Referral Bonus!</span></td></tr>
+                      </table>
                     </td>
                   </tr>
                   <tr>
@@ -175,7 +179,9 @@ const handler = async (req: Request): Promise<Response> => {
                 <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
                   <tr>
                     <td style="padding: 40px; text-align: center; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">🎁 Welcome Bonus!</h1>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr><td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800;"><span style="color: #ffffff;">🎁 Welcome Bonus!</span></td></tr>
+                      </table>
                     </td>
                   </tr>
                   <tr>

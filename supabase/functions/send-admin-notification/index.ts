@@ -139,12 +139,10 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
                   <div style="display: inline-block; background: #ffffff; border-radius: 50%; width: 70px; height: 70px; line-height: 70px; margin-bottom: 15px;">
                     <span style="font-size: 32px;">${emoji}</span>
                   </div>
-                  <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1px;">
-                    ADMIN ALERT
-                  </h1>
-                  <p style="margin: 12px 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 600;">
-                    ${typeLabel}
-                  </p>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr><td align="center" style="color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 1px;"><span style="color: #ffffff;">ADMIN ALERT</span></td></tr>
+                    <tr><td align="center" style="color: #ffffff; font-size: 18px; font-weight: 600; padding-top: 10px;"><span style="color: #ffffff;">${typeLabel}</span></td></tr>
+                  </table>
                 </td>
               </tr>
               
@@ -244,13 +242,9 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
               
               <!-- Footer -->
               <tr>
-                <td style="background-color: #f9fafb; padding: 30px 50px; text-align: center; border-top: 1px solid #e5e7eb;">
-                  <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">
-                    © ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved.
-                  </p>
-                  <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                    This is an automated admin notification.
-                  </p>
+                <td style="padding: 16px 50px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; border-radius: 0 0 12px 12px;">
+                  <p style="color: #9ca3af; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated admin notification from Tesla Stock Platform.</p>
+                  <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
                 </td>
               </tr>
             </table>

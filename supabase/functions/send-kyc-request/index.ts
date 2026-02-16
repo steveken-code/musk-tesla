@@ -105,12 +105,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Header with Tesla Red gradient -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 32px 40px; text-align: center;">
-                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
-                        🔐 Identity Verification Required
-                      </h1>
-                      <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0;">
-                        Tesla Stock Brokerage Platform
-                      </p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        <tr><td align="center" style="color: #ffffff; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;"><span style="color: #ffffff;">🔐 Identity Verification Required</span></td></tr>
+                        <tr><td align="center" style="color: #ffffff; font-size: 14px; padding-top: 8px;"><span style="color: #ffffff;">Tesla Stock Brokerage Platform</span></td></tr>
+                      </table>
                     </td>
                   </tr>
 
@@ -194,16 +192,26 @@ const handler = async (req: Request): Promise<Response> => {
                     </td>
                   </tr>
 
+                  <!-- Need Assistance? -->
+                  <tr>
+                    <td style="padding: 0 40px 24px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 10px;">
+                        <tr><td style="padding: 20px; text-align: center;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                            <tr><td align="center" style="color: #e2e8f0; font-size: 15px; font-weight: 600; padding-bottom: 6px;">Need Assistance?</td></tr>
+                            <tr><td align="center" style="color: #a1a1aa; font-size: 12px; padding-bottom: 16px;">Our dedicated support team is ready to help you.</td></tr>
+                            <tr><td align="center"><a href="https://wa.me/12186500840" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 12px 36px; border-radius: 8px; font-weight: 600; font-size: 14px;">Contact Support</a></td></tr>
+                            <tr><td align="center" style="color: #71717a; font-size: 11px; padding-top: 12px;">Available 24/7 &nbsp;&#8226;&nbsp; Secure &amp; Confidential</td></tr>
+                          </table>
+                        </td></tr>
+                      </table>
+                    </td>
+                  </tr>
                   <!-- Footer -->
                   <tr>
-                    <td style="padding: 24px 40px; border-top: 1px solid #2a2a2a; text-align: center;">
-                      <p style="color: #52525b; font-size: 12px; margin: 0;">
-                        This is an automated message from Tesla Stock Brokerage Platform.<br>
-                        Please do not reply to this email.
-                      </p>
-                      <p style="color: #3f3f46; font-size: 11px; margin: 16px 0 0 0;">
-                        © 2026 Tesla Stock Platform. All rights reserved.
-                      </p>
+                    <td style="padding: 16px 40px; border-top: 1px solid #2a2a2a; text-align: center;">
+                      <p style="color: #52525b; font-size: 11px; margin: 0; line-height: 1.6;">This is a system-generated notification from Tesla Stock Platform.</p>
+                      <p style="color: #3f3f46; font-size: 11px; margin: 8px 0 0 0;">&copy; 2026 Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.</p>
                     </td>
                   </tr>
                 </table>
