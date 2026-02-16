@@ -707,88 +707,99 @@ const LiveChatWidget = () => {
 
   const totalSpecialists = (specialistProfile.teamMembers || []).length;
 
-  // Render the landing/support center screen
+  // Render the landing/support center screen (Intercom-style)
   const renderLanding = () => (
-    <div className="flex flex-col items-center justify-center py-8 px-4 flex-1">
-      {/* Team avatars serve as the visual anchor - no separate icon needed */}
-      
-      {/* Stacked team avatars */}
-      <div className="flex items-center -space-x-3 mb-3">
-        {teamAvatars.map((avatar, i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 * i, type: 'spring', stiffness: 300, damping: 20 }}
-            className="relative"
-            style={{ zIndex: 3 - i }}
-          >
-            {avatar.imageUrl ? (
-              <img
-                src={avatar.imageUrl}
-                alt={avatar.name}
-                className="w-10 h-10 rounded-full border-2 border-white shadow-md object-cover"
-              />
-            ) : (
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatar.fallbackGradient} border-2 border-white flex items-center justify-center text-white text-sm font-bold shadow-md`}>
-                {avatar.fallbackEmoji}
-              </div>
-            )}
-          </motion.div>
-        ))}
-        {/* "+N more" indicator */}
-        {totalSpecialists > 3 && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.35, type: 'spring', stiffness: 300, damping: 20 }}
-            className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center shadow-md"
-            style={{ zIndex: 0 }}
-          >
-            <span className="text-gray-600 text-xs font-bold">+{totalSpecialists - 3}</span>
-          </motion.div>
-        )}
-        {/* Animated dots indicator when <=3 */}
-        {totalSpecialists <= 3 && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-center gap-0.5 ml-1"
-          >
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '200ms' }} />
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '400ms' }} />
-          </motion.div>
-        )}
-      </div>
-
-      <h4 className="text-gray-900 font-bold text-lg mt-1">Support Center</h4>
-      <p className="text-gray-600 text-sm mt-0.5">Questions? Chat with us.</p>
-      <div className="flex items-center gap-1.5 mt-2">
-        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <p className="text-gray-500 text-xs">We typically reply under {supportProfile.replyTime}</p>
-      </div>
-
-      {proactiveTyping && (
-        <div className="mt-5 bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 max-w-[260px]">
-          <div className="flex items-center gap-1">
-            <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-        </div>
-      )}
-      {proactiveMessage && (
-        <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          className="mt-5 bg-gray-100 border border-gray-200 rounded-2xl px-5 py-3 max-w-[280px]"
+    <div className="flex flex-col flex-1 overflow-y-auto">
+      {/* Blue hero section - extends from header */}
+      <div className="bg-gradient-to-b from-electric-blue to-blue-600 px-6 pt-6 pb-12 text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-white text-2xl font-bold"
         >
-          <p className="text-gray-700 text-sm text-center leading-relaxed">{proactiveMessage}</p>
+          Welcome! 👋
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-white/80 text-sm mt-1"
+        >
+          How can we help?
+        </motion.p>
+      </div>
+
+      {/* White card section */}
+      <div className="px-4 -mt-8 pb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 25 }}
+          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5"
+        >
+          <h4 className="text-gray-900 font-semibold text-base mb-4">Let's have a conversation</h4>
+          
+          {/* Team avatars + reply time row */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center -space-x-2 flex-shrink-0">
+              {teamAvatars.map((avatar, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.4 + 0.08 * i, type: 'spring', stiffness: 300, damping: 20 }}
+                  className="relative"
+                  style={{ zIndex: 3 - i }}
+                >
+                  {avatar.imageUrl ? (
+                    <img
+                      src={avatar.imageUrl}
+                      alt={avatar.name}
+                      className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
+                    />
+                  ) : (
+                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatar.fallbackGradient} border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm`}>
+                      {avatar.fallbackEmoji}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+            <div className="text-left">
+              <p className="text-gray-500 text-xs leading-tight">Our usual reply time</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <svg className="w-3 h-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span className="text-gray-700 text-xs font-medium">{supportProfile.replyTime}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Send us a message button */}
+          <button
+            onClick={() => handleLandingMessage('')}
+            className="w-full flex items-center justify-between bg-gradient-to-r from-electric-blue to-blue-600 text-white rounded-xl px-4 py-3 hover:from-blue-600 hover:to-blue-700 transition-all group"
+          >
+            <div className="flex items-center gap-2.5">
+              <Send className="w-4 h-4" />
+              <span className="text-sm font-medium">Send us a message</span>
+            </div>
+            <svg className="w-4 h-4 opacity-60 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
         </motion.div>
-      )}
+
+        {/* Proactive message below card */}
+        {proactiveMessage && (
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.6, type: 'spring', stiffness: 400, damping: 20 }}
+            className="mt-4 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3"
+          >
+            <p className="text-gray-600 text-sm text-center leading-relaxed">{proactiveMessage}</p>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 
@@ -1324,41 +1335,7 @@ const LiveChatWidget = () => {
             </div>
 
             {/* Content based on step */}
-            {chatStep === 'landing' && (
-              <>
-                {renderLanding()}
-                <div className="border-t border-gray-200 bg-white flex-shrink-0 p-3">
-                  <div className="flex items-end gap-2">
-                    <div className="relative flex-shrink-0">
-                      <input ref={galleryInputRef} type="file" accept="image/*" className="sr-only" onChange={handleFileSelect} tabIndex={-1} />
-                      <button
-                        onClick={() => galleryInputRef.current?.click()}
-                        className="p-2 text-gray-500 hover:text-electric-blue transition-colors rounded-lg hover:bg-gray-100"
-                        aria-label="Attach image"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={() => {}}
-                      placeholder="Type a message..."
-                      rows={1}
-                      className="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-electric-blue resize-none min-h-[40px] max-h-[80px]"
-                      style={{ color: '#111827', WebkitTextFillColor: '#111827', opacity: 1 }}
-                    />
-                    <button
-                      onClick={sendMessage}
-                      disabled={!message.trim()}
-                      className="p-2.5 bg-electric-blue text-white rounded-xl hover:bg-electric-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
+            {chatStep === 'landing' && renderLanding()}
             {chatStep === 'name_email' && renderNameEmailForm()}
             {chatStep === 'verifying' && renderVerification()}
             {chatStep === 'waiting' && renderWaiting()}
