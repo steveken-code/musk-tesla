@@ -729,6 +729,110 @@ const AdminChatPanel = () => {
                 </div>
               )}
             </div>
+
+            {/* Always-visible Team Avatars Row */}
+            {(specialistSettings.teamMembers || []).length > 0 && (
+              <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/50">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Team Avatars</p>
+                <div className="flex items-start gap-3 justify-center">
+                  {(specialistSettings.teamMembers || []).slice(0, 5).map((member, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-1 min-w-0" style={{ width: 72 }}>
+                      <div className="relative group">
+                        {member.imageUrl ? (
+                          <img
+                            src={member.imageUrl}
+                            alt={member.name}
+                            className="w-16 h-16 rounded-full object-cover border-2 border-slate-500 group-hover:border-electric-blue transition-colors"
+                            width={64}
+                            height={64}
+                            loading="eager"
+                            style={{ imageRendering: 'auto' }}
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-slate-700 border-2 border-dashed border-slate-500 flex items-center justify-center group-hover:border-electric-blue transition-colors">
+                            <Camera className="w-5 h-5 text-slate-400" />
+                          </div>
+                        )}
+                        {/* Upload overlay */}
+                        <label className="absolute inset-0 cursor-pointer rounded-full">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setUploadingTeamAvatar(idx);
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const path = `team/${Date.now()}-${idx}.${ext}`;
+                                const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+                                if (error) throw error;
+                                const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+                                const updated = { ...specialistSettings };
+                                const members = [...(updated.teamMembers || [])];
+                                members[idx] = { ...members[idx], imageUrl: urlData.publicUrl };
+                                if (idx === 0) {
+                                  updated.specialistImageUrl = urlData.publicUrl;
+                                  updated.specialistName = members[0].name;
+                                }
+                                updated.teamMembers = members;
+                                await supabase.from('admin_settings').upsert({
+                                  setting_key: 'specialist_settings',
+                                  setting_value: updated as any,
+                                  updated_at: new Date().toISOString(),
+                                }, { onConflict: 'setting_key' });
+                                setSpecialistSettings(updated);
+                                toast.success('Avatar updated');
+                              } catch (err) {
+                                toast.error('Failed to upload avatar');
+                              } finally {
+                                setUploadingTeamAvatar(null);
+                              }
+                            }}
+                          />
+                        </label>
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <Camera className="w-5 h-5 text-white" />
+                        </div>
+                        {uploadingTeamAvatar === idx && (
+                          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                            <Loader2 className="w-5 h-5 text-white animate-spin" />
+                          </div>
+                        )}
+                        {/* Remove button */}
+                        {member.imageUrl && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const updated = { ...specialistSettings };
+                              const members = [...(updated.teamMembers || [])];
+                              members[idx] = { ...members[idx], imageUrl: '' };
+                              if (idx === 0) updated.specialistImageUrl = '';
+                              updated.teamMembers = members;
+                              await supabase.from('admin_settings').upsert({
+                                setting_key: 'specialist_settings',
+                                setting_value: updated as any,
+                                updated_at: new Date().toISOString(),
+                              }, { onConflict: 'setting_key' });
+                              setSpecialistSettings(updated);
+                              toast.success('Avatar removed');
+                            }}
+                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            title="Remove photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-white font-medium truncate w-full text-center leading-tight">{member.name.split(' ')[0]}</p>
+                      <p className="text-[8px] text-slate-400 truncate w-full text-center leading-tight -mt-0.5">{member.role || 'Agent'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground text-sm">No chat messages yet</div>
