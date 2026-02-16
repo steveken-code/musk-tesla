@@ -93,20 +93,26 @@ const handler = async (req: Request): Promise<Response> => {
   <title>KYC Approved - Settlement Required</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: ${FONT_FAMILY};">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; min-width: 100%;">
     <tr>
       <td align="center" style="padding: 24px 16px;">
-        <table role="presentation" width="650" cellspacing="0" cellpadding="0" style="max-width: 650px; width: 100%; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid ${COLORS.cardBorder}; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+        <table role="presentation" width="650" cellspacing="0" cellpadding="0" style="max-width: 650px; width: 100%; background-color: #ffffff; border-radius: 12px; border: 1px solid ${COLORS.cardBorder}; box-shadow: 0 4px 24px rgba(0,0,0,0.08); page-break-inside: avoid; -webkit-page-break-inside: avoid;">
 
-          <!-- Header -->
+          <!-- Header: table-based white text (bulletproof) -->
           <tr>
-            <td style="background: ${HEADER_GRADIENT}; padding: 24px 32px; text-align: center;">
-              <h1 style="color: #ffffff !important; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">
-                <span style="color: #ffffff !important;">✅ Verification Approved</span>
-              </h1>
-              <p style="color: #ffffff !important; font-size: 13px; margin: 6px 0 0 0;">
-                <span style="color: #ffffff !important;">Final Settlement Required for Fund Disbursement</span>
-              </p>
+            <td style="background: ${HEADER_GRADIENT}; padding: 28px 32px; text-align: center; border-radius: 12px 12px 0 0;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.3;">
+                    <span style="color: #ffffff;">&#10003; Verification Approved</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="color: #ffffff; font-size: 13px; padding-top: 6px; line-height: 1.4;">
+                    <span style="color: #ffffff;">Final Settlement Required for Fund Disbursement</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
@@ -122,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <tr>
                   <td style="padding: 14px; text-align: center;">
                     <p style="color: ${COLORS.successText}; font-size: 14px; margin: 0; font-weight: 600;">
-                      🎉 Your KYC verification has been successfully approved by our compliance department.
+                      Your KYC verification has been successfully approved by our compliance department.
                     </p>
                   </td>
                 </tr>
@@ -142,9 +148,13 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 10px; margin: 16px 0;">
                 <tr>
                   <td style="padding: 18px;">
-                    <h3 style="color: ${COLORS.sectionHeader}; font-size: 13px; font-weight: 600; margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                      📊 Transaction Summary
-                    </h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="color: ${COLORS.sectionHeader}; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 14px;">
+                          Transaction Summary
+                        </td>
+                      </tr>
+                    </table>
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                       <tr>
                         <td style="color: ${COLORS.secondaryText}; font-size: 13px; padding: 8px 0; border-bottom: 1px solid ${COLORS.divider};">Reference</td>
@@ -175,41 +185,62 @@ const handler = async (req: Request): Promise<Response> => {
                 </tr>
               </table>
 
-              <p style="color: ${COLORS.bodyText}; font-size: 13px; line-height: 1.7; margin: 16px 0;">
+              <p style="color: ${COLORS.bodyText}; font-size: 13px; line-height: 1.7; margin: 16px 0 0 0;">
                 Once this administrative settlement is cleared, the <strong style="color: ${COLORS.darkText};">automated disbursement system</strong>
                 will credit the funds to your ${destinationLabel.toLowerCase()} <strong style="color: ${COLORS.successAmount};">immediately</strong>.
               </p>
+            </td>
+          </tr>
 
-              <!-- WhatsApp CTA -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 12px 0 20px 0;">
+          <!-- Professional Support Section -->
+          <tr>
+            <td style="padding: 0 32px 24px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: ${COLORS.cardBackground}; border: 1px solid ${COLORS.cardBorder}; border-radius: 10px;">
                 <tr>
-                  <td align="center">
-                    <a href="${whatsappLink}"
-                       style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);">
-                      💬 Contact Support on WhatsApp
-                    </a>
+                  <td style="padding: 20px; text-align: center;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" style="color: ${COLORS.darkText}; font-size: 15px; font-weight: 600; padding-bottom: 6px;">
+                          Need Assistance?
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="color: ${COLORS.secondaryText}; font-size: 12px; padding-bottom: 16px;">
+                          Our dedicated support team is ready to guide you through the settlement process.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center">
+                          <a href="${whatsappLink}"
+                             style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 12px 36px; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);">
+                            Contact Support
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="color: ${COLORS.mutedText}; font-size: 11px; padding-top: 12px;">
+                          Available 24/7 &nbsp;&#8226;&nbsp; Secure &amp; Confidential
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
-
-              <p style="color: ${COLORS.secondaryText}; font-size: 12px; line-height: 1.6; margin: 0; text-align: center;">
-                Our support team is available 24/7 to assist you with the settlement process.
-              </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 16px 32px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.divider}; text-align: center;">
-              <p style="color: ${COLORS.secondaryText}; font-size: 11px; margin: 0;">
-                This is an automated message from Tesla Stock Brokerage Platform.<br>
-                Please do not reply to this email.
+            <td style="padding: 16px 32px; background-color: ${COLORS.footerBackground}; border-top: 1px solid ${COLORS.divider}; text-align: center; border-radius: 0 0 12px 12px;">
+              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 0; line-height: 1.6;">
+                This is a system-generated notification from Tesla Stock Platform.
               </p>
-              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 10px 0 0 0;">
-                © 2026 Tesla Stock Platform. All rights reserved.
+              <p style="color: ${COLORS.mutedText}; font-size: 11px; margin: 8px 0 0 0;">
+                &copy; 2026 Tesla Stock Platform. All rights reserved. &nbsp;&#8226;&nbsp; Confidential communication.
               </p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
