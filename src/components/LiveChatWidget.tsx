@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import supportAvatar from '@/assets/support-avatar.png';
 import chatSupportIcon from '@/assets/chat-support-icon.png';
+import chatBubbleIcon from '@/assets/chat-bubble-icon.png';
 import { Input } from '@/components/ui/input';
 
 const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
@@ -811,7 +812,7 @@ const LiveChatWidget = () => {
         {/* Admin greeting bubble */}
         <div className="flex justify-start">
           <div className="flex items-start gap-2">
-            <img src={avatarSrc} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" />
+            <img src={chatBubbleIcon} alt="Support" width={32} height={32} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 object-contain" />
             <div className="max-w-[75%] rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-gray-100 text-gray-900">
               <p className="text-[10px] font-semibold text-blue-600 mb-1">{displayName}</p>
               <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>{getGreetingText()}</p>
