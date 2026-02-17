@@ -715,6 +715,116 @@ const LiveChatWidget = () => {
 
   const totalSpecialists = (specialistProfile.teamMembers || []).length;
 
+  // FAQ items for helpful resources
+  const faqItems = [
+    { icon: '📈', label: 'How do I make an investment?', question: 'Hi, I would like to know how to make an investment. Can you help me?' },
+    { icon: '💸', label: 'How do I withdraw funds?', question: 'Hi, I need help withdrawing my funds. Can you guide me through the process?' },
+    { icon: '🪪', label: 'Account verification help', question: 'Hi, I need help with verifying my account/identity. What documents do I need?' },
+    { icon: '💬', label: 'Contact support via WhatsApp', isWhatsApp: true },
+  ];
+
+  // State for recent conversations
+  const [recentConversations, setRecentConversations] = useState<Array<{
+    id: string;
+    lastMessage: string;
+    date: string;
+    status: string;
+  }>>([]);
+
+  // Fetch recent closed conversations
+  useEffect(() => {
+    const fetchRecentConversations = async () => {
+      try {
+        let convs: any[] = [];
+        if (user) {
+          const { data } = await supabase
+            .from('chat_conversations')
+            .select('id, status, updated_at, last_message_at')
+            .eq('user_id', user.id)
+            .eq('status', 'closed')
+            .order('updated_at', { ascending: false })
+            .limit(3);
+          convs = data || [];
+        } else {
+          const guestId = getGuestId();
+          const { data } = await supabase
+            .from('chat_conversations')
+            .select('id, status, updated_at, last_message_at')
+            .eq('user_name', guestId)
+            .eq('status', 'closed')
+            .order('updated_at', { ascending: false })
+            .limit(3);
+          convs = data || [];
+        }
+
+        if (convs.length > 0) {
+          const convIds = convs.map(c => c.id);
+          // Fetch last message for each conversation
+          const results = await Promise.all(
+            convIds.map(async (cid) => {
+              const { data: msgs } = await supabase
+                .from('chat_messages')
+                .select('message, sender_type')
+                .eq('conversation_id', cid)
+                .order('created_at', { ascending: false })
+                .limit(1);
+              return { convId: cid, lastMsg: msgs?.[0] };
+            })
+          );
+
+          const formatted = convs.map((conv) => {
+            const match = results.find(r => r.convId === conv.id);
+            const preview = match?.lastMsg?.message || 'No messages';
+            const timeAgo = getTimeAgo(new Date(conv.updated_at));
+            return {
+              id: conv.id,
+              lastMessage: preview.length > 40 ? preview.substring(0, 40) + '...' : preview,
+              date: timeAgo,
+              status: conv.status,
+            };
+          });
+          setRecentConversations(formatted);
+        }
+      } catch (err) {
+        console.log('Could not fetch recent conversations:', err);
+      }
+    };
+    fetchRecentConversations();
+  }, [user]);
+
+  // Helper: time ago
+  const getTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    const diffWeeks = Math.floor(diffDays / 7);
+    return `${diffWeeks}w ago`;
+  };
+
+  // Handle FAQ click - pre-fill message and go to compose
+  const handleFaqClick = (question: string) => {
+    setFirstMessage(question);
+    setMessage(question);
+    if (user) {
+      setChatStep('compose');
+    } else {
+      setChatStep('name_email');
+    }
+  };
+
+  // Get WhatsApp URL for FAQ item
+  const getWhatsAppUrl = () => {
+    const phone = supportProfile.supportName ? '' : '';
+    // Use admin settings phone if available
+    return `https://wa.me/`;
+  };
+
   // Render the landing/support center screen (Intercom-style)
   const renderLanding = () => (
     <div className="flex flex-col flex-1 overflow-y-auto">
@@ -726,7 +836,7 @@ const LiveChatWidget = () => {
           transition={{ delay: 0.1 }}
           className="text-white text-2xl font-bold"
         >
-          Welcome! 👋
+          Hi there 👋
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -739,7 +849,7 @@ const LiveChatWidget = () => {
       </div>
 
       {/* White card section */}
-      <div className="px-4 -mt-8 pb-6">
+      <div className="px-4 -mt-8 pb-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -799,8 +909,94 @@ const LiveChatWidget = () => {
             <svg className="w-4 h-4 opacity-60 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </motion.div>
-
       </div>
+
+      {/* Recent Conversations */}
+      {recentConversations.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="px-4 pb-3"
+        >
+          <h5 className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 px-1">Recent conversations</h5>
+          <div className="space-y-1.5">
+            {recentConversations.map((conv) => (
+              <button
+                key={conv.id}
+                onClick={() => {
+                  // Start a new conversation instead of reopening closed ones
+                  handleLandingMessage();
+                }}
+                className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-gray-900 text-sm font-medium truncate">{conv.lastMessage}</p>
+                  <p className="text-gray-400 text-xs">{conv.date}</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Helpful Resources */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: recentConversations.length > 0 ? 0.6 : 0.5 }}
+        className="px-4 pb-3"
+      >
+        <h5 className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 px-1">Helpful resources</h5>
+        <div className="space-y-1.5">
+          {faqItems.map((item, i) => (
+            item.isWhatsApp ? (
+              <a
+                key={i}
+                href={`https://wa.me/${(supportProfile as any).whatsappPhone || '12186500840'}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <span className="text-base">{item.icon}</span>
+                </div>
+                <span className="text-gray-900 text-sm font-medium flex-1">{item.label}</span>
+                <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            ) : (
+              <button
+                key={i}
+                onClick={() => handleFaqClick(item.question!)}
+                className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <span className="text-base">{item.icon}</span>
+                </div>
+                <span className="text-gray-900 text-sm font-medium flex-1">{item.label}</span>
+                <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            )
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Footer Branding */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="px-4 pb-4 pt-1 mt-auto"
+      >
+        <div className="flex items-center justify-center gap-1.5 py-2">
+          <svg className="w-3 h-3 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+          <span className="text-gray-400 text-[10px] font-medium">Powered by Tesla Stock Platform</span>
+        </div>
+      </motion.div>
     </div>
   );
 
