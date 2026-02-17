@@ -721,7 +721,7 @@ const LiveChatWidget = () => {
     { iconType: 'trending' as const, label: 'How do I make an investment?', question: 'Hi, I would like to know how to make an investment. Can you help me?', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverAccent: 'hover:border-l-blue-500' },
     { iconType: 'wallet' as const, label: 'How do I withdraw funds?', question: 'Hi, I need help withdrawing my funds. Can you guide me through the process?', iconBg: 'bg-purple-50', iconColor: 'text-purple-600', hoverAccent: 'hover:border-l-purple-500' },
     { iconType: 'shield' as const, label: 'Account verification help', question: 'Hi, I need help with verifying my account/identity. What documents do I need?', iconBg: 'bg-amber-50', iconColor: 'text-amber-600', hoverAccent: 'hover:border-l-amber-500' },
-    { iconType: 'whatsapp' as const, label: 'Contact support via WhatsApp', isWhatsApp: true, iconBg: 'bg-green-50', iconColor: '', hoverAccent: 'hover:border-l-green-500' },
+    
   ];
 
   // State for recent conversations
@@ -959,27 +959,11 @@ const LiveChatWidget = () => {
               <TrendingUp className={`w-4 h-4 ${item.iconColor}`} />
             ) : item.iconType === 'wallet' ? (
               <Wallet className={`w-4 h-4 ${item.iconColor}`} />
-            ) : item.iconType === 'shield' ? (
-              <ShieldCheck className={`w-4 h-4 ${item.iconColor}`} />
             ) : (
-              <img src={whatsappIcon} alt="WhatsApp" className="w-5 h-5 object-contain" />
+              <ShieldCheck className={`w-4 h-4 ${item.iconColor}`} />
             );
 
-            return item.isWhatsApp ? (
-              <a
-                key={i}
-                href={`https://wa.me/${(supportProfile as any).whatsappPhone || '12186500840'}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`w-full flex items-center gap-3 bg-white border border-gray-100 border-l-2 border-l-transparent rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 ${item.hoverAccent} transition-all group`}
-              >
-                <div className={`w-8 h-8 rounded-full ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
-                  {iconElement}
-                </div>
-                <span className="text-gray-900 text-sm font-medium flex-1">{item.label}</span>
-                <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </a>
-            ) : (
+            return (
               <button
                 key={i}
                 onClick={() => handleFaqClick(item.question!)}
