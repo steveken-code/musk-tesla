@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Shield, Upload, CheckCircle, Loader2, FileText, AlertCircle, MessageCircle } from 'lucide-react';
 import { getTaxIdConfig } from '@/data/taxIdFormats';
 import teslaLogo from '@/assets/tesla-logo-kyc.png';
+import whatsappIcon from '@/assets/whatsapp-icon.png';
 
 type DocumentType = 'passport' | 'national_id' | 'drivers_license';
 
@@ -427,15 +428,15 @@ const VerifyIdentity = () => {
           </form>
 
           {/* Support Section */}
-          <div className="text-center mt-8 space-y-3 pt-6 border-t border-slate-700">
+          <div className="text-center mt-8 space-y-4 pt-6 border-t border-slate-700">
             <p className="text-sm text-slate-400">Need help with your verification?</p>
             <a
               href="https://wa.me/12186500840"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg transition-colors font-medium shadow-lg"
+              className="group inline-flex items-center gap-3 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0E7A6B] text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 hover:scale-105 active:scale-95"
             >
-              <MessageCircle className="w-5 h-5" />
+              <img src={whatsappIcon} alt="WhatsApp" className="w-7 h-7 rounded-full group-hover:rotate-12 transition-transform duration-300" />
               Contact Support via WhatsApp
             </a>
           </div>
