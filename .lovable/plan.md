@@ -1,68 +1,72 @@
 
-## Bulletproof White Headers + Professional Footer for ALL Email Templates
 
-### Problem
-- 11 email templates still use `<h1>` tags for header text, which email clients (Gmail, Outlook) can override to black
-- Only `send-settlement-required` has the bulletproof `<table>/<td>` header and professional "Need Assistance?" footer
-- Support sections and footers are inconsistent across templates
+## Enhance Live Chat Widget: "Hi there" + Rich Landing Content
 
-### The Fix
-Replace all `<h1>`/`<p>` header text with the proven `<table role="presentation">` + `<td>` + `<span>` structure from the settlement template. Also standardize the footer and support section across all templates.
+### Changes Overview
 
-### Bulletproof Header Pattern (applied to all)
-Replace `<h1 style="color: #ffffff">` with:
+**File:** `src/components/LiveChatWidget.tsx`
+
+### 1. Change "Welcome!" to "Hi there"
+- Line 729: Replace `Welcome! 👋` with `Hi there 👋`
+
+### 2. Populate the Empty Space Below "Send us a message"
+
+Add three sections below the send button to fill the blank area and make the widget feel like a real, professional support center:
+
+**a) Recent Conversations Section**
+- Query the database for the current user's (or guest's) past closed conversations
+- If any exist, show a "Recent conversations" section with a list of past chats (showing last message preview, date, and status)
+- Clicking a past conversation could reopen or view it
+- If no past conversations, this section is hidden
+
+**b) Quick Help / FAQ Links**
+- Add a "Helpful resources" section with 3-4 clickable items styled as mini cards:
+  - "How do I make an investment?" 
+  - "How do I withdraw funds?"
+  - "Account verification help"
+  - "Contact support via WhatsApp"
+- These link to relevant pages or auto-populate the chat with the question when clicked
+
+**c) Footer Branding**
+- Small subtle footer text at the bottom: "Powered by Tesla Stock Platform" with a small icon
+- Matches the professional Intercom/Drift style
+
+### 3. Make FAQ Items Interactive
+- When a user clicks a FAQ item, it transitions to the compose step with the question pre-filled as the first message, making it feel like a real support experience
+
+### Technical Details
+
+- Add a `useEffect` to fetch recent closed conversations for the current user/guest on mount
+- Add a new state `recentConversations` to hold past chat summaries
+- The FAQ items array will be defined as a constant with icons and labels
+- The WhatsApp link will use the existing `supportProfile` settings
+- All new sections use the same white card styling with subtle borders and rounded corners
+- Smooth fade-in animations using framer-motion for each section
+
+### Visual Layout (Landing Screen)
+
 ```text
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-  <tr>
-    <td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800;">
-      <span style="color: #ffffff;">Tesla Stock Platform</span>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" style="color: #ffffff; font-size: 16px; padding-top: 10px;">
-      <span style="color: #ffffff;">[Subtitle Text]</span>
-    </td>
-  </tr>
-</table>
++----------------------------------+
+|  Blue Hero: "Hi there 👋"       |
+|  "How can we help?"              |
++----------------------------------+
+|  [White Card]                    |
+|  "Let's have a conversation"    |
+|  [Avatars] Reply time: 30 min   |
+|  [Send us a message button]     |
++----------------------------------+
+|  [Recent Conversations]          |
+|  (if any past chats exist)       |
+|  - "Investment question" 2d ago  |
+|  - "Withdrawal help" 1w ago      |
++----------------------------------+
+|  [Helpful Resources]             |
+|  - How to invest                 |
+|  - Withdraw funds                |
+|  - Verify identity               |
+|  - WhatsApp support              |
++----------------------------------+
+|  Powered by Tesla Stock Platform |
++----------------------------------+
 ```
 
-### Professional Footer Pattern (applied to all)
-Replace the current simple footer with a "Need Assistance?" support card + compact copyright line, matching the settlement template.
-
-### Anti-Break Pattern (applied to all)
-Add `page-break-inside: avoid` and `min-width: 100%` to outer wrapper tables.
-
-### Files to Modify (11 email templates)
-
-| # | File | Current Header Issue |
-|---|------|---------------------|
-| 1 | `send-welcome-email/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 2 | `send-investment-confirmation/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 3 | `send-investment-activation/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 4 | `send-password-reset/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 5 | `send-withdrawal-request/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 6 | `send-withdrawal-confirmation/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 7 | `send-withdrawal-status/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 8 | `send-profit-notification/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 9 | `send-trade-closed/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 10 | `send-chat-verification/index.ts` | Uses `<h1>` + `<p>` subtitle |
-| 11 | `send-admin-notification/index.ts` | Uses `<h1>` for "ADMIN ALERT" |
-| 12 | `send-kyc-request/index.ts` | Uses `<h1>` for verification header |
-| 13 | `send-referral-notification/index.ts` | 3 sub-templates, all use `<h1>` |
-| 14 | `send-chat-notification/index.ts` | Uses `<h1>` in div-based layout |
-| 15 | `resend-verification-email/index.ts` | Uses `<h1>` for "TESLAINVEST" |
-| 16 | `send-kyc-admin-notification/index.ts` | Uses `<h1>` for "New KYC Submission" |
-
-### What Changes Per Template
-
-For each template:
-1. **Header**: Replace `<h1>` and `<p>` tags with `<table>/<td>/<span>` structure, all with `color: #ffffff`
-2. **Outer table**: Add `page-break-inside: avoid; min-width: 100%`
-3. **Footer**: Replace with professional compact footer matching settlement template
-4. **Support section**: Where applicable, replace WhatsApp/support buttons with the clean "Need Assistance?" card pattern
-
-### No Changes
-- `send-settlement-required/index.ts` - already has the bulletproof pattern (this is the reference template)
-
-### After Deploy
-All 15+ email functions will be redeployed automatically. A test email can be sent to verify.
