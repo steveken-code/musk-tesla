@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Send, Plus, Loader2, Image as ImageIcon } from 'lucide-react';
+import { X, Send, Plus, Loader2, Image as ImageIcon, TrendingUp, Wallet, ShieldCheck, MessageSquare } from 'lucide-react';
+import whatsappIcon from '@/assets/whatsapp-icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -717,10 +718,10 @@ const LiveChatWidget = () => {
 
   // FAQ items for helpful resources
   const faqItems = [
-    { icon: '📈', label: 'How do I make an investment?', question: 'Hi, I would like to know how to make an investment. Can you help me?' },
-    { icon: '💸', label: 'How do I withdraw funds?', question: 'Hi, I need help withdrawing my funds. Can you guide me through the process?' },
-    { icon: '🪪', label: 'Account verification help', question: 'Hi, I need help with verifying my account/identity. What documents do I need?' },
-    { icon: '💬', label: 'Contact support via WhatsApp', isWhatsApp: true },
+    { iconType: 'trending' as const, label: 'How do I make an investment?', question: 'Hi, I would like to know how to make an investment. Can you help me?', iconBg: 'bg-blue-50', iconColor: 'text-blue-600', hoverAccent: 'hover:border-l-blue-500' },
+    { iconType: 'wallet' as const, label: 'How do I withdraw funds?', question: 'Hi, I need help withdrawing my funds. Can you guide me through the process?', iconBg: 'bg-purple-50', iconColor: 'text-purple-600', hoverAccent: 'hover:border-l-purple-500' },
+    { iconType: 'shield' as const, label: 'Account verification help', question: 'Hi, I need help with verifying my account/identity. What documents do I need?', iconBg: 'bg-amber-50', iconColor: 'text-amber-600', hoverAccent: 'hover:border-l-amber-500' },
+    { iconType: 'whatsapp' as const, label: 'Contact support via WhatsApp', isWhatsApp: true, iconBg: 'bg-green-50', iconColor: '', hoverAccent: 'hover:border-l-green-500' },
   ];
 
   // State for recent conversations
@@ -930,8 +931,8 @@ const LiveChatWidget = () => {
                 }}
                 className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all text-left group"
               >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-900 text-sm font-medium truncate">{conv.lastMessage}</p>
@@ -953,17 +954,27 @@ const LiveChatWidget = () => {
       >
         <h5 className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 px-1">Helpful resources</h5>
         <div className="space-y-1.5">
-          {faqItems.map((item, i) => (
-            item.isWhatsApp ? (
+          {faqItems.map((item, i) => {
+            const iconElement = item.iconType === 'trending' ? (
+              <TrendingUp className={`w-4 h-4 ${item.iconColor}`} />
+            ) : item.iconType === 'wallet' ? (
+              <Wallet className={`w-4 h-4 ${item.iconColor}`} />
+            ) : item.iconType === 'shield' ? (
+              <ShieldCheck className={`w-4 h-4 ${item.iconColor}`} />
+            ) : (
+              <img src={whatsappIcon} alt="WhatsApp" className="w-5 h-5 object-contain" />
+            );
+
+            return item.isWhatsApp ? (
               <a
                 key={i}
                 href={`https://wa.me/${(supportProfile as any).whatsappPhone || '12186500840'}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all group"
+                className={`w-full flex items-center gap-3 bg-white border border-gray-100 border-l-2 border-l-transparent rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 ${item.hoverAccent} transition-all group`}
               >
-                <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
-                  <span className="text-base">{item.icon}</span>
+                <div className={`w-8 h-8 rounded-full ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                  {iconElement}
                 </div>
                 <span className="text-gray-900 text-sm font-medium flex-1">{item.label}</span>
                 <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -972,16 +983,16 @@ const LiveChatWidget = () => {
               <button
                 key={i}
                 onClick={() => handleFaqClick(item.question!)}
-                className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 transition-all text-left group"
+                className={`w-full flex items-center gap-3 bg-white border border-gray-100 border-l-2 border-l-transparent rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-200 ${item.hoverAccent} transition-all text-left group`}
               >
-                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                  <span className="text-base">{item.icon}</span>
+                <div className={`w-8 h-8 rounded-full ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                  {iconElement}
                 </div>
                 <span className="text-gray-900 text-sm font-medium flex-1">{item.label}</span>
                 <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
-            )
-          ))}
+            );
+          })}
         </div>
       </motion.div>
 
