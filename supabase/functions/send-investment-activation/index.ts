@@ -108,9 +108,9 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
-                      📋 Investment Details
-                    </h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="color: #3b82f6; font-size: 17px; font-weight: 700; padding-bottom: 20px;"><span style="color: #3b82f6;">📋 Investment Details</span></td></tr>
+                    </table>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
@@ -185,7 +185,9 @@ async function sendActivationEmail(data: InvestmentActivationRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 30px;">
-                    <h3 style="color: #3b82f6; margin: 0 0 20px 0; font-size: 18px; font-weight: 700;">🚀 What Happens Next?</h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="color: #3b82f6; font-size: 17px; font-weight: 700; padding-bottom: 16px;"><span style="color: #3b82f6;">🚀 What Happens Next?</span></td></tr>
+                    </table>
                     <ul style="margin: 0; padding: 0 0 0 25px; color: #374151; font-size: 15px; line-height: 2.2;">
                       <li>Your investment is now actively managed</li>
                       <li>Track real-time performance on your dashboard</li>

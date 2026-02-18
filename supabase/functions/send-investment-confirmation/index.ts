@@ -176,9 +176,9 @@ const handler = async (req: Request): Promise<Response> => {
                       <tr>
                         <td style="padding: 0 50px 35px;">
                           <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                            <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
-                              📋 Investment Details
-                            </h3>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                              <tr><td style="color: #3b82f6; font-size: 17px; font-weight: 700; padding-bottom: 20px;"><span style="color: #3b82f6;">📋 Investment Details</span></td></tr>
+                            </table>
                             
                             <table width="100%" cellpadding="0" cellspacing="0">
                               <tr>
