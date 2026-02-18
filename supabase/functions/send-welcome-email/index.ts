@@ -132,9 +132,9 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
                       
                       <!-- Getting Started Steps -->
                       <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 30px; margin-bottom: 25px;">
-                        <h3 style="margin: 0 0 20px; color: #dc2626; font-size: 18px; font-weight: 700; text-align: center;">
-                          🚀 Get Started in 3 Easy Steps
-                        </h3>
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                          <tr><td align="center" style="color: #dc2626; font-size: 17px; font-weight: 700; padding-bottom: 20px; text-align: center;"><span style="color: #dc2626;">🚀 Get Started in 3 Easy Steps</span></td></tr>
+                        </table>
                         
                         <table width="100%" cellpadding="0" cellspacing="0">
                           <tr>
