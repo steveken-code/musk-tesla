@@ -105,9 +105,9 @@ async function sendWithdrawalRequestEmail(data: WithdrawalRequestEmail) {
               <tr>
                 <td style="padding: 0 50px 30px;">
                   <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px;">
-                    <h3 style="margin: 0 0 22px; color: #3b82f6; font-size: 18px; font-weight: 700;">
-                      📋 Withdrawal Details
-                    </h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="color: #3b82f6; font-size: 17px; font-weight: 700; padding-bottom: 18px;"><span style="color: #3b82f6;">📋 Withdrawal Details</span></td></tr>
+                    </table>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>

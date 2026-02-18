@@ -140,8 +140,8 @@ async function sendTradeClosedEmail(data: TradeClosedRequest) {
       <meta name="x-apple-disable-message-reformatting">
       <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
     </head>
-    <body style="margin: 0; padding: 0; background-color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #e5e5e5; padding: 40px 20px;">
+    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
         <tr>
           <td align="center">
             <table width="650" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
@@ -216,9 +216,9 @@ async function sendTradeClosedEmail(data: TradeClosedRequest) {
               <tr>
                 <td style="padding: 0 50px 35px;">
                   <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 16px; padding: 35px; margin: 0;">
-                    <h3 style="margin: 0 0 25px; color: #3b82f6; font-size: 20px; font-weight: 700;">
-                      📋 Trade Summary
-                    </h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="color: #3b82f6; font-size: 17px; font-weight: 700; padding-bottom: 20px;"><span style="color: #3b82f6;">📋 Trade Summary</span></td></tr>
+                    </table>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>

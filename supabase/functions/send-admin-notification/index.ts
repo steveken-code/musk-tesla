@@ -150,9 +150,9 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
               <tr>
                 <td style="padding: 35px 50px 20px; text-align: center;">
                   <p style="margin: 0; color: #6b7280; font-size: 16px;">A user has submitted a new ${type}</p>
-                  <h2 style="margin: 15px 0 0; color: ${headerColor}; font-size: 42px; font-weight: 800;">
-                    ${formattedAmount}
-                  </h2>
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr><td align="center" style="color: ${headerColor}; font-size: 42px; font-weight: 800; padding: 15px 0 0 0;"><span style="color: ${headerColor};">${formattedAmount}</span></td></tr>
+                  </table>
                   <div style="width: 80px; height: 4px; background: linear-gradient(90deg, ${headerColor}, ${headerColor}99); margin: 25px auto; border-radius: 2px;"></div>
                 </td>
               </tr>
@@ -161,9 +161,9 @@ async function sendAdminNotification(data: AdminNotificationRequest) {
               <tr>
                 <td style="padding: 0 50px 40px;">
                   <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 30px;">
-                    <h3 style="margin: 0 0 20px; color: #374151; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                      📋 ${type.charAt(0).toUpperCase() + type.slice(1)} Details
-                    </h3>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr><td style="color: #374151; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 16px;"><span style="color: #374151;">📋 ${type.charAt(0).toUpperCase() + type.slice(1)} Details</span></td></tr>
+                    </table>
                     
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
