@@ -1559,7 +1559,7 @@ const Dashboard = () => {
                 <Button
                   type="submit"
                   className="w-full h-10 sm:h-11 text-sm sm:text-base bg-gradient-to-r from-tesla-red to-tesla-red/80 hover:from-tesla-red/90 hover:to-tesla-red/70"
-                  disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 500 || loadingPayment}
+                  disabled={submitting || !investCountry || !investAmount || parseFloat(investAmount) < 100 || loadingPayment}
                 >
                   {submitting ? (
                     <>

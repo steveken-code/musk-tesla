@@ -99,7 +99,7 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
                     <td style="padding: 40px 50px 30px; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);">
                       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                         <tr><td align="center" style="color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px;"><span style="color: #ffffff;">Tesla Stock Platform</span></td></tr>
-                        <tr><td align="center" style="color: #ffffff; font-size: 16px; font-weight: 500; padding-top: 10px;"><span style="color: #ffffff;">Welcome to Your Investment Journey</span></td></tr>
+                        <tr><td align="center" style="color: #ffffff; font-size: 20px; font-weight: 600; padding-top: 10px;"><span style="color: #ffffff;">Welcome Aboard 🎉</span></td></tr>
                       </table>
                     </td>
                   </tr>
@@ -107,9 +107,9 @@ async function sendWelcomeEmailTask(email: string, name: string, userId: string)
                   <!-- Welcome Message -->
                   <tr>
                     <td style="padding: 40px 50px 20px;">
-                      <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
-                        Hello ${name}, 🎉
-                      </p>
+                       <p style="margin: 0; color: #374151; font-size: 22px; font-weight: 700;">
+                        Hello ${name},
+                       </p>
                       <div style="width: 80px; height: 4px; background: linear-gradient(90deg, #dc2626, #ef4444); margin: 25px auto; border-radius: 2px;"></div>
                     </td>
                   </tr>
