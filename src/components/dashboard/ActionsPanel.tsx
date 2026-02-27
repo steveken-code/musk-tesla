@@ -25,7 +25,7 @@ const investmentRules = [
   { icon: Percent, title: 'Competitive Returns', description: 'Earn attractive returns on your investments' },
   { icon: Clock, title: 'Withdrawal Processing', description: 'Withdrawals processed within 24-48 hours' },
   { icon: Users, title: 'One Active Investment', description: 'One active investment at a time per account' },
-  { icon: Headphones, title: '24/7 Support', description: 'Contact us anytime via WhatsApp or Telegram' },
+  { icon: Headphones, title: '24/7 Support', description: 'Contact us anytime via WhatsApp or Live Chat support' },
 ];
 
 const ActionsPanel = ({ 

@@ -90,7 +90,8 @@ function getMarketStatus(): string {
 async function fetchVolumeData(symbol: string, apiKey: string): Promise<number> {
   try {
     const now = Math.floor(Date.now() / 1000);
-    const from = now - 86400; // 24 hours ago
+    // Look back 5 days to cover weekends/holidays when market is closed
+    const from = now - 86400 * 5;
     
     const response = await fetch(
       `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&from=${from}&to=${now}&token=${apiKey}`
