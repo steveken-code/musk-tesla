@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowDownToLine, ArrowUpFromLine, ChevronDown } from 'lucide-react';
-import { formatSmartCurrency } from '@/lib/formatCurrency';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 interface WelcomeCardProps {
   displayName: string;
@@ -22,7 +22,7 @@ const WelcomeCard = ({
 }: WelcomeCardProps) => {
   // Calculate a mock weekly change (for display purposes)
   const weeklyChange = portfolioBalance > 0 ? portfolioBalance * 0.075 : 0;
-  const weeklyChangeFormatted = formatSmartCurrency(weeklyChange);
+  const weeklyChangeFormatted = formatCurrency(weeklyChange);
 
   return (
     <motion.div 
@@ -59,7 +59,7 @@ const WelcomeCard = ({
                 transition={{ delay: 0.2, duration: 0.4 }}
                 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight truncate"
               >
-                {formatSmartCurrency(portfolioBalance)}
+                {formatCurrency(portfolioBalance)}
               </motion.span>
               
               {/* Currency Badge */}

@@ -1653,7 +1653,7 @@ const Dashboard = () => {
                 <div className="space-y-3 sm:space-y-4 animate-fade-in">
                   <div className="text-center mb-4 sm:mb-6">
                     <p className="text-xl sm:text-2xl font-bold text-green-500 mb-0.5 sm:mb-1">
-                      ${availableForWithdrawal.toLocaleString()}
+                      ${availableForWithdrawal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground">{t('availableForWithdrawal')}</p>
                     
@@ -1722,7 +1722,7 @@ const Dashboard = () => {
                       disabled={availableForWithdrawal <= 0}
                       className="text-xs sm:text-sm text-green-500 hover:underline disabled:text-muted-foreground disabled:no-underline disabled:cursor-not-allowed"
                     >
-                      {t('withdrawAll')} (${availableForWithdrawal.toLocaleString()})
+                      {t('withdrawAll')} (${availableForWithdrawal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                     </button>
                   </div>
                 </div>
