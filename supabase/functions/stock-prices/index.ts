@@ -29,23 +29,28 @@ interface FinnhubQuote {
   t: number;
 }
 
-const stockInfo: Record<string, { name: string; avgVolume: number }> = {
-  'TSLA': { name: 'Tesla, Inc.', avgVolume: 98_500_000 },
-  'SPY':  { name: 'S&P 500 ETF', avgVolume: 72_000_000 },
-  'QQQ':  { name: 'NASDAQ-100 ETF', avgVolume: 45_000_000 },
-  'RIVN': { name: 'Rivian', avgVolume: 28_000_000 },
-  'LCID': { name: 'Lucid Motors', avgVolume: 22_000_000 },
-  'TM':   { name: 'Toyota Motor', avgVolume: 1_200_000 },
-  'STLA': { name: 'Stellantis', avgVolume: 5_500_000 },
-  'F':    { name: 'Ford', avgVolume: 42_000_000 },
-  'GM':   { name: 'General Motors', avgVolume: 8_500_000 },
+const stockNames: Record<string, string> = {
+  'TSLA': 'Tesla, Inc.',
+  'SPY':  'S&P 500 ETF',
+  'QQQ':  'NASDAQ-100 ETF',
+  'RIVN': 'Rivian',
+  'LCID': 'Lucid Motors',
+  'TM':   'Toyota Motor',
+  'STLA': 'Stellantis',
+  'F':    'Ford',
+  'GM':   'General Motors',
 };
 
-const symbols = Object.keys(stockInfo);
+const symbols = Object.keys(stockNames);
 
 let cachedData: { stocks: StockQuote[]; lastUpdated: string; marketStatus: string } | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 60000;
+
+// Cache volume data separately (changes less frequently)
+let volumeCache: Record<string, number> = {};
+let volumeCacheTimestamp = 0;
+const VOLUME_CACHE_DURATION = 300000; // 5 minutes
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -65,13 +70,51 @@ function getMarketStatus(): string {
   return 'closed';
 }
 
-// Generate a realistic volume based on average with some daily variation
-function estimateVolume(symbol: string): number {
-  const info = stockInfo[symbol];
-  if (!info) return 0;
-  // Add ±15% random variation so it looks realistic across stocks
-  const variation = 0.85 + Math.random() * 0.30;
-  return Math.round(info.avgVolume * variation);
+async function fetchVolumeFromYahoo(symbol: string): Promise<number> {
+  try {
+    const response = await fetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=5d&interval=1d`,
+      { headers: { 'User-Agent': 'Mozilla/5.0' } }
+    );
+    if (!response.ok) {
+      console.warn(`Yahoo volume fetch failed for ${symbol}: ${response.status}`);
+      return 0;
+    }
+    const data = await response.json();
+    const volumes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.volume;
+    if (Array.isArray(volumes) && volumes.length > 0) {
+      // Return the last non-null volume (latest trading day)
+      for (let i = volumes.length - 1; i >= 0; i--) {
+        if (volumes[i] != null && volumes[i] > 0) return volumes[i];
+      }
+    }
+    return 0;
+  } catch (error) {
+    console.error(`Error fetching Yahoo volume for ${symbol}:`, error);
+    return 0;
+  }
+}
+
+async function fetchAllVolumes(): Promise<Record<string, number>> {
+  const now = Date.now();
+  if (Object.keys(volumeCache).length > 0 && (now - volumeCacheTimestamp) < VOLUME_CACHE_DURATION) {
+    return volumeCache;
+  }
+
+  console.log('Fetching volume data from Yahoo Finance');
+  const results: Record<string, number> = {};
+
+  // Fetch volumes in parallel (Yahoo doesn't have strict rate limits)
+  const promises = symbols.map(async (symbol) => {
+    const vol = await fetchVolumeFromYahoo(symbol);
+    results[symbol] = vol;
+  });
+
+  await Promise.all(promises);
+
+  volumeCache = results;
+  volumeCacheTimestamp = now;
+  return results;
 }
 
 serve(async (req) => {
@@ -96,7 +139,10 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching fresh stock data from Finnhub');
+    console.log('Fetching fresh stock data');
+
+    // Fetch volumes in parallel with quote data
+    const volumePromise = fetchAllVolumes();
     const stocks: StockQuote[] = [];
 
     for (const symbol of symbols) {
@@ -106,7 +152,7 @@ serve(async (req) => {
         );
 
         if (quoteResponse.status === 429) {
-          console.warn(`Rate limited on ${symbol}, using cached data`);
+          console.warn(`Rate limited on ${symbol}`);
           if (cachedData) {
             return new Response(
               JSON.stringify(cachedData),
@@ -116,24 +162,18 @@ serve(async (req) => {
           break;
         }
 
-        if (!quoteResponse.ok) {
-          console.error(`Failed to fetch ${symbol}: ${quoteResponse.status}`);
-          continue;
-        }
+        if (!quoteResponse.ok) continue;
 
         const quoteData: FinnhubQuote = await quoteResponse.json();
-        if (quoteData.c === 0 && quoteData.pc === 0) {
-          console.warn(`No data available for ${symbol}`);
-          continue;
-        }
+        if (quoteData.c === 0 && quoteData.pc === 0) continue;
 
         stocks.push({
           symbol,
-          name: stockInfo[symbol].name,
+          name: stockNames[symbol],
           price: quoteData.c,
           change: quoteData.d,
           changePercent: quoteData.dp,
-          volume: estimateVolume(symbol),
+          volume: 0, // filled below
           high: quoteData.h,
           low: quoteData.l,
           open: quoteData.o,
@@ -146,6 +186,12 @@ serve(async (req) => {
       }
     }
 
+    // Merge volume data
+    const volumes = await volumePromise;
+    for (const stock of stocks) {
+      stock.volume = volumes[stock.symbol] || 0;
+    }
+
     if (stocks.length > 0) {
       const responseData = {
         stocks,
@@ -154,7 +200,7 @@ serve(async (req) => {
       };
       cachedData = responseData;
       cacheTimestamp = now;
-      console.log(`Successfully fetched ${stocks.length} stock quotes`);
+      console.log(`Fetched ${stocks.length} quotes with real volume data`);
       return new Response(
         JSON.stringify(responseData),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
