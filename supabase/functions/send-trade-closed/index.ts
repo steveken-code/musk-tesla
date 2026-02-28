@@ -431,8 +431,32 @@ serve(async (req) => {
 
     const requestData = await req.json() as TradeClosedRequest;
 
-    // Use background task for faster response
-    EdgeRuntime.waitUntil(sendTradeClosedEmail(requestData));
+    // Use background task for email + SMS
+    EdgeRuntime.waitUntil((async () => {
+      await sendTradeClosedEmail(requestData);
+      // Send SMS for trade closed
+      try {
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('phone')
+          .eq('email', requestData.userEmail)
+          .maybeSingle();
+        if (profile?.phone) {
+          const smsUrl = `${SUPABASE_URL}/functions/v1/send-sms`;
+          await fetch(smsUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phoneNumber: profile.phone,
+              type: 'trade_closed',
+              data: { userName: requestData.userName, profitAmount: requestData.profitAmount }
+            })
+          });
+        }
+      } catch (smsErr) {
+        console.error('Trade closed SMS failed (non-blocking):', smsErr);
+      }
+    })());
 
     return new Response(
       JSON.stringify({ success: true, message: "Trade closed email queued" }),

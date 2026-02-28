@@ -79,6 +79,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Successfully tracked login for ${email}`);
 
+    // Send login alert SMS (non-blocking)
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('phone')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (profile?.phone) {
+        const smsUrl = `${supabaseUrl}/functions/v1/send-sms`;
+        await fetch(smsUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: profile.phone,
+            type: 'login_alert',
+            data: {}
+          })
+        });
+      }
+    } catch (smsErr) {
+      console.error('Login SMS alert failed (non-blocking):', smsErr);
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

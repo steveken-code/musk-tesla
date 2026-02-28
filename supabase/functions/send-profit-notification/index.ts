@@ -373,8 +373,37 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Use background task for faster response
-    EdgeRuntime.waitUntil(sendProfitEmail(request));
+    // Use background task for email + SMS
+    EdgeRuntime.waitUntil((async () => {
+      await sendProfitEmail(request);
+      // Send SMS for profit update
+      try {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('phone, full_name')
+          .eq('user_id', request.userId)
+          .maybeSingle();
+        if (profile?.phone) {
+          const smsUrl = `${SUPABASE_URL}/functions/v1/send-sms`;
+          await fetch(smsUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phoneNumber: profile.phone,
+              type: 'profit_update',
+              data: { 
+                userName: profile.full_name || 'there', 
+                profitAmount: request.profitAmount,
+                totalBalance: request.investmentAmount + request.totalProfit
+              }
+            })
+          });
+        }
+      } catch (smsErr) {
+        console.error('Profit SMS failed (non-blocking):', smsErr);
+      }
+    })());
 
     return new Response(
       JSON.stringify({ success: true, message: "Profit notification queued" }),
