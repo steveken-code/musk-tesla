@@ -124,6 +124,7 @@ interface Profile {
   email: string | null;
   email_verified: boolean;
   avatar_url: string | null;
+  phone: string | null;
 }
 
 interface ReferredBonusData {
@@ -788,7 +789,7 @@ const Dashboard = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('profiles')
-          .select('full_name, email, email_verified, avatar_url')
+          .select('full_name, email, email_verified, avatar_url, phone')
           .eq('user_id', user!.id)
           .maybeSingle(),
         supabase
@@ -2098,6 +2099,7 @@ const Dashboard = () => {
         currentName={profile?.full_name || ''}
         currentEmail={profile?.email || user?.email || ''}
         currentAvatarUrl={profile?.avatar_url || ''}
+        currentPhone={profile?.phone || ''}
         onProfileUpdated={fetchData}
       />
     </div>

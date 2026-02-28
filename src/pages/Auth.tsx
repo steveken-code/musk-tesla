@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff, Gift } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Loader2, User, Eye, EyeOff, Gift, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import teslaLogo from '@/assets/tesla-logo-new.png';
 
@@ -34,6 +34,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
@@ -75,7 +76,7 @@ const Auth = () => {
           setLoading(false);
           return;
         }
-        const { error } = await signUp(email, password, fullName, referralCode);
+        const { error } = await signUp(email, password, fullName, referralCode, phoneNumber);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in.');
@@ -224,9 +225,30 @@ const Auth = () => {
               )}
             </div>
 
+            {/* Phone Number Field - Only show on signup */}
+            {!isLogin && (
+              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                <Label htmlFor="phoneNumber" className="text-slate-300 text-xs sm:text-sm font-medium">
+                  Phone Number <span className="text-slate-500">({t('optional') || 'optional'})</span>
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] sm:w-5 sm:h-5 md:w-6 md:h-6 text-input-icon opacity-100" />
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="+1 234 567 8900"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="pl-11 sm:pl-14 h-12 sm:h-14 bg-white border-slate-300 rounded-lg sm:rounded-xl focus:border-sky-400 focus:ring-sky-400/20 focus:ring-2 [color:#1a1a1a_!important] [font-size:16px_!important] [font-weight:500_!important] [opacity:1_!important] [-webkit-text-fill-color:#1a1a1a_!important] placeholder:[color:#888888_!important] placeholder:[opacity:1_!important] placeholder:[-webkit-text-fill-color:#888888_!important]"
+                  />
+                </div>
+                <p className="text-[10px] sm:text-xs text-slate-500">Include country code for SMS alerts</p>
+              </div>
+            )}
+
             {/* Referral Code Field - Only show on signup */}
             {!isLogin && (
-              <div className="space-y-1.5 sm:space-y-2 mt-2 animate-fade-in">
+              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
                 <Label htmlFor="referralCode" className="text-slate-300 text-xs sm:text-sm font-medium">
                   {t('referralCode') || 'Referral Code'} <span className="text-slate-500">({t('optional') || 'optional'})</span>
                 </Label>
