@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Camera, User, Mail, Check, Loader2, Phone } from 'lucide-react';
+import { X, Camera, User, Mail, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,6 @@ interface ProfileCompletionModalProps {
   currentName?: string;
   currentEmail?: string;
   currentAvatarUrl?: string;
-  currentPhone?: string;
   onProfileUpdated: () => void;
 }
 
@@ -25,11 +24,9 @@ const ProfileCompletionModal = ({
   currentName = '',
   currentEmail = '',
   currentAvatarUrl = '',
-  currentPhone = '',
   onProfileUpdated,
 }: ProfileCompletionModalProps) => {
   const [fullName, setFullName] = useState(currentName);
-  const [phone, setPhone] = useState(currentPhone);
   const [avatarUrl, setAvatarUrl] = useState(currentAvatarUrl);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(currentAvatarUrl || null);
@@ -121,7 +118,6 @@ const ProfileCompletionModal = ({
           full_name: fullName.trim(),
           avatar_url: newAvatarUrl,
           email: currentEmail || null,
-          phone: phone.trim() || null,
         }, { 
           onConflict: 'user_id',
         });
@@ -270,27 +266,6 @@ const ProfileCompletionModal = ({
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Email cannot be changed here
-                  </p>
-                </div>
-
-                {/* Phone Number */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-foreground font-medium">
-                    Phone Number <span className="text-muted-foreground text-xs">(for SMS alerts)</span>
-                  </Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 234 567 8900"
-                      className="pl-10 bg-background border-border"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Include country code to receive important SMS notifications
                   </p>
                 </div>
 

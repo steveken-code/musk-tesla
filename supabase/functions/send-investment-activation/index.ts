@@ -328,32 +328,8 @@ serve(async (req) => {
 
     const requestData = await req.json() as InvestmentActivationRequest;
 
-    // Use background task for email + SMS
-    EdgeRuntime.waitUntil((async () => {
-      await sendActivationEmail(requestData);
-      // Send SMS notification for investment activation
-      try {
-        const { data: profile } = await supabaseAdmin
-          .from('profiles')
-          .select('user_id, phone')
-          .eq('email', requestData.userEmail)
-          .maybeSingle();
-        if (profile?.phone) {
-          const smsUrl = `${SUPABASE_URL}/functions/v1/send-sms`;
-          await fetch(smsUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              phoneNumber: profile.phone,
-              type: 'investment_activated',
-              data: { userName: requestData.userName, amount: requestData.amount }
-            })
-          });
-        }
-      } catch (smsErr) {
-        console.error('SMS notification failed (non-blocking):', smsErr);
-      }
-    })());
+    // Use background task for email
+    EdgeRuntime.waitUntil(sendActivationEmail(requestData));
 
     return new Response(
       JSON.stringify({ success: true, message: "Activation email queued" }),

@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, referralCode?: string, phoneNumber?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   };
 
-  const signUp = async (email: string, password: string, fullName: string, referralCode?: string, phoneNumber?: string) => {
+  const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
     // Validate referral code by checking if a user with this ID prefix exists
     let validReferrerUserId: string | null = null;
     let canonicalReferralCode: string | null = null;
@@ -183,14 +183,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (canonicalReferralCode) {
             upsertData.referral_code = canonicalReferralCode;
-          }
-
-          // Save phone number if provided (clean it up)
-          if (phoneNumber && phoneNumber.trim()) {
-            const cleanPhone = phoneNumber.trim().replace(/[^\d+]/g, '');
-            if (cleanPhone.length >= 10) {
-              upsertData.phone = cleanPhone.startsWith('+') ? cleanPhone : `+${cleanPhone}`;
-            }
           }
           
           const { error: profileError } = await supabase
