@@ -2099,7 +2099,6 @@ const Dashboard = () => {
         currentName={profile?.full_name || ''}
         currentEmail={profile?.email || user?.email || ''}
         currentAvatarUrl={profile?.avatar_url || ''}
-        currentPhone={profile?.phone || ''}
         onProfileUpdated={fetchData}
       />
     </div>

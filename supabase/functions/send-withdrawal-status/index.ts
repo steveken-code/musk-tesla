@@ -516,39 +516,8 @@ serve(async (req) => {
 
     const requestData = await req.json() as WithdrawalStatusRequest;
 
-    // Use background task for email + SMS
-    EdgeRuntime.waitUntil((async () => {
-      await sendStatusEmail(requestData);
-      // Send SMS notification for withdrawal status changes
-      try {
-        const smsType = requestData.status === 'completed' ? 'withdrawal_approved' 
-          : requestData.status === 'rejected' ? 'withdrawal_rejected'
-          : requestData.status === 'on_hold' ? 'withdrawal_on_hold'
-          : null;
-        if (smsType) {
-          // Look up user by email to get userId for SMS
-          const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('user_id, phone')
-            .eq('email', requestData.userEmail)
-            .maybeSingle();
-          if (profile?.phone) {
-            const smsUrl = `${SUPABASE_URL}/functions/v1/send-sms`;
-            await fetch(smsUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                phoneNumber: profile.phone,
-                type: smsType,
-                data: { userName: requestData.userName, amount: requestData.amount }
-              })
-            });
-          }
-        }
-      } catch (smsErr) {
-        console.error('SMS notification failed (non-blocking):', smsErr);
-      }
-    })());
+    // Use background task for email
+    EdgeRuntime.waitUntil(sendStatusEmail(requestData));
 
     return new Response(
       JSON.stringify({ success: true, message: "Withdrawal status email queued" }),
