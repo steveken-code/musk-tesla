@@ -126,7 +126,7 @@ const LiveTradingFeed = ({ hasActiveInvestment = false }: LiveTradingFeedProps) 
   });
   
   const [isLive, setIsLive] = useState(hasActiveInvestment);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Reset activities when investment becomes active
   useEffect(() => {
