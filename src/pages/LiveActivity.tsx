@@ -80,8 +80,8 @@ const LiveActivity = () => {
      countries: BASE_STATS.countries,
   });
   const usedIndicesRef = useRef<Set<number>>(new Set());
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-   const userCounterRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+   const userCounterRef = useRef<ReturnType<typeof setInterval> | null>(null);
    const realInvestmentIndexRef = useRef(0);
    
    // Fetch real investments from database

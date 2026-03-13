@@ -58,7 +58,7 @@ export const WorldMapVisualization = () => {
   const [recentActivities, setRecentActivities] = useState<MapActivity[]>([]);
   const [connectionLines, setConnectionLines] = useState<ConnectionLine[]>([]);
   const usedIndicesRef = useRef<Set<number>>(new Set());
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const getUniqueUser = () => {
     if (usedIndicesRef.current.size >= allUsers.length * 0.9) {

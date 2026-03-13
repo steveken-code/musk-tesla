@@ -556,8 +556,8 @@ export const InvestmentNotification = () => {
   const [message, setMessage] = useState('');
   const [isWithdrawal, setIsWithdrawal] = useState(false);
   const usedIndicesRef = useRef<Set<number>>(new Set());
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Sound notifications disabled per user request
 
   const getUniqueUser = () => {
