@@ -1391,7 +1391,7 @@ const LiveChatWidget = () => {
                     : 'bg-gray-100 text-gray-900 rounded-bl-md'
                 }`}>
                   {msg.sender_type === 'admin' && (
-                    <p className="text-[10px] font-semibold text-blue-600 mb-1">{specialistProfile.specialistName}</p>
+                    <p className="text-[10px] font-semibold text-blue-600 mb-1">{activeSpecialistName}</p>
                   )}
                   {msg.image_url && (
                     <img
