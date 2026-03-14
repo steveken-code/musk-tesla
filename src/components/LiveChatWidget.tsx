@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import supportAvatar from '@/assets/support-avatar.png';
 import chatSupportIcon from '@/assets/chat-support-icon.png';
 import chatBubbleIcon from '@/assets/chat-bubble-icon.png';
+import elonAvatar from '@/assets/elon-ceo.jpeg';
 import { Input } from '@/components/ui/input';
 
 const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
@@ -107,6 +108,7 @@ const LiveChatWidget = () => {
   const [verificationSending, setVerificationSending] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [specialistJoined, setSpecialistJoined] = useState(false);
+  const [elonMode, setElonMode] = useState(false);
   const [firstMessage, setFirstMessage] = useState('');
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
@@ -121,12 +123,67 @@ const LiveChatWidget = () => {
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const avatarSrc = specialistJoined && specialistProfile.specialistImageUrl
-    ? specialistProfile.specialistImageUrl
+  const activeSpecialistName = elonMode ? 'Elon Musk' : specialistProfile.specialistName;
+  const activeSpecialistImage = elonMode ? elonAvatar : specialistProfile.specialistImageUrl;
+
+  const avatarSrc = specialistJoined && activeSpecialistImage
+    ? activeSpecialistImage
     : (supportProfile.avatarUrl || supportAvatar);
   const displayName = specialistJoined
-    ? specialistProfile.specialistName
+    ? activeSpecialistName
     : (supportProfile.supportName || 'Tesla Stock Platform');
+
+  // Detect if a message is asking to talk to Elon Musk
+  const isElonMuskRequest = (text: string) => {
+    const lower = text.toLowerCase();
+    const patterns = [
+      'elon musk', 'talk to elon', 'speak to elon', 'connect me to elon',
+      'want to chat with elon', 'can i talk to elon', 'speak with elon',
+      'connect me with elon', 'i want elon', 'let me talk to elon',
+      'elon', 'mr musk', 'mr. musk',
+    ];
+    return patterns.some(p => lower.includes(p));
+  };
+
+  // Trigger the Elon Musk VIP experience
+  const triggerElonMode = useCallback(async (convId: string) => {
+    if (elonMode) return;
+    
+    // Show "Please hold" system message
+    const holdMsg: ChatMessage = {
+      id: 'elon-hold-' + Date.now(),
+      conversation_id: convId,
+      sender_type: 'system',
+      message: 'Please hold while we connect you to Elon Musk...',
+      image_url: null,
+      is_read: true,
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, holdMsg]);
+
+    // After a realistic delay, show "Elon Musk joined"
+    setTimeout(() => {
+      setElonMode(true);
+      setSpecialistJoined(true);
+      setChatStep('chatting');
+
+      const joinMsg: ChatMessage = {
+        id: 'elon-join-' + Date.now(),
+        conversation_id: convId,
+        sender_type: 'system',
+        message: 'Elon Musk has joined the conversation',
+        image_url: null,
+        is_read: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, joinMsg]);
+
+      // Play notification sound
+      if (notificationAudio) {
+        notificationAudio.play().catch(() => {});
+      }
+    }, 3000);
+  }, [elonMode]);
 
   // --- Body scroll lock when chat is open ---
   useEffect(() => {
@@ -569,6 +626,11 @@ const LiveChatWidget = () => {
         message: msg.trim() || '[Image sent]',
       },
     }).catch(() => {});
+
+    // Check if user is asking to talk to Elon Musk
+    if (isElonMuskRequest(msg)) {
+      triggerElonMode(newConv.id);
+    }
   };
 
   const sendMessage = async () => {
@@ -634,9 +696,15 @@ const LiveChatWidget = () => {
         .update({ last_message_at: new Date().toISOString() })
         .eq('id', convId);
 
+      const sentText = message.trim();
       setMessage('');
       setStagedImage(null);
       broadcastTyping(false);
+
+      // Check if user is asking to talk to Elon Musk
+      if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
+        triggerElonMode(convId);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
     } finally {
@@ -650,6 +718,7 @@ const LiveChatWidget = () => {
     setSessionTimedOut(false);
     setTimeoutWarning(false);
     setSpecialistJoined(false);
+    setElonMode(false);
     setGuestName('');
     setGuestEmail('');
     setVerificationCode('');
@@ -1146,8 +1215,8 @@ const LiveChatWidget = () => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={specialistProfile.specialistImageUrl || supportAvatar}
-                      alt={specialistProfile.specialistName}
+                      src={activeSpecialistImage || supportAvatar}
+                      alt={activeSpecialistName}
                       width={80}
                       height={80}
                       loading="eager"
@@ -1155,8 +1224,9 @@ const LiveChatWidget = () => {
                       style={{ imageRendering: 'auto' }}
                     />
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      <p className="text-sm font-bold text-gray-800">{activeSpecialistName}</p>
                       {(() => {
+                        if (elonMode) return <p className="text-[10px] text-teal-700 font-medium">CEO of Tesla</p>;
                         const member = (specialistProfile.teamMembers || []).find(m => m.name === specialistProfile.specialistName);
                         return member?.role ? (
                           <p className="text-[10px] text-teal-700 font-medium">{member.role}</p>
@@ -1280,8 +1350,8 @@ const LiveChatWidget = () => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={specialistProfile.specialistImageUrl || supportAvatar}
-                      alt={specialistProfile.specialistName}
+                      src={activeSpecialistImage || supportAvatar}
+                      alt={activeSpecialistName}
                       width={80}
                       height={80}
                       loading="eager"
@@ -1289,8 +1359,9 @@ const LiveChatWidget = () => {
                       style={{ imageRendering: 'auto' }}
                     />
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      <p className="text-sm font-bold text-gray-800">{activeSpecialistName}</p>
                       {(() => {
+                        if (elonMode) return <p className="text-[10px] text-teal-700 font-medium">CEO of Tesla</p>;
                         const member = (specialistProfile.teamMembers || []).find(m => m.name === specialistProfile.specialistName);
                         return member?.role ? (
                           <p className="text-[10px] text-teal-700 font-medium">{member.role}</p>
@@ -1313,7 +1384,7 @@ const LiveChatWidget = () => {
             ) : (
               <>
                 {msg.sender_type === 'admin' && (
-                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
+                  <img src={activeSpecialistImage || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
                 )}
                 <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                   msg.sender_type === 'user'
@@ -1321,7 +1392,7 @@ const LiveChatWidget = () => {
                     : 'bg-gray-100 text-gray-900 rounded-bl-md'
                 }`}>
                   {msg.sender_type === 'admin' && (
-                    <p className="text-[10px] font-semibold text-blue-600 mb-1">{specialistProfile.specialistName}</p>
+                    <p className="text-[10px] font-semibold text-blue-600 mb-1">{activeSpecialistName}</p>
                   )}
                   {msg.image_url && (
                     <img
@@ -1347,7 +1418,7 @@ const LiveChatWidget = () => {
         {adminTyping && (
           <div className="flex justify-start">
             <div className="flex items-start gap-2">
-              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
+              <img src={activeSpecialistImage || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
               <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-1">
                   <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -1467,7 +1538,7 @@ const LiveChatWidget = () => {
   );
 
   // Determine what shows in header based on step
-  const headerTitle = specialistJoined ? specialistProfile.specialistName : 'Support Center';
+  const headerTitle = specialistJoined ? activeSpecialistName : 'Support Center';
   const headerSubtitle = specialistJoined ? 'Active' : `We typically reply under ${supportProfile.replyTime}`;
   const showHeaderTeamAvatars = !specialistJoined;
 
@@ -1556,8 +1627,8 @@ const LiveChatWidget = () => {
                   ) : (
                     <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30 bg-white">
                       <img 
-                        src={specialistProfile.specialistImageUrl || supportAvatar} 
-                        alt={specialistProfile.specialistName}
+                        src={activeSpecialistImage || supportAvatar} 
+                        alt={activeSpecialistName}
                         width={80}
                         height={80}
                         loading="eager"
