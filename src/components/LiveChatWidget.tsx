@@ -1537,7 +1537,7 @@ const LiveChatWidget = () => {
   );
 
   // Determine what shows in header based on step
-  const headerTitle = specialistJoined ? specialistProfile.specialistName : 'Support Center';
+  const headerTitle = specialistJoined ? activeSpecialistName : 'Support Center';
   const headerSubtitle = specialistJoined ? 'Active' : `We typically reply under ${supportProfile.replyTime}`;
   const showHeaderTeamAvatars = !specialistJoined;
 
