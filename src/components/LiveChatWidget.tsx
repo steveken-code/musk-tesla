@@ -1417,7 +1417,7 @@ const LiveChatWidget = () => {
         {adminTyping && (
           <div className="flex justify-start">
             <div className="flex items-start gap-2">
-              <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
+              <img src={activeSpecialistImage || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
               <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-1">
                   <span className="w-[6px] h-[6px] bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
