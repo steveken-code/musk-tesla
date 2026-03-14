@@ -1626,8 +1626,8 @@ const LiveChatWidget = () => {
                   ) : (
                     <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-white/30 bg-white">
                       <img 
-                        src={specialistProfile.specialistImageUrl || supportAvatar} 
-                        alt={specialistProfile.specialistName}
+                        src={activeSpecialistImage || supportAvatar} 
+                        alt={activeSpecialistName}
                         width={80}
                         height={80}
                         loading="eager"
