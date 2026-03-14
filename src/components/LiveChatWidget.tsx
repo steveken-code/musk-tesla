@@ -1383,7 +1383,7 @@ const LiveChatWidget = () => {
             ) : (
               <>
                 {msg.sender_type === 'admin' && (
-                  <img src={specialistProfile.specialistImageUrl || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
+                  <img src={activeSpecialistImage || avatarSrc} alt="Support" width={64} height={64} loading="eager" className="w-8 h-8 rounded-full flex-shrink-0 mt-1 mr-2 border border-gray-200 object-cover" style={{ imageRendering: 'auto' }} />
                 )}
                 <div className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 overflow-hidden ${
                   msg.sender_type === 'user'
