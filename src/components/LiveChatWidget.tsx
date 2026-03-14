@@ -108,6 +108,7 @@ const LiveChatWidget = () => {
   const [verificationSending, setVerificationSending] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [specialistJoined, setSpecialistJoined] = useState(false);
+  const [elonMode, setElonMode] = useState(false);
   const [firstMessage, setFirstMessage] = useState('');
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
