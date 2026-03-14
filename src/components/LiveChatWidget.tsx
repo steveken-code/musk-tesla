@@ -626,6 +626,11 @@ const LiveChatWidget = () => {
         message: msg.trim() || '[Image sent]',
       },
     }).catch(() => {});
+
+    // Check if user is asking to talk to Elon Musk
+    if (isElonMuskRequest(msg)) {
+      triggerElonMode(newConv.id);
+    }
   };
 
   const sendMessage = async () => {
