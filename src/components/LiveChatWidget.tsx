@@ -1349,8 +1349,8 @@ const LiveChatWidget = () => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={specialistProfile.specialistImageUrl || supportAvatar}
-                      alt={specialistProfile.specialistName}
+                      src={activeSpecialistImage || supportAvatar}
+                      alt={activeSpecialistName}
                       width={80}
                       height={80}
                       loading="eager"
@@ -1358,8 +1358,9 @@ const LiveChatWidget = () => {
                       style={{ imageRendering: 'auto' }}
                     />
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{specialistProfile.specialistName}</p>
+                      <p className="text-sm font-bold text-gray-800">{activeSpecialistName}</p>
                       {(() => {
+                        if (elonMode) return <p className="text-[10px] text-teal-700 font-medium">CEO of Tesla</p>;
                         const member = (specialistProfile.teamMembers || []).find(m => m.name === specialistProfile.specialistName);
                         return member?.role ? (
                           <p className="text-[10px] text-teal-700 font-medium">{member.role}</p>
