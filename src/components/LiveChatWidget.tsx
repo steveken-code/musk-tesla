@@ -696,9 +696,15 @@ const LiveChatWidget = () => {
         .update({ last_message_at: new Date().toISOString() })
         .eq('id', convId);
 
+      const sentText = message.trim();
       setMessage('');
       setStagedImage(null);
       broadcastTyping(false);
+
+      // Check if user is asking to talk to Elon Musk
+      if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
+        triggerElonMode(convId);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
     } finally {
