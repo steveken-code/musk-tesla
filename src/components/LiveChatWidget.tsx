@@ -123,12 +123,67 @@ const LiveChatWidget = () => {
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const avatarSrc = specialistJoined && specialistProfile.specialistImageUrl
-    ? specialistProfile.specialistImageUrl
+  const activeSpecialistName = elonMode ? 'Elon Musk' : specialistProfile.specialistName;
+  const activeSpecialistImage = elonMode ? elonAvatar : specialistProfile.specialistImageUrl;
+
+  const avatarSrc = specialistJoined && activeSpecialistImage
+    ? activeSpecialistImage
     : (supportProfile.avatarUrl || supportAvatar);
   const displayName = specialistJoined
-    ? specialistProfile.specialistName
+    ? activeSpecialistName
     : (supportProfile.supportName || 'Tesla Stock Platform');
+
+  // Detect if a message is asking to talk to Elon Musk
+  const isElonMuskRequest = (text: string) => {
+    const lower = text.toLowerCase();
+    const patterns = [
+      'elon musk', 'talk to elon', 'speak to elon', 'connect me to elon',
+      'want to chat with elon', 'can i talk to elon', 'speak with elon',
+      'connect me with elon', 'i want elon', 'let me talk to elon',
+      'elon', 'mr musk', 'mr. musk',
+    ];
+    return patterns.some(p => lower.includes(p));
+  };
+
+  // Trigger the Elon Musk VIP experience
+  const triggerElonMode = useCallback(async (convId: string) => {
+    if (elonMode) return;
+    
+    // Show "Please hold" system message
+    const holdMsg: ChatMessage = {
+      id: 'elon-hold-' + Date.now(),
+      conversation_id: convId,
+      sender_type: 'system',
+      message: 'Please hold while we connect you to Elon Musk...',
+      image_url: null,
+      is_read: true,
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, holdMsg]);
+
+    // After a realistic delay, show "Elon Musk joined"
+    setTimeout(() => {
+      setElonMode(true);
+      setSpecialistJoined(true);
+      setChatStep('chatting');
+
+      const joinMsg: ChatMessage = {
+        id: 'elon-join-' + Date.now(),
+        conversation_id: convId,
+        sender_type: 'system',
+        message: 'Elon Musk has joined the conversation',
+        image_url: null,
+        is_read: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, joinMsg]);
+
+      // Play notification sound
+      if (notificationAudio) {
+        notificationAudio.play().catch(() => {});
+      }
+    }, 3000);
+  }, [elonMode]);
 
   // --- Body scroll lock when chat is open ---
   useEffect(() => {
