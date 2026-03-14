@@ -718,6 +718,7 @@ const LiveChatWidget = () => {
     setSessionTimedOut(false);
     setTimeoutWarning(false);
     setSpecialistJoined(false);
+    setElonMode(false);
     setGuestName('');
     setGuestEmail('');
     setVerificationCode('');
