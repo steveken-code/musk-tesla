@@ -481,32 +481,15 @@ const LiveChatWidget = () => {
     setVerificationSending(true);
     setVerificationError('');
     try {
-      const { data, error } = await supabase
-        .from('chat_verification_codes')
-        .select('*')
-        .eq('email', guestEmail.trim())
-        .eq('code', verificationCode)
-        .eq('verified', false)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('verify-chat-code', {
+        body: { email: guestEmail.trim(), code: verificationCode },
+      });
 
-      if (error || !data) {
-        setVerificationError('Invalid code. Please try again.');
+      if (fnError || !fnData?.success) {
+        setVerificationError(fnData?.error || 'Invalid code. Please try again.');
         setVerificationSending(false);
         return;
       }
-
-      if (new Date(data.expires_at) < new Date()) {
-        setVerificationError('Code has expired. Please request a new one.');
-        setVerificationSending(false);
-        return;
-      }
-
-      await supabase
-        .from('chat_verification_codes')
-        .update({ verified: true })
-        .eq('id', data.id);
 
       // After verification, go to compose step so greeting shows first
       setChatStep('compose');

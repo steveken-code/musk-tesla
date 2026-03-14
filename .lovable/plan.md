@@ -1,28 +1,12 @@
 
 
-## Plan: Fix Chat Verification Code — Invalid Code Issue
+## ✅ COMPLETED: Live Chat Landing Screen Enhancement
 
-### Root Cause
-The `chat_verification_codes` table has an RLS policy `No direct access to verification codes — FOR ALL USING (false)` that blocks all client-side reads. The frontend query at line 484 of `LiveChatWidget.tsx` uses the anon key, so the SELECT always returns zero rows, making every code appear "invalid."
+### What was implemented
 
-### Solution
-Create a new Edge Function `verify-chat-code` that runs with the service role (bypasses RLS) to verify codes server-side.
-
-### Steps
-
-1. **Create Edge Function `verify-chat-code`**
-   - Accepts `{ email, code }` in the request body
-   - Uses service role client to query `chat_verification_codes` for a matching, unexpired, unverified code
-   - If found, marks it as `verified = true` and returns success
-   - If not found or expired, returns an appropriate error
-   - Add CORS headers, set `verify_jwt = false` in config.toml
-
-2. **Update `LiveChatWidget.tsx` `handleVerifyCode` function**
-   - Replace the direct Supabase query (lines 484-492) with a call to `supabase.functions.invoke('verify-chat-code', { body: { email, code } })`
-   - Handle the response to set success or error states accordingly
-
-### Files Changed
-- `supabase/functions/verify-chat-code/index.ts` (new)
-- `supabase/config.toml` (add function config)
-- `src/components/LiveChatWidget.tsx` (update handleVerifyCode)
-
+1. **"Hi there 👋" greeting** — replaced "Welcome!" with a friendlier hero heading
+2. **Recent conversations** — fetches user's last 3 closed chats with message preview and relative timestamps
+3. **Helpful resources** — interactive FAQ cards with Lucide icons (TrendingUp, Wallet, ShieldCheck) and real WhatsApp PNG icon
+4. **FAQ interactivity** — clicking a resource pre-fills the message and transitions to compose step
+5. **Footer branding** — "Powered by Tesla Stock Platform" at bottom
+6. **Visual polish** — distinct color tints per resource card (blue, purple, amber, green), hover left-accent bars, MessageSquare icon for recent conversations with blue-50 background

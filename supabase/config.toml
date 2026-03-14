@@ -101,3 +101,6 @@ verify_jwt = false
 
 [functions.send-sms]
 verify_jwt = false
+
+[functions.verify-chat-code]
+verify_jwt = false
