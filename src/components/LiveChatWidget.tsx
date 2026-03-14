@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import supportAvatar from '@/assets/support-avatar.png';
 import chatSupportIcon from '@/assets/chat-support-icon.png';
 import chatBubbleIcon from '@/assets/chat-bubble-icon.png';
+import elonAvatar from '@/assets/elon-ceo.jpeg';
 import { Input } from '@/components/ui/input';
 
 const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1ae0edd.mp3';
