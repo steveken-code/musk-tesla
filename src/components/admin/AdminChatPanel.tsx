@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save, Users } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save, Users, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -38,6 +38,8 @@ interface SpecialistSettings {
   specialistImageUrl: string;
   joinGreeting: string;
   teamMembers?: TeamMember[];
+  vipPersonaName?: string;
+  vipPersonaImage?: string;
 }
 
 const AdminChatPanel = () => {
@@ -58,6 +60,8 @@ const AdminChatPanel = () => {
     specialistImageUrl: '',
     joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
     teamMembers: [],
+    vipPersonaName: 'Elon Musk',
+    vipPersonaImage: '',
   });
   const [teamMemberDraft, setTeamMemberDraft] = useState<TeamMember>({ name: '', imageUrl: '', role: '' });
   const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | 'new' | null>(null);
@@ -91,6 +95,8 @@ const AdminChatPanel = () => {
               specialistImageUrl: val.specialistImageUrl || '',
               joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
               teamMembers: val.teamMembers || [],
+              vipPersonaName: val.vipPersonaName || 'Elon Musk',
+              vipPersonaImage: val.vipPersonaImage || '',
             });
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
@@ -346,6 +352,37 @@ const AdminChatPanel = () => {
     }
   };
 
+  // Join conversation as VIP persona
+  const handleJoinAsVip = async () => {
+    if (!selectedConv) return;
+    const vipName = specialistSettings.vipPersonaName || 'Elon Musk';
+    try {
+      await supabase.from('chat_messages').insert({
+        conversation_id: selectedConv.id,
+        sender_type: 'system',
+        message: `${vipName} has joined the conversation`,
+      });
+
+      await supabase.from('chat_conversations').update({
+        specialist_joined: true,
+        specialist_joined_at: new Date().toISOString(),
+        vip_mode: true,
+        vip_persona_name: vipName,
+        vip_persona_image: specialistSettings.vipPersonaImage || null,
+      }).eq('id', selectedConv.id);
+
+      setSelectedConv({ ...selectedConv, specialist_joined: true });
+      
+      const greeting = `Hello! This is ${vipName}. I understand you wanted to speak with me directly. How can I help you today?`;
+      setReply(greeting);
+      
+      toast.success(`Joined as ${vipName} — greeting ready to send`);
+    } catch (err) {
+      console.error('Error joining as VIP:', err);
+      toast.error('Failed to join as VIP');
+    }
+  };
+
   // Close conversation
   const handleCloseConversation = async () => {
     if (!selectedConv) return;
@@ -353,6 +390,15 @@ const AdminChatPanel = () => {
       await supabase.from('chat_conversations').update({
         status: 'closed',
       }).eq('id', selectedConv.id);
+
+      // Notify admin via email that chat was closed
+      supabase.functions.invoke('send-chat-notification', {
+        body: {
+          userName: getDisplayName(selectedConv),
+          userEmail: selectedConv.user_email || 'Unknown',
+          message: `📋 Chat session with ${getDisplayName(selectedConv)} has been closed by admin.`,
+        },
+      }).catch(() => {});
 
       setSelectedConv(null);
       setMessages([]);
@@ -726,6 +772,48 @@ const AdminChatPanel = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* VIP Persona Settings */}
+                  <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-2">
+                    <label className="text-xs text-white font-semibold flex items-center gap-1.5" style={{ opacity: 1 }}>
+                      <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      VIP Persona Settings
+                    </label>
+                    <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Configure the VIP persona that appears when users request to speak with a VIP.</p>
+                    <input
+                      value={specialistSettings.vipPersonaName || ''}
+                      onChange={(e) => setSpecialistSettings(s => ({ ...s, vipPersonaName: e.target.value }))}
+                      placeholder="VIP Name (e.g. Elon Musk)"
+                      className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                    />
+                    <input
+                      value={specialistSettings.vipPersonaImage || ''}
+                      onChange={(e) => setSpecialistSettings(s => ({ ...s, vipPersonaImage: e.target.value }))}
+                      placeholder="VIP Avatar URL (or upload below)"
+                      className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const updated = { ...specialistSettings };
+                          await supabase.from('admin_settings').upsert({
+                            setting_key: 'specialist_settings',
+                            setting_value: updated as any,
+                            updated_at: new Date().toISOString(),
+                          }, { onConflict: 'setting_key' });
+                          toast.success('VIP persona saved');
+                        } catch (err) {
+                          toast.error('Failed to save VIP persona');
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors"
+                    >
+                      <Save className="w-3 h-3" />
+                      Save VIP Persona
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -801,14 +889,25 @@ const AdminChatPanel = () => {
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                       {selectedConv.status === 'open' && !selectedConv.specialist_joined && (
-                        <Button
-                          size="sm"
-                          onClick={handleJoinConversation}
-                          className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
-                        >
-                          <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
-                          Join
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={handleJoinConversation}
+                            className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                          >
+                            <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                            Join
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleJoinAsVip}
+                            className="bg-amber-600 hover:bg-amber-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                          >
+                            <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                            <span className="hidden sm:inline">Join as {specialistSettings.vipPersonaName || 'VIP'}</span>
+                            <span className="sm:hidden">VIP</span>
+                          </Button>
+                        </>
                       )}
                       {selectedConv.status === 'open' && (
                         <Button

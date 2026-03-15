@@ -109,6 +109,8 @@ const LiveChatWidget = () => {
   const [verificationError, setVerificationError] = useState('');
   const [specialistJoined, setSpecialistJoined] = useState(false);
   const [elonMode, setElonMode] = useState(false);
+  const [vipPersonaName, setVipPersonaName] = useState('');
+  const [vipPersonaImage, setVipPersonaImage] = useState('');
   const [firstMessage, setFirstMessage] = useState('');
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
@@ -123,8 +125,8 @@ const LiveChatWidget = () => {
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeSpecialistName = elonMode ? 'Elon Musk' : specialistProfile.specialistName;
-  const activeSpecialistImage = elonMode ? elonAvatar : specialistProfile.specialistImageUrl;
+  const activeSpecialistName = elonMode ? (vipPersonaName || 'Elon Musk') : specialistProfile.specialistName;
+  const activeSpecialistImage = elonMode ? (vipPersonaImage || elonAvatar) : specialistProfile.specialistImageUrl;
 
   const avatarSrc = specialistJoined && activeSpecialistImage
     ? activeSpecialistImage
@@ -145,8 +147,8 @@ const LiveChatWidget = () => {
     return patterns.some(p => lower.includes(p));
   };
 
-  // Trigger the Elon Musk VIP experience
-  const triggerElonMode = useCallback(async (convId: string) => {
+  // Request VIP connection - shows hold message and notifies admin (no auto-join)
+  const requestVipConnection = useCallback(async (convId: string, userName: string, userEmail: string) => {
     if (elonMode) return;
     
     // Show "Please hold" system message
@@ -154,36 +156,22 @@ const LiveChatWidget = () => {
       id: 'elon-hold-' + Date.now(),
       conversation_id: convId,
       sender_type: 'system',
-      message: 'Please hold while we connect you to Elon Musk...',
+      message: `Please hold while we connect you to ${vipPersonaName || 'Elon Musk'}...`,
       image_url: null,
       is_read: true,
       created_at: new Date().toISOString(),
     };
     setMessages(prev => [...prev, holdMsg]);
 
-    // After a realistic delay, show "Elon Musk joined"
-    setTimeout(() => {
-      setElonMode(true);
-      setSpecialistJoined(true);
-      setChatStep('chatting');
-
-      const joinMsg: ChatMessage = {
-        id: 'elon-join-' + Date.now(),
-        conversation_id: convId,
-        sender_type: 'system',
-        message: 'Elon Musk has joined the conversation',
-        image_url: null,
-        is_read: true,
-        created_at: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, joinMsg]);
-
-      // Play notification sound
-      if (notificationAudio) {
-        notificationAudio.play().catch(() => {});
-      }
-    }, 3000);
-  }, [elonMode]);
+    // Notify admin via email about VIP request
+    supabase.functions.invoke('send-chat-notification', {
+      body: {
+        userName: userName,
+        userEmail: userEmail || 'Anonymous',
+        message: `⚡ VIP REQUEST: User wants to speak with ${vipPersonaName || 'Elon Musk'}. Please join as VIP from the admin panel.`,
+      },
+    }).catch(() => {});
+  }, [elonMode, vipPersonaName]);
 
   // --- Body scroll lock when chat is open ---
   useEffect(() => {
@@ -262,7 +250,7 @@ const LiveChatWidget = () => {
       const { data } = await supabase
         .from('admin_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings', 'session_timeout_settings']);
+        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings', 'session_timeout_settings', 'vip_persona_settings']);
       if (data) {
         for (const row of data) {
           if (row.setting_key === 'chat_greeting_settings' && row.setting_value) {
@@ -283,6 +271,9 @@ const LiveChatWidget = () => {
               specialistImageUrl: val.specialistImageUrl || '',
               teamMembers: val.teamMembers || [],
             });
+            // Load VIP persona from specialist_settings if present
+            if (val.vipPersonaName) setVipPersonaName(val.vipPersonaName);
+            if (val.vipPersonaImage) setVipPersonaImage(val.vipPersonaImage);
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
             const val = row.setting_value as any;
@@ -406,10 +397,20 @@ const LiveChatWidget = () => {
           setSpecialistJoined(true);
           setChatStep('chatting');
         }
+        // Detect VIP mode activated by admin
+        if (updated.vip_mode && !elonMode) {
+          setElonMode(true);
+          if (updated.vip_persona_name) setVipPersonaName(updated.vip_persona_name);
+          if (updated.vip_persona_image) setVipPersonaImage(updated.vip_persona_image);
+          setSpecialistJoined(true);
+          setChatStep('chatting');
+          if (notificationAudio) notificationAudio.play().catch(() => {});
+        }
         if (updated.status === 'closed') {
           setConversationId(null);
           setMessages([]);
           setSpecialistJoined(false);
+          setElonMode(false);
           setChatStep('landing');
           setProactiveMessage(null);
           setSessionTimedOut(false);
@@ -627,9 +628,9 @@ const LiveChatWidget = () => {
       },
     }).catch(() => {});
 
-    // Check if user is asking to talk to Elon Musk
+    // Check if user is asking to talk to VIP persona
     if (isElonMuskRequest(msg)) {
-      triggerElonMode(newConv.id);
+      requestVipConnection(newConv.id, userName, userEmail || '');
     }
   };
 
@@ -701,9 +702,11 @@ const LiveChatWidget = () => {
       setStagedImage(null);
       broadcastTyping(false);
 
-      // Check if user is asking to talk to Elon Musk
+      // Check if user is asking to talk to VIP persona
       if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
-        triggerElonMode(convId);
+        const uName = user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user.email || '') : guestEmail.trim();
+        requestVipConnection(convId, uName, uEmail);
       }
     } catch (err) {
       console.error('Error sending message:', err);
