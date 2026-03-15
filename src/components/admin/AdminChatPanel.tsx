@@ -95,6 +95,8 @@ const AdminChatPanel = () => {
               specialistImageUrl: val.specialistImageUrl || '',
               joinGreeting: val.joinGreeting || 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
               teamMembers: val.teamMembers || [],
+              vipPersonaName: val.vipPersonaName || 'Elon Musk',
+              vipPersonaImage: val.vipPersonaImage || '',
             });
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
