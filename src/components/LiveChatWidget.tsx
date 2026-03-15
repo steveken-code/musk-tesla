@@ -147,8 +147,8 @@ const LiveChatWidget = () => {
     return patterns.some(p => lower.includes(p));
   };
 
-  // Trigger the Elon Musk VIP experience
-  const triggerElonMode = useCallback(async (convId: string) => {
+  // Request VIP connection - shows hold message and notifies admin (no auto-join)
+  const requestVipConnection = useCallback(async (convId: string, userName: string, userEmail: string) => {
     if (elonMode) return;
     
     // Show "Please hold" system message
@@ -156,36 +156,22 @@ const LiveChatWidget = () => {
       id: 'elon-hold-' + Date.now(),
       conversation_id: convId,
       sender_type: 'system',
-      message: 'Please hold while we connect you to Elon Musk...',
+      message: `Please hold while we connect you to ${vipPersonaName || 'Elon Musk'}...`,
       image_url: null,
       is_read: true,
       created_at: new Date().toISOString(),
     };
     setMessages(prev => [...prev, holdMsg]);
 
-    // After a realistic delay, show "Elon Musk joined"
-    setTimeout(() => {
-      setElonMode(true);
-      setSpecialistJoined(true);
-      setChatStep('chatting');
-
-      const joinMsg: ChatMessage = {
-        id: 'elon-join-' + Date.now(),
-        conversation_id: convId,
-        sender_type: 'system',
-        message: 'Elon Musk has joined the conversation',
-        image_url: null,
-        is_read: true,
-        created_at: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, joinMsg]);
-
-      // Play notification sound
-      if (notificationAudio) {
-        notificationAudio.play().catch(() => {});
-      }
-    }, 3000);
-  }, [elonMode]);
+    // Notify admin via email about VIP request
+    supabase.functions.invoke('send-chat-notification', {
+      body: {
+        userName: userName,
+        userEmail: userEmail || 'Anonymous',
+        message: `⚡ VIP REQUEST: User wants to speak with ${vipPersonaName || 'Elon Musk'}. Please join as VIP from the admin panel.`,
+      },
+    }).catch(() => {});
+  }, [elonMode, vipPersonaName]);
 
   // --- Body scroll lock when chat is open ---
   useEffect(() => {
