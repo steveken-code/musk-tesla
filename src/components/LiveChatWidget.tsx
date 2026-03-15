@@ -125,8 +125,8 @@ const LiveChatWidget = () => {
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeSpecialistName = elonMode ? 'Elon Musk' : specialistProfile.specialistName;
-  const activeSpecialistImage = elonMode ? elonAvatar : specialistProfile.specialistImageUrl;
+  const activeSpecialistName = elonMode ? (vipPersonaName || 'Elon Musk') : specialistProfile.specialistName;
+  const activeSpecialistImage = elonMode ? (vipPersonaImage || elonAvatar) : specialistProfile.specialistImageUrl;
 
   const avatarSrc = specialistJoined && activeSpecialistImage
     ? activeSpecialistImage
