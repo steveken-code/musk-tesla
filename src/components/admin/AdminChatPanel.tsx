@@ -391,6 +391,15 @@ const AdminChatPanel = () => {
         status: 'closed',
       }).eq('id', selectedConv.id);
 
+      // Notify admin via email that chat was closed
+      supabase.functions.invoke('send-chat-notification', {
+        body: {
+          userName: getDisplayName(selectedConv),
+          userEmail: selectedConv.user_email || 'Unknown',
+          message: `📋 Chat session with ${getDisplayName(selectedConv)} has been closed by admin.`,
+        },
+      }).catch(() => {});
+
       setSelectedConv(null);
       setMessages([]);
       toast.success('Chat closed');
