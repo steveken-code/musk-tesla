@@ -787,13 +787,47 @@ const AdminChatPanel = () => {
                       className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
                       style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
                     />
-                    <input
-                      value={specialistSettings.vipPersonaImage || ''}
-                      onChange={(e) => setSpecialistSettings(s => ({ ...s, vipPersonaImage: e.target.value }))}
-                      placeholder="VIP Avatar URL (or upload below)"
-                      className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
-                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
-                    />
+                    {/* VIP Avatar Upload */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-shrink-0 group">
+                        {specialistSettings.vipPersonaImage ? (
+                          <img src={specialistSettings.vipPersonaImage} alt="VIP" className="w-12 h-12 rounded-full object-cover border-2 border-amber-400" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+                            <Crown className="w-5 h-5 text-amber-400" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <Camera className="w-4 h-4 text-white" />
+                        </div>
+                        <label className="absolute inset-0 cursor-pointer rounded-full">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                const ext = file.name.split('.').pop();
+                                const path = `vip/vip-avatar-${Date.now()}.${ext}`;
+                                const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+                                if (error) throw error;
+                                const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+                                setSpecialistSettings(s => ({ ...s, vipPersonaImage: urlData.publicUrl }));
+                                toast.success('VIP avatar uploaded');
+                              } catch (err) {
+                                toast.error('Failed to upload VIP avatar');
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-slate-300" style={{ opacity: 1 }}>Click photo to upload VIP avatar</p>
+                        <p className="text-[9px] text-slate-500 truncate" style={{ opacity: 1 }}>{specialistSettings.vipPersonaImage ? 'Avatar set ✓' : 'No avatar set'}</p>
+                      </div>
+                    </div>
                     <button
                       onClick={async () => {
                         try {
