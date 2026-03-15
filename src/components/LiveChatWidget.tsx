@@ -397,10 +397,20 @@ const LiveChatWidget = () => {
           setSpecialistJoined(true);
           setChatStep('chatting');
         }
+        // Detect VIP mode activated by admin
+        if (updated.vip_mode && !elonMode) {
+          setElonMode(true);
+          if (updated.vip_persona_name) setVipPersonaName(updated.vip_persona_name);
+          if (updated.vip_persona_image) setVipPersonaImage(updated.vip_persona_image);
+          setSpecialistJoined(true);
+          setChatStep('chatting');
+          if (notificationAudio) notificationAudio.play().catch(() => {});
+        }
         if (updated.status === 'closed') {
           setConversationId(null);
           setMessages([]);
           setSpecialistJoined(false);
+          setElonMode(false);
           setChatStep('landing');
           setProactiveMessage(null);
           setSessionTimedOut(false);
