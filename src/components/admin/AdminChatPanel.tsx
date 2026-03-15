@@ -772,6 +772,48 @@ const AdminChatPanel = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* VIP Persona Settings */}
+                  <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-2">
+                    <label className="text-xs text-white font-semibold flex items-center gap-1.5" style={{ opacity: 1 }}>
+                      <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      VIP Persona Settings
+                    </label>
+                    <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Configure the VIP persona that appears when users request to speak with a VIP.</p>
+                    <input
+                      value={specialistSettings.vipPersonaName || ''}
+                      onChange={(e) => setSpecialistSettings(s => ({ ...s, vipPersonaName: e.target.value }))}
+                      placeholder="VIP Name (e.g. Elon Musk)"
+                      className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                    />
+                    <input
+                      value={specialistSettings.vipPersonaImage || ''}
+                      onChange={(e) => setSpecialistSettings(s => ({ ...s, vipPersonaImage: e.target.value }))}
+                      placeholder="VIP Avatar URL (or upload below)"
+                      className="w-full bg-white border border-slate-300 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:ring-1 focus:ring-amber-400"
+                      style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const updated = { ...specialistSettings };
+                          await supabase.from('admin_settings').upsert({
+                            setting_key: 'specialist_settings',
+                            setting_value: updated as any,
+                            updated_at: new Date().toISOString(),
+                          }, { onConflict: 'setting_key' });
+                          toast.success('VIP persona saved');
+                        } catch (err) {
+                          toast.error('Failed to save VIP persona');
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors"
+                    >
+                      <Save className="w-3 h-3" />
+                      Save VIP Persona
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
