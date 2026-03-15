@@ -692,9 +692,11 @@ const LiveChatWidget = () => {
       setStagedImage(null);
       broadcastTyping(false);
 
-      // Check if user is asking to talk to Elon Musk
+      // Check if user is asking to talk to VIP persona
       if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
-        triggerElonMode(convId);
+        const uName = user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user.email || '') : guestEmail.trim();
+        requestVipConnection(convId, uName, uEmail);
       }
     } catch (err) {
       console.error('Error sending message:', err);
