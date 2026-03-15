@@ -847,14 +847,25 @@ const AdminChatPanel = () => {
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                       {selectedConv.status === 'open' && !selectedConv.specialist_joined && (
-                        <Button
-                          size="sm"
-                          onClick={handleJoinConversation}
-                          className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
-                        >
-                          <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
-                          Join
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={handleJoinConversation}
+                            className="bg-green-600 hover:bg-green-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                          >
+                            <UserPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                            Join
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleJoinAsVip}
+                            className="bg-amber-600 hover:bg-amber-700 text-[10px] sm:text-xs px-2 sm:px-3 h-7 sm:h-8"
+                          >
+                            <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1" />
+                            <span className="hidden sm:inline">Join as {specialistSettings.vipPersonaName || 'VIP'}</span>
+                            <span className="sm:hidden">VIP</span>
+                          </Button>
+                        </>
                       )}
                       {selectedConv.status === 'open' && (
                         <Button
