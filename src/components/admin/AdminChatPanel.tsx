@@ -38,6 +38,8 @@ interface SpecialistSettings {
   specialistImageUrl: string;
   joinGreeting: string;
   teamMembers?: TeamMember[];
+  vipPersonaName?: string;
+  vipPersonaImage?: string;
 }
 
 const AdminChatPanel = () => {
