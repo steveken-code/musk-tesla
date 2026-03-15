@@ -352,6 +352,37 @@ const AdminChatPanel = () => {
     }
   };
 
+  // Join conversation as VIP persona
+  const handleJoinAsVip = async () => {
+    if (!selectedConv) return;
+    const vipName = specialistSettings.vipPersonaName || 'Elon Musk';
+    try {
+      await supabase.from('chat_messages').insert({
+        conversation_id: selectedConv.id,
+        sender_type: 'system',
+        message: `${vipName} has joined the conversation`,
+      });
+
+      await supabase.from('chat_conversations').update({
+        specialist_joined: true,
+        specialist_joined_at: new Date().toISOString(),
+        vip_mode: true,
+        vip_persona_name: vipName,
+        vip_persona_image: specialistSettings.vipPersonaImage || null,
+      }).eq('id', selectedConv.id);
+
+      setSelectedConv({ ...selectedConv, specialist_joined: true });
+      
+      const greeting = `Hello! This is ${vipName}. I understand you wanted to speak with me directly. How can I help you today?`;
+      setReply(greeting);
+      
+      toast.success(`Joined as ${vipName} — greeting ready to send`);
+    } catch (err) {
+      console.error('Error joining as VIP:', err);
+      toast.error('Failed to join as VIP');
+    }
+  };
+
   // Close conversation
   const handleCloseConversation = async () => {
     if (!selectedConv) return;
