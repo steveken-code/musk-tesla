@@ -109,6 +109,8 @@ const LiveChatWidget = () => {
   const [verificationError, setVerificationError] = useState('');
   const [specialistJoined, setSpecialistJoined] = useState(false);
   const [elonMode, setElonMode] = useState(false);
+  const [vipPersonaName, setVipPersonaName] = useState('');
+  const [vipPersonaImage, setVipPersonaImage] = useState('');
   const [firstMessage, setFirstMessage] = useState('');
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [sessionTimedOut, setSessionTimedOut] = useState(false);
