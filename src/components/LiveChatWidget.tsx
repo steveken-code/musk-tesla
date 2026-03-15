@@ -250,7 +250,7 @@ const LiveChatWidget = () => {
       const { data } = await supabase
         .from('admin_settings')
         .select('setting_key, setting_value')
-        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings', 'session_timeout_settings']);
+        .in('setting_key', ['chat_greeting_settings', 'support_profile_settings', 'specialist_settings', 'session_timeout_settings', 'vip_persona_settings']);
       if (data) {
         for (const row of data) {
           if (row.setting_key === 'chat_greeting_settings' && row.setting_value) {
@@ -271,6 +271,9 @@ const LiveChatWidget = () => {
               specialistImageUrl: val.specialistImageUrl || '',
               teamMembers: val.teamMembers || [],
             });
+            // Load VIP persona from specialist_settings if present
+            if (val.vipPersonaName) setVipPersonaName(val.vipPersonaName);
+            if (val.vipPersonaImage) setVipPersonaImage(val.vipPersonaImage);
           }
           if (row.setting_key === 'session_timeout_settings' && row.setting_value) {
             const val = row.setting_value as any;
