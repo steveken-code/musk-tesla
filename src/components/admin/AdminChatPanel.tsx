@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save, Users } from 'lucide-react';
+import { MessageCircle, Send, Plus, Loader2, X, User, Clock, Camera, Image as ImageIcon, Paperclip, UserPlus, XCircle, Sparkles, Settings, Save, Users, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
