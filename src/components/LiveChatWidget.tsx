@@ -618,9 +618,9 @@ const LiveChatWidget = () => {
       },
     }).catch(() => {});
 
-    // Check if user is asking to talk to Elon Musk
+    // Check if user is asking to talk to VIP persona
     if (isElonMuskRequest(msg)) {
-      triggerElonMode(newConv.id);
+      requestVipConnection(newConv.id, userName, userEmail || '');
     }
   };
 
