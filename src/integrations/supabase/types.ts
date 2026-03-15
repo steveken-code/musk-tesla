@@ -136,6 +136,9 @@ export type Database = {
           user_email: string | null
           user_id: string | null
           user_name: string | null
+          vip_mode: boolean | null
+          vip_persona_image: string | null
+          vip_persona_name: string | null
         }
         Insert: {
           created_at?: string
@@ -150,6 +153,9 @@ export type Database = {
           user_email?: string | null
           user_id?: string | null
           user_name?: string | null
+          vip_mode?: boolean | null
+          vip_persona_image?: string | null
+          vip_persona_name?: string | null
         }
         Update: {
           created_at?: string
@@ -164,6 +170,9 @@ export type Database = {
           user_email?: string | null
           user_id?: string | null
           user_name?: string | null
+          vip_mode?: boolean | null
+          vip_persona_image?: string | null
+          vip_persona_name?: string | null
         }
         Relationships: []
       }
