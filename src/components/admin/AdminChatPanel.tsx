@@ -60,6 +60,8 @@ const AdminChatPanel = () => {
     specialistImageUrl: '',
     joinGreeting: 'Hello! My name is {{name}}, your dedicated support specialist. How can I assist you today?',
     teamMembers: [],
+    vipPersonaName: 'Elon Musk',
+    vipPersonaImage: '',
   });
   const [teamMemberDraft, setTeamMemberDraft] = useState<TeamMember>({ name: '', imageUrl: '', role: '' });
   const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | 'new' | null>(null);
