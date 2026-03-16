@@ -1267,7 +1267,11 @@ const LiveChatWidget = () => {
           <div className="flex justify-center">
             <div className="text-center py-4">
               <Loader2 className="w-6 h-6 animate-spin text-electric-blue mx-auto mb-2" />
-              <p className="text-gray-600 text-sm font-medium">Please hold while we connect you to our customer support specialist.</p>
+              <p className="text-gray-600 text-sm font-medium">
+                {vipRequested 
+                  ? `Please hold while we connect you to ${vipPersonaName || 'Elon Musk'}...`
+                  : 'Please hold while we connect you to our customer support specialist.'}
+              </p>
               <p className="text-gray-400 text-xs mt-1">This usually takes a few minutes.</p>
             </div>
           </div>
