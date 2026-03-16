@@ -9,15 +9,46 @@ const corsHeaders = {
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "Tesla Stock Platform <no-reply@msktesla.net>";
 
+// In-memory cooldown: conversationId -> last email sent timestamp
+const cooldownMap = new Map<string, number>();
+const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+// Cleanup old entries periodically
+let lastCleanup = Date.now();
+function cleanupCooldowns() {
+  const now = Date.now();
+  if (now - lastCleanup < 60000) return;
+  lastCleanup = now;
+  for (const [key, timestamp] of cooldownMap.entries()) {
+    if (now - timestamp > COOLDOWN_MS) {
+      cooldownMap.delete(key);
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { userName, userEmail, message } = await req.json();
+    const { userName, userEmail, message, conversationId } = await req.json();
 
-    // Get admin email from referral_settings (admin's email)
+    // Rate limit: skip email if one was sent for this conversation within 5 minutes
+    cleanupCooldowns();
+    const cooldownKey = conversationId || userEmail || 'unknown';
+    const lastSent = cooldownMap.get(cooldownKey);
+    const now = Date.now();
+
+    if (lastSent && (now - lastSent) < COOLDOWN_MS) {
+      console.log(`Cooldown active for ${cooldownKey}, skipping email notification`);
+      return new Response(JSON.stringify({ success: true, skipped: true, reason: 'cooldown' }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Get admin email from referral_settings
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -78,6 +109,9 @@ serve(async (req) => {
     });
 
     const data = await res.json();
+
+    // Record successful send in cooldown map
+    cooldownMap.set(cooldownKey, Date.now());
 
     return new Response(JSON.stringify({ success: true, data }), {
       status: 200,
