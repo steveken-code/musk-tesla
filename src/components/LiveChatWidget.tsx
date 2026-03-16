@@ -163,6 +163,7 @@ const LiveChatWidget = () => {
       created_at: new Date().toISOString(),
     };
     setMessages(prev => [...prev, holdMsg]);
+    setVipRequested(true);
 
     // Notify admin via email about VIP request
     supabase.functions.invoke('send-chat-notification', {
