@@ -223,6 +223,17 @@ const LiveChatWidget = () => {
           message: 'Session timed out due to inactivity.',
         });
         await supabase.from('chat_conversations').update({ status: 'closed' }).eq('id', conversationId);
+        // Notify admin that chat session closed
+        const uName = user ? (profileData?.full_name || user?.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user?.email || '') : guestEmail.trim();
+        supabase.functions.invoke('send-chat-notification', {
+          body: {
+            userName: uName,
+            userEmail: uEmail || 'Anonymous',
+            message: '🔴 Chat session has been closed due to inactivity.',
+            conversationId,
+          },
+        }).catch(() => {});
       }
     }, sessionTimeoutMs);
   }, [conversationId, sessionTimedOut, sessionTimeoutMs]);
