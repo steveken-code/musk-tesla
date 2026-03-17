@@ -775,6 +775,91 @@ const AdminChatPanel = () => {
                     )}
                   </div>
 
+                  {/* Active Specialist Selector */}
+                  {(specialistSettings.teamMembers || []).length > 0 && (
+                    <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-2">
+                      <label className="text-xs text-white font-semibold flex items-center gap-1.5" style={{ opacity: 1 }}>
+                        <Users className="w-3.5 h-3.5 text-electric-blue" />
+                        Set Active Specialist
+                      </label>
+                      <p className="text-[10px] text-slate-300 leading-tight" style={{ opacity: 1 }}>Type a name to search and select who joins chats as the support specialist.</p>
+                      <div className="relative">
+                        <input
+                          value={activeSpecialistSearch}
+                          onChange={(e) => {
+                            setActiveSpecialistSearch(e.target.value);
+                            setShowSpecialistDropdown(true);
+                          }}
+                          onFocus={() => setShowSpecialistDropdown(true)}
+                          placeholder="Search specialist by name..."
+                          className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-black focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                          style={{ color: '#000', opacity: 1, WebkitTextFillColor: '#000' }}
+                        />
+                        {showSpecialistDropdown && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-slate-700 border border-slate-500 rounded-lg shadow-xl z-20 max-h-[200px] overflow-y-auto">
+                            {(specialistSettings.teamMembers || [])
+                              .filter(m => m.name.toLowerCase().includes(activeSpecialistSearch.toLowerCase()))
+                              .map((member, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={async () => {
+                                    const updated = { ...specialistSettings, specialistName: member.name, specialistImageUrl: member.imageUrl };
+                                    try {
+                                      await supabase.from('admin_settings').upsert({
+                                        setting_key: 'specialist_settings',
+                                        setting_value: updated as any,
+                                        updated_at: new Date().toISOString(),
+                                      }, { onConflict: 'setting_key' });
+                                      setSpecialistSettings(updated);
+                                      setActiveSpecialistSearch('');
+                                      setShowSpecialistDropdown(false);
+                                      toast.success(`${member.name} set as active specialist`);
+                                    } catch (err) {
+                                      toast.error('Failed to set specialist');
+                                    }
+                                  }}
+                                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-600 transition-colors text-left"
+                                >
+                                  {member.imageUrl ? (
+                                    <img src={member.imageUrl} alt={member.name} className="w-9 h-9 rounded-full object-cover border-2 border-slate-400 flex-shrink-0" />
+                                  ) : (
+                                    <div className="w-9 h-9 rounded-full bg-electric-blue/20 flex items-center justify-center flex-shrink-0">
+                                      <User className="w-4 h-4 text-electric-blue" />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="text-white text-xs font-semibold truncate" style={{ opacity: 1 }}>{member.name}</p>
+                                    <p className="text-slate-400 text-[10px] truncate" style={{ opacity: 1 }}>{member.role || 'Support Agent'}</p>
+                                  </div>
+                                  {specialistSettings.specialistName === member.name && (
+                                    <span className="text-[8px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded-full font-bold flex-shrink-0 ml-auto">ACTIVE</span>
+                                  )}
+                                </button>
+                              ))}
+                            {(specialistSettings.teamMembers || []).filter(m => m.name.toLowerCase().includes(activeSpecialistSearch.toLowerCase())).length === 0 && (
+                              <p className="text-slate-400 text-xs text-center py-3" style={{ opacity: 1 }}>No matching specialists</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {/* Current active specialist indicator */}
+                      <div className="flex items-center gap-2 bg-slate-700/50 rounded-lg p-2">
+                        {specialistSettings.specialistImageUrl ? (
+                          <img src={specialistSettings.specialistImageUrl} alt="Active" className="w-8 h-8 rounded-full object-cover border-2 border-green-400 flex-shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-green-400" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-slate-400" style={{ opacity: 1 }}>Currently active:</p>
+                          <p className="text-xs text-white font-semibold truncate" style={{ opacity: 1 }}>{specialistSettings.specialistName}</p>
+                        </div>
+                        <span className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 animate-pulse ml-auto" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* VIP Persona Settings */}
                   <div className="border-t border-slate-600 pt-2.5 sm:pt-3 space-y-2">
                     <label className="text-xs text-white font-semibold flex items-center gap-1.5" style={{ opacity: 1 }}>
