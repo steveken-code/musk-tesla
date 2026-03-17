@@ -315,35 +315,72 @@ const LiveChatWidget = () => {
     fetchSettings();
   }, []);
 
+  // Sync conversationId to localStorage
+  useEffect(() => {
+    if (conversationId) {
+      localStorage.setItem('chat-active-conversation', conversationId);
+    } else {
+      localStorage.removeItem('chat-active-conversation');
+    }
+  }, [conversationId]);
+
   // Check for existing conversation on mount
   useEffect(() => {
     const init = async () => {
+      // First check if we have a stored conversationId
+      const storedConvId = localStorage.getItem('chat-active-conversation');
+      
       let convData: any = null;
-      if (user) {
+      
+      if (storedConvId) {
+        // Verify the stored conversation is still open
         const { data } = await supabase
           .from('chat_conversations')
-          .select('id, specialist_joined, status')
-          .eq('user_id', user.id)
-          .eq('status', 'open')
-          .order('created_at', { ascending: false })
-          .limit(1)
+          .select('id, specialist_joined, status, vip_mode, vip_persona_name, vip_persona_image')
+          .eq('id', storedConvId)
           .maybeSingle();
-        convData = data;
-      } else {
-        const guestId = getGuestId();
-        const { data } = await supabase
-          .from('chat_conversations')
-          .select('id, specialist_joined, status')
-          .eq('user_name', guestId)
-          .eq('status', 'open')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        convData = data;
+        
+        if (data && data.status === 'open') {
+          convData = data;
+        } else {
+          // Conversation is closed or doesn't exist, clear storage
+          localStorage.removeItem('chat-active-conversation');
+        }
+      }
+      
+      // If no stored conversation found, search for any open one
+      if (!convData) {
+        if (user) {
+          const { data } = await supabase
+            .from('chat_conversations')
+            .select('id, specialist_joined, status, vip_mode, vip_persona_name, vip_persona_image')
+            .eq('user_id', user.id)
+            .eq('status', 'open')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          convData = data;
+        } else {
+          const guestId = getGuestId();
+          const { data } = await supabase
+            .from('chat_conversations')
+            .select('id, specialist_joined, status, vip_mode, vip_persona_name, vip_persona_image')
+            .eq('user_name', guestId)
+            .eq('status', 'open')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          convData = data;
+        }
       }
       
       if (convData) {
         setConversationId(convData.id);
+        if (convData.vip_mode) {
+          setElonMode(true);
+          if (convData.vip_persona_name) setVipPersonaName(convData.vip_persona_name);
+          if (convData.vip_persona_image) setVipPersonaImage(convData.vip_persona_image);
+        }
         if (convData.specialist_joined) {
           setSpecialistJoined(true);
           setChatStep('chatting');
