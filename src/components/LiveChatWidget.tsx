@@ -646,11 +646,13 @@ const LiveChatWidget = () => {
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', newConv.id);
 
+    // Send email notification only for the FIRST message of a new conversation
     supabase.functions.invoke('send-chat-notification', {
       body: {
         userName: userName,
         userEmail: userEmail || 'Anonymous',
         message: msg.trim() || '[Image sent]',
+        conversationId: newConv.id,
       },
     }).catch(() => {});
 
