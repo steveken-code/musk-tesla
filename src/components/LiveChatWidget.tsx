@@ -728,17 +728,8 @@ const LiveChatWidget = () => {
       setStagedImage(null);
       broadcastTyping(false);
 
-      // Notify admin via email for every message so they don't miss anything
-      const uName = user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestName.trim();
-      const uEmail = user ? (profileData?.email || user.email || '') : guestEmail.trim();
-
-      supabase.functions.invoke('send-chat-notification', {
-        body: {
-          userName: uName,
-          userEmail: uEmail || 'Anonymous',
-          message: sentText || '[Image sent]',
-        },
-      }).catch(() => {});
+      // Email notifications are sent only on: first message, 3-min warning, and session close
+      // No per-message notifications to avoid Resend quota issues
 
       // Check if user is asking to talk to VIP persona
       if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
