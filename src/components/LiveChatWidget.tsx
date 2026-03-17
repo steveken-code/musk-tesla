@@ -197,6 +197,19 @@ const LiveChatWidget = () => {
     const warningAt = Math.max(sessionTimeoutMs - WARNING_OFFSET_MS, 0);
     warningTimerRef.current = setTimeout(() => {
       setTimeoutWarning(true);
+      // Notify admin that session is about to expire (3 min left)
+      if (conversationId) {
+        const uName = user ? (profileData?.full_name || user?.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user?.email || '') : guestEmail.trim();
+        supabase.functions.invoke('send-chat-notification', {
+          body: {
+            userName: uName,
+            userEmail: uEmail || 'Anonymous',
+            message: '⏰ Chat session expiring in 3 minutes — please respond if needed.',
+            conversationId,
+          },
+        }).catch(() => {});
+      }
     }, warningAt);
 
     timeoutTimerRef.current = setTimeout(async () => {
