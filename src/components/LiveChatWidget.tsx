@@ -87,7 +87,10 @@ const LiveChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(() => {
+    // Restore conversationId from localStorage for persistence across page navigations
+    return localStorage.getItem('chat-active-conversation') || null;
+  });
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
