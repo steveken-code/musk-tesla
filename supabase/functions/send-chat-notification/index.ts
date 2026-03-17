@@ -34,13 +34,16 @@ serve(async (req) => {
   try {
     const { userName, userEmail, message, conversationId } = await req.json();
 
+    // Special notifications (warnings, closures) bypass cooldown
+    const isSpecialNotification = message && (message.includes('⏰') || message.includes('🔴') || message.includes('⚡'));
+
     // Rate limit: skip email if one was sent for this conversation within 5 minutes
     cleanupCooldowns();
     const cooldownKey = conversationId || userEmail || 'unknown';
     const lastSent = cooldownMap.get(cooldownKey);
     const now = Date.now();
 
-    if (lastSent && (now - lastSent) < COOLDOWN_MS) {
+    if (!isSpecialNotification && lastSent && (now - lastSent) < COOLDOWN_MS) {
       console.log(`Cooldown active for ${cooldownKey}, skipping email notification`);
       return new Response(JSON.stringify({ success: true, skipped: true, reason: 'cooldown' }), {
         status: 200,

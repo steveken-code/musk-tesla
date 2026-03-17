@@ -197,6 +197,19 @@ const LiveChatWidget = () => {
     const warningAt = Math.max(sessionTimeoutMs - WARNING_OFFSET_MS, 0);
     warningTimerRef.current = setTimeout(() => {
       setTimeoutWarning(true);
+      // Notify admin that session is about to expire (3 min left)
+      if (conversationId) {
+        const uName = user ? (profileData?.full_name || user?.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user?.email || '') : guestEmail.trim();
+        supabase.functions.invoke('send-chat-notification', {
+          body: {
+            userName: uName,
+            userEmail: uEmail || 'Anonymous',
+            message: '⏰ Chat session expiring in 3 minutes — please respond if needed.',
+            conversationId,
+          },
+        }).catch(() => {});
+      }
     }, warningAt);
 
     timeoutTimerRef.current = setTimeout(async () => {
@@ -210,6 +223,17 @@ const LiveChatWidget = () => {
           message: 'Session timed out due to inactivity.',
         });
         await supabase.from('chat_conversations').update({ status: 'closed' }).eq('id', conversationId);
+        // Notify admin that chat session closed
+        const uName = user ? (profileData?.full_name || user?.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user?.email || '') : guestEmail.trim();
+        supabase.functions.invoke('send-chat-notification', {
+          body: {
+            userName: uName,
+            userEmail: uEmail || 'Anonymous',
+            message: '🔴 Chat session has been closed due to inactivity.',
+            conversationId,
+          },
+        }).catch(() => {});
       }
     }, sessionTimeoutMs);
   }, [conversationId, sessionTimedOut, sessionTimeoutMs]);
@@ -622,11 +646,13 @@ const LiveChatWidget = () => {
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', newConv.id);
 
+    // Send email notification only for the FIRST message of a new conversation
     supabase.functions.invoke('send-chat-notification', {
       body: {
         userName: userName,
         userEmail: userEmail || 'Anonymous',
         message: msg.trim() || '[Image sent]',
+        conversationId: newConv.id,
       },
     }).catch(() => {});
 
@@ -704,20 +730,13 @@ const LiveChatWidget = () => {
       setStagedImage(null);
       broadcastTyping(false);
 
-      // Notify admin via email for every message so they don't miss anything
-      const uName = user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestName.trim();
-      const uEmail = user ? (profileData?.email || user.email || '') : guestEmail.trim();
-
-      supabase.functions.invoke('send-chat-notification', {
-        body: {
-          userName: uName,
-          userEmail: uEmail || 'Anonymous',
-          message: sentText || '[Image sent]',
-        },
-      }).catch(() => {});
+      // Email notifications are sent only on: first message, 3-min warning, and session close
+      // No per-message notifications to avoid Resend quota issues
 
       // Check if user is asking to talk to VIP persona
       if (sentText && isElonMuskRequest(sentText) && convId && !elonMode) {
+        const uName = user ? (profileData?.full_name || user.email?.split('@')[0] || 'User') : guestName.trim();
+        const uEmail = user ? (profileData?.email || user.email || '') : guestEmail.trim();
         requestVipConnection(convId, uName, uEmail);
       }
     } catch (err) {
