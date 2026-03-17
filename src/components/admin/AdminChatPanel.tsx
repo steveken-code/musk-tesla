@@ -65,6 +65,8 @@ const AdminChatPanel = () => {
   });
   const [teamMemberDraft, setTeamMemberDraft] = useState<TeamMember>({ name: '', imageUrl: '', role: '' });
   const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | 'new' | null>(null);
+  const [activeSpecialistSearch, setActiveSpecialistSearch] = useState('');
+  const [showSpecialistDropdown, setShowSpecialistDropdown] = useState(false);
   const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(15);
   const [timeoutDraft, setTimeoutDraft] = useState('15');
   const [savingTimeout, setSavingTimeout] = useState(false);
