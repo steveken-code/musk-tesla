@@ -482,6 +482,7 @@ const LiveChatWidget = () => {
           setSessionTimedOut(false);
           setTimeoutWarning(false);
           sessionStorage.removeItem('chat-greeted');
+          localStorage.removeItem('chat-active-conversation');
         }
       })
       .subscribe();
