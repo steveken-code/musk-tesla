@@ -802,6 +802,7 @@ const LiveChatWidget = () => {
     setProactiveMessage(null);
     sessionStorage.removeItem('chat-greeted');
     localStorage.removeItem('chat-guest-id');
+    localStorage.removeItem('chat-active-conversation');
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
