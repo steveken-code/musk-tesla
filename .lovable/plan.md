@@ -1,12 +1,39 @@
 
 
-## ✅ COMPLETED: Live Chat Landing Screen Enhancement
+## Conditional Notification System
 
-### What was implemented
+### What We're Building
+A system where the admin can create a status alert (Active/Inactive toggle, subject line, body text) that displays on the user dashboard. Active = green success alert, Inactive = orange warning alert.
 
-1. **"Hi there 👋" greeting** — replaced "Welcome!" with a friendlier hero heading
-2. **Recent conversations** — fetches user's last 3 closed chats with message preview and relative timestamps
-3. **Helpful resources** — interactive FAQ cards with Lucide icons (TrendingUp, Wallet, ShieldCheck) and real WhatsApp PNG icon
-4. **FAQ interactivity** — clicking a resource pre-fills the message and transitions to compose step
-5. **Footer branding** — "Powered by Tesla Stock Platform" at bottom
-6. **Visual polish** — distinct color tints per resource card (blue, purple, amber, green), hover left-accent bars, MessageSquare icon for recent conversations with blue-50 background
+### Architecture
+Uses the existing `admin_settings` table with a new key `dashboard_notification` storing `{ active: boolean, subject: string, message: string }`.
+
+### Steps
+
+**1. Add a "Notifications" tab to the Admin panel**
+- Add `'notifications'` to the `activeTab` union type
+- Create a new tab section with:
+  - A toggle switch (Active/Inactive)
+  - Subject line input field
+  - Message body textarea
+  - Save button
+- Save/load from `admin_settings` with key `dashboard_notification`
+
+**2. Create a `DashboardNotification` component**
+- New file: `src/components/dashboard/DashboardNotification.tsx`
+- On mount, fetches `dashboard_notification` from `admin_settings`
+- If **Active**: renders a green success `Alert` with the subject as title and message as description
+- If **Inactive**: renders an amber/orange warning `Alert` with the subject as title and message as description
+- Users can dismiss the alert (stored in sessionStorage so it reappears next session)
+- Subscribe to realtime changes on `admin_settings` so updates appear live
+
+**3. Place the notification on the Dashboard**
+- Import `DashboardNotification` in `Dashboard.tsx`
+- Render it just above the `WelcomeCard` component
+
+### Technical Details
+- Uses existing `admin_settings` table — no database migration needed
+- Uses existing shadcn `Alert`, `AlertTitle`, `AlertDescription` components
+- Uses existing `Switch`, `Input`, `Textarea`, `Button` UI components
+- Realtime subscription ensures users see updates without refreshing
+
