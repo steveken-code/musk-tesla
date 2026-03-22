@@ -444,6 +444,13 @@ const Admin = () => {
                 { name: 'Agent 3', role: 'Support Agent', imageUrl: '' },
               ],
             });
+          } else if (setting.setting_key === 'dashboard_notification' && setting.setting_value) {
+            const value = setting.setting_value as unknown as { active: boolean; subject: string; message: string };
+            setDashboardNotification({
+              active: value.active ?? true,
+              subject: value.subject || '',
+              message: value.message || '',
+            });
           }
         });
       }
