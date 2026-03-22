@@ -3228,8 +3228,124 @@ const Admin = () => {
         </div>
       )}
 
+        {/* Notifications Tab */}
+        {activeTab === 'notifications' && (
+          <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-xl p-4 md:p-6 animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-emerald-400" />
+              Dashboard Notification
+            </h3>
+            <p className="text-sm text-slate-400 mb-6">
+              This notification will be displayed to all users on their dashboard. Toggle the status and customize the subject and message.
+            </p>
 
-      {/* KYC Management Modal */}
+            <div className="space-y-4">
+              {/* Active/Inactive Toggle */}
+              <div className="flex items-center justify-between bg-slate-700/50 rounded-lg p-4">
+                <div>
+                  <Label className="text-white font-medium">Status</Label>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {dashboardNotification.active ? (
+                      <span className="text-green-400 font-medium">● Active — Good time to proceed</span>
+                    ) : (
+                      <span className="text-amber-400 font-medium">● Inactive — Wait advisory</span>
+                    )}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDashboardNotification(prev => ({ ...prev, active: !prev.active }))}
+                  className={`relative w-14 h-7 rounded-full transition-colors ${
+                    dashboardNotification.active ? 'bg-green-500' : 'bg-amber-500'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                      dashboardNotification.active ? 'translate-x-7' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <Label className="text-white">Subject Line</Label>
+                <Input
+                  value={dashboardNotification.subject}
+                  onChange={(e) => setDashboardNotification(prev => ({ ...prev, subject: e.target.value }))}
+                  placeholder="e.g. Market Update"
+                  className="mt-1 bg-slate-700 border-slate-600 text-white"
+                />
+              </div>
+
+              {/* Message */}
+              <div>
+                <Label className="text-white">Message Body</Label>
+                <textarea
+                  value={dashboardNotification.message}
+                  onChange={(e) => setDashboardNotification(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="Write your notification message here..."
+                  rows={4}
+                  className="mt-1 w-full rounded-md bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* Preview */}
+              {dashboardNotification.subject && (
+                <div className={`rounded-lg border-l-4 p-4 ${
+                  dashboardNotification.active
+                    ? 'border-l-green-500 bg-green-500/10'
+                    : 'border-l-amber-500 bg-amber-500/10'
+                }`}>
+                  <p className="text-xs text-slate-400 mb-1">Preview</p>
+                  <p className={`font-semibold ${dashboardNotification.active ? 'text-green-300' : 'text-amber-300'}`}>
+                    {dashboardNotification.subject}
+                  </p>
+                  <p className={`text-sm mt-1 ${dashboardNotification.active ? 'text-green-200/80' : 'text-amber-200/80'}`}>
+                    {dashboardNotification.message}
+                  </p>
+                </div>
+              )}
+
+              {/* Save Button */}
+              <Button
+                onClick={async () => {
+                  setSavingNotification(true);
+                  try {
+                    const { data: existing } = await supabase
+                      .from('admin_settings')
+                      .select('id')
+                      .eq('setting_key', 'dashboard_notification')
+                      .maybeSingle();
+
+                    const payload = {
+                      setting_key: 'dashboard_notification',
+                      setting_value: dashboardNotification as unknown as Record<string, unknown>,
+                      updated_by: user?.id,
+                    };
+
+                    if (existing) {
+                      await supabase.from('admin_settings').update(payload).eq('setting_key', 'dashboard_notification');
+                    } else {
+                      await supabase.from('admin_settings').insert(payload);
+                    }
+                    toast.success('Notification saved successfully');
+                  } catch (err) {
+                    toast.error('Failed to save notification');
+                  } finally {
+                    setSavingNotification(false);
+                  }
+                }}
+                disabled={savingNotification}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {savingNotification ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Save Notification
+              </Button>
+            </div>
+          </div>
+        )}
+
+
       <KYCManagementModal
         open={showKycModal}
         onClose={() => {

@@ -29,6 +29,7 @@ import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import WelcomeCard from '@/components/dashboard/WelcomeCard';
+import DashboardNotification from '@/components/dashboard/DashboardNotification';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import DashboardSectionHeader from '@/components/dashboard/DashboardSectionHeader';
 import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
