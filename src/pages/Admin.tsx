@@ -249,7 +249,11 @@ const Admin = () => {
   const [savingSpecialist, setSavingSpecialist] = useState(false);
   const [uploadingTeamAvatar, setUploadingTeamAvatar] = useState<number | null>(null);
   const [savingTeamAvatars, setSavingTeamAvatars] = useState(false);
-  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat'>('investments');
+  const [activeTab, setActiveTab] = useState<'investments' | 'withdrawals' | 'emails' | 'security' | 'kyc' | 'chat' | 'notifications'>('investments');
+  
+  // Dashboard notification state
+  const [dashboardNotification, setDashboardNotification] = useState({ active: true, subject: '', message: '' });
+  const [savingNotification, setSavingNotification] = useState(false);
   
   // KYC Modal state
   const [showKycModal, setShowKycModal] = useState(false);
