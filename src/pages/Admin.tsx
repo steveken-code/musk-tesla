@@ -1813,6 +1813,14 @@ const Admin = () => {
             <ShieldAlert className="w-4 h-4 mr-2" />
             {t('securityLogs')}
           </Button>
+          <Button
+            variant={activeTab === 'notifications' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('notifications')}
+            className={activeTab === 'notifications' ? 'bg-emerald-600' : 'border-slate-600 text-slate-300'}
+          >
+            <AlertCircle className="w-4 h-4 mr-2" />
+            Notifications
+          </Button>
         </div>
 
         {/* Chat Tab */}
