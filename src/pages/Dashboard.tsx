@@ -29,6 +29,7 @@ import InvestmentProgressTracker from '@/components/InvestmentProgressTracker';
 import PriceTicker from '@/components/PriceTicker';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import WelcomeCard from '@/components/dashboard/WelcomeCard';
+import DashboardNotification from '@/components/dashboard/DashboardNotification';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import DashboardSectionHeader from '@/components/dashboard/DashboardSectionHeader';
 import InvestmentPortfolio from '@/components/dashboard/InvestmentPortfolio';
@@ -1289,6 +1290,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Main Content (2/3) */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Dashboard Notification */}
+            <DashboardNotification />
             {/* Hero Welcome Card - Clean Purple Gradient */}
             <WelcomeCard
               displayName={displayName}
