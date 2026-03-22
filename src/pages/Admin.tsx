@@ -3319,7 +3319,7 @@ const Admin = () => {
 
                     const payload = {
                       setting_key: 'dashboard_notification',
-                      setting_value: dashboardNotification as unknown as Record<string, unknown>,
+                      setting_value: dashboardNotification as any,
                       updated_by: user?.id,
                     };
 
