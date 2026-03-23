@@ -254,6 +254,8 @@ const Admin = () => {
   // Dashboard notification state
   const [dashboardNotification, setDashboardNotification] = useState({ active: true, subject: '', message: '' });
   const [savingNotification, setSavingNotification] = useState(false);
+  const [noticeRecipientEmail, setNoticeRecipientEmail] = useState('');
+  const [sendingNotice, setSendingNotice] = useState(false);
   
   // KYC Modal state
   const [showKycModal, setShowKycModal] = useState(false);
