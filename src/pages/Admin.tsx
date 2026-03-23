@@ -3236,7 +3236,7 @@ const Admin = () => {
               Dashboard Notification
             </h3>
             <p className="text-sm text-slate-400 mb-6">
-              This notification will be displayed to all users on their dashboard. Toggle the status and customize the subject and message.
+              Compose a platform notice that appears on every user's dashboard. Use the toggle to control whether the alert shows as a positive (green) or cautionary (amber) message.
             </p>
 
             <div className="space-y-4">
