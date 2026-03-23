@@ -3236,7 +3236,7 @@ const Admin = () => {
               Dashboard Notification
             </h3>
             <p className="text-sm text-slate-400 mb-6">
-              This notification will be displayed to all users on their dashboard. Toggle the status and customize the subject and message.
+              Compose a platform notice that appears on every user's dashboard. Use the toggle to control whether the alert shows as a positive (green) or cautionary (amber) message.
             </p>
 
             <div className="space-y-4">
@@ -3268,24 +3268,26 @@ const Admin = () => {
 
               {/* Subject */}
               <div>
-                <Label className="text-white">Subject Line</Label>
+                <Label className="text-white font-semibold">Subject Line</Label>
                 <Input
                   value={dashboardNotification.subject}
                   onChange={(e) => setDashboardNotification(prev => ({ ...prev, subject: e.target.value }))}
                   placeholder="e.g. Market Update"
-                  className="mt-1 bg-slate-700 border-slate-600 text-white"
+                  className="mt-1 bg-white border-slate-400 font-semibold focus:ring-emerald-500 focus:border-emerald-500"
+                  style={{ color: '#000000', opacity: 1, WebkitTextFillColor: '#000000' }}
                 />
               </div>
 
               {/* Message */}
               <div>
-                <Label className="text-white">Message Body</Label>
+                <Label className="text-white font-semibold">Message Body</Label>
                 <textarea
                   value={dashboardNotification.message}
                   onChange={(e) => setDashboardNotification(prev => ({ ...prev, message: e.target.value }))}
                   placeholder="Write your notification message here..."
                   rows={4}
-                  className="mt-1 w-full rounded-md bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="mt-1 w-full rounded-md bg-white border border-slate-400 px-3 py-2 text-sm font-semibold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  style={{ color: '#000000', opacity: 1, WebkitTextFillColor: '#000000' }}
                 />
               </div>
 
