@@ -254,6 +254,8 @@ const Admin = () => {
   // Dashboard notification state
   const [dashboardNotification, setDashboardNotification] = useState({ active: true, subject: '', message: '' });
   const [savingNotification, setSavingNotification] = useState(false);
+  const [noticeRecipientEmail, setNoticeRecipientEmail] = useState('');
+  const [sendingNotice, setSendingNotice] = useState(false);
   
   // KYC Modal state
   const [showKycModal, setShowKycModal] = useState(false);
@@ -3341,8 +3343,63 @@ const Admin = () => {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {savingNotification ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                Save Notification
+                Save to Dashboard
               </Button>
+
+              {/* Divider */}
+              <div className="border-t border-slate-600 my-6 pt-6">
+                <h4 className="text-white font-bold mb-1 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-blue-400" />
+                  Send Notice via Email
+                </h4>
+                <p className="text-sm text-slate-400 mb-4">
+                  Send the above notice directly to a specific user's email. Enter the recipient's email address below.
+                </p>
+
+                <div className="mb-4">
+                  <Label className="text-white font-semibold">Recipient Email</Label>
+                  <Input
+                    type="email"
+                    value={noticeRecipientEmail}
+                    onChange={(e) => setNoticeRecipientEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    className="mt-1 bg-white border-slate-400 font-semibold focus:ring-blue-500 focus:border-blue-500"
+                    style={{ color: '#000000', opacity: 1, WebkitTextFillColor: '#000000' }}
+                  />
+                </div>
+
+                <Button
+                  onClick={async () => {
+                    if (!noticeRecipientEmail || !dashboardNotification.subject || !dashboardNotification.message) {
+                      toast.error('Please fill in the subject, message, and recipient email');
+                      return;
+                    }
+                    setSendingNotice(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke('send-platform-notice', {
+                        body: {
+                          recipientEmail: noticeRecipientEmail,
+                          subject: dashboardNotification.subject,
+                          message: dashboardNotification.message,
+                          status: dashboardNotification.active ? 'active' : 'inactive',
+                        },
+                      });
+                      if (error) throw error;
+                      toast.success(`Notice sent to ${noticeRecipientEmail}`);
+                      setNoticeRecipientEmail('');
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to send notice');
+                    } finally {
+                      setSendingNotice(false);
+                    }
+                  }}
+                  disabled={sendingNotice || !noticeRecipientEmail || !dashboardNotification.subject || !dashboardNotification.message}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {sendingNotice ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                  Send Email Notice
+                </Button>
+              </div>
             </div>
           </div>
         )}
